@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WT Live: Mendez/Tagaytay ⇄ One Ayala</title>
+<link rel="stylesheet" href="assets/vendor/leaflet.css" />
+<script src="assets/vendor/leaflet.js"></script>
+<script src="assets/vendor/supabase.js"></script>
+<style>
+  :root{
+    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#8a7f76;
+    --maroon:#7a1f2b; --maroon-deep:#5c161f; --maroon-soft:#f3e6e4;
+    --gold:#e39a1c; --gold-deep:#b87708; --gold-soft:#fbf0da;
+    --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink); min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .display{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; letter-spacing:.02em;}
+
+  /* Header: signboard band */
+  header{
+    background:linear-gradient(180deg,var(--maroon),var(--maroon-deep));
+    color:#fff; padding:14px 16px 12px;
+  }
+  header .route{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; font-weight:700; font-size:22px;
+    letter-spacing:.04em; text-transform:uppercase; line-height:1.1;
+  }
+  header .route .amp{color:var(--gold);}
+  header .sub{font-size:11.5px; opacity:.85; margin-top:2px; font-weight:600; letter-spacing:.03em;}
+
+  .wrap{max-width:520px; margin:0 auto; padding:12px 14px 48px;}
+
+  /* Tabs */
+  .tabs{display:flex; gap:8px; margin-bottom:12px;}
+  .tab{
+    flex:1; padding:12px 8px; border-radius:12px; text-align:center;
+    background:var(--surface); border:1.5px solid var(--line); cursor:pointer;
+    font-size:13px; font-weight:800; color:var(--muted); user-select:none;
+    transition:.15s;
+  }
+  .tab.active{background:var(--maroon); color:#fff; border-color:var(--maroon);}
+
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px; margin-bottom:12px; box-shadow:0 1px 2px rgba(43,35,32,.04);
+  }
+
+  /* Direction filter */
+  .seg{display:flex; background:var(--paper); border:1.5px solid var(--line); border-radius:12px; padding:3px; margin-bottom:14px;}
+  .seg button{
+    flex:1; border:none; background:transparent; padding:9px 4px; border-radius:9px;
+    font-family:inherit; font-size:12.5px; font-weight:800; color:var(--muted); cursor:pointer;
+  }
+  .seg button.on-all{background:var(--ink); color:#fff;}
+  .seg button.on-north{background:var(--gold); color:#3d2a05;}
+  .seg button.on-south{background:var(--maroon); color:#fff;}
+
+  /* Status */
+  .status-head{display:flex; align-items:baseline; gap:8px;}
+  .status-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:.02em;}
+  .status-sub{font-size:12.5px; color:var(--muted); margin-top:3px; line-height:1.5;}
+
+  /* Dual-track strip */
+  .strip{margin:18px 0 6px; padding:0 16px;}
+  .dirlabel{font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
+  .dirlabel.nb{text-align:right; margin-bottom:3px;}
+  .dirlabel.sb{margin-top:3px;}
+  .track{position:relative; height:22px;}
+  .track .rail{position:absolute; left:0; right:0; top:9px; height:4px; border-radius:2px;}
+  .track.nb .rail{background:var(--gold-soft); border:1px solid #eeddb4;}
+  .track.sb .rail{background:var(--maroon-soft); border:1px solid #e6cdc9;}
+  .buspill{
+    position:absolute; top:0; transform:translateX(-50%);
+    font-size:14px; line-height:1; padding:3px 5px; border-radius:20px;
+    background:var(--gold); border:1.5px solid #fff;
+    box-shadow:0 1px 4px rgba(43,35,32,.25); transition:left 1s ease;
+    white-space:nowrap;
+  }
+  .buspill.sb{background:var(--maroon); color:#fff;}
+  .buspill.stale{opacity:.45;}
+  .ticks{position:relative; height:26px; margin-top:2px;}
+  .tick{position:absolute; transform:translateX(-50%); text-align:center;}
+  .tick::before{content:''; display:block; width:2px; height:8px; background:var(--line); margin:0 auto 3px;}
+  .tick span{font-size:8.5px; font-weight:800; letter-spacing:.04em; color:var(--muted); white-space:nowrap;}
+  .tick.first{transform:none; text-align:left;}
+  .tick.first::before{margin:0 0 3px;}
+  .tick.last{transform:translateX(-100%); text-align:right;}
+  .tick.last::before{margin:0 0 3px auto;}
+  .tick.near span{color:var(--maroon);}
+  .tick.near::before{background:var(--maroon);}
+
+  /* Live bus list */
+  .buslist{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px;}
+  .buschip{
+    display:inline-flex; align-items:center; gap:6px; padding:6px 10px;
+    border-radius:20px; font-size:11.5px; font-weight:700; cursor:pointer;
+    border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
+  }
+  .buschip .arrow{font-size:10px;}
+  .buschip.nb .arrow{color:var(--gold-deep);}
+  .buschip.sb .arrow{color:var(--maroon);}
+  .buschip .age{color:var(--muted); font-weight:600;}
+
+  #map{height:290px; border-radius:12px; margin-top:14px; border:1px solid var(--line);}
+  .maplegend{display:flex; gap:14px; margin-top:8px; font-size:10.5px; color:var(--muted); font-weight:700;}
+  .maplegend .sw{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; vertical-align:-1px;}
+
+  /* Hours */
+  .hours{display:flex; gap:10px;}
+  .hourbox{flex:1; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:10px 12px;}
+  .hourbox .dirname{font-size:10px; font-weight:800; letter-spacing:.06em; color:var(--muted);}
+  .hourbox .times{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; font-size:17px; font-weight:700; margin-top:2px; white-space:pre-line; line-height:1.35;}
+  .hourbox.nb .dirname{color:var(--gold-deep);}
+  .hourbox.sb .dirname{color:var(--maroon);}
+  .headway{font-size:11.5px; color:var(--muted); margin-top:8px; font-weight:600;}
+
+  button.big{
+    width:100%; padding:14px; border-radius:12px; border:none; font-family:inherit;
+    font-size:15px; font-weight:800; cursor:pointer; transition:.15s;
+  }
+  .btn-primary{background:var(--maroon); color:#fff;}
+  .btn-stop{background:var(--lost); color:#fff;}
+  .btn-ghost{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
+  input[type=text]{
+    width:100%; padding:12px; border-radius:10px; border:1.5px solid var(--line);
+    background:var(--surface); color:var(--ink); font-size:14px; font-family:inherit;
+  }
+  input[type=text]:focus{outline:none; border-color:var(--maroon);}
+  .hint{font-size:12px; color:var(--muted); margin-top:10px; line-height:1.55;}
+  .badge{
+    display:inline-block; font-size:10px; padding:3px 9px; border-radius:20px;
+    background:var(--maroon-soft); color:var(--maroon); font-weight:800; letter-spacing:.06em;
+  }
+  .sighting{display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:13px;}
+  .sighting:last-child{border-bottom:none;}
+  .sighting .time{color:var(--muted); white-space:nowrap; font-size:11px; padding-top:2px;}
+  .hidden{display:none !important;}
+
+  /* Share flow */
+  .dirpick{display:flex; gap:10px; margin:6px 0 12px;}
+  .dirbtn{
+    flex:1; padding:16px 8px; border-radius:14px; cursor:pointer; text-align:center;
+    border:2px solid var(--line); background:var(--surface); font-family:inherit;
+  }
+  .dirbtn .big-arrow{font-size:22px; line-height:1;}
+  .dirbtn .lbl{font-size:12.5px; font-weight:800; margin-top:5px;}
+  .dirbtn .dest{font-size:10.5px; color:var(--muted); font-weight:600;}
+  .dirbtn.sel-north{border-color:var(--gold); background:var(--gold-soft);}
+  .dirbtn.sel-south{border-color:var(--maroon); background:var(--maroon-soft);}
+  .sharedot{width:10px; height:10px; border-radius:50%; background:var(--muted); margin-top:4px; flex-shrink:0;}
+  .sharedot.live{background:var(--live); box-shadow:0 0 0 4px rgba(29,138,95,.15);}
+  .sharedot.err{background:var(--lost); box-shadow:0 0 0 4px rgba(196,67,46,.15);}
+  .status-row{display:flex; gap:10px; align-items:flex-start;}
+
+  .noticebar{
+    background:var(--gold-soft); border:1.5px solid #eeddb4; border-radius:12px;
+    padding:11px 13px; margin:0 0 10px; font-size:13px; line-height:1.5;
+  }
+  .noticebar .tag{font-size:9.5px; font-weight:800; letter-spacing:.08em; color:var(--gold-deep);}
+  .noticebar .age{font-size:10.5px; color:var(--muted); font-weight:600; margin-top:3px;}
+  .privacybar{
+    max-width:520px; margin:10px auto 0; padding:0 14px;
+  }
+  .privacybar button{
+    width:100%; text-align:left; background:none; border:none; cursor:pointer;
+    font-family:inherit; font-size:11.5px; color:var(--muted); padding:4px 2px;
+  }
+  .privacybar b{color:var(--ink);}
+  .privacybar .more{color:var(--maroon); font-weight:800; text-decoration:underline;}
+  .privacy-detail h4{font-size:13px; margin:14px 0 4px;}
+  .privacy-detail h4:first-child{margin-top:0;}
+  .privacy-detail p{font-size:12.5px; color:var(--muted); line-height:1.55; margin-bottom:0;}
+  .privacy-detail .ok{color:#166534;}
+  .privacy-detail .hon{color:#92400e;}
+
+  .modal{position:fixed; inset:0; background:rgba(28,37,48,.55); z-index:4000; display:flex; align-items:center; justify-content:center; padding:22px;}
+  .modal-card{background:#fff; border-radius:16px; padding:20px; max-width:380px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,.25);}
+  .modal-card h3{font-size:16px; margin-bottom:8px; display:flex; align-items:center; gap:8px;}
+  .modal-card p{font-size:13px; color:var(--muted); line-height:1.55; margin-bottom:16px;}
+  .modal-actions{display:flex; flex-direction:column; gap:8px;}
+  .modal-actions button{width:100%;}
+
+  .gate{position:fixed; inset:0; background:var(--paper); z-index:3000; display:flex; align-items:center; justify-content:center; padding:24px;}
+  .gate-card{max-width:360px; width:100%;}
+  .gate h2{margin:0 0 6px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; font-size:24px; text-transform:uppercase;}
+  .gate p{font-size:13px; color:var(--muted); line-height:1.5; margin:0 0 16px;}
+</style>
+</head>
+<body>
+
+<div class="modal hidden" id="privModal">
+  <div class="modal-card" style="max-height:82vh; overflow-y:auto;">
+    <h3>🔒 How your data is handled</h3>
+    <div class="privacy-detail">
+      <h4 class="ok">If you're just watching the map</h4>
+      <p>The app never asks for your location. The location permission is only used in “I'm on the bus” mode, and only after you tap Start. No account, no name, no phone number. We can't see who is watching.</p>
+
+      <h4 class="ok">If you share from the bus</h4>
+      <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID for your session. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
+
+      <h4 class="ok">Sightings</h4>
+      <p>Posted with no name attached and deleted automatically after a couple of hours.</p>
+
+      <h4 class="hon">To be fully honest</h4>
+      <p>• The map's background images load from CARTO, a map provider. Like any website you visit, they can see your device's IP address. Everything else (code, fonts) is served from this site itself.<br>
+      • The database runs on Supabase, which keeps standard server logs like any hosting service.<br>
+      • Anyone who opens this site can see live bus positions, no key needed. That's the point of the tool, but worth saying plainly: while you share, anyone can watch.</p>
+
+      <h4 class="ok hidden" id="sourceHead">Open source</h4>
+      <p class="hidden" id="sourceBody">This tool is free and open source under the AGPL-3.0 licence, which means anyone can read it, run it for their own route, and must keep their version open too. <a id="sourceLink" href="#" target="_blank" rel="noopener noreferrer">See the source code</a>.</p>
+
+      <h4>Why you can trust this</h4>
+      <p>This is a free community tool with no ads, no analytics, and nothing to sell. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
+    </div>
+    <div style="height:14px"></div>
+    <button class="big btn-ghost" onclick="document.getElementById('privModal').classList.add('hidden')">Close</button>
+  </div>
+</div>
+
+<div class="modal hidden" id="dupModal">
+  <div class="modal-card">
+    <h3>🚌 Already being shared?</h3>
+    <p id="dupBody"></p>
+    <div class="modal-actions">
+      <button class="big btn-ghost" onclick="dupCancel()">It's the same bus, don't share</button>
+      <button class="big btn-primary" onclick="dupProceed()">Different bus, share anyway</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal hidden" id="askModal">
+  <div class="modal-card">
+    <h3 id="askTitle"></h3>
+    <p id="askBody"></p>
+    <div class="modal-actions">
+      <button class="big btn-primary" id="askYes" onclick="askYes()"></button>
+      <button class="big btn-ghost" id="askNo" onclick="askNo()"></button>
+    </div>
+  </div>
+</div>
+
+<div class="gate hidden" id="gate">
+  <div class="card gate-card">
+    <h2>🚌 WT Live Tracker</h2>
+    <p id="gateMsg">Watching the map is open to everyone, no key needed. Sharing your location from the bus needs the community access key from the Messenger group, or the full link shared there.</p>
+    <div style="height:6px"></div>
+    <input type="text" id="gateKey" placeholder="Access key" autocomplete="off">
+    <div style="height:10px"></div>
+    <button class="big btn-primary" id="gateBtn" onclick="submitKey()">Enter</button>
+    <div style="height:8px"></div>
+    <button class="big btn-ghost" onclick="document.getElementById('gate').classList.add('hidden'); switchTab('track')">Back to the map</button>
+    <div class="hint" id="gateErr"></div>
+  </div>
+</div>
+
+<header>
+  <div class="route">Mendez / Tagaytay <span class="amp">⇄</span> One Ayala</div>
+  <div class="sub">WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER</div>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" id="tabTrack" onclick="switchTab('track')">📍 Track buses</div>
+    <div class="tab" id="tabShare" onclick="switchTab('share')">🚌 I'm on the bus</div>
+  </div>
+
+  <div class="noticebar hidden" id="noticeBar">
+    <div class="tag">NOTICE</div>
+    <div id="noticeText" style="margin-top:2px; font-weight:600;"></div>
+    <div class="age" id="noticeAge"></div>
+  </div>
+
+  <div class="privacybar" style="margin:0 0 10px; padding:0 2px;">
+    <button onclick="document.getElementById('privModal').classList.remove('hidden')">
+      🔒 <b>No account. No name.</b> Watching the map never uses your location. <span class="more">How your data is handled</span>
+    </button>
+  </div>
+
+  <!-- TRACK -->
+  <div id="trackView">
+    <div class="card">
+      <div class="seg" id="dirSeg">
+        <button id="segAll" class="on-all" onclick="setFilter('all')">All buses</button>
+        <button id="segNorth" onclick="setFilter('north')">▲ Northbound</button>
+        <button id="segSouth" onclick="setFilter('south')">▼ Southbound</button>
+      </div>
+
+      <div class="status-head"><div class="status-title display" id="statusText">Loading…</div></div>
+      <div class="status-sub" id="statusSub"></div>
+
+      <div class="strip">
+        <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
+        <div class="track nb"><div class="rail"></div><div id="nbPills"></div></div>
+        <div class="ticks" id="ticks"></div>
+        <div class="track sb"><div class="rail"></div><div id="sbPills"></div></div>
+        <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
+      </div>
+
+      <div class="buslist" id="busList"></div>
+
+      <div id="map"></div>
+      <div class="maplegend">
+        <span><span class="sw" style="background:var(--gold)"></span>Northbound</span>
+        <span><span class="sw" style="background:var(--maroon)"></span>Southbound</span>
+        <span><span class="sw" style="background:#94a3b8"></span>Stops (tap for name)</span>
+      </div>
+      <div class="hint" id="sourceNote">Positions come from whoever is on the bus: driver, conductor, or a rider volunteering. The direction is picked by hand, so it can occasionally be wrong.</div>
+      <div class="hint" id="busExpiryNote"></div>
+    </div>
+
+    <div class="card">
+      <span class="badge">OPERATING HOURS</span>
+      <div style="height:10px"></div>
+      <div class="hours">
+        <div class="hourbox nb"><div class="dirname">▲ MENDEZ → ONE AYALA</div><div class="times display" id="nbHours">–</div></div>
+        <div class="hourbox sb"><div class="dirname">▼ ONE AYALA → MENDEZ</div><div class="times display" id="sbHours">–</div></div>
+      </div>
+      <div class="headway" id="headwayNote"></div>
+    </div>
+
+    <div class="card">
+      <span class="badge">SIGHTINGS</span>
+      <div class="hint" style="margin:8px 0 12px;" id="sightingIntro">Saw a bus but nobody's sharing GPS? Post it so others know.</div>
+      <input type="text" id="sightingInput" maxlength="140" placeholder="e.g. Northbound just passed Amadeo, 6:42am">
+      <div style="height:8px"></div>
+      <button class="big btn-ghost" onclick="addSighting()">Post sighting</button>
+      <div id="sightingsList" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <!-- SHARE -->
+  <div id="shareView" class="hidden">
+    <div class="card">
+      <div class="status-row" style="margin-bottom:12px;">
+        <div class="sharedot" id="shareDot"></div>
+        <div>
+          <div style="font-weight:800; font-size:14.5px;" id="shareStatusText">Not sharing</div>
+          <div class="hint" style="margin-top:2px;">Shares only while this page is open and the screen is on.</div>
+        </div>
+      </div>
+
+      <div id="shareSetup">
+        <div style="font-size:12.5px; font-weight:800; margin-bottom:6px;">Which direction is this bus going?</div>
+        <div class="dirpick">
+          <button class="dirbtn" id="pickNorth" onclick="pickDir('north')">
+            <div class="big-arrow">▲</div><div class="lbl">Northbound</div><div class="dest">to One Ayala, Makati</div>
+          </button>
+          <button class="dirbtn" id="pickSouth" onclick="pickDir('south')">
+            <div class="big-arrow">▼</div><div class="lbl">Southbound</div><div class="dest">to Mendez / Tagaytay</div>
+          </button>
+        </div>
+        <div style="font-size:12.5px; font-weight:800; margin:2px 0 6px;">Bus number <span style="font-weight:600; color:var(--muted);">(optional, but it helps)</span></div>
+        <input type="text" id="busLabel" maxlength="12" placeholder="e.g. 98018">
+        <div class="hint" style="margin-top:6px;">If someone else is also sharing from this bus, the number lets the app show it as one bus instead of two.</div>
+        <div style="height:10px"></div>
+        <button class="big btn-primary" id="shareBtn" onclick="startSharing()">Start sharing my location</button>
+      </div>
+      <div id="shareActive" class="hidden">
+        <button class="big btn-stop" onclick="stopSharing()">Stop sharing</button>
+      </div>
+
+      <div class="hint">
+        For the driver, conductor, or any rider who volunteers. Keep the phone mounted or
+        plugged in with the screen on. GPS pauses if the screen locks or you switch apps.
+        No name or personal info is shared, only this bus's position and direction.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Settings load from config.txt. Edit that file, not this one.
+// ============================================================
+let CFG = { SUPABASE_URL:'', SUPABASE_ANON_KEY:'', ROUTE_SLUG:'', SOURCE_URL:'' };
+// Live settings, fetched from the database (edited in the admin page).
+// Hours are lists of [start, end] windows in 24h HH:MM, per direction.
+let SET = { hours:{ north:[], south:[] }, headway_min:30,
+            bus_expiry_min:10, sighting_expiry_min:120 };
+let NOTICE = null;
+let CHECKPOINTS = [];
+let STOPS = [];
+
+async function loadConfig() {
+  const res = await fetch('config.txt?_=' + Date.now());
+  if (!res.ok) throw new Error('config.txt not found');
+  const text = await res.text();
+  text.split(/\r?\n/).forEach(function(raw){
+    const line = raw.trim();
+    if (!line || line[0] === '#') return;
+    const eq = line.indexOf('=');
+    if (eq === -1) return;
+    const key = line.slice(0, eq).trim();
+    const val = line.slice(eq + 1).trim();
+    if (key === 'CHECKPOINT') {
+      const p = val.split('|').map(function(s){ return s.trim(); });
+      if (p.length === 4) CHECKPOINTS.push({ name:p[0], short:p[1], lat:parseFloat(p[2]), lng:parseFloat(p[3]) });
+    } else if (key === 'STOP') {
+      const p = val.split('|').map(function(s){ return s.trim(); });
+      if (p.length >= 3) STOPS.push({ name:p[0], lat:parseFloat(p[1]), lng:parseFloat(p[2]), conf:(p[3]||'M').toUpperCase() });
+    } else if (key in CFG) {
+      CFG[key] = val;
+    }
+  });
+  if (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY ||
+      CFG.SUPABASE_URL.indexOf('PASTE_') !== -1 || CFG.SUPABASE_ANON_KEY.indexOf('PASTE_') !== -1) {
+    throw new Error('config.txt still has placeholder values. Fill in your Supabase URL and anon key.');
+  }
+  if (!CFG.ROUTE_SLUG) throw new Error('config.txt is missing ROUTE_SLUG. Add the line: ROUTE_SLUG = your-route-slug');
+  if (!CHECKPOINTS.length) throw new Error('no checkpoints found in config.txt');
+}
+
+// ---- Operating hours (unit tested) ------------------------------------
+// Hours come from the admin page as windows of departures, e.g. the
+// March 2026 poster's split day: [["06:00","10:00"], ["15:40","20:00"]].
+// "HH:MM" -> minutes since midnight, or null
+function parseHM(s){
+  const m = (s||'').trim().match(/^([01][0-9]|2[0-3]):([0-5][0-9])$/);
+  if (!m) return null;
+  return parseInt(m[1],10)*60 + parseInt(m[2],10);
+}
+// "HH:MM" -> "6:00 AM" for display
+function fmtHM(s){
+  const mins = parseHM(s);
+  if (mins===null) return s;
+  let h = Math.floor(mins/60), mm = mins%60;
+  const ap = h>=12 ? 'PM' : 'AM';
+  h = h%12; if (h===0) h=12;
+  return h + ':' + (mm<10?'0':'') + mm + ' ' + ap;
+}
+// Buses that depart at a window's last minute are still on the road for
+// about 3.5 hours after, so each window extends by 210 minutes.
+function withinWindows(windows, nowMins){
+  if (!windows || !windows.length) return true;   // unknown -> don't claim closed
+  for (let i=0;i<windows.length;i++){
+    const a = parseHM(windows[i][0]), b = parseHM(windows[i][1]);
+    if (a===null || b===null) return true;
+    if (nowMins >= a && nowMins <= b + 210) return true;
+  }
+  return false;
+}
+function withinHours(dir) {
+  const now = new Date();
+  return withinWindows(SET.hours[dir], now.getHours()*60 + now.getMinutes());
+}
+function hoursLabel(dir){
+  const w = SET.hours[dir]||[];
+  if (!w.length) return 'see schedule';
+  return w.map(function(x){ return fmtHM(x[0])+' - '+fmtHM(x[1]); }).join('\n');
+}
+function firstTrip(dir){
+  const w = SET.hours[dir]||[];
+  return w.length ? fmtHM(w[0][0]) : '';
+}
+// ---- END operating hours ----------------------------------------------
+
+// ============================================================
+// Settings + notice, from the database (edited in the admin page)
+// ============================================================
+async function pollSettings(){
+  const res = await rpc('get_settings', { p_slug: CFG.ROUTE_SLUG });
+  if (res.error) return false;
+  if (!res.data) return null;                       // slug not recognized
+  const st = res.data.settings || {};
+  if (st.hours) SET.hours = st.hours;
+  ['headway_min','bus_expiry_min','sighting_expiry_min'].forEach(function(k){
+    if (typeof st[k] === 'number') SET[k] = st[k];
+  });
+  NOTICE = res.data.notice || null;
+  renderNotice();
+  renderHours();
+  return true;
+}
+function renderNotice(){
+  const bar = document.getElementById('noticeBar');
+  if (!NOTICE || !NOTICE.text){ bar.classList.add('hidden'); return; }
+  document.getElementById('noticeText').textContent = NOTICE.text;
+  document.getElementById('noticeAge').textContent =
+    NOTICE.updated ? ('posted ' + timeAgo(Date.parse(NOTICE.updated)) + ' ago') : '';
+  bar.classList.remove('hidden');
+}
+
+// ============================================================
+// Share key (only sharing needs it; watching is open)
+// ============================================================
+let accessKey = null;
+function resolveKey() {
+  const m = location.hash.match(/k=([A-Za-z0-9_-]+)/);
+  if (m) { accessKey = m[1]; try{sessionStorage.setItem('wt-key', accessKey);}catch(e){} return true; }
+  try { const s = sessionStorage.getItem('wt-key'); if (s){ accessKey = s; return true; } } catch(e){}
+  return false;
+}
+async function submitKey() {
+  const v = document.getElementById('gateKey').value.trim();
+  if (!v) return;
+  if (await tryKey(v)){
+    document.getElementById('gate').classList.add('hidden');
+    switchTab('share');
+  }
+}
+
+// ============================================================
+// Supabase
+// ============================================================
+let sb = null;
+const rpc = function(fn, args){ return sb.rpc(fn, args); };
+function ensureClient(){ if (!sb) sb = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY); }
+
+// ============================================================
+// Tabs + filter
+// ============================================================
+function switchTab(which) {
+  document.getElementById('tabTrack').classList.toggle('active', which==='track');
+  document.getElementById('tabShare').classList.toggle('active', which==='share');
+  document.getElementById('trackView').classList.toggle('hidden', which!=='track');
+  document.getElementById('shareView').classList.toggle('hidden', which!=='share');
+  if (which==='track' && map){
+    setTimeout(function(){ map.invalidateSize(); }, 120);
+    if (running){ pollPositions(); pollSightings(); }   // polling may have been paused
+  }
+}
+let dirFilter = 'all';
+function setFilter(f) {
+  dirFilter = f;
+  document.getElementById('segAll').className   = f==='all'   ? 'on-all'   : '';
+  document.getElementById('segNorth').className = f==='north' ? 'on-north' : '';
+  document.getElementById('segSouth').className = f==='south' ? 'on-south' : '';
+  renderBuses();
+}
+
+// ============================================================
+// Map
+// ============================================================
+let map, busMarkers = {};   // session_id -> marker
+let BUSES = [];             // latest fetched positions
+
+function initMap() {
+  map = L.map('map', { zoomControl:true }).setView([14.33, 120.96], 10);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    subdomains:'abcd', maxZoom:19, attribution:'© OpenStreetMap © CARTO'
+  }).addTo(map);
+
+  STOPS.forEach(function(s){
+    if (isNaN(s.lat) || isNaN(s.lng)) return;
+    const rough = (s.conf === 'L');
+    L.circleMarker([s.lat, s.lng], {
+      radius: rough?3:4, color: rough?'#b6bdc9':'#64748b',
+      fillColor: rough?'#ffffff':'#64748b', fillOpacity: rough?0.7:1, weight: rough?1:1.5
+    }).addTo(map).bindTooltip(s.name + (rough?' (approx.)':''), {direction:'top'});
+  });
+  CHECKPOINTS.forEach(function(c){
+    L.circleMarker([c.lat, c.lng], {
+      radius:6, color:'#7a1f2b', fillColor:'#ffffff', fillOpacity:1, weight:2.5
+    }).addTo(map).bindTooltip(c.name, {direction:'top'});
+  });
+  const pts = STOPS.filter(function(s){return !isNaN(s.lat);}).map(function(s){return [s.lat,s.lng];});
+  if (pts.length>1) map.fitBounds(pts, {padding:[24,24]});
+}
+
+function freshness(ts){
+  const s = Math.floor((Date.now()-ts)/1000);
+  if (s < 45) return { tag:'live', label:'live', fade:0 };
+  if (s < 180) return { tag:'aging', label:timeAgo(ts), fade:0.25 };
+  return { tag:'delayed', label:timeAgo(ts), fade:0.6 };   // greyed
+}
+function busIcon(dir, label, fr, count) {
+  let bg = dir==='north' ? '#e39a1c' : '#7a1f2b';
+  let fg = dir==='north' ? '#3d2a05' : '#ffffff';
+  if (fr.tag==='delayed'){ bg='#9aa1ac'; fg='#ffffff'; }   // clearly stale
+  const arrow = dir==='north' ? '▲' : '▼';
+  const name = label ? (arrow+' '+label) : arrow;
+  const badge = name + ' · ' + fr.label + ((count&&count>1) ? ' · '+count+'\u00d7' : '');
+  return L.divIcon({
+    className:'',
+    iconSize:null,
+    html:'<div style="display:inline-block;background:'+bg+';color:'+fg+
+         ';font:800 10.5px -apple-system,Roboto,sans-serif;padding:4px 8px;border-radius:14px;'+
+         'border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.35);white-space:nowrap;'+
+         'opacity:'+(1-fr.fade)+';">'+badge+'</div>',
+    iconAnchor:[18,13]
+  });
+}
+
+// ============================================================
+// Strip + status
+// ============================================================
+function buildTicks() {
+  document.getElementById('ticks').innerHTML = CHECKPOINTS.map(function(c,i){
+    const pct = (i/(CHECKPOINTS.length-1))*100;
+    const edge = i===0 ? ' first' : (i===CHECKPOINTS.length-1 ? ' last' : '');
+    return '<div class="tick'+edge+'" id="tick-'+i+'" style="left:'+pct+'%"><span>'+c.short+'</span></div>';
+  }).join('');
+}
+function haversineKm(a,b){
+  const R=6371,d2r=Math.PI/180;
+  const dLat=(b.lat-a.lat)*d2r,dLng=(b.lng-a.lng)*d2r;
+  const h=Math.sin(dLat/2)**2+Math.cos(a.lat*d2r)*Math.cos(b.lat*d2r)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function timeAgo(ts){
+  const s=Math.floor((Date.now()-ts)/1000);
+  if (s<60) return s+'s';
+  const m=Math.floor(s/60);
+  if (m<60) return m+'m';
+  return Math.floor(m/60)+'h';
+}
+
+// ---- ROUTE PROGRESS + WRONG-DIRECTION GUARD (unit tested) -------------
+// The sharer picks a direction by hand, and picking the wrong one is the
+// most damaging mistake the tool allows: commuters then wait for a bus that
+// is moving away from them. Nothing here is sent or stored. Progress lives
+// in this page's memory for the length of the trip and dies with the tab,
+// so the no-history property is untouched.
+//
+// Progress is measured along the checkpoint chain, not the 71-stop list.
+// The stop list is merged from two posters and its order is not strictly
+// geographic in a couple of places (the Alapan stops most of all), which
+// reads as several km of reversal on a perfectly normal trip. The seven
+// checkpoints are curated and in true order.
+let ROUTE_CHAIN = [];
+
+function buildRouteChain(pts){
+  const cum=[0];
+  for (let i=1;i<pts.length;i++) cum.push(cum[i-1] + haversineKm(pts[i-1], pts[i]));
+  return cum;
+}
+// Where a position sits on the chain: which leg, how far along it, and how
+// far along the whole route. Perpendicular projection onto the nearest leg,
+// so it is continuous and slow movement still registers.
+function chainPosition(p, pts, cum){
+  if (!pts || pts.length<2 || !cum || cum.length!==pts.length) return null;
+  const kx=111.320*Math.cos(p.lat*Math.PI/180), ky=110.574;
+  const px=p.lng*kx, py=p.lat*ky;
+  let best=null;
+  for (let i=1;i<pts.length;i++){
+    const ax=pts[i-1].lng*kx, ay=pts[i-1].lat*ky;
+    const vx=pts[i].lng*kx-ax, vy=pts[i].lat*ky-ay;
+    const L2=vx*vx+vy*vy;
+    let t = L2>0 ? ((px-ax)*vx+(py-ay)*vy)/L2 : 0;
+    if (t<0) t=0; else if (t>1) t=1;
+    const dx=px-(ax+t*vx), dy=py-(ay+t*vy);
+    const perp=Math.sqrt(dx*dx+dy*dy);
+    if (!best || perp<best.perp) best={ perp:perp, leg:i-1, t:t, km:cum[i-1]+t*(cum[i]-cum[i-1]) };
+  }
+  return best;
+}
+function routeProgressKm(p, pts, cum){
+  const c = chainPosition(p, pts, cum);
+  return c ? c.km : null;
+}
+
+// ---- Where a bus is, for the strip and the chips -----------------------
+// The strip used to snap each bus to its nearest checkpoint, so a bus
+// anywhere between PITX and One Ayala sat exactly on the PITX tick until it
+// jumped the whole leg at once. On the longest legs that is the difference
+// between "still at PITX" and "nearly here". The pill now sits at its real
+// fraction of the leg. The ticks stay evenly spaced: real spacing would put
+// MENDEZ and TGY about 40 px apart on a phone and the labels would collide.
+function busPlace(b, pts, cum){
+  const cp = chainPosition({ lat:b.lat, lng:b.lng }, pts, cum);
+  if (!cp) return null;
+  const a=pts[cp.leg], c=pts[cp.leg+1];
+  const pastA = cp.km - cum[cp.leg];
+  const toC   = cum[cp.leg+1] - cp.km;
+  const atA   = pastA <= toC;
+  const here  = atA ? { cp:a, idx:cp.leg, d:pastA } : { cp:c, idx:cp.leg+1, d:toC };
+  const northward = b.direction !== 'south';
+  const from = northward ? a : c;
+  const to   = northward ? c : a;
+  const ahead = northward ? toC : pastA;      // km to the next checkpoint it will reach
+  let pct = ((cp.leg + cp.t)/(pts.length-1))*100;
+  if (pct<0) pct=0; else if (pct>100) pct=100;
+  const settled = here.d < 1.5;
+  return {
+    pct: pct,
+    ticks: settled ? [here.idx] : [cp.leg, cp.leg+1],
+    // When it is not settled, both ends are at least 1.5 km away, so the
+    // rounded distance is always 2 km or more. No "0 km to" is possible.
+    label: settled ? here.cp.short : Math.round(ahead)+' km to '+to.short,
+    sentence: settled ? 'near '+here.cp.name
+                      : 'between '+from.name+' and '+to.name
+  };
+}
+
+const DIRGUARD = {
+  MAX_WINDOW_MS: 25*60*1000,  // how far back the comparison point can sit
+  MIN_ELAPSED_MS: 4*60*1000,  // no verdict before this much of the trip
+  MIN_KM: 3.5,                // net backwards travel that cannot be innocent
+  HOLD_MS: 60*1000            // must stay wrong this long before interrupting
+};
+function makeDirGuard(){ return { samples:[], wrongSince:null, off:false }; }
+function dirGuardReset(g){ if (g){ g.samples=[]; g.wrongSince=null; } }
+
+// Returns null, or {km} once the bus has clearly travelled against the
+// direction the sharer chose.
+function dirGuardUpdate(g, p, tsMs, dir, chainPts, chainCum, K){
+  K = K || DIRGUARD;
+  if (!g || g.off) return null;
+  const prog = routeProgressKm(p, chainPts, chainCum);
+  if (prog===null) return null;
+  g.samples.push({ t:tsMs, prog:prog });
+  while (g.samples.length>1 && tsMs - g.samples[0].t > K.MAX_WINDOW_MS) g.samples.shift();
+  if (g.samples.length>6000) g.samples.splice(1, 2000);
+  const first = g.samples[0];
+  // A long comparison window is deliberate. The real road leaves the chain by
+  // several km around Kawit, and the ridge hook at Tagaytay doubles back, so
+  // short windows see reversals that are not reversals. It also means a bus
+  // crawling the wrong way in traffic is still caught, just later.
+  if (tsMs - first.t < K.MIN_ELAPSED_MS) return null;
+  // Compare against the furthest along the route the bus has been inside the
+  // window, not simply where it was at the start. A bus that runs to the
+  // terminal and then starts back without switching direction is the same
+  // mistake as picking the wrong direction, and this catches it sooner.
+  let ref = first.prog;
+  for (let i=1;i<g.samples.length;i++){
+    const v=g.samples[i].prog;
+    if (dir==='north' ? v>ref : v<ref) ref=v;
+  }
+  const delta = prog - ref;                          // positive = toward One Ayala
+  const wrong = dir==='north' ? (delta <= -K.MIN_KM) : (delta >= K.MIN_KM);
+  if (!wrong){ g.wrongSince=null; return null; }
+  if (g.wrongSince===null){ g.wrongSince=tsMs; return null; }
+  if (tsMs - g.wrongSince < K.HOLD_MS) return null;
+  dirGuardReset(g);
+  return { km: Math.abs(delta) };
+}
+// ---- END ROUTE PROGRESS -----------------------------------------------
+
+// ---- Same-bus clustering ---------------------------------------------
+// Several people can share from one bus (driver + volunteer riders).
+// Rendered naively that looks like several buses coming, which is worse
+// than showing none. Merge them:
+//   - identical bus numbers            -> same bus, always merge
+//   - conflicting bus numbers          -> different buses, never merge
+//   - otherwise, within 100m same way  -> treat as one, show the count
+// Not bulletproof (two unlabelled buses queued at a terminal can merge),
+// which is why the count is displayed rather than hidden.
+function metresApart(a,b){
+  const R=6371000, d2r=Math.PI/180;
+  const dLat=(b.lat-a.lat)*d2r, dLng=(b.lng-a.lng)*d2r;
+  const h=Math.sin(dLat/2)**2+Math.cos(a.lat*d2r)*Math.cos(b.lat*d2r)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function clusterBuses(list){
+  const clusters=[];
+  list.forEach(function(b){
+    const lbl=(b.bus_label||'').trim().toLowerCase();
+    let target=null;
+    for (let i=0;i<clusters.length;i++){
+      const c=clusters[i];
+      if (c.direction!==b.direction) continue;
+      const clbl=(c.label||'').trim().toLowerCase();
+      if (lbl && clbl){
+        if (lbl===clbl){ target=c; break; }
+        continue;                       // both labelled and different
+      }
+      if (metresApart(c,b)<=100){ target=c; break; }
+    }
+    if (target){
+      target.count++;
+      target.sessions.push(b.session_id);
+      if (!target.label && b.bus_label) target.label=b.bus_label;
+      if (b.ts>target.ts){              // keep the freshest position
+        target.lat=b.lat; target.lng=b.lng; target.ts=b.ts; target.speed=b.speed;
+      }
+    } else {
+      clusters.push({ id:b.session_id, lat:b.lat, lng:b.lng, ts:b.ts, speed:b.speed,
+                      direction:b.direction, label:b.bus_label||'', count:1,
+                      sessions:[b.session_id] });
+    }
+  });
+  return clusters;
+}
+
+function renderBuses() {
+  const nbPills=document.getElementById('nbPills'), sbPills=document.getElementById('sbPills');
+  const list=document.getElementById('busList');
+  const shown = clusterBuses(BUSES).filter(function(b){ return dirFilter==='all' || b.direction===dirFilter; });
+
+  // strip pills
+  let nb='', sbz='';
+  const nearSet={};
+  shown.forEach(function(b){
+    const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
+    if (!pl) return;
+    pl.ticks.forEach(function(i){ nearSet[i]=true; });
+    const pct = pl.pct;
+    const stale = freshness(b.ts).tag==='delayed';
+    const pill = '<div class="buspill '+(b.direction==='south'?'sb':'')+(stale?' stale':'')+'" style="left:'+pct+'%">🚌</div>';
+    if (b.direction==='north') nb+=pill; else sbz+=pill;
+  });
+  nbPills.innerHTML=nb; sbPills.innerHTML=sbz;
+  CHECKPOINTS.forEach(function(_,i){
+    const t=document.getElementById('tick-'+i);
+    if (t) t.classList.toggle('near', !!nearSet[i]);
+  });
+
+  // bus chips
+  list.innerHTML = shown.map(function(b){
+    const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
+    const where = pl ? pl.label : 'position unclear';
+    return '<span class="buschip '+(b.direction==='north'?'nb':'sb')+'" onclick="focusBus(\''+b.id+'\')">'+
+      '<span class="arrow">'+(b.direction==='north'?'▲':'▼')+'</span>'+
+      (b.label?('<b>'+escapeHtml(b.label)+'</b>'):'')+
+      escapeHtml(where)+' <span class="age">'+timeAgo(b.ts)+
+      (b.count>1?' · '+b.count+' sharing':'')+'</span></span>';
+  }).join('');
+
+  // headline
+  const text=document.getElementById('statusText'), sub=document.getElementById('statusSub');
+  if (shown.length) {
+    const freshest = shown.reduce(function(a,b){ return b.ts>a.ts?b:a; });
+    const pl = busPlace(freshest, CHECKPOINTS, ROUTE_CHAIN);
+    text.textContent = shown.length + (shown.length===1?' bus live':' buses live');
+    sub.textContent = (freshest.direction==='north'?'Northbound':'Southbound')+
+      (pl ? ' '+pl.sentence : '')+' · updated '+timeAgo(freshest.ts)+
+      ' ago · trips every '+SET.headway_min+' mins';
+  } else {
+    const dirsOpen = withinHours('north')||withinHours('south');
+    text.textContent = 'No buses live';
+    sub.textContent = dirsOpen
+      ? 'Nobody is sharing GPS right now. Check sightings below, or ask in the group.'
+      : 'Outside operating hours. Next departures: '+(firstTrip('north')||'see schedule')+' from Mendez, '+(firstTrip('south')||'see schedule')+' from One Ayala.';
+  }
+}
+
+function focusBus(id){
+  const b = clusterBuses(BUSES).find(function(x){return x.id===id;});
+  if (b && map) map.setView([b.lat,b.lng], 14);
+}
+
+// Don't spend requests when nobody's looking:
+//  - hidden tab (phone in pocket, app switched away)
+//  - a sharer sitting on the share tab doesn't need the tracker feed at
+//    all; that alone is ~40% of a sharing phone's traffic over a trip.
+function shouldPoll(){
+  if (document.hidden) return false;
+  const shareVisible = !document.getElementById('shareView').classList.contains('hidden');
+  if (sharing && shareVisible) return false;
+  return true;
+}
+
+async function pollPositions() {
+  if (!shouldPoll()) return;
+  const res = await rpc('get_positions', { p_slug: CFG.ROUTE_SLUG });
+  if (res.error) return;
+  BUSES = (res.data||[]).map(function(v){
+    return { session_id:v.session_id, lat:v.lat, lng:v.lng, speed:v.speed,
+             direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at) };
+  });
+  // markers: one per clustered bus, not per sharing session
+  const seen={};
+  clusterBuses(BUSES).forEach(function(b){
+    seen[b.id]=true;
+    const fr=freshness(b.ts);
+    const show = dirFilter==='all'||b.direction===dirFilter;
+    const icon=busIcon(b.direction,b.label,fr,b.count);
+    if (busMarkers[b.id]) {
+      busMarkers[b.id].setLatLng([b.lat,b.lng]);
+      busMarkers[b.id].setIcon(icon);
+      if (!show) map.removeLayer(busMarkers[b.id]);
+      else if (!map.hasLayer(busMarkers[b.id])) busMarkers[b.id].addTo(map);
+    } else if (show) {
+      busMarkers[b.id]=L.marker([b.lat,b.lng],{icon:icon}).addTo(map);
+    }
+  });
+  Object.keys(busMarkers).forEach(function(id){
+    if (!seen[id]){ map.removeLayer(busMarkers[id]); delete busMarkers[id]; }
+  });
+  renderBuses();
+}
+
+// ============================================================
+// Sightings
+// ============================================================
+function escapeHtml(str){const d=document.createElement('div');d.textContent=str;return d.innerHTML;}
+async function pollSightings() {
+  if (!shouldPoll()) return;
+  const res = await rpc('get_sightings', { p_slug: CFG.ROUTE_SLUG });
+  if (res.error) return;
+  const data=res.data;
+  document.getElementById('sightingsList').innerHTML = (data&&data.length)
+    ? data.map(function(s){return '<div class="sighting"><span>'+escapeHtml(s.body)+'</span><span class="time">'+timeAgo(Date.parse(s.created_at))+' ago</span></div>';}).join('')
+    : '<div class="hint">No sightings yet today.</div>';
+}
+async function addSighting() {
+  const input=document.getElementById('sightingInput');
+  const val=input.value.trim();
+  if (!val) return;
+  const res = await rpc('add_sighting', { p_slug:CFG.ROUTE_SLUG, p_body:val.slice(0,140) });
+  if (res.error){
+    const m = ((res.error.message||'')+'').toLowerCase();
+    alert(m.indexOf('flood')>=0
+      ? 'The board is getting a lot of posts right now. Try again in a minute.'
+      : 'Could not post. Check your connection.');
+    return;
+  }
+  input.value=''; pollSightings();
+}
+
+// ============================================================
+// Share mode (multi-bus, direction-aware)
+// ============================================================
+let watchId=null, sharing=false, lastWrite=0, shareDir=null, lastCoords=null, hbTimer=null;
+let sessionId=null;
+function getSessionId(){
+  if (sessionId) return sessionId;
+  try{ sessionId = sessionStorage.getItem('wt-session'); }catch(e){}
+  if (!sessionId){
+    sessionId = (crypto.randomUUID ? crypto.randomUUID()
+      : 'S'+Date.now().toString(36)+Math.random().toString(36).slice(2,10));
+    try{ sessionStorage.setItem('wt-session', sessionId); }catch(e){}
+  }
+  return sessionId;
+}
+function pickDir(d){
+  shareDir=d;
+  document.getElementById('pickNorth').className='dirbtn'+(d==='north'?' sel-north':'');
+  document.getElementById('pickSouth').className='dirbtn'+(d==='south'?' sel-south':'');
+}
+function gpsErrorMessage(err){
+  if (err.code===1) return 'Location is off or blocked. Turn on your phone\'s location (GPS), allow location for this site, then tap Start again.';
+  if (err.code===2) return 'Can\'t get a GPS fix. Make sure location is on with clear signal, then tap Start again.';
+  if (err.code===3) return 'GPS timed out. Check location is on and try Start again.';
+  return 'GPS error. Turn on location and tap Start again.';
+}
+
+// Turn the server's raw error into something a person can act on.
+function writeErrorMessage(err){
+  const m = ((err && (err.message || err.hint || err.details)) || '').toLowerCase();
+  if (m.indexOf('too many active sessions')>=0)
+    return 'Too many people are sharing on this route right now. Try again in a few minutes, or ask the organizer.';
+  if (m.indexOf('rate limited')>=0)
+    return 'Sending updates too quickly, this usually settles by itself. Still sharing.';
+  if (m.indexOf('position off route')>=0)
+    return 'Your location looks outside the Mendez to Makati route, so it wasn\'t shared. This can happen if GPS is inaccurate indoors.';
+  if (m.indexOf('implausible speed')>=0)
+    return 'GPS reported an impossible speed, so that update was skipped. Usually fixes itself.';
+  if (m.indexOf('session blocked')>=0)
+    return 'An organizer stopped this share. If you think that was a mistake, message them in the group chat.';
+  if (m.indexOf('invalid key')>=0)
+    return 'This access key is no longer valid (it may have been changed by the organizer). Get the current link from the group chat.';
+  if (m.indexOf('invalid direction')>=0)
+    return 'Please pick a direction (northbound or southbound) and start again.';
+  if (m.indexOf('label too long')>=0)
+    return 'Bus number is too long. Use 12 characters or fewer.';
+  if (m.indexOf('invalid session')>=0)
+    return 'Session problem. Please reload the page and start again.';
+  return 'Couldn\'t send your location. Check your connection, it will retry automatically.';
+}
+
+// ---- Screen wake lock -------------------------------------------------
+// A wake lock is dropped whenever the page is hidden, and is NOT restored
+// automatically. Without re-requesting it, one screen-off ends the lock
+// for the rest of the trip, the single most common way sharing dies.
+let wakeLock=null;
+async function acquireWakeLock(){
+  if (!('wakeLock' in navigator)) return;
+  try{
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', function(){ wakeLock=null; });
+  }catch(e){ wakeLock=null; }
+}
+function releaseWakeLock(){
+  if (wakeLock){ try{ wakeLock.release(); }catch(e){} wakeLock=null; }
+}
+document.addEventListener('visibilitychange', function(){
+  if (!document.hidden && sharing && !wakeLock) acquireWakeLock();
+});
+
+async function writePosition(coords){
+  if (guardPaused) return;
+  const res = await rpc('set_bus_position', {
+    p_key:accessKey, p_session:getSessionId(),
+    p_lat:coords.latitude, p_lng:coords.longitude,
+    p_speed: typeof coords.speed==='number'&&coords.speed>=0 ? coords.speed : 0,
+    p_direction:shareDir,
+    p_label: document.getElementById('busLabel').value.trim() || null
+  });
+  if (res.error){
+    const raw = ((res.error.message||'')+'').toLowerCase();
+    const msg = writeErrorMessage(res.error);
+    // A blocked session will never succeed by retrying, so stop rather than
+    // hammer the server and leave the person staring at a live-looking dot.
+    if (raw.indexOf('session blocked')>=0){
+      await stopSharing();
+      setShareUI('error', msg);
+      return;
+    }
+    // 'rate limited' is harmless and self-correcting, so don't flip to an error state
+    if (msg.indexOf('Still sharing')<0) setShareUI('error', msg);
+  }
+}
+
+
+// ---- Trip guards: wrong direction, long idle, end of route ------------
+// All three ask rather than decide. A bus really can sit still for 20
+// minutes in Makati traffic, so the only thing that stops sharing by
+// itself is a bus parked at the end of its own route with no answer.
+let dirGuard=null, guardPaused=false, idleRef=null, askOpen=false, endTimer=null, endAsked=false;
+let askOnYes=null, askOnNo=null;
+
+function showAsk(o){
+  document.getElementById('askTitle').textContent=o.title;
+  document.getElementById('askBody').textContent=o.body;
+  document.getElementById('askYes').textContent=o.yesLabel;
+  document.getElementById('askNo').textContent=o.noLabel;
+  askOnYes=o.onYes; askOnNo=o.onNo;
+  document.getElementById('askModal').classList.remove('hidden');
+}
+function hideAsk(){
+  document.getElementById('askModal').classList.add('hidden');
+  askOnYes=null; askOnNo=null; askOpen=false;
+  if (endTimer){ clearTimeout(endTimer); endTimer=null; }
+}
+function askYes(){ const f=askOnYes; hideAsk(); if (f) f(); }
+function askNo(){ const f=askOnNo; hideAsk(); if (f) f(); }
+
+function shareLabel(){ return 'Sharing live: '+(shareDir==='north'?'▲ northbound':'▼ southbound'); }
+function resetIdleRef(){
+  idleRef = lastCoords ? { lat:lastCoords.latitude, lng:lastCoords.longitude, t:Date.now() } : null;
+}
+function resumeAfterCheck(){
+  guardPaused=false;
+  resetIdleRef();
+  setShareUI('on', shareLabel());
+  if (lastCoords){ lastWrite=Date.now(); writePosition(lastCoords); }
+}
+function terminalStop(dir){
+  if (CHECKPOINTS.length<2) return null;
+  return dir==='north' ? CHECKPOINTS[CHECKPOINTS.length-1] : CHECKPOINTS[0];
+}
+
+function checkTripGuards(coords){
+  if (!sharing || askOpen) return;
+  const p={ lat:coords.latitude, lng:coords.longitude }, now=Date.now();
+
+  const hit = dirGuardUpdate(dirGuard, p, now, shareDir, CHECKPOINTS, ROUTE_CHAIN);
+  if (hit){ onWrongDirection(hit); return; }
+
+  if (!idleRef || metresBetween(idleRef, p) > 250) idleRef={ lat:p.lat, lng:p.lng, t:now };
+  const stillMin=(now-idleRef.t)/60000;
+
+  const term=terminalStop(shareDir);
+  if (!endAsked && term && metresBetween(term, p)<=500 && stillMin>=5){ onTripFinished(); return; }
+  if (stillMin>=20) onLongIdle();
+}
+
+function onWrongDirection(hit){
+  askOpen=true; guardPaused=true;
+  // take the bus off the map while the question is open: a bus shown going
+  // the wrong way is worse for a waiting commuter than no bus at all
+  rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:getSessionId() });
+  setShareUI('on','Paused, checking direction');
+  const other = shareDir==='north' ? 'south' : 'north';
+  const towards = shareDir==='north' ? 'Mendez / Tagaytay' : 'One Ayala';
+  showAsk({
+    title:'🧭 Which way is this bus going?',
+    body:'This bus has moved about '+hit.km.toFixed(1)+' km toward '+towards+
+         ', but the direction picked was '+(shareDir==='north'?'northbound':'southbound')+
+         '. Nothing is being shared until you answer.',
+    yesLabel:'Switch to '+(other==='north'?'▲ northbound':'▼ southbound'),
+    onYes:function(){ pickDir(other); dirGuardReset(dirGuard); resumeAfterCheck(); },
+    noLabel:'The direction is right, keep sharing',
+    onNo:function(){ if (dirGuard) dirGuard.off=true; resumeAfterCheck(); }
+  });
+}
+
+function onLongIdle(){
+  askOpen=true;
+  showAsk({
+    title:'🚌 Still on the bus?',
+    body:'This bus has not moved for about 20 minutes. That can just be traffic or a wait at the terminal, so nothing has changed. If you have already gotten off, tap Stop sharing so it leaves everyone\'s map.',
+    yesLabel:'Yes, still on the bus',
+    onYes:function(){ resetIdleRef(); },
+    noLabel:'Stop sharing',
+    onNo:function(){ stopSharing(); }
+  });
+}
+
+function onTripFinished(){
+  askOpen=true; endAsked=true;
+  const dest = shareDir==='north' ? 'One Ayala' : 'Mendez / Tagaytay';
+  showAsk({
+    title:'🏁 Is this trip finished?',
+    body:'This bus has been parked at '+dest+' for a few minutes, which usually means the trip is over. Sharing will stop by itself in 5 minutes unless you say it is still going.',
+    yesLabel:'Stop sharing',
+    onYes:function(){ stopSharing(); },
+    noLabel:'Still going, keep sharing',
+    onNo:function(){ resetIdleRef(); }
+  });
+  endTimer=setTimeout(function(){
+    if (askOpen){ hideAsk(); stopSharing(); }
+  }, 5*60*1000);
+}
+
+// ---- Duplicate-sharer guard ------------------------------------------
+// Two people sharing from the same bus shows as two buses on the map,
+// which reads as "two buses coming". Check before we start.
+// A bus number is the only thing that settles it for certain, so the
+// wording depends on whether the nearby sharer typed one.
+function metresBetween(a,b){
+  const R=6371000, d2r=Math.PI/180;
+  const dLat=(b.lat-a.lat)*d2r, dLng=(b.lng-a.lng)*d2r;
+  const h=Math.sin(dLat/2)**2+Math.cos(a.lat*d2r)*Math.cos(b.lat*d2r)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+async function findNearbySharer(coords){
+  const res = await rpc('get_positions', { p_slug: CFG.ROUTE_SLUG });
+  if (res.error || !res.data) return null;
+  const mine = { lat:coords.latitude, lng:coords.longitude };
+  const myLabel = (document.getElementById('busLabel').value||'').trim().toLowerCase();
+  let best=null;
+  res.data.forEach(function(b){
+    if (b.session_id===getSessionId()) return;         // that's us
+    if (b.direction!==shareDir) return;                // other direction, fine
+    const theirLabel=(b.bus_label||'').trim().toLowerCase();
+    // Different bus numbers both typed = definitely different buses.
+    if (myLabel && theirLabel && myLabel!==theirLabel) return;
+    const d = metresBetween(mine, { lat:b.lat, lng:b.lng });
+    const sameLabel = myLabel && theirLabel && myLabel===theirLabel;
+    if (sameLabel || d<=150){
+      if (!best || d<best.dist) best={ dist:d, label:b.bus_label, sameLabel:sameLabel };
+    }
+  });
+  return best;
+}
+
+let pendingCoords=null;
+function showDuplicateWarning(found){
+  pendingCoords = lastCoords;
+  const box=document.getElementById('dupBody');
+  if (found.sameLabel){
+    box.textContent = 'Someone is already sharing bus '+found.label+
+      '. If that\'s this same bus, you don\'t need to share, it\'s already on the map.';
+  } else if (found.label){
+    box.textContent = 'Someone nearby is sharing bus '+found.label+
+      ', going the same direction. Is that this bus? If yes, no need to share again.';
+  } else {
+    box.textContent = 'Someone nearby is already sharing in the same direction. '+
+      'If you\'re on the same bus, it will show as two buses on the map. '+
+      'If it\'s a different bus, go ahead. Adding your bus number helps tell them apart.';
+  }
+  document.getElementById('dupModal').classList.remove('hidden');
+}
+function dupCancel(){
+  document.getElementById('dupModal').classList.add('hidden');
+  sharing=false; releaseWakeLock();
+  setShareUI('off','Not sharing. The bus nearby is already on the map.');
+}
+function dupProceed(){
+  document.getElementById('dupModal').classList.add('hidden');
+  beginWatch(pendingCoords);
+}
+
+function startSharing(){
+  if (!accessKey){
+    document.getElementById('gate').classList.remove('hidden');
+    return;
+  }
+  if (!shareDir){ setShareUI('error','Pick a direction first: northbound or southbound.'); return; }
+  if (!navigator.geolocation){ setShareUI('error','This browser does not support GPS.'); return; }
+  sharing=true;
+  setShareUI('on','Getting your location…');
+  acquireWakeLock();
+  registerUnloadCleanup();
+  // One fix first, so we can check for a duplicate before publishing anything.
+  navigator.geolocation.getCurrentPosition(async function(pos){
+    if (!sharing) return;
+    lastCoords=pos.coords;
+    let found=null;
+    try{ found = await findNearbySharer(pos.coords); }catch(e){}
+    if (found) showDuplicateWarning(found);
+    else beginWatch(pos.coords);
+  }, function(err){
+    sharing=false; releaseWakeLock();
+    setShareUI('error', gpsErrorMessage(err));
+  }, { enableHighAccuracy:true, maximumAge:4000, timeout:20000 });
+}
+
+function beginWatch(firstCoords){
+  sharing=true;
+  guardPaused=false; endAsked=false; dirGuard=makeDirGuard();
+  const label=shareLabel();
+  setShareUI('on', label);
+  if (firstCoords){
+    lastCoords=firstCoords;
+    idleRef={ lat:firstCoords.latitude, lng:firstCoords.longitude, t:Date.now() };
+    lastWrite=Date.now(); writePosition(firstCoords);
+  }
+  watchId=navigator.geolocation.watchPosition(function(pos){
+    if (!sharing) return;
+    lastCoords=pos.coords;
+    checkTripGuards(pos.coords);
+    if (!sharing || guardPaused) return;
+    setShareUI('on', label);
+    if (Date.now()-lastWrite<5000) return;
+    lastWrite=Date.now();
+    writePosition(pos.coords);
+  }, function(err){
+    sharing=false;
+    if (watchId!==null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+    if (hbTimer){ clearInterval(hbTimer); hbTimer=null; }
+    releaseWakeLock();
+    setShareUI('error', gpsErrorMessage(err));
+  }, { enableHighAccuracy:true, maximumAge:4000, timeout:20000 });
+  // heartbeat: a bus idling at a stop doesn't fire watchPosition; re-send last fix
+  hbTimer=setInterval(function(){
+    if (sharing && !guardPaused && lastCoords && Date.now()-lastWrite>20000){
+      lastWrite=Date.now(); writePosition(lastCoords);
+    }
+  }, 21000);
+}
+
+// Best-effort: remove this bus the moment the sharer closes/hides the tab.
+// Uses sendBeacon (survives unload) against Supabase's RPC endpoint.
+let unloadRegistered=false;
+function registerUnloadCleanup(){
+  if (unloadRegistered) return;
+  unloadRegistered=true;
+  const fire=function(){
+    if (!sharing) return;
+    try{
+      const url = CFG.SUPABASE_URL.replace(/\/$/,'') + '/rest/v1/rpc/clear_bus_position';
+      const body = JSON.stringify({ p_slug:CFG.ROUTE_SLUG, p_session:getSessionId() });
+      const blob = new Blob([body], { type:'application/json' });
+      // sendBeacon can't set the apikey header, so append it as a query param
+      navigator.sendBeacon(url + '?apikey=' + encodeURIComponent(CFG.SUPABASE_ANON_KEY), blob);
+    }catch(e){}
+  };
+  window.addEventListener('pagehide', fire);
+  window.addEventListener('beforeunload', fire);
+}
+async function stopSharing(){
+  sharing=false;
+  guardPaused=false; dirGuard=null; idleRef=null;
+  if (askOpen) hideAsk();
+  if (watchId!==null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+  if (hbTimer){ clearInterval(hbTimer); hbTimer=null; }
+  releaseWakeLock();
+  await rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:getSessionId() });
+  setShareUI('off','Not sharing');
+}
+function setShareUI(state,msg){
+  document.getElementById('shareDot').className='sharedot '+(state==='on'?'live':(state==='error'?'err':''));
+  document.getElementById('shareStatusText').textContent=msg;
+  document.getElementById('shareSetup').classList.toggle('hidden', state==='on');
+  document.getElementById('shareActive').classList.toggle('hidden', state!=='on');
+}
+
+// ============================================================
+// Boot
+// ============================================================
+let mapReady=false, running=false;
+function configError(msg){
+  document.getElementById('gate').classList.remove('hidden');
+  document.getElementById('gateMsg').textContent='Setup needed';
+  document.getElementById('gateErr').textContent=msg;
+  document.getElementById('gateKey').style.display='none';
+  document.getElementById('gateBtn').style.display='none';
+}
+function showGateError(msg){
+  document.getElementById('gate').classList.remove('hidden');
+  document.getElementById('gateErr').textContent=msg;
+  const btn=document.getElementById('gateBtn');
+  btn.textContent='Enter'; btn.disabled=false;
+}
+async function tryKey(key){
+  ensureClient();
+  const btn=document.getElementById('gateBtn');
+  btn.textContent='Checking…'; btn.disabled=true;
+  let res;
+  try{ res=await rpc('route_exists',{p_key:key}); }catch(e){ res={error:e}; }
+  if (res.error){ showGateError('Could not reach the server. Check your connection and try again.'); return false; }
+  if (!res.data){ showGateError('That key is not recognized. Check the link shared in the group.'); return false; }
+  accessKey=key;
+  try{ sessionStorage.setItem('wt-key',key); location.hash='k='+key; }catch(e){}
+  return true;
+}
+function renderSourceLink(){
+  const url = (CFG.SOURCE_URL||'').trim();
+  if (!/^https?:\/\//i.test(url)) return;          // nothing, or not a real URL
+  const a = document.getElementById('sourceLink');
+  a.href = url;
+  a.textContent = url.replace(/^https?:\/\//i,'').replace(/\/$/,'');
+  document.getElementById('sourceHead').classList.remove('hidden');
+  document.getElementById('sourceBody').classList.remove('hidden');
+}
+function renderHours(){
+  // multiple windows stack as lines inside the hour boxes
+  document.getElementById('nbHours').textContent = hoursLabel('north');
+  document.getElementById('sbHours').textContent = hoursLabel('south');
+  document.getElementById('headwayNote').textContent =
+    'Trips roughly every '+SET.headway_min+' minutes (times above are the scheduled departure windows from each end).';
+  function humanMins(m){ m=parseInt(m,10)||0; return m>=60 ? (m/60)+(m===60?' hour':' hours') : m+' min'; }
+  document.getElementById('busExpiryNote').textContent =
+    'Buses show "live" under 45s, then their age; they disappear about '+humanMins(SET.bus_expiry_min)+' after their last update.';
+  document.getElementById('sightingIntro').textContent =
+    'Saw a bus but nobody\'s sharing GPS? Post it so others know. Sightings clear after '+humanMins(SET.sighting_expiry_min)+'.';
+}
+function start(){
+  document.getElementById('gate').classList.add('hidden');
+  ensureClient();
+  ROUTE_CHAIN = buildRouteChain(CHECKPOINTS);
+  if (!mapReady){
+    initMap(); buildTicks(); renderHours(); renderSourceLink(); mapReady=true;
+  }
+  if (running) return;
+  running=true;
+  pollPositions(); pollSightings();
+  setInterval(pollPositions, 6000);
+  setInterval(pollSightings, 15000);
+  setInterval(renderBuses, 10000);
+  setInterval(pollSettings, 60000);
+}
+// The libraries are served from this site itself, never a CDN. If the
+// folder uploaded to Netlify was missing assets/, every later error is a
+// confusing knock-on effect, so check first and say exactly what is wrong.
+function missingVendorFiles(){
+  const missing=[];
+  if (typeof L === 'undefined') missing.push('assets/vendor/leaflet.js');
+  if (typeof supabase === 'undefined') missing.push('assets/vendor/supabase.js');
+  return missing;
+}
+const vendorMissing = missingVendorFiles();
+if (vendorMissing.length){
+  configError('This site could not load ' + vendorMissing.join(' and ') +
+    '. The folder uploaded to Netlify is missing the assets folder. It has to contain index.html, admin.html, config.txt AND assets/, because a drag and drop replaces the whole site.');
+} else {
+loadConfig().then(async function(){
+  ensureClient();
+  // Watching is open to everyone: no gate, straight to the map.
+  const ok = await pollSettings();
+  if (ok === null){
+    configError('This site\'s ROUTE_SLUG is not recognized by the database. Check config.txt against the slug in Supabase.');
+    return;
+  }
+  // A share key in the link or a previous session is remembered for the
+  // share tab, but it is validated only when the person goes to share.
+  resolveKey();
+  start();
+}).catch(function(e){ configError(e.message); });
+}
+</script>
+</body>
+</html>

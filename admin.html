@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>WT Live: Admin</title>
+<script src="assets/vendor/supabase.js"></script>
+<style>
+  :root{
+    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#8a7f76;
+    --maroon:#7a1f2b; --maroon-deep:#5c161f; --maroon-soft:#f3e6e4;
+    --gold:#e39a1c; --gold-deep:#b87708; --gold-soft:#fbf0da;
+    --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink); min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); color:#fff;
+    padding:14px 16px 12px;
+  }
+  header .route{
+    font-stretch:condensed; font-weight:700; font-size:20px;
+    letter-spacing:.04em; text-transform:uppercase; line-height:1.1;
+  }
+  header .sub{font-size:11.5px; opacity:.85; margin-top:2px; font-weight:600; letter-spacing:.03em;}
+  .wrap{max-width:560px; margin:0 auto; padding:12px 14px 48px;}
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    padding:16px; margin-bottom:12px; box-shadow:0 1px 2px rgba(43,35,32,.04);
+  }
+  .badge{
+    display:inline-block; font-size:10px; padding:3px 9px; border-radius:20px;
+    background:var(--maroon-soft); color:var(--maroon); font-weight:800; letter-spacing:.06em;
+  }
+  .hint{font-size:12px; color:var(--muted); margin-top:8px; line-height:1.55;}
+  .hint.warn{color:#92400e;}
+  .ok-note{font-size:12px; color:#166534; font-weight:700; margin-top:8px;}
+  .err-note{font-size:12px; color:var(--lost); font-weight:700; margin-top:8px;}
+  input[type=text], input[type=password], input[type=number], input[type=time], textarea, select{
+    width:100%; padding:11px; border-radius:10px; border:1.5px solid var(--line);
+    background:var(--surface); color:var(--ink); font-size:14px; font-family:inherit;
+  }
+  input:focus, textarea:focus, select:focus{outline:none; border-color:var(--maroon);}
+  textarea{resize:vertical; min-height:70px;}
+  button.big{
+    width:100%; padding:13px; border-radius:12px; border:none; font-family:inherit;
+    font-size:14.5px; font-weight:800; cursor:pointer; transition:.15s;
+  }
+  .btn-primary{background:var(--maroon); color:#fff;}
+  .btn-danger{background:var(--lost); color:#fff;}
+  .btn-ghost{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
+  button.small{
+    padding:7px 12px; border-radius:9px; border:none; font-family:inherit;
+    font-size:12px; font-weight:800; cursor:pointer;
+  }
+  .row{display:flex; gap:8px; align-items:center;}
+  .row > *{flex:1;}
+  .row .tight{flex:0 0 auto;}
+  label.f{font-size:11.5px; font-weight:800; color:var(--muted); display:block; margin:10px 0 4px; letter-spacing:.03em;}
+  .win{display:flex; gap:6px; align-items:center; margin-bottom:6px;}
+  .win input[type=time]{flex:1;}
+  .win .to{flex:0 0 auto; font-size:12px; color:var(--muted); font-weight:700;}
+  .win button{flex:0 0 auto;}
+  .item{display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:13px; align-items:center;}
+  .item:last-child{border-bottom:none;}
+  .item .meta{color:var(--muted); font-size:11px; margin-top:2px;}
+  .dir-n{color:var(--gold-deep); font-weight:800;}
+  .dir-s{color:var(--maroon); font-weight:800;}
+  .hidden{display:none !important;}
+  .gate{position:fixed; inset:0; background:var(--paper); z-index:3000; display:flex; align-items:center; justify-content:center; padding:24px;}
+  .gate-card{max-width:380px; width:100%;}
+  .gate h2{margin:0 0 6px; font-stretch:condensed; font-size:22px; text-transform:uppercase;}
+  .gate p{font-size:13px; color:var(--muted); line-height:1.5; margin:0 0 14px;}
+  .keyreveal{
+    background:var(--gold-soft); border:1.5px solid #eeddb4; border-radius:10px;
+    padding:10px 12px; margin-top:10px; font-size:13px; word-break:break-all;
+  }
+  .keyreveal b{font-family:ui-monospace,Menlo,Consolas,monospace;}
+</style>
+</head>
+<body>
+
+<div class="gate" id="loginGate">
+  <div class="card gate-card">
+    <h2>🔧 WT Live: Admin</h2>
+    <p>This page manages the community tracker. It needs the ADMIN key, which is different from the share key. Nothing here works without it.</p>
+    <input type="password" id="adminKeyInput" placeholder="Admin key" autocomplete="off">
+    <div style="height:10px"></div>
+    <button class="big btn-primary" id="loginBtn" onclick="doLogin()">Sign in</button>
+    <div class="err-note hidden" id="loginErr"></div>
+  </div>
+</div>
+
+<header>
+  <div class="route">WT Live · Admin</div>
+  <div class="sub" id="slugLine">MENDEZ / TAGAYTAY ⇄ ONE AYALA</div>
+</header>
+
+<div class="wrap hidden" id="main">
+
+  <div class="card">
+    <span class="badge">NOTICE BOARD</span>
+    <div class="hint" style="margin-top:8px;">Shown as a banner at the top of everyone's tracker. Good for schedule changes, service alerts, or "still testing" notes. One notice at a time.</div>
+    <label class="f">NOTICE TEXT (280 max, empty to clear)</label>
+    <textarea id="noticeText" maxlength="280" placeholder="e.g. New schedule from the official poster: 6:00-10:00 AM and 3:40-8:00 PM, both directions."></textarea>
+    <label class="f">DISAPPEARS BY ITSELF AFTER</label>
+    <select id="noticeExpiry">
+      <option value="">Never (stays until cleared)</option>
+      <option value="720">12 hours</option>
+      <option value="1440">1 day</option>
+      <option value="4320">3 days</option>
+      <option value="10080">7 days</option>
+    </select>
+    <div style="height:10px"></div>
+    <div class="row">
+      <button class="big btn-primary" onclick="saveNotice()">Post notice</button>
+      <button class="big btn-ghost" onclick="clearNotice()">Clear</button>
+    </div>
+    <div id="noticeStatus"></div>
+    <div class="hint" id="noticeCurrent"></div>
+  </div>
+
+  <div class="card">
+    <span class="badge">OPERATING HOURS</span>
+    <div class="hint" style="margin-top:8px;">Departure windows from each end. Add a second window for split schedules like the March 2026 poster. The app treats buses as possibly en route for 3.5 hours after each window closes.</div>
+    <label class="f">▲ NORTHBOUND (Mendez to One Ayala)</label>
+    <div id="winNorth"></div>
+    <button class="small btn-ghost" onclick="addWin('north')">+ Add window</button>
+    <label class="f">▼ SOUTHBOUND (One Ayala to Mendez)</label>
+    <div id="winSouth"></div>
+    <button class="small btn-ghost" onclick="addWin('south')">+ Add window</button>
+    <label class="f">TRIPS ROUGHLY EVERY (MINUTES)</label>
+    <input type="number" id="headway" min="1" max="720">
+    <div style="height:12px"></div>
+    <button class="big btn-primary" onclick="saveSettings()">Save hours + settings</button>
+    <div id="hoursStatus"></div>
+  </div>
+
+  <div class="card">
+    <span class="badge">LIVE SHARERS</span>
+    <div class="hint" style="margin-top:8px;">Everyone currently sharing a bus position. Stopping one removes the bus and blocks that phone from sharing for 6 hours, and their app tells them an organizer stopped it.</div>
+    <div id="sharerList" style="margin-top:6px;"></div>
+    <div class="hint warn" style="margin-top:10px;">Honest limit: someone determined can reload the page to get a new session and share again. Changing the share key below is the only real expulsion, and it affects everyone.</div>
+  </div>
+
+  <div class="card">
+    <span class="badge">STOPPED SHARERS</span>
+    <div class="hint" style="margin-top:8px;">Blocked from sharing until the time shown. Tap Allow again if you stopped someone by mistake.</div>
+    <div id="blockedList" style="margin-top:6px;"></div>
+  </div>
+
+  <div class="card">
+    <span class="badge">SIGHTINGS</span>
+    <div class="hint" style="margin-top:8px;">Posted by anyone, no key needed. Delete spam here; the rest expire on their own.</div>
+    <div id="sightingList" style="margin-top:6px;"></div>
+  </div>
+
+  <div class="card">
+    <span class="badge">FRESHNESS + LIMITS</span>
+    <label class="f">A BUS DISAPPEARS AFTER THIS MANY MINUTES OF SILENCE</label>
+    <input type="number" id="busExpiry" min="1" max="120">
+    <label class="f">SIGHTINGS EXPIRE AFTER (MINUTES)</label>
+    <input type="number" id="sightingExpiry" min="5" max="1440">
+    <label class="f">MAXIMUM SIMULTANEOUS SHARERS (ABUSE GUARD)</label>
+    <input type="number" id="maxSessions" min="1" max="200">
+    <div style="height:12px"></div>
+    <button class="big btn-primary" onclick="saveSettings()">Save hours + settings</button>
+    <div id="limitsStatus"></div>
+  </div>
+
+  <div class="card">
+    <span class="badge">SHARE KEY</span>
+    <div class="hint" style="margin-top:8px;">The key that lets people share from the bus. Changing it: anyone already sharing gets 4 hours to finish their trip, and NEW sharers need the new key immediately. The old links in the group chat stop working for starting a share, so post the new link after changing.</div>
+    <label class="f">NEW SHARE KEY</label>
+    <div class="row">
+      <input type="text" id="newShareKey" maxlength="64" placeholder="8 to 64 chars: letters, digits, - _" autocomplete="off">
+      <button class="small btn-ghost tight" onclick="genKey()">Generate</button>
+    </div>
+    <div style="height:10px"></div>
+    <button class="big btn-danger" onclick="rotateKey()">Change the share key</button>
+    <div id="rotateStatus"></div>
+    <div class="keyreveal hidden" id="newLinkBox"></div>
+  </div>
+
+  <div class="card">
+    <span class="badge">ADMIN KEY</span>
+    <div class="hint" style="margin-top:8px;">Changes the key for THIS page. Write the new one down before saving; it is stored only as a hash and cannot be recovered, only reset directly in Supabase.</div>
+    <label class="f">NEW ADMIN KEY (12+ CHARACTERS)</label>
+    <input type="password" id="newAdminKey" maxlength="64" autocomplete="new-password">
+    <div style="height:10px"></div>
+    <button class="big btn-ghost" onclick="changeAdminKey()">Change admin key</button>
+    <div id="adminKeyStatus"></div>
+  </div>
+
+  <div class="card">
+    <button class="big btn-ghost" onclick="logout()">Sign out of admin</button>
+    <div class="hint">Signing out only forgets the key on this device.</div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Config + client (same config.txt as the tracker)
+// ============================================================
+let CFG = { SUPABASE_URL:'', SUPABASE_ANON_KEY:'', ROUTE_SLUG:'' };
+let sb=null, adminKey=null, timers=[];
+
+async function loadConfig(){
+  const res = await fetch('config.txt?_=' + Date.now());
+  if (!res.ok) throw new Error('config.txt not found');
+  const text = await res.text();
+  text.split(/\r?\n/).forEach(function(raw){
+    const line = raw.trim();
+    if (!line || line[0]==='#') return;
+    const eq = line.indexOf('=');
+    if (eq===-1) return;
+    const key = line.slice(0,eq).trim(), val = line.slice(eq+1).trim();
+    if (key in CFG) CFG[key]=val;
+  });
+  if (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY) throw new Error('config.txt is missing Supabase values');
+  if (!CFG.ROUTE_SLUG) throw new Error('config.txt is missing ROUTE_SLUG');
+  sb = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+}
+function rpc(fn, args){ return sb.rpc(fn, args); }
+function esc(str){ const d=document.createElement('div'); d.textContent=str; return d.innerHTML; }
+function timeAgo(ts){
+  const s=Math.floor((Date.now()-ts)/1000);
+  if (s<60) return s+'s'; const m=Math.floor(s/60);
+  if (m<60) return m+'m'; return Math.floor(m/60)+'h';
+}
+function note(id, msg, kind){
+  const el=document.getElementById(id);
+  el.className = kind==='ok' ? 'ok-note' : 'err-note';
+  el.textContent = msg;
+  setTimeout(function(){ el.textContent=''; }, 6000);
+}
+// turn server errors into plain words
+function friendly(err){
+  const m = ((err && (err.message||err.hint||err.details))||'').toLowerCase();
+  if (m.indexOf('invalid admin key')>=0) return 'Wrong admin key. Sign out and back in.';
+  if (m.indexOf('not set up')>=0) return 'The admin key has not been set up yet. Run the admin_setup step from the migration file.';
+  if (m.indexOf('hh:mm')>=0 || m.indexOf('window')>=0 || m.indexOf('hours')>=0) return 'Check the hours: each window needs a start before its end.';
+  if (m.indexOf('out of range')>=0) return 'One of the numbers is outside its allowed range.';
+  if (m.indexOf('share key must be')>=0) return 'Share key must be 8 to 64 characters: letters, digits, - or _';
+  if (m.indexOf('admin key must be')>=0) return 'Admin key must be at least 12 characters.';
+  if (m.indexOf('key already in use')>=0) return 'That key is already used by another route.';
+  if (m.indexOf('notice too long')>=0) return 'Notice is over 280 characters.';
+  if (m.indexOf('failed to fetch')>=0) return 'Could not reach the server. Check your connection.';
+  return 'Something went wrong: ' + ((err&&err.message)||'unknown error');
+}
+
+// ============================================================
+// Login
+// ============================================================
+async function doLogin(){
+  const v = document.getElementById('adminKeyInput').value.trim();
+  if (!v) return;
+  const btn=document.getElementById('loginBtn');
+  btn.textContent='Checking...'; btn.disabled=true;
+  let res;
+  try{ res = await rpc('admin_check', { p_slug:CFG.ROUTE_SLUG, p_admin:v }); }
+  catch(e){ res={error:e}; }
+  btn.textContent='Sign in'; btn.disabled=false;
+  if (res.error || !res.data){
+    const el=document.getElementById('loginErr');
+    el.classList.remove('hidden');
+    el.textContent = friendly(res.error || {message:'invalid admin key'});
+    return;
+  }
+  adminKey=v;
+  try{ sessionStorage.setItem('wt-admin', v); }catch(e){}
+  enter();
+}
+function logout(){
+  adminKey=null;
+  try{ sessionStorage.removeItem('wt-admin'); }catch(e){}
+  timers.forEach(clearInterval); timers=[];
+  document.getElementById('main').classList.add('hidden');
+  document.getElementById('loginGate').classList.remove('hidden');
+}
+function enter(){
+  document.getElementById('loginGate').classList.add('hidden');
+  document.getElementById('main').classList.remove('hidden');
+  document.getElementById('slugLine').textContent = 'ROUTE: ' + CFG.ROUTE_SLUG.toUpperCase();
+  refreshSettings(); refreshSharers(); refreshSightings(); refreshBlocked();
+  timers.push(setInterval(refreshSharers, 6000));
+  timers.push(setInterval(refreshSightings, 15000));
+  timers.push(setInterval(refreshBlocked, 30000));
+}
+
+// ============================================================
+// Notice
+// ============================================================
+let currentNotice=null;
+async function saveNotice(){
+  const text = document.getElementById('noticeText').value.trim();
+  if (!text){ note('noticeStatus','Write the notice first, or use Clear.','err'); return; }
+  const mins = document.getElementById('noticeExpiry').value;
+  const res = await rpc('admin_set_notice', {
+    p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_text:text,
+    p_minutes: mins ? parseInt(mins,10) : null
+  });
+  if (res.error){ note('noticeStatus', friendly(res.error), 'err'); return; }
+  note('noticeStatus','Notice posted. Everyone sees it within a minute.','ok');
+  refreshSettings();
+}
+async function clearNotice(){
+  const res = await rpc('admin_set_notice', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_text:null, p_minutes:null });
+  if (res.error){ note('noticeStatus', friendly(res.error), 'err'); return; }
+  document.getElementById('noticeText').value='';
+  note('noticeStatus','Notice cleared.','ok');
+  refreshSettings();
+}
+
+// ============================================================
+// Hours + settings
+// ============================================================
+let SETTINGS=null;
+function winRow(dir, a, b){
+  return '<div class="win">'+
+    '<input type="time" value="'+esc(a||'')+'" data-dir="'+dir+'" data-role="a">'+
+    '<span class="to">to</span>'+
+    '<input type="time" value="'+esc(b||'')+'" data-dir="'+dir+'" data-role="b">'+
+    '<button class="small btn-ghost" onclick="this.parentElement.remove()">✕</button>'+
+    '</div>';
+}
+function addWin(dir){
+  const box = document.getElementById(dir==='north'?'winNorth':'winSouth');
+  if (box.querySelectorAll('.win').length >= 6) return;
+  box.insertAdjacentHTML('beforeend', winRow(dir,'',''));
+}
+function readWins(dir){
+  const box = document.getElementById(dir==='north'?'winNorth':'winSouth');
+  const out=[];
+  box.querySelectorAll('.win').forEach(function(w){
+    const a=w.querySelector('[data-role=a]').value, b=w.querySelector('[data-role=b]').value;
+    if (a && b) out.push([a,b]);
+  });
+  return out;
+}
+function fillSettingsForm(st){
+  ['north','south'].forEach(function(dir){
+    const box=document.getElementById(dir==='north'?'winNorth':'winSouth');
+    box.innerHTML='';
+    ((st.hours&&st.hours[dir])||[]).forEach(function(w){ box.insertAdjacentHTML('beforeend', winRow(dir,w[0],w[1])); });
+    if (!box.children.length) box.insertAdjacentHTML('beforeend', winRow(dir,'',''));
+  });
+  document.getElementById('headway').value = st.headway_min ?? 30;
+  document.getElementById('busExpiry').value = st.bus_expiry_min ?? 10;
+  document.getElementById('sightingExpiry').value = st.sighting_expiry_min ?? 120;
+  document.getElementById('maxSessions').value = st.max_sessions ?? 25;
+}
+async function refreshSettings(){
+  const res = await rpc('get_settings', { p_slug:CFG.ROUTE_SLUG });
+  if (res.error || !res.data) return;
+  SETTINGS = res.data.settings || {};
+  fillSettingsForm(SETTINGS);
+  currentNotice = res.data.notice || null;
+  document.getElementById('noticeCurrent').textContent = currentNotice
+    ? 'Currently showing: "' + currentNotice.text + '"'
+    : 'No notice is currently showing.';
+  if (currentNotice) document.getElementById('noticeText').value = currentNotice.text;
+}
+async function saveSettings(){
+  const north=readWins('north'), south=readWins('south');
+  if (!north.length || !south.length){
+    note('hoursStatus','Each direction needs at least one complete window.','err');
+    note('limitsStatus','Each direction needs at least one complete window.','err');
+    return;
+  }
+  const st = {
+    hours:{ north:north, south:south },
+    headway_min: parseInt(document.getElementById('headway').value,10),
+    bus_expiry_min: parseInt(document.getElementById('busExpiry').value,10),
+    sighting_expiry_min: parseInt(document.getElementById('sightingExpiry').value,10),
+    max_sessions: parseInt(document.getElementById('maxSessions').value,10)
+  };
+  const res = await rpc('admin_set_settings', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_settings:st });
+  if (res.error){
+    note('hoursStatus', friendly(res.error), 'err');
+    note('limitsStatus', friendly(res.error), 'err');
+    return;
+  }
+  note('hoursStatus','Saved. The app picks it up within a minute.','ok');
+  note('limitsStatus','Saved. The app picks it up within a minute.','ok');
+}
+
+// ============================================================
+// Live sharers
+// ============================================================
+async function refreshSharers(){
+  const res = await rpc('get_positions', { p_slug:CFG.ROUTE_SLUG });
+  if (res.error) return;
+  const list=document.getElementById('sharerList');
+  const data=res.data||[];
+  list.innerHTML = data.length ? data.map(function(b){
+    const dir = b.direction==='north' ? '<span class="dir-n">▲ North</span>' : '<span class="dir-s">▼ South</span>';
+    return '<div class="item"><div>'+dir+
+      (b.bus_label ? ' · <b>'+esc(b.bus_label)+'</b>' : ' · no bus number')+
+      '<div class="meta">'+b.lat.toFixed(4)+', '+b.lng.toFixed(4)+
+      ' · updated '+timeAgo(Date.parse(b.updated_at))+' ago · session '+esc(b.session_id.slice(0,8))+'...</div></div>'+
+      '<button class="small btn-danger" onclick="kick(\''+esc(b.session_id)+'\')">Stop</button></div>';
+  }).join('') : '<div class="hint">Nobody is sharing right now.</div>';
+}
+async function kick(session){
+  if (!confirm('Stop this sharer? The bus leaves the map and that phone cannot share again for 6 hours. You can undo it below.')) return;
+  const res = await rpc('admin_kick', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_session:session });
+  if (res.error){ alert(friendly(res.error)); return; }
+  refreshSharers(); refreshBlocked();
+}
+
+// ============================================================
+// Stopped sharers
+// ============================================================
+function untilText(ts){
+  const mins = Math.round((Date.parse(ts) - Date.now())/60000);
+  if (mins <= 0) return 'expiring now';
+  if (mins < 60) return mins + ' min left';
+  return Math.round(mins/60) + 'h left';
+}
+async function refreshBlocked(){
+  const res = await rpc('admin_list_blocked', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
+  if (res.error) return;
+  const list=document.getElementById('blockedList');
+  const data=res.data||[];
+  list.innerHTML = data.length ? data.map(function(b){
+    return '<div class="item"><div>session '+esc(b.session_id.slice(0,8))+'...'+
+      '<div class="meta">'+untilText(b.until)+'</div></div>'+
+      '<button class="small btn-ghost" onclick="unblock(\''+esc(b.session_id)+'\')">Allow again</button></div>';
+  }).join('') : '<div class="hint">Nobody is stopped right now.</div>';
+}
+async function unblock(session){
+  const res = await rpc('admin_unblock', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_session:session });
+  if (res.error){ alert(friendly(res.error)); return; }
+  refreshBlocked(); refreshSharers();
+}
+
+// ============================================================
+// Sightings
+// ============================================================
+async function refreshSightings(){
+  const res = await rpc('get_sightings', { p_slug:CFG.ROUTE_SLUG });
+  if (res.error) return;
+  const list=document.getElementById('sightingList');
+  const data=res.data||[];
+  list.innerHTML = data.length ? data.map(function(s){
+    return '<div class="item"><div>'+esc(s.body)+
+      '<div class="meta">'+timeAgo(Date.parse(s.created_at))+' ago</div></div>'+
+      '<button class="small btn-danger" onclick="delSighting('+s.sid+')">Delete</button></div>';
+  }).join('') : '<div class="hint">No sightings on the board.</div>';
+}
+async function delSighting(sid){
+  const res = await rpc('admin_delete_sighting', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_sid:sid });
+  if (res.error){ alert(friendly(res.error)); return; }
+  refreshSightings();
+}
+
+// ============================================================
+// Key rotation
+// ============================================================
+function genKey(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  const buf=new Uint32Array(20); crypto.getRandomValues(buf);
+  let k=''; for (let i=0;i<20;i++) k+=chars[buf[i]%chars.length];
+  document.getElementById('newShareKey').value=k;
+}
+async function rotateKey(){
+  const k=document.getElementById('newShareKey').value.trim();
+  if (!k){ note('rotateStatus','Type a new key or tap Generate.','err'); return; }
+  if (!confirm('Change the share key now? Links in the group chat stop working for NEW shares immediately. Anyone already sharing gets 4 hours to finish their trip.')) return;
+  const res = await rpc('admin_rotate_share_key', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_new_key:k });
+  if (res.error){ note('rotateStatus', friendly(res.error), 'err'); return; }
+  note('rotateStatus','Share key changed.','ok');
+  const link = location.origin + location.pathname.replace(/admin\.html$/,'') + '#k=' + encodeURIComponent(k);
+  const box=document.getElementById('newLinkBox');
+  box.classList.remove('hidden');
+  box.innerHTML = 'New sharer link to post in the group chat:<br><b>'+esc(link)+'</b>';
+  document.getElementById('newShareKey').value='';
+}
+
+// ============================================================
+// Admin key change
+// ============================================================
+async function changeAdminKey(){
+  const k=document.getElementById('newAdminKey').value.trim();
+  if (k.length < 12){ note('adminKeyStatus','At least 12 characters.','err'); return; }
+  if (!confirm('Change the admin key? Write it down first. It cannot be recovered, only reset directly in Supabase.')) return;
+  const res = await rpc('admin_change_key', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_new_admin:k });
+  if (res.error){ note('adminKeyStatus', friendly(res.error), 'err'); return; }
+  adminKey=k;
+  try{ sessionStorage.setItem('wt-admin', k); }catch(e){}
+  document.getElementById('newAdminKey').value='';
+  note('adminKeyStatus','Admin key changed on this device and the server.','ok');
+}
+
+// ============================================================
+// Boot
+// ============================================================
+function adminConfigError(msg){
+  document.getElementById('loginGate').classList.remove('hidden');
+  const el=document.getElementById('loginErr');
+  el.classList.remove('hidden');
+  el.textContent=msg;
+  document.getElementById('loginBtn').disabled=true;
+}
+if (typeof supabase === 'undefined'){
+  adminConfigError('This site could not load assets/vendor/supabase.js. The folder uploaded to Netlify is missing the assets folder.');
+} else {
+loadConfig().then(function(){
+  try{
+    const saved=sessionStorage.getItem('wt-admin');
+    if (saved){ adminKey=saved; enter(); return; }
+  }catch(e){}
+  document.getElementById('loginGate').classList.remove('hidden');
+}).catch(function(e){
+  document.getElementById('loginGate').classList.remove('hidden');
+  const el=document.getElementById('loginErr');
+  el.classList.remove('hidden');
+  el.textContent=e.message;
+  document.getElementById('loginBtn').disabled=true;
+});
+}
+</script>
+</body>
+</html>

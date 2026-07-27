@@ -1,0 +1,26 @@
+# Never commit anything holding a secret.
+# config.txt itself is safe and SHOULD be committed: since the database
+# migration it holds only the Supabase URL, the public anon key, the public
+# route slug, the source URL, checkpoints and stops. The share key and the
+# admin key live only in the database.
+#
+# If you ever put a secret in a file, put that file here FIRST.
+*.key
+*.pem
+.env
+.env.*
+secrets*
+private/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Tooling
+node_modules/
+npm-debug.log*
+.netlify/
+pgdata/

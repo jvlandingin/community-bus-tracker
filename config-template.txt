@@ -1,0 +1,137 @@
+# ============================================================
+#  config-template.txt
+#  This is a TEMPLATE. Copy to config.txt and fill in your values.
+#
+#  Everything in this file is PUBLIC (it ships with the page).
+#  That is now safe by design: the share key and admin key live
+#  only in the database and in the links you hand out.
+# ============================================================
+
+# --- Supabase (Project Settings -> API) ---
+SUPABASE_URL = https://YOUR-PROJECT.supabase.co
+SUPABASE_ANON_KEY = YOUR-ANON-PUBLIC-KEY
+
+# --- Where the source code lives (optional but expected) ---
+# The AGPL asks that people using this over a network be offered
+# the source. Put your repository URL here and the app shows a
+# link inside "How your data is handled". Leave blank to hide it.
+SOURCE_URL = https://github.com/YOUR-NAME/community-bus-tracker
+
+# --- Your route's public name in the database ---
+# Set during the migration (step A in the migration file).
+# This only identifies the route; it unlocks nothing.
+ROUTE_SLUG = your-route-slug
+
+# ============================================================
+#  Operating hours, headway, and expiry times are NOT here
+#  any more. They live in the database and are edited in
+#  admin.html, so schedule changes never need a redeploy.
+# ============================================================
+
+# ============================================================
+#  CHECKPOINTS, the labels on the progress strip, in order.
+#  Format:  CHECKPOINT = Full Name | SHORT | latitude | longitude
+# ============================================================
+CHECKPOINT = Mendez Crossing | MENDEZ | 14.0997 | 120.9145
+CHECKPOINT = Tagaytay        | TGY    | 14.1187 | 120.9540
+CHECKPOINT = Amadeo          | AMADEO | 14.1701 | 120.9221
+CHECKPOINT = Gen. Trias      | GEN.T  | 14.2912 | 120.9068
+CHECKPOINT = Imus            | IMUS   | 14.3897 | 120.9196
+CHECKPOINT = PITX            | PITX   | 14.5101 | 120.9913
+CHECKPOINT = One Ayala       | AYALA  | 14.5505 | 121.0279
+
+# ============================================================
+#  STOPS, merged from both official posters, in route order.
+#  Format:  STOP = Name | lat | lng | conf
+#    H = verified place listing
+#    M = right area, worth a glance
+#    L = estimated only - VERIFY (long-press in Google Maps,
+#        paste the two numbers here, change L to H)
+# ============================================================
+
+# ---- Tagaytay City ----
+STOP = Crossing Mendez            | 14.0997 | 120.9145 | H
+STOP = NBI Tagaytay               | 14.1033 | 120.9314 | H
+STOP = Mahogany Market            | 14.1041 | 120.9313 | H
+STOP = City College of Tagaytay   | 14.1014 | 120.9386 | H
+STOP = SMDC (Wind Residences)     | 14.0998 | 120.9435 | H
+STOP = Magallanes Square / Hiraya | 14.1033 | 120.9512 | H
+STOP = Lourdes                    | 14.1113 | 120.9574 | H
+STOP = Tagaytay Olivarez          | 14.1187 | 120.9540 | M
+STOP = Olivarez Terminal          | 14.1225 | 120.9594 | H
+STOP = SVD / TCI                  | 14.1279 | 120.9654 | H
+STOP = Metrogate Tagaytay         | 14.1147 | 120.9375 | H
+STOP = Tagaytay Greenville        | 14.1226 | 120.9354 | H
+
+# ---- Amadeo ----
+STOP = Salaban (Shakey's Bypass)  | 14.1253 | 120.9346 | H
+STOP = Loma                      | 14.1480 | 120.9302 | H
+STOP = Amadeo (Highway)          | 14.1701 | 120.9221 | H
+STOP = Dagatan                   | 14.1798 | 120.9292 | H
+STOP = Banaybanay                | 14.2016 | 120.9353 | H
+STOP = Balite                    | 14.2090 | 120.9320 | L
+STOP = Tamacan                   | 14.2173 | 120.9287 | H
+
+# ---- General Trias ----
+STOP = Panungyanan               | 14.2349 | 120.9216 | H
+STOP = Javalera                  | 14.2567 | 120.9164 | H
+STOP = Gateway Business Park     | 14.2607 | 120.9197 | H
+STOP = Biclatan                  | 14.2769 | 120.9164 | H
+STOP = Manggahan                 | 14.2912 | 120.9068 | H
+STOP = LPU-Cavite                | 14.2911 | 120.9155 | H
+STOP = Monterey                  | 14.3040 | 120.9100 | L
+STOP = Sunny Brooke              | 14.3167 | 120.9108 | H
+STOP = Vista Mall General Trias  | 14.3225 | 120.9125 | H
+STOP = Santiago                  | 14.3383 | 120.9081 | H
+STOP = SM City General Trias     | 14.3635 | 120.9059 | H
+
+# ---- Imus ----
+STOP = Greengate Homes           | 14.3714 | 120.9217 | H
+STOP = Malagasang 1-G            | 14.3808 | 120.9166 | H
+STOP = New Imus City Hall        | 14.3897 | 120.9196 | H
+STOP = Ospital ng Imus           | 14.3937 | 120.9201 | H
+STOP = Alapan 2-B                | 14.4009 | 120.9076 | H
+STOP = Savemore - The Avenue     | 14.4043 | 120.9053 | H
+STOP = Battle of Alapan Monument | 14.4157 | 120.9187 | H
+STOP = Lancaster New City        | 14.3927 | 120.8991 | H
+
+# ---- Kawit ----
+STOP = Veraneo                   | 14.4186 | 120.8993 | H
+STOP = Baypoint Estates          | 14.4222 | 120.8979 | H
+STOP = Kalayaan Road             | 14.4262 | 120.8957 | M
+STOP = Evo City                  | 14.4305 | 120.8974 | H
+STOP = S&R Kawit                 | 14.4327 | 120.9000 | H
+STOP = Gahak                     | 14.4419 | 120.9094 | H
+STOP = Zeus                      | 14.4400 | 120.9070 | L
+
+# ---- Parañaque City ----
+STOP = PITX                      | 14.5101 | 120.9913 | H
+STOP = Coastal Road              | 14.5000 | 120.9880 | L
+STOP = City of Dreams            | 14.5241 | 120.9916 | H
+STOP = Parqal Mall               | 14.5267 | 120.9894 | H
+STOP = DFA-Aseana                | 14.5298 | 120.9902 | H
+STOP = Ayala Malls Manila Bay    | 14.5227 | 120.9874 | H
+
+# ---- Pasay City ----
+STOP = W-Mall                    | 14.5321 | 120.9891 | H
+STOP = Double Dragon             | 14.5359 | 120.9905 | H
+STOP = Manila Tytana Colleges    | 14.5405 | 120.9877 | H
+STOP = HK Sun Plaza              | 14.5460 | 120.9877 | H
+STOP = World Trade Center        | 14.5510 | 120.9872 | H
+STOP = Shell Buendia             | 14.5522 | 120.9905 | H
+STOP = Harrison                  | 14.5528 | 120.9938 | L
+STOP = JAC Liner Terminal        | 14.5542 | 120.9966 | H
+STOP = LRT Buendia (Gil Puyat)   | 14.5543 | 120.9971 | H
+
+# ---- Makati City ----
+STOP = Dian / Bautista / Filmore | 14.5570 | 121.0040 | L
+STOP = Mayapis / Dela Rosa       | 14.5580 | 121.0075 | L
+STOP = Washington                | 14.5588 | 121.0098 | H
+STOP = Pasong Tamo (Chino Roces) | 14.5599 | 121.0118 | H
+STOP = Makati Medical Center     | 14.5592 | 121.0148 | H
+STOP = RCBC / PBCOM Tower        | 14.5609 | 121.0160 | H
+STOP = Paseo de Roxas            | 14.5599 | 121.0225 | M
+STOP = Makati Ave.               | 14.5614 | 121.0222 | M
+STOP = Makati Shangri-La         | 14.5537 | 121.0247 | H
+STOP = Glorietta / Rustan's      | 14.5512 | 121.0243 | H
+STOP = One Ayala Terminal        | 14.5505 | 121.0279 | H

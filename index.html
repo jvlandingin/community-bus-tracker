@@ -216,6 +216,9 @@
       <h4 class="ok hidden" id="sourceHead">Open source</h4>
       <p class="hidden" id="sourceBody">This tool is free and open source under the AGPL-3.0 licence, which means anyone can read it, run it for their own route, and must keep their version open too. <a id="sourceLink" href="#" target="_blank" rel="noopener noreferrer">See the source code</a>.</p>
 
+      <h4>Who runs this</h4>
+      <p>A community volunteer, not the bus company. This tool is <b>not affiliated with, run by, or endorsed by Wonderful Transport</b>. The route name and colours are used so you can tell which buses it tracks, nothing more. Positions come from passengers and crew who choose to share, so this is not an official schedule and the company is not responsible for it.</p>
+
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, no analytics, and nothing to sell. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
     </div>
@@ -262,7 +265,7 @@
 
 <header>
   <div class="route">Mendez / Tagaytay <span class="amp">⇄</span> One Ayala</div>
-  <div class="sub">WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER</div>
+  <div class="sub">WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER · UNOFFICIAL</div>
 </header>
 
 <div class="wrap">
@@ -409,11 +412,19 @@ async function loadConfig() {
       CFG[key] = val;
     }
   });
+  // These are the placeholders config-template.txt actually ships. An
+  // earlier version looked for 'PASTE_', which the template has never
+  // contained, so the check could not fire on the one file it exists to
+  // catch: an unedited copy gave a raw Supabase error instead.
+  const unedited = function(v){
+    return /YOUR-PROJECT|YOUR-ANON-PUBLIC-KEY|YOUR-NAME|your-route-slug|PASTE_/i.test(v||'');
+  };
   if (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY ||
-      CFG.SUPABASE_URL.indexOf('PASTE_') !== -1 || CFG.SUPABASE_ANON_KEY.indexOf('PASTE_') !== -1) {
-    throw new Error('config.txt still has placeholder values. Fill in your Supabase URL and anon key.');
+      unedited(CFG.SUPABASE_URL) || unedited(CFG.SUPABASE_ANON_KEY)) {
+    throw new Error('config.txt still has the template\'s placeholder values. Fill in your Supabase URL and anon key from Project Settings -> API.');
   }
   if (!CFG.ROUTE_SLUG) throw new Error('config.txt is missing ROUTE_SLUG. Add the line: ROUTE_SLUG = your-route-slug');
+  if (unedited(CFG.ROUTE_SLUG)) throw new Error('config.txt still has the template\'s ROUTE_SLUG. Set it to the slug you chose in setup step A.');
   if (!CHECKPOINTS.length) throw new Error('no checkpoints found in config.txt');
 }
 
@@ -538,7 +549,7 @@ function setFilter(f) {
 // ============================================================
 // Map
 // ============================================================
-let map, busMarkers = {};   // session_id -> marker
+let map, busMarkers = {};   // clustered pub_id -> marker
 let BUSES = [];             // latest fetched positions
 
 function initMap() {
@@ -575,7 +586,11 @@ function busIcon(dir, label, fr, count) {
   let fg = dir==='north' ? '#3d2a05' : '#ffffff';
   if (fr.tag==='delayed'){ bg='#9aa1ac'; fg='#ffffff'; }   // clearly stale
   const arrow = dir==='north' ? '▲' : '▼';
-  const name = label ? (arrow+' '+label) : arrow;
+  // The bus number is typed by a sharer and goes straight into innerHTML
+  // below, so it is escaped here exactly as it is in the chips and on the
+  // admin page. The server's 12 character cap is not a defence, only the
+  // reason nobody has managed anything with it yet.
+  const name = label ? (arrow+' '+escapeHtml(label)) : arrow;
   const badge = name + ' · ' + fr.label + ((count&&count>1) ? ' · '+count+'\u00d7' : '');
   return L.divIcon({
     className:'',
@@ -765,15 +780,15 @@ function clusterBuses(list){
     }
     if (target){
       target.count++;
-      target.sessions.push(b.session_id);
+      target.members.push(b.pub_id);
       if (!target.label && b.bus_label) target.label=b.bus_label;
       if (b.ts>target.ts){              // keep the freshest position
         target.lat=b.lat; target.lng=b.lng; target.ts=b.ts; target.speed=b.speed;
       }
     } else {
-      clusters.push({ id:b.session_id, lat:b.lat, lng:b.lng, ts:b.ts, speed:b.speed,
+      clusters.push({ id:b.pub_id, lat:b.lat, lng:b.lng, ts:b.ts, speed:b.speed,
                       direction:b.direction, label:b.bus_label||'', count:1,
-                      sessions:[b.session_id] });
+                      members:[b.pub_id] });
     }
   });
   return clusters;
@@ -851,8 +866,10 @@ async function pollPositions() {
   if (!shouldPoll()) return;
   const res = await rpc('get_positions', { p_slug: CFG.ROUTE_SLUG });
   if (res.error) return;
+  // pub_id, not the session id: see sql/04-session-id-privacy.sql. It is
+  // stable for the length of a trip, which is all the map needs it for.
   BUSES = (res.data||[]).map(function(v){
-    return { session_id:v.session_id, lat:v.lat, lng:v.lng, speed:v.speed,
+    return { pub_id:v.pub_id, lat:v.lat, lng:v.lng, speed:v.speed,
              direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at) };
   });
   // markers: one per clustered bus, not per sharing session
@@ -1113,13 +1130,16 @@ function metresBetween(a,b){
   return 2*R*Math.asin(Math.sqrt(h));
 }
 async function findNearbySharer(coords){
-  const res = await rpc('get_positions', { p_slug: CFG.ROUTE_SLUG });
+  // p_self is our own session id, which only this phone holds. The server
+  // flags our row with is_self so we can skip it without the session ids
+  // of everyone else being handed out. See sql/04-session-id-privacy.sql.
+  const res = await rpc('get_positions', { p_slug: CFG.ROUTE_SLUG, p_self: getSessionId() });
   if (res.error || !res.data) return null;
   const mine = { lat:coords.latitude, lng:coords.longitude };
   const myLabel = (document.getElementById('busLabel').value||'').trim().toLowerCase();
   let best=null;
   res.data.forEach(function(b){
-    if (b.session_id===getSessionId()) return;         // that's us
+    if (b.is_self) return;                             // that's us
     if (b.direction!==shareDir) return;                // other direction, fine
     const theirLabel=(b.bus_label||'').trim().toLowerCase();
     // Different bus numbers both typed = definitely different buses.

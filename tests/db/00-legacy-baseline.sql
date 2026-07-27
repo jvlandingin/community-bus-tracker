@@ -2,6 +2,21 @@
 -- pg_get_functiondef dump. The migration is tested against this.
 -- Table shapes are inferred from how the functions use them.
 
+-- Supabase creates these two roles; a plain local Postgres does not.
+-- Without them every migration file dies on its final grant block, and
+-- because each file is one transaction, that rolls the whole file back
+-- and leaves an empty database that fails every later check in a way
+-- that looks like a schema bug rather than a missing role.
+do $$
+begin
+  if not exists (select 1 from pg_roles where rolname = 'anon') then
+    create role anon;
+  end if;
+  if not exists (select 1 from pg_roles where rolname = 'authenticated') then
+    create role authenticated;
+  end if;
+end $$;
+
 create table public.routes (
   key text primary key
 );

@@ -9,10 +9,18 @@ retry.
 | `01-base.sql` | tables, settings, notice, the whole RPC surface |
 | `02-key-rotation-cascade.sql` | makes the `route_key` foreign keys cascade, without which every share key rotation fails |
 | `03-kick-block.sql` | makes stopping a sharer actually hold, instead of their phone rewriting the position seconds later |
+| `04-session-id-privacy.sql` | stops publishing live session ids to every watcher, which let anyone clear the whole route off the map |
+| `05-rotate-same-key.sql` | refuses a share key "rotation" to the key already in use, which used to leave that key working |
 
-If you are setting up fresh, run all three. They are separate files because they
-were written in that order against a live deployment, and keeping the history
-visible is more honest than pretending the first version was right.
+If you are setting up fresh, run all of them. They are separate files because
+they were written in that order against a live deployment, and keeping the
+history visible is more honest than pretending the first version was right.
+
+`04` changes the shape of `get_positions`, so deploy `index.html` and
+`admin.html` from the same commit as the migration. An old page against the new
+function shows no buses; a new page against the old function shows none either.
+Nothing is lost either way, and one poll after the pages catch up it is right
+again, but do not leave it in that state.
 
 ## Then two setup commands
 

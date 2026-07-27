@@ -9,9 +9,11 @@ where the bus is by asking in a Messenger group chat. Anyone on board can share
 the bus's position for a trip. Everyone else can watch. When nobody is sharing,
 people can post text sightings instead.
 
-It is not affiliated with, run by, or endorsed by any bus company. If you deploy
-it for a route, say so plainly in your own community, especially if you use the
-operator's name or colours.
+It is not affiliated with, run by, or endorsed by any bus company. The app says
+so itself, in the header strip and in "How your data is handled", because
+leaving that to whoever posts the link is how a community tool starts getting
+mistaken for an official one. If you deploy it for a route, edit both places to
+name your own operator.
 
 ## What it does
 

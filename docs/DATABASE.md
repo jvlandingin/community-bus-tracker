@@ -5,9 +5,9 @@ functions. The tables have RLS enabled with **no policies**, so the public anon
 key cannot read or write them directly. This file exists so the schema never has
 to be dumped from a phone mid-project again.
 
-If it ever does need re-checking, these two queries in the Supabase SQL editor
-give the full picture. Run all three, not just the functions, which is the
-mistake that let a foreign key bug through in July 2026:
+If it ever does need re-checking, these three queries in the Supabase SQL
+editor give the full picture. Run all three, not just the functions, which is
+the mistake that let a foreign key bug through in July 2026:
 
 ```sql
 -- columns
@@ -36,6 +36,7 @@ One row per route. Holds every secret in the system.
 | `prev_key` | previous share key, kept for the rotation grace |
 | `prev_key_expires` | when the old key stops working (rotation + 4 hours) |
 | `admin_salt`, `admin_hash` | salted SHA-256 of the admin key. The key itself is never stored. |
+| `pub_salt` | random per route, salts the `pub_id` that `get_positions` publishes instead of the session id. Never returned by anything. |
 | `settings` | jsonb, see below |
 | `notice_text`, `notice_updated`, `notice_expires` | the pinned notice |
 
@@ -87,11 +88,39 @@ to 120, sighting expiry 5 to 1440, max sessions 1 to 200.
 | function | notes |
 |---|---|
 | `get_settings(p_slug)` | returns `{settings, notice}`. Notice is null when unset or expired. |
-| `get_positions(p_slug)` | filters stale rows, deletes nothing |
+| `get_positions(p_slug, p_self)` | filters stale rows, deletes nothing. Returns `pub_id`, **not** the session id, see below. `p_self` is optional: pass your own session id and your own row comes back with `is_self` set, which is how the duplicate-sharer warning skips itself. |
 | `get_sightings(p_slug)` | newest 8 within the expiry window |
 | `add_sighting(p_slug, p_body)` | 1 to 140 chars; refuses a 6th post inside 60 seconds route-wide |
-| `clear_bus_position(p_slug, p_session)` | the unguessable session id is the credential; keeps working across a rotation and from sendBeacon |
+| `clear_bus_position(p_slug, p_session)` | takes the real session id, which only the sharer's own phone holds; keeps working across a rotation and from sendBeacon |
 | `ping()` | keep-alive target for the uptime monitor |
+
+### Why `get_positions` does not return the session id
+
+It did until July 2026, and the reason written down for `clear_bus_position`
+needing no key was that the session id is unguessable, so the session id is the
+credential. That reasoning was sound while reads needed the share key. It
+stopped holding the moment watching became open to everyone, and nobody noticed
+the two changes had met: `get_positions` was handing every anonymous visitor the
+live session ids, and `clear_bus_position` accepts a session id and no key.
+Reproduced against a real database: read the ids off the map, replay each into
+`clear_bus_position`, and the whole route goes dark. The sharing phones
+republish within seconds, so it is griefing rather than damage, but it is a loop
+anyone could run.
+
+`get_positions` now returns `pub_id`, a salted SHA-256 of the session id
+truncated to 32 hex characters. It is stable for the length of a trip, which is
+all the map needs it for (marker identity and clustering), it cannot be
+reversed, and it will never match a real session id, so replaying it deletes
+nothing.
+
+Adding a key to `clear_bus_position` was the obvious alternative and is wrong:
+the `sendBeacon` cleanup when a sharer closes the tab cannot set headers, and
+the call has to keep working after a share key rotation.
+
+The general lesson, which is worth more than the fix: **when an access rule
+changes, re-read every rationale that depended on the old one.** Making reads
+public was discussed on its own merits and was the right call. What it quietly
+did was invalidate a sentence in this file about a different function.
 
 ### Share key required
 | function | notes |
@@ -115,15 +144,27 @@ on the old key gets `invalid key`.
 ### Admin key required
 `admin_check`, `admin_set_settings`, `admin_set_notice(p_text, p_minutes)`,
 `admin_rotate_share_key`, `admin_kick`, `admin_delete_sighting`,
-`admin_change_key`. All take `(p_slug, p_admin, ...)` and raise
+`admin_change_key`, `admin_list_sharers`, `admin_list_blocked`,
+`admin_unblock`. All take `(p_slug, p_admin, ...)` and raise
 `invalid admin key` on failure.
+
+`admin_list_sharers` is the only way to get real session ids back out of the
+database, and the admin page needs it because `admin_kick` and `admin_unblock`
+take one.
+
+`admin_rotate_share_key` refuses `p_new_key` equal to the key already in use
+(`that is already the current share key`). Without that check, rotating to the
+current value copied it into `prev_key` as well, so the key the admin believed
+they had just retired went on starting new sessions for the next four hours
+through the grace path. Nobody does that deliberately; it happens when someone
+is unsure whether the last rotation went through and pastes the key back in.
 
 `admin_setup(p_slug, p_new_admin)` is the exception: it needs no admin key but
 works **only while none is set**, so it cannot be used to take over a route.
 
 ### SQL editor only (execute revoked from anon)
 `rename_route_slug(p_old, p_new)`, and the internal helpers `_hash_admin`,
-`_require_admin`, `_check_settings`, `_sweep`.
+`_pub_id`, `_require_admin`, `_check_settings`, `_sweep`.
 
 ## Setting up a fresh route
 

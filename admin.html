@@ -222,8 +222,16 @@ async function loadConfig(){
     const key = line.slice(0,eq).trim(), val = line.slice(eq+1).trim();
     if (key in CFG) CFG[key]=val;
   });
+  // same placeholder check as the tracker, so an unedited config.txt says
+  // so here too instead of failing later with a raw Supabase error
+  const unedited = function(v){
+    return /YOUR-PROJECT|YOUR-ANON-PUBLIC-KEY|YOUR-NAME|your-route-slug|PASTE_/i.test(v||'');
+  };
   if (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY) throw new Error('config.txt is missing Supabase values');
   if (!CFG.ROUTE_SLUG) throw new Error('config.txt is missing ROUTE_SLUG');
+  if (unedited(CFG.SUPABASE_URL) || unedited(CFG.SUPABASE_ANON_KEY) || unedited(CFG.ROUTE_SLUG)){
+    throw new Error('config.txt still has the template\'s placeholder values. Fill it in before using the admin page.');
+  }
   sb = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
 }
 function rpc(fn, args){ return sb.rpc(fn, args); }
@@ -248,6 +256,7 @@ function friendly(err){
   if (m.indexOf('out of range')>=0) return 'One of the numbers is outside its allowed range.';
   if (m.indexOf('share key must be')>=0) return 'Share key must be 8 to 64 characters: letters, digits, - or _';
   if (m.indexOf('admin key must be')>=0) return 'Admin key must be at least 12 characters.';
+  if (m.indexOf('already the current share key')>=0) return 'That is the key already in use. Type a different one, or tap Generate.';
   if (m.indexOf('key already in use')>=0) return 'That key is already used by another route.';
   if (m.indexOf('notice too long')>=0) return 'Notice is over 280 characters.';
   if (m.indexOf('failed to fetch')>=0) return 'Could not reach the server. Check your connection.';
@@ -393,8 +402,10 @@ async function saveSettings(){
 // ============================================================
 // Live sharers
 // ============================================================
+// admin_list_sharers, not get_positions: only the admin function returns
+// real session ids, and Stop needs one. See sql/04-session-id-privacy.sql.
 async function refreshSharers(){
-  const res = await rpc('get_positions', { p_slug:CFG.ROUTE_SLUG });
+  const res = await rpc('admin_list_sharers', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
   if (res.error) return;
   const list=document.getElementById('sharerList');
   const data=res.data||[];
@@ -511,11 +522,26 @@ function adminConfigError(msg){
 if (typeof supabase === 'undefined'){
   adminConfigError('This site could not load assets/vendor/supabase.js. The folder uploaded to Netlify is missing the assets folder.');
 } else {
-loadConfig().then(function(){
-  try{
-    const saved=sessionStorage.getItem('wt-admin');
-    if (saved){ adminKey=saved; enter(); return; }
-  }catch(e){}
+loadConfig().then(async function(){
+  // A saved key used to be trusted straight into the page. If it had since
+  // been changed, every panel loaded empty and the first action failed,
+  // which reads as a broken admin page rather than a stale key. Check it
+  // once against the server first.
+  let saved=null;
+  try{ saved=sessionStorage.getItem('wt-admin'); }catch(e){}
+  if (saved){
+    let res;
+    try{ res = await rpc('admin_check', { p_slug:CFG.ROUTE_SLUG, p_admin:saved }); }
+    catch(e){ res={error:e}; }
+    if (!res.error && res.data){ adminKey=saved; enter(); return; }
+    try{ sessionStorage.removeItem('wt-admin'); }catch(e){}
+    if (res.error && ((res.error.message||'')+'').toLowerCase().indexOf('invalid admin key')<0){
+      // couldn't reach the server, so don't claim the key is wrong
+      const el=document.getElementById('loginErr');
+      el.classList.remove('hidden');
+      el.textContent=friendly(res.error);
+    }
+  }
   document.getElementById('loginGate').classList.remove('hidden');
 }).catch(function(e){
   document.getElementById('loginGate').classList.remove('hidden');

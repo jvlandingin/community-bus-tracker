@@ -4,31 +4,8 @@
 \set ON_ERROR_STOP on
 set client_min_messages to notice;
 
-create or replace function assert(cond boolean, label text)
-returns void language plpgsql as $$
-begin
-  if cond is distinct from true then raise exception 'FAIL: %', label; end if;
-  raise notice 'PASS: %', label;
-end; $$;
-
-create or replace function assert_err(sql text, frag text, label text)
-returns void language plpgsql as $$
-begin
-  begin
-    execute sql;
-    raise exception 'FAIL: % (no error raised)', label;
-  exception when others then
-    if sqlerrm like 'FAIL:%' then raise; end if;
-    if position(frag in sqlerrm) = 0 then
-      raise exception 'FAIL: % (got: %)', label, sqlerrm;
-    end if;
-  end;
-  raise notice 'PASS: %', label;
-end; $$;
-
--- ================= setup steps A and B =================
-select public.rename_route_slug((select slug from public.routes limit 1), 'wonderful-mendez-ayala');
-select public.admin_setup('wonderful-mendez-ayala', 'my-long-admin-key-42');
+-- assert helpers, plus setup steps A and B
+\ir _prelude.sql
 
 do $$ begin raise notice '== migration integrity =='; end $$;
 do $$
@@ -96,7 +73,7 @@ begin
     not has_function_privilege('anon', 'public.rename_route_slug(text,text)', 'execute'),
     'anon cannot rename the slug');
   perform assert(
-    has_function_privilege('anon', 'public.get_positions(text)', 'execute'),
+    has_function_privilege('anon', 'public.get_positions(text,text)', 'execute'),
     'anon can read positions');
   perform assert(
     not has_table_privilege('anon', 'public.routes', 'select'),
@@ -199,8 +176,8 @@ begin
   update public.bus_positions set updated_at = now() - interval '30 seconds'
    where session_id = 'session-aaaa-1111';
   perform public.set_bus_position('OLD-SHARE-KEY-123','session-aaaa-1111',14.53,120.99,10,'south','98018');
-  perform assert((select count(*) from public.get_positions('wonderful-mendez-ayala')
-                  where session_id='session-aaaa-1111') = 1,
+  perform assert((select count(*) from public.get_positions('wonderful-mendez-ayala','session-aaaa-1111')
+                  where is_self) = 1,
                  'mid-trip sharer continues on the old key (grace)');
 
   -- a NEW session with the old key is refused

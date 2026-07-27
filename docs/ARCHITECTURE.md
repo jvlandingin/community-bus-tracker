@@ -19,10 +19,10 @@
 Folder that gets deployed:
 
 ```
-wonder-bus-tracker/
+community-bus-tracker/
   index.html          <- the tracker
   admin.html          <- the admin page
-  config.txt          <- user's own, no secrets, still never shipped by us
+  config.txt          <- your route's own, holds no secrets, safe to commit
   assets/vendor/      <- leaflet.js, leaflet.css, supabase.js, images/
 ```
 
@@ -46,6 +46,17 @@ added real security, since anyone with the group link had the key, and it meant
 rotating the key cut off watchers as well as sharers. The honest consequence,
 which the app and the FAQ both now state plainly: anyone who opens the site can
 see live bus positions, and rotating the key no longer changes that.
+
+It had a consequence nobody traced at the time. `get_positions` returned the
+sharing session ids, and `clear_bus_position` takes a session id and no key,
+on the reasoning that the id was unguessable and therefore was the credential.
+Public reads made it guessable by simply asking, so any visitor could clear
+every bus off the map on a loop. `get_positions` now returns an unreversible
+per-route hash instead, and only `admin_list_sharers`, behind the admin key,
+returns real ids. See `docs/DATABASE.md` for the full reasoning. **When an
+access rule changes, re-read every rationale that depended on the old one** —
+the decision to open reads was right, and it still invalidated a sentence about
+a different function.
 
 **Writing still needs a key, enforced server-side.** All reads and writes go
 through `SECURITY DEFINER` Postgres functions. The tables have RLS enabled with
@@ -98,8 +109,10 @@ three ask rather than decide.
 **Wrong direction.** The sharer picks a direction by hand, and picking the wrong
 one is the most damaging mistake the tool allows, because commuters then wait
 for a bus moving away from them. Progress is measured by projecting the position
-onto the **checkpoint chain** (see the note in stops-reference.txt about why not
-the stop list). Thresholds: 3.5 km of net travel against the chosen direction,
+onto the **checkpoint chain** (the comment above `buildRouteChain` in index.html
+explains why not the stop list: the stop order is merged from two posters and
+is not strictly geographic, which reads as kilometres of reversal on a perfectly
+normal trip). Thresholds: 3.5 km of net travel against the chosen direction,
 compared against the furthest-along point in a 25 minute window, held for 60
 seconds, with no verdict in the first 4 minutes. On firing, publishing pauses,
 the bus is removed from everyone's map immediately, and the sharer is asked.
@@ -214,14 +227,24 @@ deploy folder:
 
 - `test-guard.js`, `test-strip.js`, `test-prompts.js`, `test-hours.js` extract
   the shipped code out of index.html by comment markers and run it, so a passing
-  test cannot drift from the app. They need Node, plus config-template.txt in
-  the same folder.
-- `00-current-schema.sql` reconstructs the pre-migration database and
-  `02-tests.sql` runs 55 behavioural checks against it, `04-fk-tests.sql` a
-  further 17 for key rotation.
+  test cannot drift from the app. They need Node, plus config-template.txt one
+  level up. `test-boot.js` additionally loads both pages in a real DOM (jsdom)
+  over a local HTTP server, including a deploy with `assets/` missing and a
+  config.txt that was never filled in.
+- `tests/db/00-legacy-baseline.sql` reconstructs the pre-migration database.
+  `01-core-tests.sql` runs 55 behavioural checks against it, `02-rotation-tests`
+  17 for key rotation, `03-kick-tests` 17 for stopping a sharer,
+  `04-privacy-tests` 18 for session id privacy, `05-rotate-tests` 10 for the
+  rotation guard. Each runs against its own fresh database; see
+  `tests/README.md`, which is now accurate about that.
 
-A lesson worth keeping: the reconstruction was built from a dump of function
+Two lessons worth keeping. The reconstruction was built from a dump of function
 definitions only, so it had no foreign keys, and 55 passing checks still missed
 that `bus_positions.route_key` referenced `routes.key` and blocked every key
 rotation. **Before writing a migration, get the table constraints, not just the
 function definitions.**
+
+And `tests/README.md` spent months describing a sequence for the database
+suites that could not work: two of the three suites had no runnable order at
+all. Passing tests are not the same as tests anyone can run. **A runbook nobody
+has followed end to end is not a runbook.**

@@ -1,6 +1,11 @@
--- Tests for the kick/block patch. Assumes assert helpers exist.
+-- Tests for the kick/block patch in sql/03-kick-block.sql.
+-- Clears bus_positions first, so it runs against a freshly migrated
+-- database or after another suite.
 \set ON_ERROR_STOP on
 set client_min_messages to notice;
+
+-- assert helpers, plus setup steps A and B
+\ir _prelude.sql
 
 do $$ begin raise notice '== reproduce the bug conditions, then check the fix =='; end $$;
 do $$

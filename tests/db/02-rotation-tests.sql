@@ -1,6 +1,13 @@
--- Tests for the foreign key patch. Run after 03-fk-patch.sql.
+-- Tests for the key rotation cascade in sql/02-key-rotation-cascade.sql.
+--
+-- Run against a freshly migrated database, NOT after 01-core-tests.sql:
+-- the checks below expect both seeded sharers to still be on the original
+-- key, and 01 moves them.
 \set ON_ERROR_STOP on
 set client_min_messages to notice;
+
+-- assert helpers, plus setup steps A and B
+\ir _prelude.sql
 
 do $$ begin raise notice '== constraints now cascade =='; end $$;
 do $$

@@ -194,6 +194,10 @@
   }
   .noticebar .tag{font-size:9.5px; font-weight:800; letter-spacing:.08em; color:var(--gold-deep);}
   .noticebar .age{font-size:10.5px; color:var(--muted); font-weight:600; margin-top:3px;}
+  .firstvisit-dismiss{
+    margin-top:8px; background:var(--maroon); color:#fff; border:none; border-radius:8px;
+    padding:6px 14px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer;
+  }
   .privacybar{
     max-width:520px; margin:10px auto 0; padding:0 14px;
   }
@@ -313,6 +317,11 @@
     <div class="tag">NOTICE</div>
     <div id="noticeText" style="margin-top:2px; font-weight:600;"></div>
     <div class="age" id="noticeAge"></div>
+  </div>
+
+  <div class="noticebar hidden" id="firstVisitBanner">
+    <div>Quick heads up: bus positions here are volunteer-reported and can occasionally be wrong or missing. No guarantee of accuracy. See 🔒 How your data is handled below for the full picture.</div>
+    <button class="firstvisit-dismiss" onclick="dismissFirstVisitBanner()">Got it</button>
   </div>
 
   <div class="privacybar" style="margin:0 0 10px; padding:0 2px;">
@@ -1434,6 +1443,23 @@ function start(){
   let seen=null;
   try{ seen=localStorage.getItem('wt-guide-seen'); }catch(e){ seen='1'; }
   if (seen) link.classList.add('seen');
+})();
+
+// Same idea as the guide dot above: a first-visit nudge kept only on this
+// device, so people see the accuracy/no-guarantee note at least once even
+// if they never open "How your data is handled" on their own. Losing the
+// flag (private browsing, storage cleared) just means seeing it again.
+function dismissFirstVisitBanner(){
+  const b=document.getElementById('firstVisitBanner');
+  if (b) b.classList.add('hidden');
+  try{ localStorage.setItem('wt-accuracy-seen-v1','1'); }catch(e){}
+}
+(function(){
+  const banner=document.getElementById('firstVisitBanner');
+  if (!banner) return;
+  let seen=null;
+  try{ seen=localStorage.getItem('wt-accuracy-seen-v1'); }catch(e){ seen='1'; }
+  if (!seen) banner.classList.remove('hidden');
 })();
 
 // The libraries are served from this site itself, never a CDN. If the

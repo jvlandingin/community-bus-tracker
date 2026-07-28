@@ -26,6 +26,9 @@ const CONFIG = RAW_TEMPLATE
 const files = {
   '/index.html': [fs.readFileSync(path.join(APP, 'index.html')), 'text/html'],
   '/admin.html': [fs.readFileSync(path.join(APP, 'admin.html')), 'text/html'],
+  // Netlify serves admin.html at the extensionless path too, and that is
+  // where the sharer link used to come out wrong.
+  '/admin': [fs.readFileSync(path.join(APP, 'admin.html')), 'text/html'],
   '/config.txt': [Buffer.from(CONFIG), 'text/plain'],
   '/assets/vendor/leaflet.js': [fs.readFileSync(path.join(VENDOR, 'assets/vendor/leaflet.js')), 'text/javascript'],
   '/assets/vendor/leaflet.css': [fs.readFileSync(path.join(VENDOR, 'assets/vendor/leaflet.css')), 'text/css'],
@@ -159,6 +162,80 @@ function run(page, include, label, configText) {
   const rawAdmin = await run('/admin.html', () => true, null, RAW_TEMPLATE);
   check(/placeholder/i.test(rawAdmin.errText), 'the admin page says the same',
     'page says: ' + rawAdmin.errText.slice(0, 100));
+
+  console.log('\n=== 6. the sharer link the admin page hands out ===');
+  // This is the link that gets posted in the group chat. If it points at
+  // the admin page, nobody can share and the key is on display.
+  for (const at of ['/admin.html', '/admin']) {
+    const a = await run(at, () => true);
+    const base = typeof a.w.trackerBase === 'function' ? a.w.trackerBase() : '(missing)';
+    const link = base + '#k=EXAMPLEKEY';
+    check(/\/$/.test(base) && !/admin/.test(base),
+      `served at ${at}: the link points at the tracker, not the admin page`, link);
+    const u = new URL(link);
+    check(u.hash === '#k=EXAMPLEKEY' && u.pathname === '/',
+      `served at ${at}: it is a usable absolute link with the key in the fragment`);
+  }
+
+  console.log('\n=== 7. content blockers must not be able to hide the controls ===');
+  // Reported from a real phone: on Brave, the whole "I'm on the bus" tab
+  // rendered except the button, because Shields matched the id "shareBtn"
+  // against a social-widget filter and injected display:none. The page
+  // looked entirely normal, so the best report anyone could give was "it is
+  // not there". Filter lists match attribute names, never visible text,
+  // which is why "Start sharing my location" is fine and id="shareBtn" was
+  // not. So the rule this guards is about names, on both pages, not about
+  // the one element that happened to get caught.
+  const shareNamedDom = d => {
+    const bad = [];
+    d.querySelectorAll('*').forEach(el => {
+      if (/share/i.test(el.id || '')) bad.push('#' + el.id);
+      const cls = typeof el.className === 'string' ? el.className : '';
+      cls.split(/\s+/).forEach(c => { if (c && /share/i.test(c)) bad.push('.' + c); });
+    });
+    return [...new Set(bad)];
+  };
+  for (const [page, dom] of [['index.html', ok.d], ['admin.html', okAdmin.d]]) {
+    const found = shareNamedDom(dom);
+    check(found.length === 0, `${page}: no rendered id or class reads as a share widget`,
+      found.join(' ') || 'clean');
+  }
+  // The DOM scan only sees what a page with no live data renders, so read
+  // the source too: it catches markup built in JS strings as well.
+  for (const page of ['index.html', 'admin.html']) {
+    const found = (fs.readFileSync(path.join(APP, page), 'utf8')
+      .match(/(?:id|class)="[^"]*share[^"]*"/gi) || []);
+    check(found.length === 0, `${page}: none in the source either, including markup built in JS`,
+      found.join(' ') || 'clean');
+  }
+
+  // Renaming only dodges the rules that exist today, so the page also has
+  // to notice when the button has been hidden anyway and say so.
+  const cb = await run('/index.html', () => true);
+  const note = () => cb.d.getElementById('controlHiddenNote');
+  const warned = () => !!note() && !note().className.includes('hidden');
+  cb.w.switchTab('share');
+  const startBtn = cb.d.getElementById('onbusStartBtn');
+  check(!!startBtn && cb.w.getComputedStyle(startBtn).display !== 'none',
+    'the start button is there and visible in a browser with no blocker');
+  check(!warned(), 'and nothing warns about a blocker that is not there');
+
+  const st = cb.d.createElement('style');          // exactly what Shields injects
+  st.textContent = '#onbusStartBtn{display:none !important;}';
+  cb.d.head.appendChild(st);
+  cb.w.switchTab('track');
+  cb.w.switchTab('share');                         // the path a sharer actually takes
+  check(warned(), 'with the button filtered out, opening the tab explains why',
+    note() && note().textContent.replace(/\s+/g, ' ').trim().slice(0, 64));
+
+  // ...and must not cry wolf when the button is legitimately not showing.
+  cb.w.switchTab('track');
+  check(!warned(), 'no warning on the track tab, which has no start button');
+  cb.w.switchTab('share');
+  cb.w.setShareUI('on', 'Sharing live');
+  check(!warned(), 'no warning while already sharing, when Stop is what is showing');
+  cb.w.setShareUI('off', 'Not sharing');
+  check(warned(), 'and it returns once the start button is meant to be back');
 
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');
   process.exit(fail ? 1 : 0);

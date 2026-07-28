@@ -1,0 +1,90 @@
+# Runs both suites on every pull request and every push to main.
+#
+# This exists because of what an inspection found in July 2026: the
+# documented way to run the database suites could not work, and nobody had
+# noticed, because nobody had followed it end to end. Tests that only ever
+# run on the machine of whoever wrote them drift back to that state. This
+# also means the runbook in tests/README.md is re-proven on every commit,
+# since the steps below are deliberately the same ones.
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  javascript:
+    name: JavaScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # No package.json on purpose: it would make Netlify run npm install on
+      # every deploy and publish node_modules with the site. jsdom is needed
+      # by test-boot.js alone, so CI installs it here and nowhere else.
+      - run: npm install --no-save jsdom@30
+      - name: Run the suites
+        run: |
+          set -euo pipefail
+          for t in test-hours test-guard test-strip test-prompts test-boot; do
+            echo "::group::$t"
+            node "tests/$t.js"
+            echo "::endgroup::"
+          done
+
+  database:
+    name: Database
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the client is present
+        run: psql --version
+      - name: Run the suites
+        working-directory: tests
+        run: |
+          set -euo pipefail
+          MIGRATIONS="db/00-legacy-baseline.sql
+                      ../sql/01-base.sql
+                      ../sql/02-key-rotation-cascade.sql
+                      ../sql/03-kick-block.sql
+                      ../sql/04-session-id-privacy.sql
+                      ../sql/05-rotate-same-key.sql"
+          # Each suite gets its own fresh database, exactly as
+          # tests/README.md says, because they move the seeded rows the
+          # next one expects.
+          for suite in 01-core-tests 02-rotation-tests 03-kick-tests \
+                       04-privacy-tests 05-rotate-tests; do
+            db="bustest_${suite%%-*}"
+            echo "::group::$suite"
+            psql -q -d postgres -v ON_ERROR_STOP=1 \
+                 -c "drop database if exists $db" -c "create database $db"
+            for f in $MIGRATIONS; do
+              psql -q -d "$db" -v ON_ERROR_STOP=1 -f "$f"
+            done
+            # ON_ERROR_STOP is also set inside each suite file, which is
+            # what makes psql exit non-zero on a failed expectation. It is
+            # repeated here so a new suite that forgets the line cannot
+            # pass silently for ever.
+            psql -q -d "$db" -v ON_ERROR_STOP=1 -f "db/$suite.sql"
+            echo "::endgroup::"
+          done

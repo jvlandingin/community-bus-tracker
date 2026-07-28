@@ -72,6 +72,36 @@ closing `grant`, and since each file is a single transaction, the failure rolls
 the whole file back. What you get is an empty database failing every later
 check in a way that looks like a schema bug rather than a missing role.
 
+## Continuous integration
+
+`.github/workflows/tests.yml` runs everything on every pull request and every
+push to `main`: the five JavaScript suites in one job, and the five database
+suites against a `postgres:16` service container in another. The database job
+deliberately repeats the steps above rather than calling a script, so the
+runbook on this page is re-proven on every commit instead of being taken on
+trust.
+
+For that to gate anything, **`javascript` and `database` have to be added as
+required status checks** on `main` in the repository's branch protection
+settings. Without that they report, but nothing stops a red branch merging.
+
+`netlify.toml` additionally runs the four suites that need nothing installed as
+the site's build command, so a failing one cancels the deploy. That is a second
+line only: by then the commit is already on `main`. The merge gate is the one
+that matters.
+
+Both are checked to go red, not just green. Breaking a threshold in
+`index.html` fails the JavaScript job and the Netlify build; reintroducing the
+session id bug in `sql/04-session-id-privacy.sql` fails the database job with
+`FAIL: but it is not the session id`. A suite that cannot fail is worse than no
+suite, because it is believed.
+
+One sharp edge to know about: psql exits non-zero on a failed expectation only
+because each suite file sets `\set ON_ERROR_STOP on` near the top. A new suite
+that forgets that line would pass for ever no matter what it asserted. CI also
+passes `-v ON_ERROR_STOP=1` on the command line so the exit code does not
+depend on remembering it, but keep the line anyway for anyone running by hand.
+
 ## Two lessons worth keeping
 
 The baseline was originally reconstructed from a dump of function definitions

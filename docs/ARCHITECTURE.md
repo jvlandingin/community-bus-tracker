@@ -2,7 +2,9 @@
 
 ## Stack
 
-- **Hosting:** Netlify (static). Free tier.
+- **Hosting:** Netlify (static). Free tier. Live at
+  `https://community-bus-tracker.netlify.app`; the admin page is
+  `/admin.html`, which Netlify also serves as `/admin`.
 - **Backend:** Supabase (Postgres + PostgREST RPC). Free tier.
 - **Map:** Leaflet 1.9.4, vendored locally. Tiles from CARTO light_all basemap.
 - **Supabase client:** supabase-js 2.110.8, UMD build, vendored locally.
@@ -26,10 +28,28 @@ community-bus-tracker/
   assets/vendor/      <- leaflet.js, leaflet.css, supabase.js, images/
 ```
 
-A Netlify drag-and-drop replaces the entire site, so all four must be present.
-Deploying index.html alone breaks the site. This has actually happened: a deploy
-without `assets/` produced "supabase is not defined", which is why both pages
-now detect a missing vendor file and say so in plain words.
+Deploys come from git: Netlify builds the repository on a push to `main`, and
+`netlify.toml` runs the four dependency-free JavaScript suites as the build
+command, so a failing one cancels the deploy. Nothing is compiled and nothing is
+installed, so the no-build-step property holds — what gets published is the
+repository exactly as committed. There is deliberately no `package.json`,
+because it would make Netlify run `npm install` and publish `node_modules`
+alongside the site.
+
+It used to be drag-and-drop, which replaced the entire site in one go, so all
+four items above had to be in the folder every time. Deploying index.html alone
+broke the site, and a deploy without `assets/` produced "supabase is not
+defined". That is why both pages still detect a missing vendor file and say so
+in plain words: git deploys make it far less likely, not impossible, and the
+check costs nothing.
+
+**Netlify serves `admin.html` at `/admin` as well**, and can redirect between
+the two. The admin page builds the sharer link from its own path, so that
+mattered: stripping the literal string `admin.html` did nothing on `/admin` and
+produced a link to the admin page, with the share key in the fragment, that
+looked entirely plausible in a group chat. `trackerBase()` now strips either
+form. Anything else that derives a URL from `location.pathname` has to assume
+the same.
 
 ## Access model
 
@@ -160,6 +180,24 @@ showing none. Two layers handle this:
 Known limitation: two *unlabelled* buses queued within 100 m at a terminal going
 the same direction will merge into one marker. This is why the bus number field
 is actively encouraged in the UI.
+
+## Content blockers
+
+Reported from a real phone: on Brave, the whole "I'm on the bus" tab rendered
+except the one button that starts sharing. Brave Shields does cosmetic
+filtering, and a social-widget rule matched the button's id, `shareBtn`. The
+element stayed in the DOM with `display:none` injected, so the page looked
+completely normal, the surrounding input and hints were all there, and the only
+way to share had silently gone. A sharer cannot diagnose that, and nothing
+reaches us.
+
+Two things changed. The DOM ids in that tab no longer contain "share"
+(`onbusStartBtn`, `onbusSetup`, `onbusView`, and so on) so the false positive
+does not match, and `checkControlsVisible()` reads the computed style of the
+start button whenever that tab is shown and says plainly what happened if it
+has been hidden anyway. The names are worth keeping neutral: **anything called
+`share*` in a class or id is a filter-list target**, and this failure is
+invisible from our side.
 
 ## Known limitations
 

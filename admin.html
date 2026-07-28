@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>WT Live: Admin</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔧%3C/text%3E%3C/svg%3E">
 <script src="assets/vendor/supabase.js"></script>
 <style>
   :root{
@@ -144,7 +145,7 @@
   <div class="card">
     <span class="badge">LIVE SHARERS</span>
     <div class="hint" style="margin-top:8px;">Everyone currently sharing a bus position. Stopping one removes the bus and blocks that phone from sharing for 6 hours, and their app tells them an organizer stopped it.</div>
-    <div id="sharerList" style="margin-top:6px;"></div>
+    <div id="liveList" style="margin-top:6px;"></div>
     <div class="hint warn" style="margin-top:10px;">Honest limit: someone determined can reload the page to get a new session and share again. Changing the share key below is the only real expulsion, and it affects everyone.</div>
   </div>
 
@@ -178,7 +179,7 @@
     <div class="hint" style="margin-top:8px;">The key that lets people share from the bus. Changing it: anyone already sharing gets 4 hours to finish their trip, and NEW sharers need the new key immediately. The old links in the group chat stop working for starting a share, so post the new link after changing.</div>
     <label class="f">NEW SHARE KEY</label>
     <div class="row">
-      <input type="text" id="newShareKey" maxlength="64" placeholder="8 to 64 chars: letters, digits, - _" autocomplete="off">
+      <input type="text" id="newAccessKey" maxlength="64" placeholder="8 to 64 chars: letters, digits, - _" autocomplete="off">
       <button class="small btn-ghost tight" onclick="genKey()">Generate</button>
     </div>
     <div style="height:10px"></div>
@@ -407,7 +408,7 @@ async function saveSettings(){
 async function refreshSharers(){
   const res = await rpc('admin_list_sharers', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
   if (res.error) return;
-  const list=document.getElementById('sharerList');
+  const list=document.getElementById('liveList');
   const data=res.data||[];
   list.innerHTML = data.length ? data.map(function(b){
     const dir = b.direction==='north' ? '<span class="dir-n">▲ North</span>' : '<span class="dir-s">▼ South</span>';
@@ -478,20 +479,32 @@ function genKey(){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
   const buf=new Uint32Array(20); crypto.getRandomValues(buf);
   let k=''; for (let i=0;i<20;i++) k+=chars[buf[i]%chars.length];
-  document.getElementById('newShareKey').value=k;
+  document.getElementById('newAccessKey').value=k;
+}
+// Where the tracker lives, relative to wherever this admin page is being
+// served from. Netlify serves admin.html at /admin as well as /admin.html,
+// and can redirect one to the other, so stripping the literal string
+// "admin.html" was not enough: on /admin it stripped nothing and the sharer
+// link posted to the group chat pointed at the admin page instead of the
+// map. It looked like a perfectly good link, which is the worst kind of
+// broken one.
+function trackerBase(){
+  let p = location.pathname.replace(/\/admin(\.html)?\/?$/i, '/');
+  if (p.charAt(p.length-1) !== '/') p = p.replace(/[^\/]*$/, '');   // any other filename
+  return location.origin + p;
 }
 async function rotateKey(){
-  const k=document.getElementById('newShareKey').value.trim();
+  const k=document.getElementById('newAccessKey').value.trim();
   if (!k){ note('rotateStatus','Type a new key or tap Generate.','err'); return; }
   if (!confirm('Change the share key now? Links in the group chat stop working for NEW shares immediately. Anyone already sharing gets 4 hours to finish their trip.')) return;
   const res = await rpc('admin_rotate_share_key', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_new_key:k });
   if (res.error){ note('rotateStatus', friendly(res.error), 'err'); return; }
   note('rotateStatus','Share key changed.','ok');
-  const link = location.origin + location.pathname.replace(/admin\.html$/,'') + '#k=' + encodeURIComponent(k);
+  const link = trackerBase() + '#k=' + encodeURIComponent(k);
   const box=document.getElementById('newLinkBox');
   box.classList.remove('hidden');
   box.innerHTML = 'New sharer link to post in the group chat:<br><b>'+esc(link)+'</b>';
-  document.getElementById('newShareKey').value='';
+  document.getElementById('newAccessKey').value='';
 }
 
 // ============================================================

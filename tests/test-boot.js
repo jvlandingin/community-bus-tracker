@@ -177,28 +177,65 @@ function run(page, include, label, configText) {
       `served at ${at}: it is a usable absolute link with the key in the fragment`);
   }
 
-  console.log('\n=== 7. a content blocker hiding the sharing control ===');
-  // Reported from a real phone: on Brave, the whole share tab rendered
-  // except the button, because Shields matched the id "shareBtn" against a
-  // social-widget filter and injected display:none. Nothing looked wrong,
-  // so nobody could report anything more useful than "it is not there".
+  console.log('\n=== 7. content blockers must not be able to hide the controls ===');
+  // Reported from a real phone: on Brave, the whole "I'm on the bus" tab
+  // rendered except the button, because Shields matched the id "shareBtn"
+  // against a social-widget filter and injected display:none. The page
+  // looked entirely normal, so the best report anyone could give was "it is
+  // not there". Filter lists match attribute names, never visible text,
+  // which is why "Start sharing my location" is fine and id="shareBtn" was
+  // not. So the rule this guards is about names, on both pages, not about
+  // the one element that happened to get caught.
+  const shareNamedDom = d => {
+    const bad = [];
+    d.querySelectorAll('*').forEach(el => {
+      if (/share/i.test(el.id || '')) bad.push('#' + el.id);
+      const cls = typeof el.className === 'string' ? el.className : '';
+      cls.split(/\s+/).forEach(c => { if (c && /share/i.test(c)) bad.push('.' + c); });
+    });
+    return [...new Set(bad)];
+  };
+  for (const [page, dom] of [['index.html', ok.d], ['admin.html', okAdmin.d]]) {
+    const found = shareNamedDom(dom);
+    check(found.length === 0, `${page}: no rendered id or class reads as a share widget`,
+      found.join(' ') || 'clean');
+  }
+  // The DOM scan only sees what a page with no live data renders, so read
+  // the source too: it catches markup built in JS strings as well.
+  for (const page of ['index.html', 'admin.html']) {
+    const found = (fs.readFileSync(path.join(APP, page), 'utf8')
+      .match(/(?:id|class)="[^"]*share[^"]*"/gi) || []);
+    check(found.length === 0, `${page}: none in the source either, including markup built in JS`,
+      found.join(' ') || 'clean');
+  }
+
+  // Renaming only dodges the rules that exist today, so the page also has
+  // to notice when the button has been hidden anyway and say so.
   const cb = await run('/index.html', () => true);
+  const note = () => cb.d.getElementById('controlHiddenNote');
+  const warned = () => !!note() && !note().className.includes('hidden');
   cb.w.switchTab('share');
-  const note = cb.d.getElementById('controlHiddenNote');
   const startBtn = cb.d.getElementById('onbusStartBtn');
   check(!!startBtn && cb.w.getComputedStyle(startBtn).display !== 'none',
-    'normally the start button is present and visible');
-  check(!!note && note.className.includes('hidden'), 'and no blocker warning is shown');
-  check(!/share/i.test(startBtn ? startBtn.id : 'share'),
-    'the button id no longer looks like a social share widget', startBtn && startBtn.id);
+    'the start button is there and visible in a browser with no blocker');
+  check(!warned(), 'and nothing warns about a blocker that is not there');
 
-  const st = cb.d.createElement('style');          // what Shields injects
+  const st = cb.d.createElement('style');          // exactly what Shields injects
   st.textContent = '#onbusStartBtn{display:none !important;}';
   cb.d.head.appendChild(st);
-  cb.w.checkControlsVisible();
-  check(!!note && !note.className.includes('hidden'),
-    'if it is hidden anyway, the page says so instead of looking fine',
-    note && note.textContent.replace(/\s+/g, ' ').trim().slice(0, 64));
+  cb.w.switchTab('track');
+  cb.w.switchTab('share');                         // the path a sharer actually takes
+  check(warned(), 'with the button filtered out, opening the tab explains why',
+    note() && note().textContent.replace(/\s+/g, ' ').trim().slice(0, 64));
+
+  // ...and must not cry wolf when the button is legitimately not showing.
+  cb.w.switchTab('track');
+  check(!warned(), 'no warning on the track tab, which has no start button');
+  cb.w.switchTab('share');
+  cb.w.setShareUI('on', 'Sharing live');
+  check(!warned(), 'no warning while already sharing, when Stop is what is showing');
+  cb.w.setShareUI('off', 'Not sharing');
+  check(warned(), 'and it returns once the start button is meant to be back');
 
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');
   process.exit(fail ? 1 : 0);

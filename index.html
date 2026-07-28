@@ -553,7 +553,7 @@ function switchTab(which) {
     setTimeout(function(){ map.invalidateSize(); }, 120);
     if (running){ pollPositions(); pollSightings(); }   // polling may have been paused
   }
-  if (which==='share') checkControlsVisible();
+  checkControlsVisible();   // self-guarding: clears itself on the track tab
 }
 let dirFilter = 'all';
 function setFilter(f) {

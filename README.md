@@ -52,7 +52,8 @@ migration.
    anon key, route slug, source URL, checkpoints and stops. Checkpoints are the
    handful of labels on the progress strip. Stops are every place the bus calls
    at, in route order.
-4. **Deploy** the folder to any static host. Netlify works well. The folder must
+4. **Deploy** to any static host. Netlify works well: point it at your fork and
+   it publishes on every push to `main`. However you host it, the site must
    contain `index.html`, `admin.html`, `config.txt` and `assets/`.
 5. **Open `/admin.html`**, sign in with your admin key, and set your operating
    hours. Use the Generate button to make a share key, and post the link it
@@ -82,6 +83,12 @@ Nothing in the documentation is claimed without being checked. The JavaScript
 suites extract the shipped code out of `index.html` by comment markers and run
 it, so a passing test cannot drift from the app. The SQL suites rebuild the
 database from scratch and run behavioural checks against it. See `tests/`.
+
+All of them run in GitHub Actions on every pull request and every push to
+`main`, and the ones that need nothing installed also run as Netlify's build
+command, so a failure cancels the deploy. See `tests/README.md`, including the
+one repository setting you have to change yourself for any of it to block a
+merge.
 
 ## Licence
 

@@ -1,0 +1,25 @@
+# Deploys come from git now, not drag-and-drop, so a bad commit becomes the
+# live site by itself. These four suites run as the build command and a
+# failure cancels the deploy.
+#
+# They are the four that need nothing installed. Each one extracts the
+# shipped functions out of index.html by their comment markers and runs
+# them, so a failure here means the HTML that is about to be published is
+# broken, not that some copy of it is.
+#
+# Nothing is compiled and nothing is installed, so the no-build-step
+# property still holds: what gets published is the repository exactly as
+# committed. There is deliberately no package.json, because it would make
+# Netlify run npm install and then publish node_modules along with the site.
+#
+# test-boot.js is missing from this list because it needs jsdom, and the
+# five database suites need a PostgreSQL. Both run in GitHub Actions
+# instead, which is the gate that actually matters: it blocks the merge,
+# where this only blocks the deploy of something already merged.
+[build]
+  publish = "."
+  command = """
+    node tests/test-hours.js && \
+    node tests/test-guard.js && \
+    node tests/test-strip.js && \
+    node tests/test-prompts.js"""

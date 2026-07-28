@@ -28,10 +28,20 @@ community-bus-tracker/
   assets/vendor/      <- leaflet.js, leaflet.css, supabase.js, images/
 ```
 
-A Netlify drag-and-drop replaces the entire site, so all four must be present.
-Deploying index.html alone breaks the site. This has actually happened: a deploy
-without `assets/` produced "supabase is not defined", which is why both pages
-now detect a missing vendor file and say so in plain words.
+Deploys come from git: Netlify builds the repository on a push to `main`, and
+`netlify.toml` runs the four dependency-free JavaScript suites as the build
+command, so a failing one cancels the deploy. Nothing is compiled and nothing is
+installed, so the no-build-step property holds — what gets published is the
+repository exactly as committed. There is deliberately no `package.json`,
+because it would make Netlify run `npm install` and publish `node_modules`
+alongside the site.
+
+It used to be drag-and-drop, which replaced the entire site in one go, so all
+four items above had to be in the folder every time. Deploying index.html alone
+broke the site, and a deploy without `assets/` produced "supabase is not
+defined". That is why both pages still detect a missing vendor file and say so
+in plain words: git deploys make it far less likely, not impossible, and the
+check costs nothing.
 
 **Netlify serves `admin.html` at `/admin` as well**, and can redirect between
 the two. The admin page builds the sharer link from its own path, so that

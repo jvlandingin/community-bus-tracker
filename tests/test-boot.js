@@ -177,6 +177,29 @@ function run(page, include, label, configText) {
       `served at ${at}: it is a usable absolute link with the key in the fragment`);
   }
 
+  console.log('\n=== 7. a content blocker hiding the sharing control ===');
+  // Reported from a real phone: on Brave, the whole share tab rendered
+  // except the button, because Shields matched the id "shareBtn" against a
+  // social-widget filter and injected display:none. Nothing looked wrong,
+  // so nobody could report anything more useful than "it is not there".
+  const cb = await run('/index.html', () => true);
+  cb.w.switchTab('share');
+  const note = cb.d.getElementById('controlHiddenNote');
+  const startBtn = cb.d.getElementById('onbusStartBtn');
+  check(!!startBtn && cb.w.getComputedStyle(startBtn).display !== 'none',
+    'normally the start button is present and visible');
+  check(!!note && note.className.includes('hidden'), 'and no blocker warning is shown');
+  check(!/share/i.test(startBtn ? startBtn.id : 'share'),
+    'the button id no longer looks like a social share widget', startBtn && startBtn.id);
+
+  const st = cb.d.createElement('style');          // what Shields injects
+  st.textContent = '#onbusStartBtn{display:none !important;}';
+  cb.d.head.appendChild(st);
+  cb.w.checkControlsVisible();
+  check(!!note && !note.className.includes('hidden'),
+    'if it is hidden anyway, the page says so instead of looking fine',
+    note && note.textContent.replace(/\s+/g, ' ').trim().slice(0, 64));
+
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');
   process.exit(fail ? 1 : 0);
 })();

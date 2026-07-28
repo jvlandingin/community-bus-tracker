@@ -166,9 +166,9 @@
   .dirbtn .dest{font-size:10.5px; color:var(--muted); font-weight:600;}
   .dirbtn.sel-north{border-color:var(--gold); background:var(--gold-soft);}
   .dirbtn.sel-south{border-color:var(--maroon); background:var(--maroon-soft);}
-  .sharedot{width:10px; height:10px; border-radius:50%; background:var(--muted); margin-top:4px; flex-shrink:0;}
-  .sharedot.live{background:var(--live); box-shadow:0 0 0 4px rgba(29,138,95,.15);}
-  .sharedot.err{background:var(--lost); box-shadow:0 0 0 4px rgba(196,67,46,.15);}
+  .statusdot{width:10px; height:10px; border-radius:50%; background:var(--muted); margin-top:4px; flex-shrink:0;}
+  .statusdot.live{background:var(--live); box-shadow:0 0 0 4px rgba(29,138,95,.15);}
+  .statusdot.err{background:var(--lost); box-shadow:0 0 0 4px rgba(196,67,46,.15);}
   .status-row{display:flex; gap:10px; align-items:flex-start;}
 
   .noticebar{
@@ -283,7 +283,7 @@
 <div class="wrap">
   <div class="tabs">
     <div class="tab active" id="tabTrack" onclick="switchTab('track')">📍 Track buses</div>
-    <div class="tab" id="tabShare" onclick="switchTab('share')">🚌 I'm on the bus</div>
+    <div class="tab" id="tabOnbus" onclick="switchTab('share')">🚌 I'm on the bus</div>
   </div>
 
   <div class="noticebar hidden" id="noticeBar">
@@ -351,17 +351,17 @@
   </div>
 
   <!-- SHARE -->
-  <div id="shareView" class="hidden">
+  <div id="onbusView" class="hidden">
     <div class="card">
       <div class="status-row" style="margin-bottom:12px;">
-        <div class="sharedot" id="shareDot"></div>
+        <div class="statusdot" id="onbusDot"></div>
         <div>
-          <div style="font-weight:800; font-size:14.5px;" id="shareStatusText">Not sharing</div>
+          <div style="font-weight:800; font-size:14.5px;" id="onbusStatusText">Not sharing</div>
           <div class="hint" style="margin-top:2px;">Shares only while this page is open and the screen is on.</div>
         </div>
       </div>
 
-      <div id="shareSetup">
+      <div id="onbusSetup">
         <div style="font-size:12.5px; font-weight:800; margin-bottom:6px;">Which direction is this bus going?</div>
         <div class="dirpick">
           <button class="dirbtn" id="pickNorth" onclick="pickDir('north')">
@@ -375,10 +375,15 @@
         <input type="text" id="busLabel" maxlength="12" placeholder="e.g. 98018">
         <div class="hint" style="margin-top:6px;">If someone else is also sharing from this bus, the number lets the app show it as one bus instead of two.</div>
         <div style="height:10px"></div>
-        <button class="big btn-primary" id="shareBtn" onclick="startSharing()">Start sharing my location</button>
+        <button class="big btn-primary" id="onbusStartBtn" onclick="startSharing()">Start sharing my location</button>
       </div>
-      <div id="shareActive" class="hidden">
+      <div id="onbusActive" class="hidden">
         <button class="big btn-stop" onclick="stopSharing()">Stop sharing</button>
+      </div>
+
+      <div class="noticebar hidden" id="controlHiddenNote">
+        <div class="tag">BUTTON MISSING</div>
+        <div style="margin-top:2px;">A content blocker in this browser is hiding the button that starts sharing. Blockers with a social filter list hide anything that looks like a share widget, and this button gets caught by mistake. In Brave, tap the lion in the address bar and turn Shields down for this site. Any other ad blocker: allow this site. Then reload.</div>
       </div>
 
       <div class="hint">
@@ -541,13 +546,14 @@ function ensureClient(){ if (!sb) sb = supabase.createClient(CFG.SUPABASE_URL, C
 // ============================================================
 function switchTab(which) {
   document.getElementById('tabTrack').classList.toggle('active', which==='track');
-  document.getElementById('tabShare').classList.toggle('active', which==='share');
+  document.getElementById('tabOnbus').classList.toggle('active', which==='share');
   document.getElementById('trackView').classList.toggle('hidden', which!=='track');
-  document.getElementById('shareView').classList.toggle('hidden', which!=='share');
+  document.getElementById('onbusView').classList.toggle('hidden', which!=='share');
   if (which==='track' && map){
     setTimeout(function(){ map.invalidateSize(); }, 120);
     if (running){ pollPositions(); pollSightings(); }   // polling may have been paused
   }
+  if (which==='share') checkControlsVisible();
 }
 let dirFilter = 'all';
 function setFilter(f) {
@@ -869,7 +875,7 @@ function focusBus(id){
 //    all; that alone is ~40% of a sharing phone's traffic over a trip.
 function shouldPoll(){
   if (document.hidden) return false;
-  const shareVisible = !document.getElementById('shareView').classList.contains('hidden');
+  const shareVisible = !document.getElementById('onbusView').classList.contains('hidden');
   if (sharing && shareVisible) return false;
   return true;
 }
@@ -1280,11 +1286,40 @@ async function stopSharing(){
   await rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:getSessionId() });
   setShareUI('off','Not sharing');
 }
+// ---- Is the control actually on screen? -------------------------------
+// Content blockers hide elements whose id or class looks like a social
+// share widget, by injecting display:none. Brave Shields did exactly that
+// to the start button when it was called shareBtn: it stayed in the DOM at
+// zero height, so the page looked completely normal and the only way to
+// share had silently gone. A sharer cannot diagnose that, and we never
+// hear about it. The ids are neutral now, but filter lists change, so
+// check rather than trust, and say plainly what happened.
+function checkControlsVisible(){
+  const note=document.getElementById('controlHiddenNote');
+  if (!note) return;
+  const view=document.getElementById('onbusView');
+  const setup=document.getElementById('onbusSetup');
+  const btn=document.getElementById('onbusStartBtn');
+  // Only meaningful when the button is supposed to be showing: not on the
+  // track tab, and not while sharing is already running.
+  if (!view || view.classList.contains('hidden') ||
+      !setup || setup.classList.contains('hidden')){
+    note.classList.add('hidden');
+    return;
+  }
+  let gone = !btn;
+  if (btn){
+    const cs=getComputedStyle(btn);
+    gone = cs.display==='none' || cs.visibility==='hidden' || parseFloat(cs.opacity)===0;
+  }
+  note.classList.toggle('hidden', !gone);
+}
 function setShareUI(state,msg){
-  document.getElementById('shareDot').className='sharedot '+(state==='on'?'live':(state==='error'?'err':''));
-  document.getElementById('shareStatusText').textContent=msg;
-  document.getElementById('shareSetup').classList.toggle('hidden', state==='on');
-  document.getElementById('shareActive').classList.toggle('hidden', state!=='on');
+  document.getElementById('onbusDot').className='statusdot '+(state==='on'?'live':(state==='error'?'err':''));
+  document.getElementById('onbusStatusText').textContent=msg;
+  document.getElementById('onbusSetup').classList.toggle('hidden', state==='on');
+  document.getElementById('onbusActive').classList.toggle('hidden', state!=='on');
+  checkControlsVisible();
 }
 
 // ============================================================

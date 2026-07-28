@@ -171,6 +171,24 @@ Known limitation: two *unlabelled* buses queued within 100 m at a terminal going
 the same direction will merge into one marker. This is why the bus number field
 is actively encouraged in the UI.
 
+## Content blockers
+
+Reported from a real phone: on Brave, the whole "I'm on the bus" tab rendered
+except the one button that starts sharing. Brave Shields does cosmetic
+filtering, and a social-widget rule matched the button's id, `shareBtn`. The
+element stayed in the DOM with `display:none` injected, so the page looked
+completely normal, the surrounding input and hints were all there, and the only
+way to share had silently gone. A sharer cannot diagnose that, and nothing
+reaches us.
+
+Two things changed. The DOM ids in that tab no longer contain "share"
+(`onbusStartBtn`, `onbusSetup`, `onbusView`, and so on) so the false positive
+does not match, and `checkControlsVisible()` reads the computed style of the
+start button whenever that tab is shown and says plainly what happened if it
+has been hidden anyway. The names are worth keeping neutral: **anything called
+`share*` in a class or id is a filter-list target**, and this failure is
+invisible from our side.
+
 ## Known limitations
 
 **Screen must stay on while sharing.** Mobile browsers suspend JavaScript and

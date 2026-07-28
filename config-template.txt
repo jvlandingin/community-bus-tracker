@@ -22,6 +22,12 @@ SOURCE_URL = https://github.com/YOUR-NAME/community-bus-tracker
 # This only identifies the route; it unlocks nothing.
 ROUTE_SLUG = your-route-slug
 
+# --- Contact for questions or concerns about this deployment ---
+# Optional. Shown next to the source link inside "How your data is
+# handled", alongside the accuracy/no-warranty note. Leave blank to
+# hide it.
+CONTACT_EMAIL = you@example.com
+
 # ============================================================
 #  Operating hours, headway, and expiry times are NOT here
 #  any more. They live in the database and are edited in

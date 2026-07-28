@@ -8,7 +8,9 @@
 - **Backend:** Supabase (Postgres + PostgREST RPC). Free tier.
 - **Map:** Leaflet 1.9.4, vendored locally. Tiles from CARTO light_all basemap.
 - **Supabase client:** supabase-js 2.110.8, UMD build, vendored locally.
-- **App:** two HTML files, no build step, no framework.
+- **App:** three HTML files, no build step, no framework. `index.html` is the
+  tracker, `admin.html` the operator page, `how-to.html` a static guide reached
+  from the ⓘ in the header.
 - **Config:** a plain `config.txt` the user edits on a phone. It now holds no
   secrets at all: only the Supabase URL, the anon key, the public route slug,
   the source code URL, the checkpoints and the stops. Because it holds nothing
@@ -198,6 +200,13 @@ start button whenever that tab is shown and says plainly what happened if it
 has been hidden anyway. The names are worth keeping neutral: **anything called
 `share*` in a class or id is a filter-list target**, and this failure is
 invisible from our side.
+
+The same reasoning decided how the guide link is built. Filter lists also carry
+rules for live-chat and support widgets, so the ⓘ in the header is `guideLink`
+rather than anything containing `help`, `support`, `chat` or `widget`, and it is
+an `<a href>` rather than a button: if a blocker hides it anyway, the page it
+points at is still a plain URL that works. `test-boot.js` section 8 checks both
+pages for those names, alongside the `share*` scan.
 
 ## Known limitations
 

@@ -38,8 +38,25 @@
   /* Header: signboard band */
   header{
     background:linear-gradient(180deg,var(--maroon),var(--maroon-deep));
-    color:#fff; padding:14px 16px 12px;
+    color:#fff; padding:14px 16px 12px; position:relative;
   }
+  /* Link to the guide. Deliberately an <a> with a neutral id, not a button
+     called help: filter lists hide live-chat and help widgets by name, and
+     this app has already lost a control that way once (see
+     checkControlsVisible). If a blocker hides this, the URL still works. */
+  #guideLink{
+    position:absolute; top:50%; right:14px; transform:translateY(-50%);
+    width:28px; height:28px; border-radius:50%; text-decoration:none;
+    background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
+    color:#fff; font-size:15px; font-weight:700; font-style:italic;
+    font-family:Georgia,'Times New Roman',serif;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #guideLink .newdot{
+    position:absolute; top:-1px; right:-1px; width:9px; height:9px;
+    border-radius:50%; background:var(--gold); border:1.5px solid var(--maroon-deep);
+  }
+  #guideLink.seen .newdot{display:none;}
   header .route{
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; font-weight:700; font-size:22px;
     letter-spacing:.04em; text-transform:uppercase; line-height:1.1;
@@ -278,6 +295,8 @@
 <header>
   <div class="route">Mendez / Tagaytay <span class="amp">⇄</span> One Ayala</div>
   <div class="sub">WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER · UNOFFICIAL</div>
+  <a id="guideLink" href="how-to.html" aria-label="How to use this tracker" title="How to use this tracker"
+     onclick="try{localStorage.setItem('wt-guide-seen','1');}catch(e){}">i<span class="newdot"></span></a>
 </header>
 
 <div class="wrap">
@@ -1387,6 +1406,17 @@ function start(){
   setInterval(renderBuses, 10000);
   setInterval(pollSettings, 60000);
 }
+// The gold dot on the guide link is a first-visit nudge, not a setting. It
+// is the only thing this app keeps between visits, it never leaves the
+// device, and losing it costs nothing but one extra dot.
+(function(){
+  const link=document.getElementById('guideLink');
+  if (!link) return;
+  let seen=null;
+  try{ seen=localStorage.getItem('wt-guide-seen'); }catch(e){ seen='1'; }
+  if (seen) link.classList.add('seen');
+})();
+
 // The libraries are served from this site itself, never a CDN. If the
 // folder uploaded to Netlify was missing assets/, every later error is a
 // confusing knock-on effect, so check first and say exactly what is wrong.

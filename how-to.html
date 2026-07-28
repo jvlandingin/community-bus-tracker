@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to use WT Live Tracker</title>
+<!-- Same reasoning as index.html: no og:url and no og:image, because both
+     would hardcode one deployment's domain into a file whose whole point is
+     that a different route needs no code changes. -->
+<meta name="description" content="How to watch the bus and how to share your position from on board. No app, no account, no sign-up.">
+<meta name="theme-color" content="#7a1f2b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="How to use WT Live Tracker">
+<meta property="og:description" content="A short guide to watching the bus and to sharing your position from on board.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚌%3C/text%3E%3C/svg%3E">
+<style>
+  /* Tokens copied from index.html deliberately, not imported. This page has
+     to keep working if it is opened on its own, and a shared stylesheet
+     would be a fourth file a deploy could forget. */
+  :root{
+    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#8a7f76;
+    --maroon:#7a1f2b; --maroon-deep:#5c161f; --maroon-soft:#f3e6e4;
+    --gold:#e39a1c; --gold-deep:#b87708; --gold-soft:#fbf0da;
+    --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink); min-height:100vh;
+    font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-size:15px; line-height:1.55;
+  }
+
+  header{
+    background:linear-gradient(180deg,var(--maroon),var(--maroon-deep));
+    color:#fff; padding:14px 16px 12px; position:relative;
+  }
+  header .route{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; font-weight:700; font-size:22px;
+    letter-spacing:.04em; text-transform:uppercase; line-height:1.1;
+  }
+  header .route .amp{color:var(--gold);}
+  header .sub{font-size:11.5px; opacity:.85; margin-top:2px; font-weight:600; letter-spacing:.03em;}
+  header .backlink{
+    position:absolute; top:14px; right:14px; display:inline-flex; align-items:center; gap:5px;
+    background:rgba(255,255,255,.14); color:#fff; text-decoration:none;
+    font-size:11px; font-weight:800; letter-spacing:.02em;
+    padding:6px 11px; border-radius:20px; border:1px solid rgba(255,255,255,.25);
+  }
+
+  .wrap{max-width:520px; margin:0 auto; padding:14px 14px 56px;}
+
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px; margin-bottom:12px; box-shadow:0 1px 2px rgba(43,35,32,.04);
+  }
+  .badge{
+    display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--maroon); background:var(--maroon-soft);
+    padding:4px 9px; border-radius:20px;
+  }
+  .badge.gold{color:var(--gold-deep); background:var(--gold-soft);}
+  h1{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed;
+    font-size:27px; font-weight:700; text-transform:uppercase; letter-spacing:.02em;
+    line-height:1.1; margin:0 0 8px;
+  }
+  h2{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed;
+    font-size:20px; font-weight:700; text-transform:uppercase; letter-spacing:.02em;
+    margin:12px 0 4px;
+  }
+  h3{font-size:14.5px; font-weight:800; margin:0 0 4px;}
+  p{margin:0 0 10px;}
+  p.lede{font-size:15.5px;}
+  .hint{font-size:11.5px; color:var(--muted); line-height:1.5;}
+  .muted{color:var(--muted);}
+
+  /* ---- Steps ------------------------------------------------------- */
+  .step{display:flex; gap:12px; padding:14px 0; border-top:1px solid var(--line);}
+  .step:first-of-type{border-top:none; padding-top:4px;}
+  .step .n{
+    flex:0 0 26px; height:26px; border-radius:50%; background:var(--maroon); color:#fff;
+    font-size:12.5px; font-weight:800; display:flex; align-items:center; justify-content:center;
+  }
+  .share .step .n{background:var(--gold); color:#3d2a05;}
+  .step .body{flex:1; min-width:0;}
+  .step .body p{font-size:13.5px; color:var(--muted); margin:2px 0 0;}
+  .step .body p b{color:var(--ink);}
+
+  /* Reveal on scroll. Starts visible so the page is readable with JS off. */
+  .reveal{opacity:1; transform:none; transition:opacity .5s ease, transform .5s ease;}
+  html.js .reveal{opacity:0; transform:translateY(14px);}
+  html.js .reveal.in{opacity:1; transform:none;}
+
+  /* ---- Media slots ------------------------------------------------- */
+  figure{margin:0 0 12px;}
+  .shot{
+    position:relative; border-radius:14px; overflow:hidden;
+    border:1px solid var(--line); background:var(--paper);
+  }
+  .shot img{display:block; width:100%; height:auto;}
+  figcaption{font-size:11.5px; color:var(--muted); margin-top:7px; text-align:center; line-height:1.5;}
+  figcaption b{color:var(--ink);}
+
+  /* Numbered callout dots that sit on top of a screenshot. Positioned with
+     inline left/top percentages once the real screenshots land. */
+  .dot{
+    position:absolute; width:24px; height:24px; margin:-12px 0 0 -12px;
+    border-radius:50%; background:var(--maroon); color:#fff; border:2px solid #fff;
+    font-size:11.5px; font-weight:800; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 8px rgba(43,35,32,.35);
+  }
+  .dot::after{
+    content:''; position:absolute; inset:-6px; border-radius:50%;
+    border:2px solid var(--maroon); opacity:0; animation:ping 2.6s ease-out infinite;
+  }
+  .dot:nth-of-type(2)::after{animation-delay:.5s;}
+  .dot:nth-of-type(3)::after{animation-delay:1s;}
+  .dot:nth-of-type(4)::after{animation-delay:1.5s;}
+  @keyframes ping{
+    0%{opacity:.7; transform:scale(.8);}
+    70%{opacity:0; transform:scale(1.5);}
+    100%{opacity:0; transform:scale(1.5);}
+  }
+
+  video{
+    width:100%; height:auto; border-radius:14px; border:1px solid var(--line);
+    display:block; background:#000;
+  }
+
+  /* ---- Live demo of the progress strip ----------------------------- */
+  .strip{margin:6px 0; padding:0 16px;}
+  .dirlabel{font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
+  .dirlabel.nb{text-align:right; margin-bottom:3px;}
+  .track{position:relative; height:22px;}
+  .track .rail{position:absolute; left:0; right:0; top:9px; height:4px; border-radius:2px;}
+  .track.nb .rail{background:var(--gold-soft); border:1px solid #eeddb4;}
+  .track.sb .rail{background:var(--maroon-soft); border:1px solid #e6cdc9;}
+  .dirlabel.sb{margin-top:3px;}
+  .buspill{
+    position:absolute; top:0; transform:translateX(-50%);
+    font-size:14px; line-height:1; padding:3px 5px; border-radius:20px;
+    background:var(--gold); border:1.5px solid #fff;
+    box-shadow:0 1px 4px rgba(43,35,32,.25); white-space:nowrap;
+    animation:ride 16s linear infinite;
+  }
+  .buspill.sb{background:var(--maroon); animation-name:ride-back; animation-delay:-8s;}
+  /* Uneven steps on purpose: a real bus crawls through Imus and runs the
+     open stretch. A constant glide reads as a progress bar, not a bus. */
+  @keyframes ride{
+    0%{left:2%;} 8%{left:6%;} 30%{left:34%;} 55%{left:58%;}
+    80%{left:82%;} 96%{left:98%;} 100%{left:98%;}
+  }
+  @keyframes ride-back{
+    0%{left:98%;} 8%{left:94%;} 30%{left:66%;} 55%{left:42%;}
+    80%{left:18%;} 96%{left:2%;} 100%{left:2%;}
+  }
+  .ticks{position:relative; height:26px; margin-top:2px;}
+  .tick{position:absolute; transform:translateX(-50%); text-align:center;}
+  .tick::before{content:''; display:block; width:2px; height:8px; background:var(--line); margin:0 auto 3px;}
+  .tick span{font-size:8.5px; font-weight:800; letter-spacing:.04em; color:var(--muted); white-space:nowrap;}
+  .tick.first{transform:none; text-align:left;}
+  .tick.first::before{margin:0 0 3px;}
+  .tick.last{transform:translateX(-100%); text-align:right;}
+  .tick.last::before{margin:0 0 3px auto;}
+
+  /* ---- Recreated prompt cards -------------------------------------- */
+  /* These are the real modals from index.html, rebuilt here. They cannot be
+     filmed: the idle prompt needs twenty minutes stationary, the end-of-trip
+     prompt needs the bus parked at a terminal, and the direction prompt
+     needs a genuinely wrong-way trip. */
+  .promptstack{position:relative; min-height:186px;}
+  .promptcard{
+    background:#fff; border-radius:16px; padding:18px; border:1px solid var(--line);
+    box-shadow:0 8px 28px rgba(43,35,32,.13);
+    position:absolute; inset:0 0 auto 0; opacity:0;
+    animation:cycle 21s ease-in-out infinite;
+  }
+  .promptcard:nth-child(2){animation-delay:7s;}
+  .promptcard:nth-child(3){animation-delay:14s;}
+  @keyframes cycle{
+    0%{opacity:0; transform:translateY(8px);}
+    3%{opacity:1; transform:none;}
+    30%{opacity:1; transform:none;}
+    34%{opacity:0; transform:translateY(-8px);}
+    100%{opacity:0; transform:translateY(-8px);}
+  }
+  .promptcard h3{font-size:15px; margin-bottom:6px;}
+  .promptcard p{font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:12px;}
+  .fakebtn{
+    display:block; width:100%; padding:11px; border-radius:12px; text-align:center;
+    font-size:13.5px; font-weight:800; margin-bottom:7px;
+  }
+  .fakebtn.primary{background:var(--maroon); color:#fff;}
+  .fakebtn.stop{background:var(--lost); color:#fff;}
+  .fakebtn.ghost{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
+
+  /* ---- Small pieces ------------------------------------------------ */
+  .statusdot{
+    width:11px; height:11px; border-radius:50%; background:var(--live);
+    display:inline-block; vertical-align:-1px; margin-right:6px;
+  }
+  .statusdot.off{background:var(--muted);}
+  .keyline{
+    background:var(--gold-soft); border:1px solid #eeddb4; border-radius:12px;
+    padding:12px 14px; font-size:13px; margin:0 0 12px;
+  }
+  .keyline b{display:block; margin-bottom:2px;}
+  a{color:var(--maroon); font-weight:700;}
+  .backfoot{text-align:center; margin-top:18px;}
+  .backfoot a{font-size:13px;}
+
+  @media (prefers-reduced-motion:reduce){
+    .buspill{animation:none; left:34%;}
+    .buspill.sb{left:66%;}
+    .dot::after{animation:none;}
+    .promptcard{
+      animation:none; opacity:1; position:static; margin-bottom:10px;
+      transform:none; box-shadow:none;
+    }
+    .promptstack{min-height:0;}
+    html.js .reveal{opacity:1; transform:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="route">Mendez / Tagaytay <span class="amp">⇄</span> One Ayala</div>
+  <div class="sub">HOW TO USE THIS TRACKER</div>
+  <a class="backlink" href="index.html">← Map</a>
+</header>
+
+<div class="wrap">
+
+  <!-- ================= HERO ================= -->
+  <div class="card reveal">
+    <h1>Where's the bus?</h1>
+    <p class="lede">This page shows where the buses are right now, because someone
+      on board is sharing the position. No app to install, no account, no sign-up.
+      Open the link and look.</p>
+
+    <figure>
+      <div class="shot">
+        <img src="assets/howto/01-track.jpg" width="1030" height="1990"
+             alt="The tracker showing one bus live, northbound between Amadeo and Gen. Trias, on the progress strip and on the map.">
+        <!-- Positioned beside what they mark, never on top of it. -->
+        <span class="dot" style="left:6%;   top:5.2%">1</span>
+        <span class="dot" style="left:62%;  top:17.8%">2</span>
+        <span class="dot" style="left:34%;  top:24.6%">3</span>
+        <span class="dot" style="left:32%;  top:64.2%">4</span>
+      </div>
+      <figcaption>
+        <b>1</b> filter by direction · <b>2</b> how fresh the position is ·
+        <b>3</b> the bus on the route strip · <b>4</b> the same bus on the map
+      </figcaption>
+    </figure>
+
+    <p class="hint">Community-run and unofficial. It is not operated by or
+      connected to the bus company.</p>
+  </div>
+
+  <!-- ================= WATCHING ================= -->
+  <div class="card reveal">
+    <span class="badge">Watching · no key needed</span>
+    <h2>Reading the map</h2>
+
+    <div class="step">
+      <div class="n">1</div>
+      <div class="body">
+        <h3>Open the link</h3>
+        <p>Nothing is asked of you. <b>Watching never uses your location</b> and
+          the browser never prompts for it.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="n">2</div>
+      <div class="body">
+        <h3>Read the strip</h3>
+        <p>The strip is the whole route flattened into a line, Mendez on the left
+          and One Ayala on the right. Each 🚌 is a bus. <b>Gold rides the top rail
+          northbound, maroon rides the bottom rail southbound.</b></p>
+      </div>
+    </div>
+
+    <div class="strip" aria-hidden="true">
+      <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
+      <div class="track nb"><div class="rail"></div><div class="buspill">🚌</div></div>
+      <!-- Evenly spaced, like the real strip: the app gives every leg the
+           same width rather than scaling by distance. See tests/test-strip.js -->
+      <div class="ticks">
+        <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
+        <div class="tick" style="left:16.7%"><span>TGY</span></div>
+        <div class="tick" style="left:33.3%"><span>AMADEO</span></div>
+        <div class="tick" style="left:50%"><span>GEN.T</span></div>
+        <div class="tick" style="left:66.7%"><span>IMUS</span></div>
+        <div class="tick" style="left:83.3%"><span>PITX</span></div>
+        <div class="tick last" style="left:100%"><span>AYALA</span></div>
+      </div>
+      <div class="track sb"><div class="rail"></div><div class="buspill sb">🚌</div></div>
+      <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
+    </div>
+
+    <div class="step">
+      <div class="n">3</div>
+      <div class="body">
+        <h3>Filter by direction</h3>
+        <p>Only care about buses heading to Ayala? Tap <b>▲ Northbound</b> and the
+          rest drop away.</p>
+      </div>
+    </div>
+
+    <figure>
+      <video controls playsinline preload="none" width="480" height="896"
+             poster="assets/howto/watch-poster.jpg">
+        <source src="assets/howto/watch.mp4" type="video/mp4">
+        Your browser cannot play this video.
+      </video>
+      <figcaption>Filtering by direction, then scrolling down to the sightings. 19 seconds, no sound.</figcaption>
+    </figure>
+
+    <div class="step">
+      <div class="n">4</div>
+      <div class="body">
+        <h3>Check how fresh it is</h3>
+        <p>Every bus says when it last moved: <b>updated 2 mins ago</b>. A bus that
+          has gone quiet fades out, and drops off entirely once it is clearly
+          stale. <b>A faded bus is a guess, not a position.</b></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SIGHTINGS ================= -->
+  <div class="card reveal">
+    <span class="badge">Sightings</span>
+    <h2>When nobody is sharing</h2>
+    <p>Early morning, late evening, or just a quiet stretch: often no one on board
+      is sharing. Post what you saw instead, and everyone else gets something to
+      go on.</p>
+    <p class="hint">Short and specific beats vague. <b>“Northbound just passed
+      Amadeo, 6:42am”</b> is useful. “Bus coming” is not.</p>
+
+    <figure>
+      <div class="shot">
+        <img src="assets/howto/03-sightings.jpg" width="1030" height="770" loading="lazy"
+             alt="The sightings card, with a box to type in and two recent sightings posted seconds ago.">
+      </div>
+      <figcaption>Sightings clear themselves after two hours, so the board never goes stale.</figcaption>
+    </figure>
+  </div>
+
+  <!-- ================= SHARING ================= -->
+  <div class="card reveal share">
+    <span class="badge gold">Sharing · needs the key</span>
+    <h2>I'm on the bus</h2>
+    <p>If you are the driver, the conductor, or a rider willing to help, you can
+      put this bus on everyone's map for the trip.</p>
+
+    <div class="keyline">
+      <b>🔑 You need the community key</b>
+      <span class="muted">It is posted in the group chat, usually as a link that
+      already carries the key. Open that link and the key is already in.</span>
+    </div>
+
+    <figure>
+      <video controls playsinline preload="none" width="540" height="868"
+             poster="assets/howto/share-poster.jpg">
+        <source src="assets/howto/share.mp4" type="video/mp4">
+        Your browser cannot play this video.
+      </video>
+      <figcaption>The whole thing: pick a direction, start, watch the bus appear
+        on the map, stop. 33 seconds, no sound.</figcaption>
+    </figure>
+
+    <div class="step">
+      <div class="n">1</div>
+      <div class="body">
+        <h3>Tap “🚌 I'm on the bus”</h3>
+        <p>The second tab, next to the map.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="n">2</div>
+      <div class="body">
+        <h3>Pick the direction</h3>
+        <p>Northbound to One Ayala, southbound to Mendez. <b>Get this right</b> —
+          it decides which rail your bus rides on, and a bus shown going the wrong
+          way is worse for someone waiting than no bus at all.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="n">3</div>
+      <div class="body">
+        <h3>Add the bus number</h3>
+        <p>Optional, but it helps. If someone else on the same bus is also
+          sharing, the number lets the app show <b>one bus instead of two</b>.</p>
+      </div>
+    </div>
+
+    <figure>
+      <div class="shot">
+        <img src="assets/howto/04-share-setup.jpg" width="1030" height="1184" loading="lazy"
+             alt="The share tab before starting: northbound picked and highlighted in gold, bus number 98019 typed in, and the Start sharing my location button below.">
+      </div>
+      <figcaption>Direction picked, bus number in. Ready to start.</figcaption>
+    </figure>
+
+    <div class="step">
+      <div class="n">4</div>
+      <div class="body">
+        <h3>Start sharing</h3>
+        <p>The browser asks for location permission once. Say yes and the bus
+          appears on the map within seconds.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="n">5</div>
+      <div class="body">
+        <h3>Keep the screen on</h3>
+        <p><b>Sharing only runs while this page is open and the screen is on.</b>
+          Lock the phone or switch apps and the position stops updating. Mounted
+          on the dashboard and plugged in is the way to do it.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="n">6</div>
+      <div class="body">
+        <h3>Stop when you get off</h3>
+        <p><span class="statusdot"></span>Tap <b>Stop sharing</b> and the bus
+          leaves everyone's map immediately. Nothing about the trip is kept.</p>
+      </div>
+    </div>
+
+    <figure>
+      <div class="shot">
+        <img src="assets/howto/05-sharing-active.jpg" width="1030" height="580" loading="lazy"
+             alt="The share tab while sharing: a green dot, the words Sharing live northbound, and a red Stop sharing button.">
+      </div>
+      <figcaption>While it is running. Green dot, and one button to stop.</figcaption>
+    </figure>
+  </div>
+
+  <!-- ================= PROMPTS ================= -->
+  <div class="card reveal">
+    <span class="badge gold">While you're sharing</span>
+    <h2>Questions it may ask</h2>
+    <p>The app watches for the few ways a share goes wrong on its own, and asks
+      rather than guessing. You will not see these often.</p>
+
+    <div class="promptstack" aria-hidden="true">
+      <div class="promptcard">
+        <h3>🚌 Still on the bus?</h3>
+        <p>This bus has not moved for about 20 minutes. That can just be traffic or
+          a wait at the terminal, so nothing has changed. If you have already
+          gotten off, tap Stop sharing so it leaves everyone's map.</p>
+        <div class="fakebtn primary">Yes, still on the bus</div>
+        <div class="fakebtn ghost">Stop sharing</div>
+      </div>
+
+      <div class="promptcard">
+        <h3>🧭 Which way is this bus going?</h3>
+        <p>This bus has moved about 4.2 km toward Mendez / Tagaytay, but the
+          direction picked was northbound. Nothing is being shared until you
+          answer.</p>
+        <div class="fakebtn primary">Switch to ▼ southbound</div>
+        <div class="fakebtn ghost">The direction is right, keep sharing</div>
+      </div>
+
+      <div class="promptcard">
+        <h3>🏁 Is this trip finished?</h3>
+        <p>This bus has been parked at One Ayala for a few minutes, which usually
+          means the trip is over. Sharing will stop by itself in 5 minutes unless
+          you say it is still going.</p>
+        <div class="fakebtn stop">Stop sharing</div>
+        <div class="fakebtn ghost">Still going, keep sharing</div>
+      </div>
+    </div>
+
+    <p class="hint">There is one more: if someone near you is already sharing in
+      the same direction, you get asked whether it is the same bus, so one bus
+      does not show up as two.</p>
+  </div>
+
+  <!-- ================= PRIVACY ================= -->
+  <div class="card reveal">
+    <span class="badge">Your data</span>
+    <h2>What this never keeps</h2>
+    <p>No accounts, no names, no phone numbers. <b>No location history at all</b> —
+      there is one row per active share, overwritten in place, and it is deleted
+      the moment you stop. There is no trail to look back through, so nobody can
+      review a driver's speed, breaks, or route. The data to do that does not
+      exist.</p>
+    <p class="hint">The full explanation lives in
+      <b>“How your data is handled”</b> on the map page.</p>
+  </div>
+
+  <div class="backfoot">
+    <a href="index.html">← Back to the map</a>
+  </div>
+</div>
+
+<script>
+document.documentElement.className = 'js';
+(function(){
+  var items = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)){
+    for (var i=0;i<items.length;i++) items[i].classList.add('in');
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { rootMargin:'0px 0px -8% 0px' });
+  for (var i=0;i<items.length;i++) io.observe(items[i]);
+})();
+</script>
+</body>
+</html>

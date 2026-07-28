@@ -26,6 +26,9 @@ const CONFIG = RAW_TEMPLATE
 const files = {
   '/index.html': [fs.readFileSync(path.join(APP, 'index.html')), 'text/html'],
   '/admin.html': [fs.readFileSync(path.join(APP, 'admin.html')), 'text/html'],
+  // Netlify serves admin.html at the extensionless path too, and that is
+  // where the sharer link used to come out wrong.
+  '/admin': [fs.readFileSync(path.join(APP, 'admin.html')), 'text/html'],
   '/config.txt': [Buffer.from(CONFIG), 'text/plain'],
   '/assets/vendor/leaflet.js': [fs.readFileSync(path.join(VENDOR, 'assets/vendor/leaflet.js')), 'text/javascript'],
   '/assets/vendor/leaflet.css': [fs.readFileSync(path.join(VENDOR, 'assets/vendor/leaflet.css')), 'text/css'],
@@ -159,6 +162,20 @@ function run(page, include, label, configText) {
   const rawAdmin = await run('/admin.html', () => true, null, RAW_TEMPLATE);
   check(/placeholder/i.test(rawAdmin.errText), 'the admin page says the same',
     'page says: ' + rawAdmin.errText.slice(0, 100));
+
+  console.log('\n=== 6. the sharer link the admin page hands out ===');
+  // This is the link that gets posted in the group chat. If it points at
+  // the admin page, nobody can share and the key is on display.
+  for (const at of ['/admin.html', '/admin']) {
+    const a = await run(at, () => true);
+    const base = typeof a.w.trackerBase === 'function' ? a.w.trackerBase() : '(missing)';
+    const link = base + '#k=EXAMPLEKEY';
+    check(/\/$/.test(base) && !/admin/.test(base),
+      `served at ${at}: the link points at the tracker, not the admin page`, link);
+    const u = new URL(link);
+    check(u.hash === '#k=EXAMPLEKEY' && u.pathname === '/',
+      `served at ${at}: it is a usable absolute link with the key in the fragment`);
+  }
 
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');
   process.exit(fail ? 1 : 0);

@@ -12,8 +12,9 @@ people can post text sightings instead.
 It is not affiliated with, run by, or endorsed by any bus company. The app says
 so itself, in the header strip and in "How your data is handled", because
 leaving that to whoever posts the link is how a community tool starts getting
-mistaken for an official one. If you deploy it for a route, edit both places to
-name your own operator.
+mistaken for an official one. If you deploy it for a route, edit those two
+places, plus the `<title>` and the `og:` tags at the top of `index.html` that
+name the route in link previews.
 
 ## What it does
 
@@ -54,7 +55,12 @@ migration.
 4. **Deploy** the folder to any static host. Netlify works well. The folder must
    contain `index.html`, `admin.html`, `config.txt` and `assets/`.
 5. **Open `/admin.html`**, sign in with your admin key, and set your operating
-   hours.
+   hours. Use the Generate button to make a share key, and post the link it
+   gives you in your group chat. That link is the tracker with the key in the
+   fragment, and it is what people tap to share from the bus.
+
+The route this was built for runs at
+[community-bus-tracker.netlify.app](https://community-bus-tracker.netlify.app).
 
 `config.txt` holds no secrets. The share key and the admin key live only in the
 database, so committing your config is safe and lets a host deploy straight from

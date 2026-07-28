@@ -2,7 +2,9 @@
 
 ## Stack
 
-- **Hosting:** Netlify (static). Free tier.
+- **Hosting:** Netlify (static). Free tier. Live at
+  `https://community-bus-tracker.netlify.app`; the admin page is
+  `/admin.html`, which Netlify also serves as `/admin`.
 - **Backend:** Supabase (Postgres + PostgREST RPC). Free tier.
 - **Map:** Leaflet 1.9.4, vendored locally. Tiles from CARTO light_all basemap.
 - **Supabase client:** supabase-js 2.110.8, UMD build, vendored locally.
@@ -30,6 +32,14 @@ A Netlify drag-and-drop replaces the entire site, so all four must be present.
 Deploying index.html alone breaks the site. This has actually happened: a deploy
 without `assets/` produced "supabase is not defined", which is why both pages
 now detect a missing vendor file and say so in plain words.
+
+**Netlify serves `admin.html` at `/admin` as well**, and can redirect between
+the two. The admin page builds the sharer link from its own path, so that
+mattered: stripping the literal string `admin.html` did nothing on `/admin` and
+produced a link to the admin page, with the share key in the fragment, that
+looked entirely plausible in a group chat. `trackerBase()` now strips either
+form. Anything else that derives a URL from `location.pathname` has to assume
+the same.
 
 ## Access model
 

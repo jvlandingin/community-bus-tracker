@@ -4,6 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WT Live: Mendez/Tagaytay ⇄ One Ayala</title>
+<!-- The link to this page gets posted into a Messenger group chat, so what
+     the preview card says is the first thing most people ever see of it.
+     No og:url or og:image on purpose: both would have to hardcode one
+     deployment's domain into a file the whole point of which is that a
+     different route needs no code changes. A crawler falls back to the URL
+     it fetched, which is the right answer anyway. -->
+<meta name="description" content="Live bus positions for the Mendez / Tagaytay to One Ayala route, shared by the people on board. No app, no account, no sign-up. Community-run and unofficial.">
+<meta name="theme-color" content="#7a1f2b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="WT Live: Mendez / Tagaytay ⇄ One Ayala">
+<meta property="og:description" content="See where the bus is right now, shared by whoever is on board. No app, no account. Community-run, not affiliated with the bus company.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚌%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/vendor/leaflet.css" />
 <script src="assets/vendor/leaflet.js"></script>
 <script src="assets/vendor/supabase.js"></script>

@@ -237,6 +237,42 @@ function run(page, include, label, configText) {
   cb.w.setShareUI('off', 'Not sharing');
   check(warned(), 'and it returns once the start button is meant to be back');
 
+  console.log('\n=== 8. the guide link, and everything the guide loads ===');
+  // The (i) in the header opens a second page, and that page pulls in its own
+  // screenshots and videos. Those are precisely the files a deploy drops:
+  // assets/ has gone missing once already, and a 404 on a screenshot is
+  // silent, so nobody would hear about it. Check that every path the guide
+  // names is actually in the repository.
+  const guide = ok.d.getElementById('guideLink');
+  const guideHref = guide && guide.getAttribute('href');
+  check(!!guide, 'the tracker renders a link to the guide');
+  check(guideHref === 'how-to.html', 'it points at the guide page', guideHref || 'no href');
+  // Relative, never absolute: the site has to work from a subdirectory and
+  // from Netlify's extensionless URLs alike. Same trap as the sharer link.
+  check(!!guideHref && !/^(?:[a-z]+:)?\/\//i.test(guideHref) && guideHref[0] !== '/',
+    'and it is relative, so a subdirectory deploy still resolves it', guideHref);
+
+  const guidePath = path.join(APP, 'how-to.html');
+  check(fs.existsSync(guidePath), 'how-to.html is in the repository');
+  const guideSrc = fs.existsSync(guidePath) ? fs.readFileSync(guidePath, 'utf8') : '';
+  const refs = [...new Set((guideSrc.match(/(?:src|poster)="([^"]+)"/g) || [])
+    .map(m => m.slice(m.indexOf('"') + 1, -1)))]
+    .filter(u => !/^(?:data:|[a-z]+:)?\/\//i.test(u) && !u.startsWith('data:'));
+  const missingRefs = refs.filter(u => !fs.existsSync(path.join(APP, u)));
+  check(refs.length > 0 && missingRefs.length === 0,
+    `every image and video the guide loads is present (${refs.length} files)`,
+    missingRefs.length ? 'missing: ' + missingRefs.join(' ') : 'all present');
+  check(/href="index\.html"/.test(guideSrc), 'and the guide links back to the map');
+
+  // Section 7's lesson, a different filter list: blockers hide live-chat and
+  // help widgets by name too, so the link must not be named like one.
+  for (const page of ['index.html', 'how-to.html']) {
+    const found = (fs.readFileSync(path.join(APP, page), 'utf8')
+      .match(/(?:id|class)="[^"]*(?:help|support|chat|widget)[^"]*"/gi) || []);
+    check(found.length === 0, `${page}: nothing reads as a help or chat widget`,
+      found.join(' ') || 'clean');
+  }
+
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');
   process.exit(fail ? 1 : 0);
 })();

@@ -26,6 +26,8 @@ name the route in link previews.
 - **Sightings:** a short text board for when nobody is sharing GPS.
 - **Admin page:** operating hours, a pinned notice, live sharers, sighting
   moderation, and key rotation. Needs a separate admin key.
+- **How-to page:** `how-to.html`, reached from the ⓘ in the header. Explains
+  watching and sharing with screenshots and two short screen recordings.
 
 ## What it deliberately does not do
 
@@ -54,11 +56,20 @@ migration.
    at, in route order.
 4. **Deploy** to any static host. Netlify works well: point it at your fork and
    it publishes on every push to `main`. However you host it, the site must
-   contain `index.html`, `admin.html`, `config.txt` and `assets/`.
+   contain `index.html`, `admin.html`, `how-to.html`, `config.txt` and
+   `assets/`.
 5. **Open `/admin.html`**, sign in with your admin key, and set your operating
    hours. Use the Generate button to make a share key, and post the link it
    gives you in your group chat. That link is the tracker with the key in the
    fragment, and it is what people tap to share from the bus.
+
+One exception to "no code changes": `how-to.html` is the only file whose
+content is tied to this particular route, because its screenshots and videos
+show it. Everything else adapts from `config.txt`. If you fork this for your own
+route, either recapture that media on your own deployment (it lives in
+`assets/howto/`, and the filenames are the only thing the page depends on), or
+delete `how-to.html` and the ⓘ link in the header of `index.html`. Leaving
+another route's screenshots in place is worse than having no guide.
 
 The route this was built for runs at
 [community-bus-tracker.netlify.app](https://community-bus-tracker.netlify.app).

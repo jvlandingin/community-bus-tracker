@@ -248,6 +248,10 @@
       <h4>Who runs this</h4>
       <p>A community volunteer, not the bus company. This tool is <b>not affiliated with, run by, or endorsed by Wonderful Transport</b>. The route name and colours are used so you can tell which buses it tracks, nothing more. Positions come from passengers and crew who choose to share, so this is not an official schedule and the company is not responsible for it.</p>
 
+      <h4>Accuracy is not guaranteed</h4>
+      <p>Positions come from volunteers' phones, not company dispatch or sensors, so a bus can be a few minutes stale, briefly show the wrong direction before the app catches it, or be missing from the map when nobody happens to be sharing. This tool is provided as-is, with no warranty of accuracy or uptime, and is not liable for delays, missed connections, or any other loss from relying on it. If something looks wrong, trust the sightings board, the posted schedule, or your own eyes over the map.</p>
+      <p class="hidden" id="contactBody"></p>
+
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, no analytics, and nothing to sell. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
     </div>
@@ -418,7 +422,7 @@
 // ============================================================
 // Settings load from config.txt. Edit that file, not this one.
 // ============================================================
-let CFG = { SUPABASE_URL:'', SUPABASE_ANON_KEY:'', ROUTE_SLUG:'', SOURCE_URL:'' };
+let CFG = { SUPABASE_URL:'', SUPABASE_ANON_KEY:'', ROUTE_SLUG:'', SOURCE_URL:'', CONTACT_EMAIL:'' };
 // Live settings, fetched from the database (edited in the admin page).
 // Hours are lists of [start, end] windows in 24h HH:MM, per direction.
 let SET = { hours:{ north:[], south:[] }, headway_min:30,
@@ -1379,6 +1383,21 @@ function renderSourceLink(){
   document.getElementById('sourceHead').classList.remove('hidden');
   document.getElementById('sourceBody').classList.remove('hidden');
 }
+function renderContactLine(){
+  const url = (CFG.SOURCE_URL||'').trim();
+  const email = (CFG.CONTACT_EMAIL||'').trim();
+  const parts = [];
+  if (/^https?:\/\//i.test(url)) {
+    parts.push('<a href="'+url.replace(/\/$/,'')+'/issues" target="_blank" rel="noopener noreferrer">open a GitHub issue</a>');
+  }
+  if (email) {
+    parts.push('<a href="mailto:'+encodeURIComponent(email).replace(/%40/g,'@')+'">'+escapeHtml(email)+'</a>');
+  }
+  if (!parts.length) return;
+  const p = document.getElementById('contactBody');
+  p.innerHTML = 'Questions or concerns about this tool: '+parts.join(' · ')+'.';
+  p.classList.remove('hidden');
+}
 function renderHours(){
   // multiple windows stack as lines inside the hour boxes
   document.getElementById('nbHours').textContent = hoursLabel('north');
@@ -1396,7 +1415,7 @@ function start(){
   ensureClient();
   ROUTE_CHAIN = buildRouteChain(CHECKPOINTS);
   if (!mapReady){
-    initMap(); buildTicks(); renderHours(); renderSourceLink(); mapReady=true;
+    initMap(); buildTicks(); renderHours(); renderSourceLink(); renderContactLine(); mapReady=true;
   }
   if (running) return;
   running=true;

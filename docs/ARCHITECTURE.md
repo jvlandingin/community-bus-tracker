@@ -108,6 +108,18 @@ Everything added since has been checked against this. The wrong-direction guard
 tracks route progress **in the sharing phone's own memory only**, never sends or
 stores it, and it dies with the tab.
 
+**The watching count is present tense only.** July 2026 added the one thing in
+the system that observes watchers at all: the tracker page beats every 60
+seconds with a random per-tab id, and the admin page can see how many devices
+have the map open right now. It was checked against the rule above and built to
+stay on the right side of it — rows are deleted three minutes after the last
+beat, so there is no daily total, no peak, no yesterday, and nothing to
+subpoena. **A watching count is a live gauge, not a log.** Turning it into a
+graph over time means adding a history table, and that is the conversation the
+paragraph above demands, not a small follow-up. Full reasoning, including why
+nothing lists watcher ids and why the endpoint needs no key, is in
+`docs/DATABASE.md`.
+
 **Settings live in the database.** Operating hours, headway, expiry times and
 the sharer cap moved out of config.txt in July 2026. The company's own poster
 says information "may change anytime without prior notice", so a schedule change
@@ -266,6 +278,12 @@ Measured and reasoned, not guessed:
 - Thresholds: under 30 concurrent viewers, no changes needed. 50 to 100, fine as
   currently built. Beyond 200, move to realtime or add an edge cache.
 - Reads no longer write, which matters much more now that reads are public.
+- The first two numbers above were reasoned, never measured, because nothing
+  counted watchers. The watching count now measures the first one directly, so
+  when a decision here turns on concurrency, read it off the admin page instead
+  of re-deriving it. It costs one write per watcher per minute against six reads
+  per watcher per minute, so it is under 3% on top of what a watcher already
+  sends.
 
 ## Testing
 
@@ -282,7 +300,8 @@ deploy folder:
   `01-core-tests.sql` runs 55 behavioural checks against it, `02-rotation-tests`
   17 for key rotation, `03-kick-tests` 17 for stopping a sharer,
   `04-privacy-tests` 18 for session id privacy, `05-rotate-tests` 10 for the
-  rotation guard. Each runs against its own fresh database; see
+  rotation guard, `06-watching-tests` 32 for the watching count — most of them
+  about what it refuses to keep. Each runs against its own fresh database; see
   `tests/README.md`, which is now accurate about that.
 
 Two lessons worth keeping. The reconstruction was built from a dump of function

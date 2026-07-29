@@ -51,6 +51,12 @@ design.** Unique on `(route_slug, session_id)`.
 `sid` (identity, used by admin delete), `route_key`, `route_slug`, `body`,
 `created_at`.
 
+### watching_now
+One row per tab with the tracker page open, upserted in place. `route_slug`,
+`watcher_id`, `last_seen`, and nothing else. Rows are deleted three minutes
+after the last beat, so the table only ever describes the present. See
+"The watching count" below.
+
 ### Foreign keys, and a warning
 
 `bus_positions.route_key` and `sightings.route_key` reference `routes(key)`
@@ -92,6 +98,7 @@ to 120, sighting expiry 5 to 1440, max sessions 1 to 200.
 | `get_sightings(p_slug)` | newest 8 within the expiry window |
 | `add_sighting(p_slug, p_body)` | 1 to 140 chars; refuses a 6th post inside 60 seconds route-wide |
 | `clear_bus_position(p_slug, p_session)` | takes the real session id, which only the sharer's own phone holds; keeps working across a rotation and from sendBeacon |
+| `mark_watching(p_slug, p_watcher)` | the watching heartbeat, see below. Returns nothing and tells the caller nothing. |
 | `ping()` | keep-alive target for the uptime monitor |
 
 ### Why `get_positions` does not return the session id
@@ -145,8 +152,8 @@ on the old key gets `invalid key`.
 `admin_check`, `admin_set_settings`, `admin_set_notice(p_text, p_minutes)`,
 `admin_rotate_share_key`, `admin_kick`, `admin_delete_sighting`,
 `admin_change_key`, `admin_list_sharers`, `admin_list_blocked`,
-`admin_unblock`. All take `(p_slug, p_admin, ...)` and raise
-`invalid admin key` on failure.
+`admin_unblock`, `admin_watching_count`. All take `(p_slug, p_admin, ...)` and
+raise `invalid admin key` on failure.
 
 `admin_list_sharers` is the only way to get real session ids back out of the
 database, and the admin page needs it because `admin_kick` and `admin_unblock`
@@ -164,7 +171,52 @@ works **only while none is set**, so it cannot be used to take over a route.
 
 ### SQL editor only (execute revoked from anon)
 `rename_route_slug(p_old, p_new)`, and the internal helpers `_hash_admin`,
-`_pub_id`, `_require_admin`, `_check_settings`, `_sweep`.
+`_pub_id`, `_require_admin`, `_check_settings`, `_sweep`, `_sweep_watching`,
+`_watching_window`, `_watching_cap`.
+
+## The watching count
+
+`sql/06-watching-count.sql`. The admin page could see sharers and nothing else,
+so the first question an organiser asks — is anyone using this? — had no answer.
+Reads are anonymous and stay that way, so the count had to be built rather than
+derived from something already stored.
+
+The tracker page sends `mark_watching(slug, watcher_id)` every 60 seconds while
+it is visible. `watcher_id` is a random string the tab invents for itself, kept
+in `sessionStorage`, gone when the tab closes; it is not the sharing session id
+and is not linked to it. `admin_watching_count(slug, admin)` returns
+`(watching, capped)` — a total and a flag, never the ids behind it.
+
+Design constraints, all of which are the point rather than details:
+
+- **The window is 3 minutes**, in `_watching_window()`, against a 60 second
+  beat, so one missed beat on a patchy connection does not drop a tab out of
+  the count. `_sweep_watching` deletes anything past it, and `_sweep` calls it
+  too, so a route nobody is watching does not sit on rows until the next
+  watcher arrives. **The table therefore only ever holds the present.** There is
+  no daily total, no peak, no yesterday — adding one means adding a history
+  table, which is the thing this system does not do.
+- **Nothing lists watchers.** No function returns a `watcher_id` to anyone, not
+  even behind the admin key, because nothing needs one. `admin_kick` needed real
+  session ids, which is why `admin_list_sharers` exists; there is no equivalent
+  action for a watcher, so there is no equivalent function.
+  `06-watching-tests.sql` fails if one is ever added.
+- **`mark_watching` takes no key**, because a watcher has none. So anyone who
+  reads the source can call it in a loop with invented ids and inflate the
+  number. `_watching_cap()` (1000, far above the 200 at which the architecture
+  notes say to revisit the whole design) bounds that to a fixed-size table
+  rather than an unbounded one, and the count comes back with `capped` set so
+  the admin page can say the number is saturated instead of quietly lying. This
+  is a number for a volunteer's sense of demand; it is not evidence and the
+  admin page says so.
+- **It fails quietly.** A watcher beating faster than the client does is a
+  no-op, not an error, and a beat past the cap writes nothing and still returns
+  success. Nobody looking at a bus map should ever see a failure about a number
+  they cannot see.
+- **The name avoids `ping`, `track`, `stat` and `count`.** Those substrings in a
+  request path are content-blocker filter targets, and a blocked heartbeat fails
+  invisibly and undercounts. Same lesson as `shareBtn`, see
+  `docs/ARCHITECTURE.md`.
 
 ## Setting up a fresh route
 

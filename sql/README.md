@@ -11,10 +11,16 @@ retry.
 | `03-kick-block.sql` | makes stopping a sharer actually hold, instead of their phone rewriting the position seconds later |
 | `04-session-id-privacy.sql` | stops publishing live session ids to every watcher, which let anyone clear the whole route off the map |
 | `05-rotate-same-key.sql` | refuses a share key "rotation" to the key already in use, which used to leave that key working |
+| `06-watching-count.sql` | lets the admin page see how many devices have the map open right now, without recording who |
 
 If you are setting up fresh, run all of them. They are separate files because
 they were written in that order against a live deployment, and keeping the
 history visible is more honest than pretending the first version was right.
+
+`06` is the one that can be run in either order relative to the pages: until it
+is applied the heartbeat call fails and is swallowed, and the admin page says it
+could not read the count. Nothing else is affected, and it corrects itself one
+beat after the migration runs.
 
 `04` changes the shape of `get_positions`, so deploy `index.html` and
 `admin.html` from the same commit as the migration. An old page against the new

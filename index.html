@@ -234,6 +234,7 @@
     <div class="privacy-detail">
       <h4 class="ok">If you're just watching the map</h4>
       <p>The app never asks for your location. The location permission is only used in “I'm on the bus” mode, and only after you tap Start. No account, no name, no phone number. We can't see who is watching.</p>
+      <p>One thing is counted, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
 
       <h4 class="ok">If you share from the bus</h4>
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID for your session. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
@@ -257,7 +258,7 @@
       <p class="hidden" id="contactBody"></p>
 
       <h4>Why you can trust this</h4>
-      <p>This is a free community tool with no ads, no analytics, and nothing to sell. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
+      <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers, nothing kept once you close the page. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
     </div>
     <div style="height:14px"></div>
     <button class="big btn-ghost" onclick="document.getElementById('privModal').classList.add('hidden')">Close</button>
@@ -973,6 +974,39 @@ async function addSighting() {
 }
 
 // ============================================================
+// Watching heartbeat
+// ============================================================
+// Answers exactly one question for the organiser, on the admin page:
+// how many devices have the map open right now. It sends a random id
+// this tab invented for itself and nothing else — no location, no
+// history, no link to the sharing session id or to anything that
+// outlives the tab. The server deletes the row three minutes after the
+// last beat, so there is nothing to look back at afterwards.
+//
+// Deliberately not named ping, track, stat or count anywhere in the
+// request path: those are filter-list targets, and a blocked heartbeat
+// would fail invisibly and undercount. See "Content blockers" in
+// docs/ARCHITECTURE.md.
+let watcherId=null;
+function getWatcherId(){
+  if (watcherId) return watcherId;
+  try{ watcherId = sessionStorage.getItem('wt-watcher'); }catch(e){}
+  if (!watcherId){
+    watcherId = (crypto.randomUUID ? crypto.randomUUID()
+      : 'W'+Date.now().toString(36)+Math.random().toString(36).slice(2,10));
+    try{ sessionStorage.setItem('wt-watcher', watcherId); }catch(e){}
+  }
+  return watcherId;
+}
+// Never surfaces anything. A count nobody on this page can see is not
+// worth one word of error in front of someone reading a map.
+async function markWatching(){
+  if (document.hidden) return;
+  try{ await rpc('mark_watching', { p_slug:CFG.ROUTE_SLUG, p_watcher:getWatcherId() }); }
+  catch(e){}
+}
+
+// ============================================================
 // Share mode (multi-bus, direction-aware)
 // ============================================================
 let watchId=null, sharing=false, lastWrite=0, shareDir=null, lastCoords=null, hbTimer=null;
@@ -1039,7 +1073,12 @@ function releaseWakeLock(){
   if (wakeLock){ try{ wakeLock.release(); }catch(e){} wakeLock=null; }
 }
 document.addEventListener('visibilitychange', function(){
-  if (!document.hidden && sharing && !wakeLock) acquireWakeLock();
+  if (document.hidden) return;
+  if (sharing && !wakeLock) acquireWakeLock();
+  // a tab coming back from the background has been out of the count for
+  // as long as it was away; beat straight away rather than up to a
+  // minute later
+  if (running) markWatching();
 });
 
 async function writePosition(coords){
@@ -1428,11 +1467,14 @@ function start(){
   }
   if (running) return;
   running=true;
-  pollPositions(); pollSightings();
+  pollPositions(); pollSightings(); markWatching();
   setInterval(pollPositions, 6000);
   setInterval(pollSightings, 15000);
   setInterval(renderBuses, 10000);
   setInterval(pollSettings, 60000);
+  // 60s against a 3 minute server-side window, so one missed beat on a
+  // patchy connection does not drop this tab out of the count
+  setInterval(markWatching, 60000);
 }
 // The gold dot on the guide link is a first-visit nudge, not a setting. It
 // is the only thing this app keeps between visits, it never leaves the

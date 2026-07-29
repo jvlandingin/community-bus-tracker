@@ -37,8 +37,10 @@ system: the tool cannot be used to review a driver's speed, breaks, or route,
 because the data to do that does not exist. Do not add a history table without a
 very deliberate conversation about it.
 
-There are also no accounts, no names, no phone numbers, no analytics, and no
-third-party code. The only outside service the browser contacts is the map tile
+There are also no accounts, no names, no phone numbers, no third-party code, and
+no analytics beyond one live number: the admin page can see how many devices have
+the map open right now, counted from a random per-tab ID that is deleted three
+minutes after the tab closes and never linked to a person. Nothing is kept. The only outside service the browser contacts is the map tile
 provider, and that is disclosed to users inside the app.
 
 ## Running it for your own route

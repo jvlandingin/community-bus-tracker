@@ -143,6 +143,13 @@
   </div>
 
   <div class="card">
+    <span class="badge">WATCHING NOW</span>
+    <div class="hint" style="margin-top:8px;">Devices with the tracker page open in the last 3 minutes, including anyone sharing with the app in front of them. Anonymous: each tab makes up a random ID, it is never linked to a person, and it is deleted 3 minutes after the tab closes. Nothing is kept, so there is no history to look back at.</div>
+    <div id="nowWatching" style="margin-top:6px;"></div>
+    <div class="hint warn" style="margin-top:10px;">Honest limit: this counts open tabs, not people. One person with the map open on two devices is two, and because watching needs no key, anyone who worked out the call could inflate it with made-up IDs. Read it as a rough sense of demand, not a headcount.</div>
+  </div>
+
+  <div class="card">
     <span class="badge">LIVE SHARERS</span>
     <div class="hint" style="margin-top:8px;">Everyone currently sharing a bus position. Stopping one removes the bus and blocks that phone from sharing for 6 hours, and their app tells them an organizer stopped it.</div>
     <div id="liveList" style="margin-top:6px;"></div>
@@ -297,10 +304,13 @@ function enter(){
   document.getElementById('loginGate').classList.add('hidden');
   document.getElementById('main').classList.remove('hidden');
   document.getElementById('slugLine').textContent = 'ROUTE: ' + CFG.ROUTE_SLUG.toUpperCase();
-  refreshSettings(); refreshSharers(); refreshSightings(); refreshBlocked();
+  refreshSettings(); refreshSharers(); refreshSightings(); refreshBlocked(); refreshWatching();
   timers.push(setInterval(refreshSharers, 6000));
   timers.push(setInterval(refreshSightings, 15000));
   timers.push(setInterval(refreshBlocked, 30000));
+  // slower than the rest on purpose: the number moves on a 3 minute
+  // window, so polling it faster only adds requests
+  timers.push(setInterval(refreshWatching, 30000));
 }
 
 // ============================================================
@@ -398,6 +408,30 @@ async function saveSettings(){
   }
   note('hoursStatus','Saved. The app picks it up within a minute.','ok');
   note('limitsStatus','Saved. The app picks it up within a minute.','ok');
+}
+
+// ============================================================
+// Watching now
+// ============================================================
+// A total and a flag, never the ids behind it: no function returns
+// those to anyone, deliberately. See sql/06-watching-count.sql.
+async function refreshWatching(){
+  const el=document.getElementById('nowWatching');
+  const res = await rpc('admin_watching_count', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
+  if (res.error){
+    el.innerHTML='<div class="hint">Could not read the count just now.</div>';
+    return;
+  }
+  const row=(res.data||[])[0]||{};
+  const n=row.watching||0;
+  el.innerHTML='<div class="item"><div><b style="font-size:26px;">'+n+'</b> '+
+    (n===1?'device':'devices')+' watching'+
+    '<div class="meta">'+(n===0
+      ? 'Nobody has the map open right now.'
+      : 'Seen in the last 3 minutes.')+'</div></div></div>'+
+    (row.capped
+      ? '<div class="hint warn" style="margin-top:8px;">This is the counting limit, so the real number is at least this and may be higher — or someone is inflating it.</div>'
+      : '');
 }
 
 // ============================================================

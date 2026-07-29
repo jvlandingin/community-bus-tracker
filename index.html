@@ -138,8 +138,53 @@
   .buschip .age{color:var(--muted); font-weight:600;}
 
   #map{height:290px; border-radius:12px; margin-top:14px; border:1px solid var(--line);}
-  .maplegend{display:flex; gap:14px; margin-top:8px; font-size:10.5px; color:var(--muted); font-weight:700;}
+  .maplegend{display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:8px; font-size:10.5px; color:var(--muted); font-weight:700;}
   .maplegend .sw{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; vertical-align:-1px;}
+
+  /* A bus on the map is a badge the size of a fingertip, nothing more. Two
+     buses a kilometre apart used to overlap into an unreadable smear of text
+     on a 290px map; the number and the recency are one tap away instead. */
+  .busmk{
+    width:30px; height:30px; border-radius:50%;
+    border:2.5px solid #fff; box-shadow:0 1px 6px rgba(0,0,0,.35);
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; line-height:1; cursor:pointer;
+  }
+  .busmk.nb{background:var(--gold);}
+  .busmk.sb{background:var(--maroon);}
+  .busmk.aging{opacity:.8;}
+  .busmk.delayed{background:#9aa1ac; opacity:.55;}
+  /* Direction tail. Colour alone would say northbound only to people who can
+     tell gold from maroon, and only if they read the legend first. */
+  .busmk::before,.busmk::after{content:''; position:absolute; left:50%; width:0; height:0;}
+  .busmk::before{border-left:8px solid transparent; border-right:8px solid transparent; margin-left:-8px;}
+  .busmk::after{border-left:5px solid transparent; border-right:5px solid transparent; margin-left:-5px;}
+  .busmk.nb::before{bottom:100%; margin-bottom:-3px; border-bottom:12px solid #fff;}
+  .busmk.nb::after{bottom:100%; margin-bottom:-1px; border-bottom:8px solid var(--gold);}
+  .busmk.sb::before{top:100%; margin-top:-3px; border-top:12px solid #fff;}
+  .busmk.sb::after{top:100%; margin-top:-1px; border-top:8px solid var(--maroon);}
+  .busmk.delayed.nb::after{border-bottom-color:#9aa1ac;}
+  .busmk.delayed.sb::after{border-top-color:#9aa1ac;}
+  .busmk .cnt{
+    position:absolute; top:-7px; right:-7px; min-width:16px; height:16px; padding:0 3px;
+    border-radius:9px; background:var(--ink); color:#fff; border:1.5px solid #fff;
+    font-size:9.5px; font-weight:800; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .buspop .leaflet-popup-content-wrapper{
+    background:var(--surface); color:var(--ink); border-radius:12px;
+    border:1px solid var(--line); box-shadow:0 6px 20px rgba(0,0,0,.22);
+  }
+  .buspop .leaflet-popup-content{margin:9px 12px; font-size:12px; line-height:1.5;}
+  .buspop .leaflet-popup-tip{background:var(--surface);}
+  .buspop .pdir{font-size:9.5px; font-weight:800; letter-spacing:.06em;}
+  .buspop .nb .pdir{color:var(--gold-deep);}
+  .buspop .sb .pdir{color:var(--maroon);}
+  .buspop .pname{font-weight:800; font-size:13.5px; margin-top:1px;}
+  .buspop .page{color:var(--muted); font-weight:600;}
+  .mapreset a{display:flex; align-items:center; justify-content:center; color:var(--ink);}
+  .mapreset svg{width:15px; height:15px; display:block;}
 
   /* Hours */
   .hours{display:flex; gap:10px;}
@@ -355,9 +400,10 @@
 
       <div id="map"></div>
       <div class="maplegend">
-        <span><span class="sw" style="background:var(--gold)"></span>Northbound</span>
-        <span><span class="sw" style="background:var(--maroon)"></span>Southbound</span>
+        <span><span class="sw" style="background:var(--gold)"></span>Northbound ▲</span>
+        <span><span class="sw" style="background:var(--maroon)"></span>Southbound ▼</span>
         <span><span class="sw" style="background:#94a3b8"></span>Stops (tap for name)</span>
+        <span>Tap a bus for its number and age</span>
       </div>
       <div class="hint" id="sourceNote">Positions come from whoever is on the bus: driver, conductor, or a rider volunteering. The direction is picked by hand, so it can occasionally be wrong.</div>
       <div class="hint" id="busExpiryNote"></div>
@@ -602,6 +648,7 @@ function setFilter(f) {
 // ============================================================
 let map, busMarkers = {};   // clustered pub_id -> marker
 let BUSES = [];             // latest fetched positions
+let HOME_BOUNDS = null;     // the whole route, what the reset button goes back to
 
 function initMap() {
   map = L.map('map', { zoomControl:true }).setView([14.33, 120.96], 10);
@@ -623,35 +670,86 @@ function initMap() {
     }).addTo(map).bindTooltip(c.name, {direction:'top'});
   });
   const pts = STOPS.filter(function(s){return !isNaN(s.lat);}).map(function(s){return [s.lat,s.lng];});
-  if (pts.length>1) map.fitBounds(pts, {padding:[24,24]});
+  if (pts.length>1) {
+    HOME_BOUNDS = L.latLngBounds(pts);
+    map.fitBounds(HOME_BOUNDS, {padding:[24,24]});
+    // One stray swipe on a phone leaves the route entirely, and finding the
+    // way back on a 290px map is worse than the swipe was. The limit is
+    // deliberately loose: a couple of hundred km of slack in every direction,
+    // so panning to a neighbouring province still works and it only stops the
+    // map ending up over an ocean with nothing on screen to steer by.
+    //
+    // The slack is squared off deliberately rather than using bounds.pad(),
+    // which scales each axis by its own span. This route is long north to
+    // south and narrow east to west, so pad() would allow a free hand
+    // vertically and pinch the map sideways for no reason a rider would guess.
+    const slack = Math.max(HOME_BOUNDS.getNorth()-HOME_BOUNDS.getSouth(),
+                           HOME_BOUNDS.getEast()-HOME_BOUNDS.getWest()) * 2.5;
+    map.setMaxBounds(L.latLngBounds(
+      [HOME_BOUNDS.getSouth()-slack, HOME_BOUNDS.getWest()-slack],
+      [HOME_BOUNDS.getNorth()+slack, HOME_BOUNDS.getEast()+slack]));
+  }
+  addResetControl();
 }
 
+function resetView(){
+  if (!map) return;
+  if (HOME_BOUNDS) map.fitBounds(HOME_BOUNDS, {padding:[24,24]});
+  else map.setView([14.33, 120.96], 10);
+}
+// Stacked under the zoom buttons, in Leaflet's own bar so it looks native and
+// inherits the touch target size.
+function addResetControl(){
+  const ctl = L.control({ position:'topleft' });
+  ctl.onAdd = function(){
+    const box = L.DomUtil.create('div', 'leaflet-bar mapreset');
+    const a = L.DomUtil.create('a', '', box);
+    a.href = '#';
+    a.setAttribute('role', 'button');
+    a.title = 'Show the whole route';
+    a.setAttribute('aria-label', 'Show the whole route');
+    a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
+      'stroke-width="2" stroke-linecap="round" aria-hidden="true">'+
+      '<circle cx="12" cy="12" r="6"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>';
+    L.DomEvent.on(a, 'click', function(e){ L.DomEvent.stop(e); resetView(); });
+    L.DomEvent.disableClickPropagation(box);
+    return box;
+  };
+  ctl.addTo(map);
+}
+
+// The badge greys and fades by class, so this returns that class: how much
+// to trust the dot you are looking at.
 function freshness(ts){
   const s = Math.floor((Date.now()-ts)/1000);
-  if (s < 45) return { tag:'live', label:'live', fade:0 };
-  if (s < 180) return { tag:'aging', label:timeAgo(ts), fade:0.25 };
-  return { tag:'delayed', label:timeAgo(ts), fade:0.6 };   // greyed
+  if (s < 45) return 'live';
+  if (s < 180) return 'aging';
+  return 'delayed';
 }
-function busIcon(dir, label, fr, count) {
-  let bg = dir==='north' ? '#e39a1c' : '#7a1f2b';
-  let fg = dir==='north' ? '#3d2a05' : '#ffffff';
-  if (fr.tag==='delayed'){ bg='#9aa1ac'; fg='#ffffff'; }   // clearly stale
-  const arrow = dir==='north' ? '▲' : '▼';
-  // The bus number is typed by a sharer and goes straight into innerHTML
-  // below, so it is escaped here exactly as it is in the chips and on the
-  // admin page. The server's 12 character cap is not a defence, only the
-  // reason nobody has managed anything with it yet.
-  const name = label ? (arrow+' '+escapeHtml(label)) : arrow;
-  const badge = name + ' · ' + fr.label + ((count&&count>1) ? ' · '+count+'\u00d7' : '');
+// A fixed size badge, so the anchor can be the centre of the disc and the
+// marker sits on the position it is reporting. The old pill was sized by its
+// own text against a hand-picked anchor, which put a bus with a long number
+// most of a block from where it actually was.
+function busIcon(dir, fresh, count) {
   return L.divIcon({
-    className:'',
-    iconSize:null,
-    html:'<div style="display:inline-block;background:'+bg+';color:'+fg+
-         ';font:800 10.5px -apple-system,Roboto,sans-serif;padding:4px 8px;border-radius:14px;'+
-         'border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.35);white-space:nowrap;'+
-         'opacity:'+(1-fr.fade)+';">'+badge+'</div>',
-    iconAnchor:[18,13]
+    className: 'busmk ' + (dir==='north'?'nb':'sb') + ' ' + fresh,
+    iconSize:[30,30], iconAnchor:[15,15], popupAnchor:[0,-22],
+    html: '🚌' + ((count&&count>1) ? '<span class="cnt">'+(count|0)+'</span>' : '')
   });
+}
+// Everything the badge no longer says, one tap away. The bus number is typed
+// by a sharer and goes straight into innerHTML here, so it is escaped exactly
+// as it is in the chips and on the admin page. The server's 12 character cap
+// is not a defence, only the reason nobody has managed anything with it yet.
+function busPopupHtml(b){
+  const fresh = freshness(b.ts);
+  const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
+  return '<div class="'+(b.direction==='north'?'nb':'sb')+'">'+
+    '<div class="pdir">'+(b.direction==='north'?'▲ NORTHBOUND':'▼ SOUTHBOUND')+'</div>'+
+    (b.label ? '<div class="pname">'+escapeHtml(b.label)+'</div>' : '')+
+    '<div>'+escapeHtml(pl ? pl.label : 'position unclear')+'</div>'+
+    '<div class="page">'+(fresh==='live' ? 'live' : timeAgo(b.ts)+' ago')+
+    ((b.count&&b.count>1) ? ' · '+(b.count|0)+' sharing' : '')+'</div></div>';
 }
 
 // ============================================================
@@ -845,10 +943,42 @@ function clusterBuses(list){
   return clusters;
 }
 
+// Markers, strip pills and chips all read the same clustering, and the
+// recency in an open popup goes stale as fast as the chips do, so the map is
+// redrawn here rather than only when a fetch lands. Switching the direction
+// filter used to leave the wrong markers on the map until the next poll.
+function syncBusMarkers(all) {
+  if (!map) return;
+  const seen={};
+  all.forEach(function(b){
+    seen[b.id]=true;
+    const show = dirFilter==='all'||b.direction===dirFilter;
+    const icon = busIcon(b.direction, freshness(b.ts), b.count);
+    let m = busMarkers[b.id];
+    if (m) {
+      m.setLatLng([b.lat,b.lng]);
+      m.setIcon(icon);
+      m.setPopupContent(busPopupHtml(b));
+      if (!show) map.removeLayer(m);
+      else if (!map.hasLayer(m)) m.addTo(map);
+    } else if (show) {
+      m = L.marker([b.lat,b.lng],{icon:icon, title:'Show bus details'});
+      m.bindPopup(busPopupHtml(b),
+        { closeButton:false, className:'buspop', maxWidth:230, autoPanPadding:[18,18] });
+      busMarkers[b.id] = m.addTo(map);
+    }
+  });
+  Object.keys(busMarkers).forEach(function(id){
+    if (!seen[id]){ map.removeLayer(busMarkers[id]); delete busMarkers[id]; }
+  });
+}
+
 function renderBuses() {
   const nbPills=document.getElementById('nbPills'), sbPills=document.getElementById('sbPills');
   const list=document.getElementById('busList');
-  const shown = clusterBuses(BUSES).filter(function(b){ return dirFilter==='all' || b.direction===dirFilter; });
+  const all = clusterBuses(BUSES);
+  const shown = all.filter(function(b){ return dirFilter==='all' || b.direction===dirFilter; });
+  syncBusMarkers(all);
 
   // strip pills
   let nb='', sbz='';
@@ -858,7 +988,7 @@ function renderBuses() {
     if (!pl) return;
     pl.ticks.forEach(function(i){ nearSet[i]=true; });
     const pct = pl.pct;
-    const stale = freshness(b.ts).tag==='delayed';
+    const stale = freshness(b.ts)==='delayed';
     const pill = '<div class="buspill '+(b.direction==='south'?'sb':'')+(stale?' stale':'')+'" style="left:'+pct+'%">🚌</div>';
     if (b.direction==='north') nb+=pill; else sbz+=pill;
   });
@@ -899,7 +1029,12 @@ function renderBuses() {
 
 function focusBus(id){
   const b = clusterBuses(BUSES).find(function(x){return x.id===id;});
-  if (b && map) map.setView([b.lat,b.lng], 14);
+  if (!b || !map) return;
+  map.setView([b.lat,b.lng], 14);
+  // Tapping the chip and then hunting for which badge it meant is two steps
+  // for one question, so the badge answers it on arrival.
+  const m = busMarkers[id];
+  if (m && map.hasLayer(m)) m.openPopup();
 }
 
 // Don't spend requests when nobody's looking:
@@ -923,25 +1058,8 @@ async function pollPositions() {
     return { pub_id:v.pub_id, lat:v.lat, lng:v.lng, speed:v.speed,
              direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at) };
   });
-  // markers: one per clustered bus, not per sharing session
-  const seen={};
-  clusterBuses(BUSES).forEach(function(b){
-    seen[b.id]=true;
-    const fr=freshness(b.ts);
-    const show = dirFilter==='all'||b.direction===dirFilter;
-    const icon=busIcon(b.direction,b.label,fr,b.count);
-    if (busMarkers[b.id]) {
-      busMarkers[b.id].setLatLng([b.lat,b.lng]);
-      busMarkers[b.id].setIcon(icon);
-      if (!show) map.removeLayer(busMarkers[b.id]);
-      else if (!map.hasLayer(busMarkers[b.id])) busMarkers[b.id].addTo(map);
-    } else if (show) {
-      busMarkers[b.id]=L.marker([b.lat,b.lng],{icon:icon}).addTo(map);
-    }
-  });
-  Object.keys(busMarkers).forEach(function(id){
-    if (!seen[id]){ map.removeLayer(busMarkers[id]); delete busMarkers[id]; }
-  });
+  // markers are one per clustered bus rather than per sharing session, which
+  // is why renderBuses owns them: it is the one place that clusters.
   renderBuses();
 }
 

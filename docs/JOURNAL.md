@@ -25,7 +25,7 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
-## 2026-07-29 — First live demo trip: it worked, nobody needed it
+## 2026-07-30 — First live demo trip: it worked, nobody needed it
 
 **Result.** Rode Gen. Trias → One Ayala, roughly 1pm to 4pm, and shared position
 for the whole trip. Posted the link, a screenshot and the live location to the

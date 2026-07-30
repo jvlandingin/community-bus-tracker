@@ -25,11 +25,57 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
-## 2026-07-29 — First live demo trip
+## 2026-07-29 — First live demo trip: it worked, nobody needed it
 
-**Plan.** Ride northbound from Gen. Trias to One Ayala on an afternoon
-departure, share position for the whole trip, and post once to the group chat
-with a screenshot and the link. Then go quiet until arrival.
+**Result.** Rode Gen. Trias → One Ayala, roughly 1pm to 4pm, and shared position
+for the whole trip. Posted the link, a screenshot and the live location to the
+group chat. A few heart reactions, then the chat carried on exactly as before.
+The bus itself carried maybe 10–20 passengers over the entire trip, most of them
+probably not in the group chat at all.
+
+**What this does and does not measure.** The trip was made in the middle of the
+day rather than at a peak, which is the obvious confounder — but the mechanism is
+not the one it looks like. The people this tool serves are not the passengers on
+the bus, they are the people *waiting* for one. A near-empty bus at 1pm means
+almost nobody was waiting, which means almost nobody had a reason to open a map.
+Ridership on board is close to irrelevant to the test; latent demand off the bus
+is the whole thing, and at that hour there was none.
+
+**The deeper reason it was flat, which timing does not explain.** This tested the
+demand side before the supply side existed. A watcher will not build a habit of
+checking a map that is empty almost all the time, and it *is* empty almost all
+the time while the only sharers are volunteer riders who happen to be aboard.
+Watcher behaviour is downstream of reliable supply, and reliable supply means
+operators. So today's flat result is consistent with the plan rather than a
+refutation of it — it argues for moving to the operator conversation, not for
+re-running the rider demo at a better hour.
+
+**There is no way to observe watching, by design.** A person who opens the link,
+sees the bus and closes it again produces no signal anywhere: no message, no
+reaction, nothing in the admin page, and no analytics exist anywhere in the
+system on purpose. "Everyone went on to their usual" is therefore weak evidence
+of non-use — it is mostly evidence that use is invisible. The only honest
+instrument available is asking the group directly whether they saw it. Worth
+accepting as a permanent condition of the privacy stance rather than trying to
+fix.
+
+**What today did prove, which was not certain beforehand.** The full path works
+on a real trip: GPS held for about three hours, position published continuously,
+the map showed a live bus, the trip completed and stopped cleanly. Before today
+there were zero completed real trips. There is now one, which is the precondition
+for the operator conversation.
+
+**Incidental finding.** A bus was running at 1pm, which sits in what the
+configured schedule treats as the midday gap. Nothing visibly broke — the
+"outside operating hours" line only appears when no bus is live, and a bus was
+live — but it suggests the configured departure windows may not match what the
+buses actually do. Worth checking against reality in the admin page rather than
+against the poster.
+
+**Plan as it was written beforehand, for reference.** Ride northbound from Gen.
+Trias to One Ayala on an afternoon departure, share position for the whole trip,
+and post once to the group chat with a screenshot and the link. Then go quiet
+until arrival.
 
 **Why this shape.** Continuous narration is not possible while sharing:
 switching to Messenger backgrounds the page and suspends GPS, so the bus drops

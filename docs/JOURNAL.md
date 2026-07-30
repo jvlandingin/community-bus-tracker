@@ -65,6 +65,29 @@ the map showed a live bus, the trip completed and stopped cleanly. Before today
 there were zero completed real trips. There is now one, which is the precondition
 for the operator conversation.
 
+**First operator consent, obtained in person.** Showed the app to the conductor
+on board (Operator H — may or may not be one of A–D, not established), explained
+it briefly, and asked whether it was alright to share the position. He said sure.
+Calibrate what that is: permission, given in under a minute, with no objection
+raised. It is not enthusiasm, and it is not the same as the conductor wanting to
+share from his own phone. But the objection this project was most braced for —
+that an operator would read this as surveillance — did not materialise on first
+contact.
+
+**Direct messages do not reach operators.** Four attempts, zero replies: Operator
+A, who had asked publicly how to use the app and was answered by DM, plus three
+conductors messaged cold. Four independent non-replies is not four decisions to
+ignore; the likely cause is Messenger routing messages from non-friends into the
+Message Requests folder, which most people never open. The group chat is also
+high-volume enough that a reply in it can be buried within minutes.
+
+This inverts the outreach plan. DMs were chosen deliberately, to keep operators
+out of a public ask they might feel pressured by — sound reasoning that does not
+survive the channel not working. Score so far: **0 of 4 by DM, 1 of 1 in person.**
+Onboarding an operator probably requires being physically on their bus, which is
+slow but is the path that demonstrably works, and only two or three operators are
+needed to change the map from almost always empty to usefully populated.
+
 **Incidental finding.** A bus was running at 1pm, which sits in what the
 configured schedule treats as the midday gap. Nothing visibly broke — the
 "outside operating hours" line only appears when no bus is live, and a bus was

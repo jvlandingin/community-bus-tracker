@@ -27,7 +27,9 @@ name the route in link previews.
 - **Admin page:** operating hours, a pinned notice, live sharers, sighting
   moderation, and key rotation. Needs a separate admin key.
 - **How-to page:** `how-to.html`, reached from the ⓘ in the header. Explains
-  watching and sharing with screenshots and two short screen recordings.
+  watching and sharing. Every figure on it is drawn in HTML and CSS from the
+  same design tokens as the app, so it loads no images or video at all and
+  works for any route without being recaptured.
 
 ## What it deliberately does not do
 
@@ -65,13 +67,12 @@ migration.
    gives you in your group chat. That link is the tracker with the key in the
    fragment, and it is what people tap to share from the bus.
 
-One exception to "no code changes": `how-to.html` is the only file whose
-content is tied to this particular route, because its screenshots and videos
-show it. Everything else adapts from `config.txt`. If you fork this for your own
-route, either recapture that media on your own deployment (it lives in
-`assets/howto/`, and the filenames are the only thing the page depends on), or
-delete `how-to.html` and the ⓘ link in the header of `index.html`. Leaving
-another route's screenshots in place is worse than having no guide.
+There is no exception to "no code changes". `how-to.html` used to be one — its
+screenshots and screen recordings showed this deployment, so a fork had to
+reshoot all of them or delete the page. Its figures are drawn in HTML and CSS
+now, so the only route-specific thing left on it is the checkpoint names in the
+example strip, and a wrong name there is a cosmetic detail rather than another
+route's photographs presented as yours.
 
 The route this was built for runs at
 [community-bus-tracker.netlify.app](https://community-bus-tracker.netlify.app).

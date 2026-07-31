@@ -237,12 +237,17 @@ function run(page, include, label, configText) {
   cb.w.setShareUI('off', 'Not sharing');
   check(warned(), 'and it returns once the start button is meant to be back');
 
-  console.log('\n=== 8. the guide link, and everything the guide loads ===');
-  // The (i) in the header opens a second page, and that page pulls in its own
-  // screenshots and videos. Those are precisely the files a deploy drops:
-  // assets/ has gone missing once already, and a 404 on a screenshot is
-  // silent, so nobody would hear about it. Check that every path the guide
-  // names is actually in the repository.
+  console.log('\n=== 8. the guide link, and the guide standing on its own ===');
+  // The (i) in the header opens a second page. That page used to pull in four
+  // screenshots and two screen recordings, and this section checked that
+  // every one of them was still in the repository, because assets/ has gone
+  // missing from a deploy once already and a 404 on a screenshot is silent.
+  //
+  // The guide draws all of its figures in HTML and CSS now, from the same
+  // tokens as the app, so that entire failure mode is gone rather than
+  // guarded. What is worth defending is the property that replaced it: the
+  // guide loads nothing. Hence the check below is inverted — it fails if a
+  // src or poster ever comes back.
   const guide = ok.d.getElementById('guideLink');
   const guideHref = guide && guide.getAttribute('href');
   check(!!guide, 'the tracker renders a link to the guide');
@@ -257,12 +262,35 @@ function run(page, include, label, configText) {
   const guideSrc = fs.existsSync(guidePath) ? fs.readFileSync(guidePath, 'utf8') : '';
   const refs = [...new Set((guideSrc.match(/(?:src|poster)="([^"]+)"/g) || [])
     .map(m => m.slice(m.indexOf('"') + 1, -1)))]
-    .filter(u => !/^(?:data:|[a-z]+:)?\/\//i.test(u) && !u.startsWith('data:'));
-  const missingRefs = refs.filter(u => !fs.existsSync(path.join(APP, u)));
-  check(refs.length > 0 && missingRefs.length === 0,
-    `every image and video the guide loads is present (${refs.length} files)`,
-    missingRefs.length ? 'missing: ' + missingRefs.join(' ') : 'all present');
+    .filter(u => !u.startsWith('data:'));
+  check(refs.length === 0,
+    'the guide draws its figures rather than loading any',
+    refs.length ? 'loads: ' + refs.join(' ') : 'nothing to drop from a deploy');
   check(/href="index\.html"/.test(guideSrc), 'and the guide links back to the map');
+
+  // The guide copies index.html's design tokens instead of importing them —
+  // deliberately, so it survives being opened on its own (see the comment on
+  // its :root block). Copies drift, and now that every figure on the guide is
+  // drawn from these values rather than photographed, drift means a guide
+  // that quietly stops looking like the app it describes. Compare the two.
+  const tokensOf = src => {
+    const root = src.slice(src.indexOf(':root{'), src.indexOf('}', src.indexOf(':root{')));
+    const out = {};
+    (root.match(/--[a-z-]+\s*:\s*[^;]+/g) || []).forEach(d => {
+      const i = d.indexOf(':');
+      out[d.slice(0, i).trim()] = d.slice(i + 1).trim();
+    });
+    return out;
+  };
+  const appTokens = tokensOf(fs.readFileSync(path.join(APP, 'index.html'), 'utf8'));
+  const guideTokens = tokensOf(guideSrc);
+  const shared = Object.keys(appTokens).filter(k => k in guideTokens);
+  const drifted = shared.filter(k => appTokens[k] !== guideTokens[k]);
+  check(shared.length > 6 && drifted.length === 0,
+    `the guide's design tokens still match the app's (${shared.length} shared)`,
+    drifted.length
+      ? drifted.map(k => `${k}: app ${appTokens[k]} vs guide ${guideTokens[k]}`).join('; ')
+      : 'in step');
 
   // Section 7's lesson, a different filter list: blockers hide live-chat and
   // help widgets by name too, so the link must not be named like one.

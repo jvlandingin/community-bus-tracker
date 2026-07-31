@@ -10,7 +10,8 @@
 - **Supabase client:** supabase-js 2.110.8, UMD build, vendored locally.
 - **App:** three HTML files, no build step, no framework. `index.html` is the
   tracker, `admin.html` the operator page, `how-to.html` a static guide reached
-  from the ⓘ in the header.
+  from the ⓘ in the header. The guide loads no images or video: every figure on
+  it is drawn in HTML and CSS from the same design tokens as the tracker.
 - **Config:** a plain `config.txt` the user edits on a phone. It now holds no
   secrets at all: only the Supabase URL, the anon key, the public route slug,
   the source code URL, the checkpoints and the stops. Because it holds nothing
@@ -98,6 +99,16 @@ exposing positions to the raw anon key. Reads poll every 6 seconds instead. At
 one-route scale the delay is imperceptible. If concurrency ever exceeds ~200,
 revisit with a realtime channel plus a matching security model.
 
+**One question above the fold, everything else folded.** The tracker answers
+"where is the bus" in its first screenful and puts the rest behind native
+`<details>` — operating hours, the sightings board, and the legend and notes
+under the map. `<details>` rather than a scripted accordion because it is
+focusable, keyboard-operable and announced for free, and still opens if the
+script never runs. The rule for what may fold: only a second question. The
+answer itself never folds, which is why the sightings board opens itself when
+no buses are live (see `revealSightings` in `index.html`) — with nobody sharing
+GPS it stops being a footnote and becomes the only answer available.
+
 **No location history, by design.** `bus_positions` holds one row per sharing
 session, upserted in place. There is no trail table. This is the single most
 important property of the system: it means the tool cannot be used to review a
@@ -178,6 +189,16 @@ is honest. The legs are very uneven (Mendez to Tagaytay 4.8 km, Imus to PITX
 15.5 km), so a bus crossing CAVITEX looks slow. The fix, if it matters, is
 adding a checkpoint in the long gaps (Kawit is the obvious one), which is a
 config.txt edit needing no code change.
+
+Two pieces of the strip's geometry are load-bearing and were both wrong until
+July 2026. `.ticks` must stay taller than a `.tick`: it was pinned at 26 px
+against 29 px of content, so every label overflowed into the southbound track
+below and the southbound bus badges rendered on top of the words. And the label
+type is sized to leave a gap between the two longest neighbouring checkpoint
+names rather than for comfort — seven names share about 290 px on a phone, and
+at the old 8.5px/.04em MENDEZ and TGY met at exactly 0 px and read as one word.
+Adding an eighth checkpoint to `config.txt` will need that type sized down
+again.
 
 ## Duplicate sharer handling
 

@@ -21,13 +21,24 @@
 <script src="assets/vendor/supabase.js"></script>
 <style>
   :root{
-    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#8a7f76;
+    /* --muted and --gold-deep are the darkest values that still read as
+       "secondary" while clearing WCAG AA (4.5:1) on both --paper and
+       --surface. The old #8a7f76 was 3.90:1 on white and carried nearly
+       every piece of small text on the page: hints, tick labels, chip ages,
+       the map legend. Do not lighten them back for looks. */
+    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#786e67;
     --maroon:#7a1f2b; --maroon-deep:#5c161f; --maroon-soft:#f3e6e4;
-    --gold:#e39a1c; --gold-deep:#b87708; --gold-soft:#fbf0da;
+    --gold:#e39a1c; --gold-deep:#8c5905; --gold-soft:#fbf0da;
     --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
     --radius:16px;
+    /* 44px: the smallest target a thumb finds reliably on a moving bus. */
+    --tap:44px;
   }
   *{box-sizing:border-box;}
+  /* One ring for everything focusable. :focus-visible rather than :focus so
+     a thumb tap never leaves a ring behind, but a Tab key always does. */
+  :focus-visible{outline:3px solid var(--maroon); outline-offset:2px; border-radius:4px;}
+  header :focus-visible{outline-color:#fff;}
   body{
     margin:0; background:var(--paper); color:var(--ink); min-height:100vh;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
@@ -35,18 +46,27 @@
   }
   .display{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; letter-spacing:.02em;}
 
-  /* Header: signboard band */
+  /* Header: signboard band. The band spans the viewport, but its contents sit
+     in the same 520px column as everything else — otherwise on a desktop the
+     route name and the guide link end up a metre apart from the content they
+     label. */
   header{
     background:linear-gradient(180deg,var(--maroon),var(--maroon-deep));
-    color:#fff; padding:14px 16px 12px; position:relative;
+    color:#fff; padding:14px 16px 12px;
   }
+  .headbar{max-width:520px; margin:0 auto; position:relative; padding-right:48px;}
   /* Link to the guide. Deliberately an <a> with a neutral id, not a button
      called help: filter lists hide live-chat and help widgets by name, and
      this app has already lost a control that way once (see
-     checkControlsVisible). If a blocker hides this, the URL still works. */
+     checkControlsVisible). If a blocker hides this, the URL still works.
+     The anchor is a full tap target; the disc inside it stays small. */
   #guideLink{
-    position:absolute; top:50%; right:14px; transform:translateY(-50%);
-    width:28px; height:28px; border-radius:50%; text-decoration:none;
+    position:absolute; top:50%; right:-8px; transform:translateY(-50%);
+    width:var(--tap); height:var(--tap); text-decoration:none;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #guideLink .ico{
+    position:relative; width:28px; height:28px; border-radius:50%;
     background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
     color:#fff; font-size:15px; font-weight:700; font-style:italic;
     font-family:Georgia,'Times New Roman',serif;
@@ -66,12 +86,13 @@
 
   .wrap{max-width:520px; margin:0 auto; padding:12px 14px 48px;}
 
-  /* Tabs */
+  /* Tabs. Real buttons, not clickable divs: a div is not focusable and is
+     announced as nothing at all. */
   .tabs{display:flex; gap:8px; margin-bottom:12px;}
   .tab{
-    flex:1; padding:12px 8px; border-radius:12px; text-align:center;
+    flex:1; min-height:var(--tap); padding:12px 8px; border-radius:12px; text-align:center;
     background:var(--surface); border:1.5px solid var(--line); cursor:pointer;
-    font-size:13px; font-weight:800; color:var(--muted); user-select:none;
+    font-family:inherit; font-size:13px; font-weight:800; color:var(--muted); user-select:none;
     transition:.15s;
   }
   .tab.active{background:var(--maroon); color:#fff; border-color:var(--maroon);}
@@ -81,10 +102,43 @@
     padding:16px; margin-bottom:12px; box-shadow:0 1px 2px rgba(43,35,32,.04);
   }
 
-  /* Direction filter */
-  .seg{display:flex; background:var(--paper); border:1.5px solid var(--line); border-radius:12px; padding:3px; margin-bottom:14px;}
+  /* Progressive disclosure. Native <details>/<summary>, so it is focusable,
+     keyboard-operable and screen-reader-announced with no JavaScript at all,
+     and it still opens if the script never runs — which matters on a page
+     whose whole premise is that it works on any phone.
+     Only ever fold away a second question. "Where is the bus" is never
+     behind one of these. */
+  details.fold{padding:0; overflow:hidden;}
+  details.fold > summary{
+    list-style:none; cursor:pointer; padding:14px 16px; min-height:var(--tap);
+    display:flex; align-items:center; gap:12px; border-radius:var(--radius);
+  }
+  details.fold > summary::-webkit-details-marker{display:none;}
+  details.fold > summary .lbl{flex:1; min-width:0;}
+  details.fold > summary .cap{
+    display:block; font-size:9.5px; font-weight:800; letter-spacing:.08em;
+    color:var(--maroon); text-transform:uppercase;
+  }
+  details.fold > summary .val{display:block; font-size:13px; font-weight:700; margin-top:3px; line-height:1.4;}
+  details.fold > summary .chev{flex:0 0 auto; color:var(--muted); font-size:12px; transition:transform .18s;}
+  details.fold[open] > summary .chev{transform:rotate(90deg);}
+  details.fold[open] > summary{border-bottom:1px solid var(--line); border-radius:var(--radius) var(--radius) 0 0;}
+  .foldbody{padding:14px 16px 16px;}
+
+  /* The quiet variant, for the notes under the map. */
+  details.note > summary{
+    list-style:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+    min-height:var(--tap); font-size:11.5px; font-weight:800; color:var(--maroon);
+  }
+  details.note > summary::-webkit-details-marker{display:none;}
+  details.note > .foldbody{padding:0 0 4px;}
+
+  /* Direction filter. Sits below the headline, not above it: it filters the
+     strip, the chips and the map, so it belongs with them rather than being
+     the first thing on the page. */
+  .seg{display:flex; background:var(--paper); border:1.5px solid var(--line); border-radius:12px; padding:3px; margin:14px 0 4px;}
   .seg button{
-    flex:1; border:none; background:transparent; padding:9px 4px; border-radius:9px;
+    flex:1; min-height:var(--tap); border:none; background:transparent; padding:9px 4px; border-radius:9px;
     font-family:inherit; font-size:12.5px; font-weight:800; color:var(--muted); cursor:pointer;
   }
   .seg button.on-all{background:var(--ink); color:#fff;}
@@ -114,10 +168,20 @@
   }
   .buspill.sb{background:var(--maroon); color:#fff;}
   .buspill.stale{opacity:.45;}
-  .ticks{position:relative; height:26px; margin-top:2px;}
+  /* 32px, not 26px: a .tick is 29px tall (an 8px mark, 3px of margin, then an
+     18px line box for the label) and the box used to be fixed at 26px, so
+     every label overflowed 3px into the southbound track below and the
+     southbound bus badges rendered on top of the words. Keep this taller
+     than the tallest .tick. */
+  .ticks{position:relative; height:32px; margin-top:2px;}
   .tick{position:absolute; transform:translateX(-50%); text-align:center;}
   .tick::before{content:''; display:block; width:2px; height:8px; background:var(--line); margin:0 auto 3px;}
-  .tick span{font-size:8.5px; font-weight:800; letter-spacing:.04em; color:var(--muted); white-space:nowrap;}
+  /* Seven checkpoint names share about 290px on a phone, so the type is
+     sized to leave a gap rather than to be comfortable. At 8.5px with .04em
+     the two longest neighbours (MENDEZ and TGY) met at exactly 0px and read
+     as one word; below 360px they genuinely overlapped. */
+  .tick span{font-size:8px; font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
+  @media (max-width:359px){ .tick span{font-size:7px; letter-spacing:0;} }
   .tick.first{transform:none; text-align:left;}
   .tick.first::before{margin:0 0 3px;}
   .tick.last{transform:translateX(-100%); text-align:right;}
@@ -125,11 +189,13 @@
   .tick.near span{color:var(--maroon);}
   .tick.near::before{background:var(--maroon);}
 
-  /* Live bus list */
+  /* Live bus list. Also the text alternative to the strip and the map: it is
+     the only one of the three a screen reader can read out, so it stays. */
   .buslist{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px;}
   .buschip{
-    display:inline-flex; align-items:center; gap:6px; padding:6px 10px;
-    border-radius:20px; font-size:11.5px; font-weight:700; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px; padding:6px 12px;
+    min-height:var(--tap); border-radius:22px; font-family:inherit;
+    font-size:11.5px; font-weight:700; cursor:pointer; text-align:left;
     border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
   }
   .buschip .arrow{font-size:10px;}
@@ -137,8 +203,10 @@
   .buschip.sb .arrow{color:var(--maroon);}
   .buschip .age{color:var(--muted); font-weight:600;}
 
-  #map{height:290px; border-radius:12px; margin-top:14px; border:1px solid var(--line);}
-  .maplegend{display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:8px; font-size:10.5px; color:var(--muted); font-weight:700;}
+  /* Was a flat 290px at every size, which is a letterbox on a desktop and
+     barely a map on a phone. */
+  #map{height:min(58vh,420px); min-height:290px; border-radius:12px; margin-top:14px; border:1px solid var(--line);}
+  .maplegend{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:10.5px; color:var(--muted); font-weight:700;}
   .maplegend .sw{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; vertical-align:-1px;}
 
   /* A bus on the map is a badge the size of a fingertip, nothing more. Two
@@ -184,7 +252,14 @@
   .buspop .pname{font-weight:800; font-size:13.5px; margin-top:1px;}
   .buspop .page{color:var(--muted); font-weight:600;}
   .mapreset a{display:flex; align-items:center; justify-content:center; color:var(--ink);}
-  .mapreset svg{width:15px; height:15px; display:block;}
+  .mapreset svg{width:19px; height:19px; display:block;}
+  /* Leaflet ships 30px controls. On a touch map that is under every
+     guideline going, and these are the only controls on the page a rider
+     uses while the bus is moving. Overridden here rather than in the
+     vendored stylesheet, which stays byte-identical to the release. */
+  .leaflet-touch .leaflet-bar a, .leaflet-bar a{
+    width:var(--tap); height:var(--tap); line-height:var(--tap); font-size:20px;
+  }
 
   /* Hours */
   .hours{display:flex; gap:10px;}
@@ -203,7 +278,7 @@
   .btn-stop{background:var(--lost); color:#fff;}
   .btn-ghost{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
   input[type=text]{
-    width:100%; padding:12px; border-radius:10px; border:1.5px solid var(--line);
+    width:100%; min-height:var(--tap); padding:12px; border-radius:10px; border:1.5px solid var(--line);
     background:var(--surface); color:var(--ink); font-size:14px; font-family:inherit;
   }
   input[type=text]:focus{outline:none; border-color:var(--maroon);}
@@ -239,16 +314,19 @@
   }
   .noticebar .tag{font-size:9.5px; font-weight:800; letter-spacing:.08em; color:var(--gold-deep);}
   .noticebar .age{font-size:10.5px; color:var(--muted); font-weight:600; margin-top:3px;}
-  .firstvisit-dismiss{
-    margin-top:8px; background:var(--maroon); color:#fff; border:none; border-radius:8px;
-    padding:6px 14px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer;
-  }
-  .privacybar{
-    max-width:520px; margin:10px auto 0; padding:0 14px;
-  }
+  /* One advisory row, not three. This used to be a gold notice bar, a gold
+     first-visit accuracy banner and this line, stacked — two of them styled
+     identically — and together they pushed the map off the bottom of a
+     phone screen on a first visit. The accuracy warning that lived in the
+     dismissable banner is now a permanent clause here, which also retires a
+     localStorage flag: it is always true, so it should always be on screen.
+     The operator's notice bar above stays separate; it is time-sensitive and
+     only appears when something has actually been posted. */
+  .privacybar{margin:0 0 12px;}
   .privacybar button{
     width:100%; text-align:left; background:none; border:none; cursor:pointer;
-    font-family:inherit; font-size:11.5px; color:var(--muted); padding:4px 2px;
+    font-family:inherit; font-size:11.5px; line-height:1.55; color:var(--muted);
+    padding:6px 2px; min-height:var(--tap);
   }
   .privacybar b{color:var(--ink);}
   .privacybar .more{color:var(--maroon); font-weight:800; text-decoration:underline;}
@@ -264,6 +342,19 @@
   .modal-card p{font-size:13px; color:var(--muted); line-height:1.55; margin-bottom:16px;}
   .modal-actions{display:flex; flex-direction:column; gap:8px;}
   .modal-actions button{width:100%;}
+  /* The privacy text is long enough to scroll for a couple of screens. Its
+     Close button used to be the last thing inside that scrolling box, so the
+     only way out was to read to the bottom. Header and footer are pinned and
+     only the prose moves. */
+  .modal-card.tall{display:flex; flex-direction:column; max-height:86vh; padding:0;}
+  .modal-card.tall > h3{margin:0; padding:18px 20px 12px; border-bottom:1px solid var(--line);}
+  .modal-card.tall > .modal-scroll{overflow-y:auto; padding:16px 20px; -webkit-overflow-scrolling:touch;}
+  .modal-card.tall > .modal-foot{padding:12px 20px 16px; border-top:1px solid var(--line);}
+  .modal-x{
+    margin-left:auto; flex:0 0 auto; width:var(--tap); height:var(--tap);
+    background:none; border:none; cursor:pointer; font-family:inherit;
+    font-size:20px; line-height:1; color:var(--muted);
+  }
 
   .gate{position:fixed; inset:0; background:var(--paper); z-index:3000; display:flex; align-items:center; justify-content:center; padding:24px;}
   .gate-card{max-width:360px; width:100%;}
@@ -273,10 +364,12 @@
 </head>
 <body>
 
-<div class="modal hidden" id="privModal">
-  <div class="modal-card" style="max-height:82vh; overflow-y:auto;">
-    <h3>🔒 How your data is handled</h3>
-    <div class="privacy-detail">
+<div class="modal hidden" id="privModal" role="dialog" aria-modal="true" aria-labelledby="privTitle">
+  <div class="modal-card tall">
+    <h3 id="privTitle">🔒 How your data is handled
+      <button class="modal-x" onclick="closeModal('privModal')" aria-label="Close">✕</button>
+    </h3>
+    <div class="modal-scroll privacy-detail">
       <h4 class="ok">If you're just watching the map</h4>
       <p>The app never asks for your location. The location permission is only used in “I'm on the bus” mode, and only after you tap Start. No account, no name, no phone number. We can't see who is watching.</p>
       <p>One thing is counted, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
@@ -305,14 +398,15 @@
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers, nothing kept once you close the page. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
     </div>
-    <div style="height:14px"></div>
-    <button class="big btn-ghost" onclick="document.getElementById('privModal').classList.add('hidden')">Close</button>
+    <div class="modal-foot">
+      <button class="big btn-ghost" onclick="closeModal('privModal')">Close</button>
+    </div>
   </div>
 </div>
 
-<div class="modal hidden" id="dupModal">
+<div class="modal hidden" id="dupModal" role="dialog" aria-modal="true" aria-labelledby="dupTitle">
   <div class="modal-card">
-    <h3>🚌 Already being shared?</h3>
+    <h3 id="dupTitle">🚌 Already being shared?</h3>
     <p id="dupBody"></p>
     <div class="modal-actions">
       <button class="big btn-ghost" onclick="dupCancel()">It's the same bus, don't share</button>
@@ -321,7 +415,7 @@
   </div>
 </div>
 
-<div class="modal hidden" id="askModal">
+<div class="modal hidden" id="askModal" role="dialog" aria-modal="true" aria-labelledby="askTitle">
   <div class="modal-card">
     <h3 id="askTitle"></h3>
     <p id="askBody"></p>
@@ -333,30 +427,32 @@
 </div>
 
 <div class="gate hidden" id="gate">
-  <div class="card gate-card">
+  <form class="card gate-card" onsubmit="event.preventDefault(); submitKey();">
     <h2>🚌 WT Live Tracker</h2>
     <p id="gateMsg">Watching the map is open to everyone, no key needed. Sharing your location from the bus needs the community access key from the Messenger group, or the full link shared there.</p>
     <div style="height:6px"></div>
-    <input type="text" id="gateKey" placeholder="Access key" autocomplete="off">
+    <input type="text" id="gateKey" placeholder="Access key" autocomplete="off" autofocus>
     <div style="height:10px"></div>
-    <button class="big btn-primary" id="gateBtn" onclick="submitKey()">Enter</button>
+    <button class="big btn-primary" id="gateBtn" type="submit">Enter</button>
     <div style="height:8px"></div>
-    <button class="big btn-ghost" onclick="document.getElementById('gate').classList.add('hidden'); switchTab('track')">Back to the map</button>
+    <button class="big btn-ghost" type="button" onclick="document.getElementById('gate').classList.add('hidden'); switchTab('track')">Back to the map</button>
     <div class="hint" id="gateErr"></div>
-  </div>
+  </form>
 </div>
 
 <header>
-  <div class="route">Mendez / Tagaytay <span class="amp">⇄</span> One Ayala</div>
-  <div class="sub">WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER · UNOFFICIAL</div>
-  <a id="guideLink" href="how-to.html" aria-label="How to use this tracker" title="How to use this tracker"
-     onclick="try{localStorage.setItem('wt-guide-seen','1');}catch(e){}">i<span class="newdot"></span></a>
+  <div class="headbar">
+    <div class="route">Mendez / Tagaytay <span class="amp">⇄</span> One Ayala</div>
+    <div class="sub">WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER · UNOFFICIAL</div>
+    <a id="guideLink" href="how-to.html" aria-label="How to use this tracker" title="How to use this tracker"
+       onclick="try{localStorage.setItem('wt-guide-seen','1');}catch(e){}"><span class="ico">i<span class="newdot"></span></span></a>
+  </div>
 </header>
 
 <div class="wrap">
   <div class="tabs">
-    <div class="tab active" id="tabTrack" onclick="switchTab('track')">📍 Track buses</div>
-    <div class="tab" id="tabOnbus" onclick="switchTab('share')">🚌 I'm on the bus</div>
+    <button type="button" class="tab active" id="tabTrack" aria-pressed="true" onclick="switchTab('track')">📍 Track buses</button>
+    <button type="button" class="tab" id="tabOnbus" aria-pressed="false" onclick="switchTab('share')">🚌 I'm on the bus</button>
   </div>
 
   <div class="noticebar hidden" id="noticeBar">
@@ -365,28 +461,25 @@
     <div class="age" id="noticeAge"></div>
   </div>
 
-  <div class="noticebar hidden" id="firstVisitBanner">
-    <div>Quick heads up: bus positions here are volunteer-reported and can occasionally be wrong or missing. No guarantee of accuracy. See 🔒 How your data is handled below for the full picture.</div>
-    <button class="firstvisit-dismiss" onclick="dismissFirstVisitBanner()">Got it</button>
-  </div>
-
-  <div class="privacybar" style="margin:0 0 10px; padding:0 2px;">
-    <button onclick="document.getElementById('privModal').classList.remove('hidden')">
-      🔒 <b>No account. No name.</b> Watching the map never uses your location. <span class="more">How your data is handled</span>
-    </button>
-  </div>
-
   <!-- TRACK -->
   <div id="trackView">
-    <div class="card">
-      <div class="seg" id="dirSeg">
-        <button id="segAll" class="on-all" onclick="setFilter('all')">All buses</button>
-        <button id="segNorth" onclick="setFilter('north')">▲ Northbound</button>
-        <button id="segSouth" onclick="setFilter('south')">▼ Southbound</button>
-      </div>
+    <div class="privacybar">
+      <button type="button" onclick="openModal('privModal')">
+        🔒 <b>No account. No name.</b> Watching the map never uses your location.
+        Positions are volunteer-reported, so they can be wrong or missing.
+        <span class="more">How your data is handled</span>
+      </button>
+    </div>
 
+    <div class="card">
       <div class="status-head"><div class="status-title display" id="statusText">Loading…</div></div>
       <div class="status-sub" id="statusSub"></div>
+
+      <div class="seg" id="dirSeg">
+        <button type="button" id="segAll" class="on-all" onclick="setFilter('all')">All buses</button>
+        <button type="button" id="segNorth" onclick="setFilter('north')">▲ Northbound</button>
+        <button type="button" id="segSouth" onclick="setFilter('south')">▼ Southbound</button>
+      </div>
 
       <div class="strip">
         <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
@@ -399,34 +492,60 @@
       <div class="buslist" id="busList"></div>
 
       <div id="map"></div>
-      <div class="maplegend">
-        <span><span class="sw" style="background:var(--gold)"></span>Northbound ▲</span>
-        <span><span class="sw" style="background:var(--maroon)"></span>Southbound ▼</span>
-        <span><span class="sw" style="background:#94a3b8"></span>Stops (tap for name)</span>
-        <span>Tap a bus for its number and age</span>
-      </div>
-      <div class="hint" id="sourceNote">Positions come from whoever is on the bus: driver, conductor, or a rider volunteering. The direction is picked by hand, so it can occasionally be wrong.</div>
-      <div class="hint" id="busExpiryNote"></div>
+
+      <details class="note">
+        <summary>ⓘ What the colours mean</summary>
+        <div class="foldbody">
+          <div class="maplegend">
+            <span><span class="sw" style="background:var(--gold)"></span>Northbound ▲</span>
+            <span><span class="sw" style="background:var(--maroon)"></span>Southbound ▼</span>
+            <span><span class="sw" style="background:#94a3b8"></span>Stops (tap for name)</span>
+            <span>Tap a bus for its number and age</span>
+          </div>
+          <div class="hint" id="sourceNote">Positions come from whoever is on the bus: driver, conductor, or a rider volunteering. The direction is picked by hand, so it can occasionally be wrong.</div>
+          <div class="hint" id="busExpiryNote"></div>
+        </div>
+      </details>
     </div>
 
-    <div class="card">
-      <span class="badge">OPERATING HOURS</span>
-      <div style="height:10px"></div>
-      <div class="hours">
-        <div class="hourbox nb"><div class="dirname">▲ MENDEZ → ONE AYALA</div><div class="times display" id="nbHours">–</div></div>
-        <div class="hourbox sb"><div class="dirname">▼ ONE AYALA → MENDEZ</div><div class="times display" id="sbHours">–</div></div>
+    <details class="card fold" id="hoursFold">
+      <summary>
+        <span class="lbl">
+          <span class="cap">Operating hours</span>
+          <span class="val" id="hoursSummary">–</span>
+        </span>
+        <span class="chev" aria-hidden="true">▶</span>
+      </summary>
+      <div class="foldbody">
+        <div class="hours">
+          <div class="hourbox nb"><div class="dirname">▲ MENDEZ → ONE AYALA</div><div class="times display" id="nbHours">–</div></div>
+          <div class="hourbox sb"><div class="dirname">▼ ONE AYALA → MENDEZ</div><div class="times display" id="sbHours">–</div></div>
+        </div>
+        <div class="headway" id="headwayNote"></div>
       </div>
-      <div class="headway" id="headwayNote"></div>
-    </div>
+    </details>
 
-    <div class="card">
-      <span class="badge">SIGHTINGS</span>
-      <div class="hint" style="margin:8px 0 12px;" id="sightingIntro">Saw a bus but nobody's sharing GPS? Post it so others know.</div>
-      <input type="text" id="sightingInput" maxlength="140" placeholder="e.g. Northbound just passed Amadeo, 6:42am">
-      <div style="height:8px"></div>
-      <button class="big btn-ghost" onclick="addSighting()">Post sighting</button>
-      <div id="sightingsList" style="margin-top:12px;"></div>
-    </div>
+    <!-- Folded while buses are live, opened by renderBuses() when none are:
+         when nobody is sharing GPS this board is the only thing on the page
+         that answers the question, so it must not be a tap away then. -->
+    <details class="card fold" id="sightFold">
+      <summary>
+        <span class="lbl">
+          <span class="cap">Sightings</span>
+          <span class="val" id="sightSummary">Bus spotted but nobody sharing? Post it here</span>
+        </span>
+        <span class="chev" aria-hidden="true">▶</span>
+      </summary>
+      <div class="foldbody">
+        <div class="hint" style="margin:0 0 12px;" id="sightingIntro">Saw a bus but nobody's sharing GPS? Post it so others know.</div>
+        <form onsubmit="event.preventDefault(); addSighting();">
+          <input type="text" id="sightingInput" maxlength="140" placeholder="e.g. Northbound just passed Amadeo, 6:42am">
+          <div style="height:8px"></div>
+          <button class="big btn-ghost" type="submit">Post sighting</button>
+        </form>
+        <div id="sightingsList" style="margin-top:12px;"></div>
+      </div>
+    </details>
   </div>
 
   <!-- SHARE -->
@@ -440,13 +559,13 @@
         </div>
       </div>
 
-      <div id="onbusSetup">
+      <form id="onbusSetup" onsubmit="event.preventDefault(); startSharing();">
         <div style="font-size:12.5px; font-weight:800; margin-bottom:6px;">Which direction is this bus going?</div>
         <div class="dirpick">
-          <button class="dirbtn" id="pickNorth" onclick="pickDir('north')">
+          <button type="button" class="dirbtn" id="pickNorth" onclick="pickDir('north')" aria-pressed="false">
             <div class="big-arrow">▲</div><div class="lbl">Northbound</div><div class="dest">to One Ayala, Makati</div>
           </button>
-          <button class="dirbtn" id="pickSouth" onclick="pickDir('south')">
+          <button type="button" class="dirbtn" id="pickSouth" onclick="pickDir('south')" aria-pressed="false">
             <div class="big-arrow">▼</div><div class="lbl">Southbound</div><div class="dest">to Mendez / Tagaytay</div>
           </button>
         </div>
@@ -454,8 +573,8 @@
         <input type="text" id="busLabel" maxlength="12" placeholder="e.g. 98018">
         <div class="hint" style="margin-top:6px;">If someone else is also sharing from this bus, the number lets the app show it as one bus instead of two.</div>
         <div style="height:10px"></div>
-        <button class="big btn-primary" id="onbusStartBtn" onclick="startSharing()">Start sharing my location</button>
-      </div>
+        <button class="big btn-primary" id="onbusStartBtn" type="submit">Start sharing my location</button>
+      </form>
       <div id="onbusActive" class="hidden">
         <button class="big btn-stop" onclick="stopSharing()">Stop sharing</button>
       </div>
@@ -621,11 +740,33 @@ const rpc = function(fn, args){ return sb.rpc(fn, args); };
 function ensureClient(){ if (!sb) sb = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY); }
 
 // ============================================================
+// Modals
+// ============================================================
+// Escape and a tap on the backdrop close the informational modal. The two
+// that ask a question deliberately do not: dismissing the direction check
+// without answering would leave sharing paused and the bus off everyone's
+// map with nothing on screen to bring it back.
+function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+document.addEventListener('keydown', function(e){
+  if (e.key !== 'Escape') return;
+  const m = document.getElementById('privModal');
+  if (m && !m.classList.contains('hidden')) closeModal('privModal');
+});
+(function(){
+  const m = document.getElementById('privModal');
+  if (m) m.addEventListener('click', function(e){ if (e.target === m) closeModal('privModal'); });
+})();
+
+// ============================================================
 // Tabs + filter
 // ============================================================
 function switchTab(which) {
-  document.getElementById('tabTrack').classList.toggle('active', which==='track');
-  document.getElementById('tabOnbus').classList.toggle('active', which==='share');
+  const t=document.getElementById('tabTrack'), o=document.getElementById('tabOnbus');
+  t.classList.toggle('active', which==='track');
+  o.classList.toggle('active', which==='share');
+  t.setAttribute('aria-pressed', which==='track');
+  o.setAttribute('aria-pressed', which==='share');
   document.getElementById('trackView').classList.toggle('hidden', which!=='track');
   document.getElementById('onbusView').classList.toggle('hidden', which!=='share');
   if (which==='track' && map){
@@ -1002,11 +1143,11 @@ function renderBuses() {
   list.innerHTML = shown.map(function(b){
     const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
     const where = pl ? pl.label : 'position unclear';
-    return '<span class="buschip '+(b.direction==='north'?'nb':'sb')+'" onclick="focusBus(\''+b.id+'\')">'+
+    return '<button type="button" class="buschip '+(b.direction==='north'?'nb':'sb')+'" onclick="focusBus(\''+b.id+'\')">'+
       '<span class="arrow">'+(b.direction==='north'?'▲':'▼')+'</span>'+
       (b.label?('<b>'+escapeHtml(b.label)+'</b>'):'')+
-      escapeHtml(where)+' <span class="age">'+timeAgo(b.ts)+
-      (b.count>1?' · '+b.count+' sharing':'')+'</span></span>';
+      escapeHtml(where)+' <span class="age">'+timeAgo(b.ts)+' ago'+
+      (b.count>1?' · '+b.count+' sharing':'')+'</span></button>';
   }).join('');
 
   // headline
@@ -1025,7 +1166,28 @@ function renderBuses() {
       ? 'Nobody is sharing GPS right now. Check sightings below, or ask in the group.'
       : 'Outside operating hours. Next departures: '+(firstTrip('north')||'see schedule')+' from Mendez, '+(firstTrip('south')||'see schedule')+' from One Ayala.';
   }
+  revealSightings(shown.length === 0);
 }
+
+// The sightings board is folded away while buses are live and opens itself
+// when none are, because that is exactly when it stops being a footnote and
+// becomes the only answer on the page. Once the reader has opened or closed
+// it by hand, their choice wins for the rest of the visit — an accordion
+// that fights the person using it is worse than one that never moves.
+let sightTouched = false;
+function revealSightings(shouldOpen){
+  const d = document.getElementById('sightFold');
+  if (!d || sightTouched) return;
+  d.open = shouldOpen;
+}
+// Listening for a click on the summary rather than for the element's own
+// toggle event: toggle also fires for the automatic open above, and it is
+// dispatched asynchronously, so telling the two apart afterwards is a race.
+// A click here is always a person. Keyboard activation fires one too.
+(function(){
+  const s = document.querySelector('#sightFold > summary');
+  if (s) s.addEventListener('click', function(){ sightTouched = true; });
+})();
 
 function focusBus(id){
   const b = clusterBuses(BUSES).find(function(x){return x.id===id;});
@@ -1072,9 +1234,14 @@ async function pollSightings() {
   const res = await rpc('get_sightings', { p_slug: CFG.ROUTE_SLUG });
   if (res.error) return;
   const data=res.data;
-  document.getElementById('sightingsList').innerHTML = (data&&data.length)
+  const n = (data && data.length) || 0;
+  document.getElementById('sightingsList').innerHTML = n
     ? data.map(function(s){return '<div class="sighting"><span>'+escapeHtml(s.body)+'</span><span class="time">'+timeAgo(Date.parse(s.created_at))+' ago</span></div>';}).join('')
     : '<div class="hint">No sightings yet today.</div>';
+  // The folded card has to say whether opening it is worth the tap.
+  document.getElementById('sightSummary').textContent = n
+    ? (n===1 ? '1 recent sighting posted' : n+' recent sightings posted')
+    : 'Bus spotted but nobody sharing? Post it here';
 }
 async function addSighting() {
   const input=document.getElementById('sightingInput');
@@ -1141,8 +1308,11 @@ function getSessionId(){
 }
 function pickDir(d){
   shareDir=d;
-  document.getElementById('pickNorth').className='dirbtn'+(d==='north'?' sel-north':'');
-  document.getElementById('pickSouth').className='dirbtn'+(d==='south'?' sel-south':'');
+  const n=document.getElementById('pickNorth'), s=document.getElementById('pickSouth');
+  n.className='dirbtn'+(d==='north'?' sel-north':'');
+  s.className='dirbtn'+(d==='south'?' sel-south':'');
+  n.setAttribute('aria-pressed', d==='north');
+  s.setAttribute('aria-pressed', d==='south');
 }
 function gpsErrorMessage(err){
   if (err.code===1) return 'Location is off or blocked. Turn on your phone\'s location (GPS), allow location for this site, then tap Start again.';
@@ -1564,10 +1734,20 @@ function renderContactLine(){
   p.innerHTML = 'Questions or concerns about this tool: '+parts.join(' · ')+'.';
   p.classList.remove('hidden');
 }
+// The one line that shows on the folded hours card. Most days both
+// directions run the same windows, so say them once; when they differ, show
+// both rather than making the reader open the card to find out that they do.
+function hoursSummaryLine(){
+  const n = hoursLabel('north').replace(/\n/g, ', ');
+  const s = hoursLabel('south').replace(/\n/g, ', ');
+  if (n === s) return n + ' · every ' + SET.headway_min + ' min';
+  return '▲ ' + n + '  ▼ ' + s;
+}
 function renderHours(){
   // multiple windows stack as lines inside the hour boxes
   document.getElementById('nbHours').textContent = hoursLabel('north');
   document.getElementById('sbHours').textContent = hoursLabel('south');
+  document.getElementById('hoursSummary').textContent = hoursSummaryLine();
   document.getElementById('headwayNote').textContent =
     'Trips roughly every '+SET.headway_min+' minutes (times above are the scheduled departure windows from each end).';
   function humanMins(m){ m=parseInt(m,10)||0; return m>=60 ? (m/60)+(m===60?' hour':' hours') : m+' min'; }
@@ -1605,22 +1785,10 @@ function start(){
   if (seen) link.classList.add('seen');
 })();
 
-// Same idea as the guide dot above: a first-visit nudge kept only on this
-// device, so people see the accuracy/no-guarantee note at least once even
-// if they never open "How your data is handled" on their own. Losing the
-// flag (private browsing, storage cleared) just means seeing it again.
-function dismissFirstVisitBanner(){
-  const b=document.getElementById('firstVisitBanner');
-  if (b) b.classList.add('hidden');
-  try{ localStorage.setItem('wt-accuracy-seen-v1','1'); }catch(e){}
-}
-(function(){
-  const banner=document.getElementById('firstVisitBanner');
-  if (!banner) return;
-  let seen=null;
-  try{ seen=localStorage.getItem('wt-accuracy-seen-v1'); }catch(e){ seen='1'; }
-  if (!seen) banner.classList.remove('hidden');
-})();
+// The accuracy note used to be a dismissable first-visit banner with its own
+// localStorage flag. It is a permanent clause in the privacy row now: the
+// warning is always true, so it should always be on screen, and one fewer
+// gold box competes with the operator's notice bar for attention.
 
 // The libraries are served from this site itself, never a CDN. If the
 // folder uploaded to Netlify was missing assets/, every later error is a

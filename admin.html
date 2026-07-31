@@ -9,12 +9,18 @@
 <script src="assets/vendor/supabase.js"></script>
 <style>
   :root{
-    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#8a7f76;
+    /* Same values, and for the same reason, as index.html: these are the
+       darkest secondary tones that still clear WCAG AA on both backgrounds.
+       Keep the two files in step. */
+    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#786e67;
     --maroon:#7a1f2b; --maroon-deep:#5c161f; --maroon-soft:#f3e6e4;
-    --gold:#e39a1c; --gold-deep:#b87708; --gold-soft:#fbf0da;
+    --gold:#e39a1c; --gold-deep:#8c5905; --gold-soft:#fbf0da;
     --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
+    --tap:44px;
   }
   *{box-sizing:border-box;}
+  :focus-visible{outline:3px solid var(--maroon); outline-offset:2px; border-radius:4px;}
+  header :focus-visible{outline-color:#fff;}
   body{
     margin:0; background:var(--paper); color:var(--ink); min-height:100vh;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
@@ -24,6 +30,8 @@
     background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); color:#fff;
     padding:14px 16px 12px;
   }
+  /* Band spans the viewport, contents sit in the content column. */
+  .headbar{max-width:560px; margin:0 auto;}
   header .route{
     font-stretch:condensed; font-weight:700; font-size:20px;
     letter-spacing:.04em; text-transform:uppercase; line-height:1.1;
@@ -42,21 +50,38 @@
   .hint.warn{color:#92400e;}
   .ok-note{font-size:12px; color:#166534; font-weight:700; margin-top:8px;}
   .err-note{font-size:12px; color:var(--lost); font-weight:700; margin-top:8px;}
+  /* Progressive disclosure, same idiom as index.html. The operator page is a
+     stack of nine cards that were all shouting equally: five of them report
+     what is happening right now, four are settings changed once a season.
+     The settings fold away. */
+  details.fold{padding:0; overflow:hidden;}
+  details.fold > summary{
+    list-style:none; cursor:pointer; padding:14px 16px; min-height:var(--tap);
+    display:flex; align-items:center; gap:12px; border-radius:16px;
+  }
+  details.fold > summary::-webkit-details-marker{display:none;}
+  details.fold > summary .lbl{flex:1; min-width:0;}
+  details.fold > summary .val{display:block; font-size:12px; color:var(--muted); margin-top:3px; line-height:1.45;}
+  details.fold > summary .chev{flex:0 0 auto; color:var(--muted); font-size:12px; transition:transform .18s;}
+  details.fold[open] > summary .chev{transform:rotate(90deg);}
+  details.fold[open] > summary{border-bottom:1px solid var(--line); border-radius:16px 16px 0 0;}
+  .foldbody{padding:14px 16px 16px;}
+
   input[type=text], input[type=password], input[type=number], input[type=time], textarea, select{
-    width:100%; padding:11px; border-radius:10px; border:1.5px solid var(--line);
+    width:100%; min-height:var(--tap); padding:11px; border-radius:10px; border:1.5px solid var(--line);
     background:var(--surface); color:var(--ink); font-size:14px; font-family:inherit;
   }
   input:focus, textarea:focus, select:focus{outline:none; border-color:var(--maroon);}
   textarea{resize:vertical; min-height:70px;}
   button.big{
-    width:100%; padding:13px; border-radius:12px; border:none; font-family:inherit;
-    font-size:14.5px; font-weight:800; cursor:pointer; transition:.15s;
+    width:100%; min-height:var(--tap); padding:13px; border-radius:12px; border:none;
+    font-family:inherit; font-size:14.5px; font-weight:800; cursor:pointer; transition:.15s;
   }
   .btn-primary{background:var(--maroon); color:#fff;}
   .btn-danger{background:var(--lost); color:#fff;}
   .btn-ghost{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
   button.small{
-    padding:7px 12px; border-radius:9px; border:none; font-family:inherit;
+    min-height:var(--tap); padding:7px 14px; border-radius:9px; border:none; font-family:inherit;
     font-size:12px; font-weight:800; cursor:pointer;
   }
   .row{display:flex; gap:8px; align-items:center;}
@@ -87,19 +112,21 @@
 <body>
 
 <div class="gate" id="loginGate">
-  <div class="card gate-card">
+  <form class="card gate-card" onsubmit="event.preventDefault(); doLogin();">
     <h2>🔧 WT Live: Admin</h2>
     <p>This page manages the community tracker. It needs the ADMIN key, which is different from the share key. Nothing here works without it.</p>
-    <input type="password" id="adminKeyInput" placeholder="Admin key" autocomplete="off">
+    <input type="password" id="adminKeyInput" placeholder="Admin key" autocomplete="off" autofocus>
     <div style="height:10px"></div>
-    <button class="big btn-primary" id="loginBtn" onclick="doLogin()">Sign in</button>
+    <button class="big btn-primary" id="loginBtn" type="submit">Sign in</button>
     <div class="err-note hidden" id="loginErr"></div>
-  </div>
+  </form>
 </div>
 
 <header>
-  <div class="route">WT Live · Admin</div>
-  <div class="sub" id="slugLine">MENDEZ / TAGAYTAY ⇄ ONE AYALA</div>
+  <div class="headbar">
+    <div class="route">WT Live · Admin</div>
+    <div class="sub" id="slugLine">MENDEZ / TAGAYTAY ⇄ ONE AYALA</div>
+  </div>
 </header>
 
 <div class="wrap hidden" id="main">
@@ -126,21 +153,29 @@
     <div class="hint" id="noticeCurrent"></div>
   </div>
 
-  <div class="card">
-    <span class="badge">OPERATING HOURS</span>
-    <div class="hint" style="margin-top:8px;">Departure windows from each end. Add a second window for split schedules like the March 2026 poster. The app treats buses as possibly en route for 3.5 hours after each window closes.</div>
-    <label class="f">▲ NORTHBOUND (Mendez to One Ayala)</label>
-    <div id="winNorth"></div>
-    <button class="small btn-ghost" onclick="addWin('north')">+ Add window</button>
-    <label class="f">▼ SOUTHBOUND (One Ayala to Mendez)</label>
-    <div id="winSouth"></div>
-    <button class="small btn-ghost" onclick="addWin('south')">+ Add window</button>
-    <label class="f">TRIPS ROUGHLY EVERY (MINUTES)</label>
-    <input type="number" id="headway" min="1" max="720">
-    <div style="height:12px"></div>
-    <button class="big btn-primary" onclick="saveSettings()">Save hours + settings</button>
-    <div id="hoursStatus"></div>
-  </div>
+  <details class="card fold">
+    <summary>
+      <span class="lbl">
+        <span class="badge">OPERATING HOURS</span>
+        <span class="val">Departure windows and headway. Changed once a season.</span>
+      </span>
+      <span class="chev" aria-hidden="true">▶</span>
+    </summary>
+    <div class="foldbody">
+      <div class="hint" style="margin-top:0;">Departure windows from each end. Add a second window for split schedules like the March 2026 poster. The app treats buses as possibly en route for 3.5 hours after each window closes.</div>
+      <label class="f">▲ NORTHBOUND (Mendez to One Ayala)</label>
+      <div id="winNorth"></div>
+      <button class="small btn-ghost" onclick="addWin('north')">+ Add window</button>
+      <label class="f">▼ SOUTHBOUND (One Ayala to Mendez)</label>
+      <div id="winSouth"></div>
+      <button class="small btn-ghost" onclick="addWin('south')">+ Add window</button>
+      <label class="f">TRIPS ROUGHLY EVERY (MINUTES)</label>
+      <input type="number" id="headway" min="1" max="720">
+      <div style="height:12px"></div>
+      <button class="big btn-primary" onclick="saveSettings()">Save hours + settings</button>
+      <div id="hoursStatus"></div>
+    </div>
+  </details>
 
   <div class="card">
     <span class="badge">WATCHING NOW</span>
@@ -168,42 +203,66 @@
     <div id="sightingList" style="margin-top:6px;"></div>
   </div>
 
-  <div class="card">
-    <span class="badge">FRESHNESS + LIMITS</span>
-    <label class="f">A BUS DISAPPEARS AFTER THIS MANY MINUTES OF SILENCE</label>
-    <input type="number" id="busExpiry" min="1" max="120">
-    <label class="f">SIGHTINGS EXPIRE AFTER (MINUTES)</label>
-    <input type="number" id="sightingExpiry" min="5" max="1440">
-    <label class="f">MAXIMUM SIMULTANEOUS SHARERS (ABUSE GUARD)</label>
-    <input type="number" id="maxSessions" min="1" max="200">
-    <div style="height:12px"></div>
-    <button class="big btn-primary" onclick="saveSettings()">Save hours + settings</button>
-    <div id="limitsStatus"></div>
-  </div>
-
-  <div class="card">
-    <span class="badge">SHARE KEY</span>
-    <div class="hint" style="margin-top:8px;">The key that lets people share from the bus. Changing it: anyone already sharing gets 4 hours to finish their trip, and NEW sharers need the new key immediately. The old links in the group chat stop working for starting a share, so post the new link after changing.</div>
-    <label class="f">NEW SHARE KEY</label>
-    <div class="row">
-      <input type="text" id="newAccessKey" maxlength="64" placeholder="8 to 64 chars: letters, digits, - _" autocomplete="off">
-      <button class="small btn-ghost tight" onclick="genKey()">Generate</button>
+  <details class="card fold">
+    <summary>
+      <span class="lbl">
+        <span class="badge">FRESHNESS + LIMITS</span>
+        <span class="val">How long a bus and a sighting live, and the abuse cap.</span>
+      </span>
+      <span class="chev" aria-hidden="true">▶</span>
+    </summary>
+    <div class="foldbody">
+      <label class="f" style="margin-top:0;">A BUS DISAPPEARS AFTER THIS MANY MINUTES OF SILENCE</label>
+      <input type="number" id="busExpiry" min="1" max="120">
+      <label class="f">SIGHTINGS EXPIRE AFTER (MINUTES)</label>
+      <input type="number" id="sightingExpiry" min="5" max="1440">
+      <label class="f">MAXIMUM SIMULTANEOUS SHARERS (ABUSE GUARD)</label>
+      <input type="number" id="maxSessions" min="1" max="200">
+      <div style="height:12px"></div>
+      <button class="big btn-primary" onclick="saveSettings()">Save hours + settings</button>
+      <div id="limitsStatus"></div>
     </div>
-    <div style="height:10px"></div>
-    <button class="big btn-danger" onclick="rotateKey()">Change the share key</button>
-    <div id="rotateStatus"></div>
-    <div class="keyreveal hidden" id="newLinkBox"></div>
-  </div>
+  </details>
 
-  <div class="card">
-    <span class="badge">ADMIN KEY</span>
-    <div class="hint" style="margin-top:8px;">Changes the key for THIS page. Write the new one down before saving; it is stored only as a hash and cannot be recovered, only reset directly in Supabase.</div>
-    <label class="f">NEW ADMIN KEY (12+ CHARACTERS)</label>
-    <input type="password" id="newAdminKey" maxlength="64" autocomplete="new-password">
-    <div style="height:10px"></div>
-    <button class="big btn-ghost" onclick="changeAdminKey()">Change admin key</button>
-    <div id="adminKeyStatus"></div>
-  </div>
+  <details class="card fold">
+    <summary>
+      <span class="lbl">
+        <span class="badge">SHARE KEY</span>
+        <span class="val">Rotate the key that lets people share from the bus.</span>
+      </span>
+      <span class="chev" aria-hidden="true">▶</span>
+    </summary>
+    <div class="foldbody">
+      <div class="hint" style="margin-top:0;">The key that lets people share from the bus. Changing it: anyone already sharing gets 4 hours to finish their trip, and NEW sharers need the new key immediately. The old links in the group chat stop working for starting a share, so post the new link after changing.</div>
+      <label class="f">NEW SHARE KEY</label>
+      <div class="row">
+        <input type="text" id="newAccessKey" maxlength="64" placeholder="8 to 64 chars: letters, digits, - _" autocomplete="off">
+        <button class="small btn-ghost tight" onclick="genKey()">Generate</button>
+      </div>
+      <div style="height:10px"></div>
+      <button class="big btn-danger" onclick="rotateKey()">Change the share key</button>
+      <div id="rotateStatus"></div>
+      <div class="keyreveal hidden" id="newLinkBox"></div>
+    </div>
+  </details>
+
+  <details class="card fold">
+    <summary>
+      <span class="lbl">
+        <span class="badge">ADMIN KEY</span>
+        <span class="val">Change the key for this page. Cannot be recovered.</span>
+      </span>
+      <span class="chev" aria-hidden="true">▶</span>
+    </summary>
+    <div class="foldbody">
+      <div class="hint" style="margin-top:0;">Changes the key for THIS page. Write the new one down before saving; it is stored only as a hash and cannot be recovered, only reset directly in Supabase.</div>
+      <label class="f">NEW ADMIN KEY (12+ CHARACTERS)</label>
+      <input type="password" id="newAdminKey" maxlength="64" autocomplete="new-password">
+      <div style="height:10px"></div>
+      <button class="big btn-ghost" onclick="changeAdminKey()">Change admin key</button>
+      <div id="adminKeyStatus"></div>
+    </div>
+  </details>
 
   <div class="card">
     <button class="big btn-ghost" onclick="logout()">Sign out of admin</button>

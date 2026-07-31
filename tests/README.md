@@ -23,9 +23,12 @@ node test-boot.js       # loads both pages in a real DOM (needs jsdom)
 `test-boot.js` needs `npm install jsdom` and serves the real files over a local
 HTTP server. It covers a deploy with `assets/` deliberately missing, because
 that is the most common way to break the site, and a `config-template.txt`
-copied but never filled in. It also checks that every screenshot and video
-`how-to.html` names is actually in the repository: a 404 on a screenshot is
-silent, so nobody would report it.
+copied but never filled in. It also checks that `how-to.html` loads no images
+or video at all — it draws its figures in HTML and CSS instead — and that the
+design tokens it copies from `index.html` have not drifted from it. The first
+check used to be the opposite, verifying that every screenshot the guide named
+was present, because a 404 on a screenshot is silent and nobody would report
+it. Now there is nothing to 404.
 
 ## Database
 

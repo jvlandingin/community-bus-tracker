@@ -106,9 +106,17 @@ from the app. Keep the markers intact when editing those regions.
 
 ## Route-specific content
 
-Everything adapts from `config.txt` except `how-to.html`, whose screenshots and
-screen recordings show this particular deployment. A fork must recapture that
-media or delete the page and the ⓘ link in `index.html`'s header.
+Everything adapts from `config.txt`. `how-to.html` used to be the exception —
+its screenshots and screen recordings showed this deployment, so a fork had to
+recapture them or delete the page. Every figure on it is now drawn in HTML and
+CSS from the same tokens as the app, and the page loads no media at all.
+
+That trade is deliberate: the pictures cannot 404 or go stale silently, but
+they are hand-maintained copies of the real UI, so **changing the tracker's
+layout means updating the recreations in the same commit.** `test-boot.js`
+section 8 defends the two halves of this that a machine can check — that the
+guide still loads nothing, and that its copied `:root` tokens still match
+`index.html`'s.
 
 The header strip and the "How your data is handled" panel both state that the
 app is not affiliated with or endorsed by any bus company. Keep that language

@@ -16,15 +16,22 @@
 <style>
   /* Tokens copied from index.html deliberately, not imported. This page has
      to keep working if it is opened on its own, and a shared stylesheet
-     would be a fourth file a deploy could forget. */
+     would be a fourth file a deploy could forget.
+     Copied means they can drift, and every figure on this page is now drawn
+     from them rather than photographed, so drift would show as a guide that
+     quietly stops looking like the app. test-boot.js section 8 compares the
+     two blocks and fails if a value differs. */
   :root{
-    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#8a7f76;
+    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#786e67;
     --maroon:#7a1f2b; --maroon-deep:#5c161f; --maroon-soft:#f3e6e4;
-    --gold:#e39a1c; --gold-deep:#b87708; --gold-soft:#fbf0da;
+    --gold:#e39a1c; --gold-deep:#8c5905; --gold-soft:#fbf0da;
     --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
     --radius:16px;
+    --tap:44px;
   }
   *{box-sizing:border-box;}
+  :focus-visible{outline:3px solid var(--maroon); outline-offset:2px; border-radius:4px;}
+  header :focus-visible{outline-color:#fff;}
   body{
     margin:0; background:var(--paper); color:var(--ink); min-height:100vh;
     font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
@@ -93,18 +100,171 @@
   html.js .reveal{opacity:0; transform:translateY(14px);}
   html.js .reveal.in{opacity:1; transform:none;}
 
-  /* ---- Media slots ------------------------------------------------- */
+  /* ---- Live recreations of the app --------------------------------- */
+  /* Every figure on this page is rebuilt from the same tokens as the app
+     rather than photographed from it. Screenshots and screen recordings had
+     two problems: they went stale the moment the tracker's layout moved,
+     silently, because nothing checks that a picture still matches; and they
+     tied this page to one deployment, so a fork had to reshoot all of it or
+     delete the guide. Recreations cost nothing to fork and can be corrected
+     in the same commit that changes the app.
+     They are decorative in the accessibility sense — every one is
+     aria-hidden and the prose beside it carries the same information. */
   figure{margin:0 0 12px;}
-  .shot{
-    position:relative; border-radius:14px; overflow:hidden;
-    border:1px solid var(--line); background:var(--paper);
-  }
-  .shot img{display:block; width:100%; height:auto;}
   figcaption{font-size:11.5px; color:var(--muted); margin-top:7px; text-align:center; line-height:1.5;}
   figcaption b{color:var(--ink);}
 
-  /* Numbered callout dots that sit on top of a screenshot. Positioned with
-     inline left/top percentages once the real screenshots land. */
+  .demo{
+    position:relative; border:1px solid var(--line); border-radius:14px;
+    background:var(--surface); padding:13px; overflow:hidden;
+  }
+  /* Callouts live in their own gutter rather than floating over the picture.
+     Pinned to percentages on a screenshot they always ended up covering the
+     one thing they were pointing at, and every layout change moved them
+     somewhere worse. A gutter cannot overlap anything by construction. */
+  .demo.annotated{padding-left:34px;}
+  /* translateY rather than the base .dot's negative margin, so a top: here
+     is the centre of the row it marks and not 12px above it. */
+  .demo.annotated .dot{left:17px; margin-top:0; transform:translateY(-50%);}
+  .demo-title{
+    font-stretch:condensed; font-size:19px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.02em; line-height:1.1;
+  }
+  .demo-sub{font-size:10.5px; color:var(--muted); margin-top:3px; line-height:1.45;}
+
+  .demo-seg{
+    display:flex; background:var(--paper); border:1.5px solid var(--line);
+    border-radius:10px; padding:3px; margin:10px 0 2px;
+  }
+  .demo-seg span{
+    flex:1; text-align:center; padding:7px 2px; border-radius:8px;
+    font-size:9.5px; font-weight:800; color:var(--muted);
+  }
+  .demo-seg span.on{background:var(--ink); color:#fff;}
+
+  .demo-chips{display:flex; flex-wrap:wrap; gap:5px; margin-top:9px;}
+  .demo-chip{
+    display:inline-flex; align-items:center; gap:5px; padding:6px 10px;
+    border-radius:20px; font-size:10px; font-weight:700;
+    border:1.5px solid var(--line); background:var(--paper);
+  }
+  .demo-chip .ar{font-size:9px;}
+  .demo-chip.nb .ar{color:var(--gold-deep);}
+  .demo-chip.sb .ar{color:var(--maroon);}
+  .demo-chip .ag{color:var(--muted); font-weight:600;}
+
+  /* A stylised route, not a real map: the app draws a live Leaflet map, and
+     pretending otherwise here would be the same lie a screenshot tells. */
+  .demo-map{
+    margin-top:10px; height:132px; position:relative; overflow:hidden;
+    border:1px solid var(--line); border-radius:10px; background:#eceae4;
+  }
+  .demo-map svg{position:absolute; inset:0; width:100%; height:100%;}
+  .demo-badge{
+    position:absolute; width:23px; height:23px; border-radius:50%;
+    border:2px solid #fff; box-shadow:0 1px 5px rgba(0,0,0,.3);
+    display:flex; align-items:center; justify-content:center; font-size:11px;
+    transform:translate(-50%,-50%);
+  }
+  .demo-badge.nb{background:var(--gold);}
+  .demo-badge.sb{background:var(--maroon);}
+
+  /* The folded cards, as they look on the tracker. */
+  .demo-fold{
+    display:flex; align-items:center; gap:12px; margin-top:8px; padding:12px 13px;
+    border:1px solid var(--line); border-radius:12px; background:var(--surface);
+  }
+  .demo-fold .lbl{flex:1; min-width:0;}
+  .demo-fold .cap{
+    display:block; font-size:8.5px; font-weight:800; letter-spacing:.08em;
+    color:var(--maroon); text-transform:uppercase;
+  }
+  .demo-fold .val{display:block; font-size:11.5px; font-weight:700; margin-top:3px;}
+  .demo-fold .chev{color:var(--muted); font-size:10px;}
+
+  .demo-field{
+    border:1.5px solid var(--line); border-radius:9px; background:var(--surface);
+    padding:10px 11px; font-size:11.5px; color:var(--muted); margin-top:8px;
+  }
+  .demo-field.filled{color:var(--ink); font-weight:700;}
+  .demo-row{
+    display:flex; justify-content:space-between; gap:10px; font-size:11px;
+    padding:9px 0; border-bottom:1px solid var(--line);
+  }
+  .demo-row:last-child{border-bottom:none;}
+  .demo-row .t{color:var(--muted); white-space:nowrap;}
+
+  /* The two direction buttons from the share tab. */
+  .demo-pick{display:flex; gap:8px; margin-top:8px;}
+  .demo-pick > div{
+    flex:1; text-align:center; padding:12px 6px; border-radius:12px;
+    border:2px solid var(--line); background:var(--surface);
+  }
+  .demo-pick .arw{font-size:17px; line-height:1;}
+  .demo-pick .nm{font-size:11px; font-weight:800; margin-top:4px;}
+  .demo-pick .to{font-size:9px; color:var(--muted); font-weight:600;}
+  .demo-pick > div.sel-n{border-color:var(--gold); background:var(--gold-soft);}
+  .demo-pick > div.sel-s{border-color:var(--maroon); background:var(--maroon-soft);}
+
+  .demo-status{display:flex; gap:9px; align-items:flex-start; margin-bottom:4px;}
+  .demo-status .txt{font-weight:800; font-size:12.5px;}
+  .demo-status .sd{
+    width:10px; height:10px; border-radius:50%; background:var(--muted);
+    margin-top:4px; flex:0 0 auto;
+  }
+  .demo-status .sd.live{background:var(--live); box-shadow:0 0 0 4px rgba(29,138,95,.15);}
+
+  /* ---- The filter demo (was a 19 second screen recording) ----------- */
+  /* Three phases of four seconds: all buses, northbound only, southbound
+     only. Each element runs the same 12s clock with its own keyframes. */
+  .filterdemo .demo-seg span:nth-child(1){animation:fSegAll 12s infinite;}
+  .filterdemo .demo-seg span:nth-child(2){animation:fSegN 12s infinite;}
+  .filterdemo .demo-seg span:nth-child(3){animation:fSegS 12s infinite;}
+  .filterdemo .demo-chip.nb{animation:fChipNb 12s infinite;}
+  .filterdemo .demo-chip.sb{animation:fChipSb 12s infinite;}
+  @keyframes fSegAll{
+    0%,30%{background:var(--ink); color:#fff;}
+    34%,96%{background:transparent; color:var(--muted);}
+    100%{background:var(--ink); color:#fff;}
+  }
+  @keyframes fSegN{
+    0%,30%{background:transparent; color:var(--muted);}
+    34%,63%{background:var(--gold); color:#3d2a05;}
+    67%,100%{background:transparent; color:var(--muted);}
+  }
+  @keyframes fSegS{
+    0%,63%{background:transparent; color:var(--muted);}
+    67%,96%{background:var(--maroon); color:#fff;}
+    100%{background:transparent; color:var(--muted);}
+  }
+  @keyframes fChipNb{0%,63%{opacity:1;} 67%,96%{opacity:.14;} 100%{opacity:1;}}
+  @keyframes fChipSb{0%,30%{opacity:1;} 34%,63%{opacity:.14;} 67%,100%{opacity:1;}}
+
+  /* ---- The share flow (was a 33 second screen recording) ------------ */
+  /* Four states on a 24s clock, same stacking trick as .promptstack. */
+  .flowstack{display:grid;}
+  .flowcard{
+    grid-area:1/1; opacity:0;
+    border:1px solid var(--line); border-radius:14px; background:var(--surface);
+    padding:13px; animation:cycle4 24s ease-in-out infinite;
+  }
+  .flowcard:nth-child(2){animation-delay:6s;}
+  .flowcard:nth-child(3){animation-delay:12s;}
+  .flowcard:nth-child(4){animation-delay:18s;}
+  .flowstep{
+    font-size:8.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--maroon); margin-bottom:7px;
+  }
+  @keyframes cycle4{
+    0%{opacity:0; transform:translateY(8px);}
+    3%{opacity:1; transform:none;}
+    22%{opacity:1; transform:none;}
+    25%{opacity:0; transform:translateY(-8px);}
+    100%{opacity:0; transform:translateY(-8px);}
+  }
+
+  /* Numbered callout dots. They live in .demo.annotated's left gutter now,
+     one per row of the recreation they mark. */
   .dot{
     position:absolute; width:24px; height:24px; margin:-12px 0 0 -12px;
     border-radius:50%; background:var(--maroon); color:#fff; border:2px solid #fff;
@@ -122,11 +282,6 @@
     0%{opacity:.7; transform:scale(.8);}
     70%{opacity:0; transform:scale(1.5);}
     100%{opacity:0; transform:scale(1.5);}
-  }
-
-  video{
-    width:100%; height:auto; border-radius:14px; border:1px solid var(--line);
-    display:block; background:#000;
   }
 
   /* ---- Live demo of the progress strip ----------------------------- */
@@ -159,23 +314,33 @@
   .ticks{position:relative; height:26px; margin-top:2px;}
   .tick{position:absolute; transform:translateX(-50%); text-align:center;}
   .tick::before{content:''; display:block; width:2px; height:8px; background:var(--line); margin:0 auto 3px;}
-  .tick span{font-size:8.5px; font-weight:800; letter-spacing:.04em; color:var(--muted); white-space:nowrap;}
+  /* Kept in step with index.html: sized to leave a gap between the two
+     longest neighbouring checkpoint names, not for comfort. */
+  .tick span{font-size:8px; font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
+  @media (max-width:359px){ .tick span{font-size:7px; letter-spacing:0;} }
   .tick.first{transform:none; text-align:left;}
   .tick.first::before{margin:0 0 3px;}
   .tick.last{transform:translateX(-100%); text-align:right;}
   .tick.last::before{margin:0 0 3px auto;}
 
   /* ---- Recreated prompt cards -------------------------------------- */
-  /* These are the real modals from index.html, rebuilt here. They cannot be
-     filmed: the idle prompt needs twenty minutes stationary, the end-of-trip
-     prompt needs the bus parked at a terminal, and the direction prompt
-     needs a genuinely wrong-way trip. */
-  .promptstack{position:relative; min-height:186px;}
+  /* These are the real modals from index.html, rebuilt here. They were the
+     first thing on this page that had to be recreated rather than captured:
+     the idle prompt needs twenty minutes stationary, the end-of-trip prompt
+     needs the bus parked at a terminal, and the direction prompt needs a
+     genuinely wrong-way trip. Everything else on the page is built the same
+     way now, for the reasons in the recreations block above. */
+  /* One grid cell, every card in it: the stack is then exactly as tall as
+     its tallest card, at any width, with no hand-measured min-height to go
+     stale. It had one — 186px against cards up to 319px on a narrow phone —
+     and the overflow printed the prompt straight through the paragraph
+     underneath. */
+  .promptstack{display:grid;}
   .promptcard{
+    grid-area:1/1;
     background:#fff; border-radius:16px; padding:18px; border:1px solid var(--line);
     box-shadow:0 8px 28px rgba(43,35,32,.13);
-    position:absolute; inset:0 0 auto 0; opacity:0;
-    animation:cycle 21s ease-in-out infinite;
+    opacity:0; animation:cycle 21s ease-in-out infinite;
   }
   .promptcard:nth-child(2){animation-delay:7s;}
   .promptcard:nth-child(3){animation-delay:14s;}
@@ -215,12 +380,22 @@
     .buspill{animation:none; left:34%;}
     .buspill.sb{left:66%;}
     .dot::after{animation:none;}
+    /* Back to a plain vertical list: one grid cell would otherwise keep all
+       the cards on top of each other with every one of them opaque. */
+    .promptstack, .flowstack{display:block;}
     .promptcard{
-      animation:none; opacity:1; position:static; margin-bottom:10px;
+      animation:none; opacity:1; margin-bottom:10px;
       transform:none; box-shadow:none;
     }
-    .promptstack{min-height:0;}
     html.js .reveal{opacity:1; transform:none;}
+    /* Every recreation needs a resting state here, not just no animation:
+       an element whose keyframes were its only source of colour or opacity
+       would otherwise settle on nothing at all. */
+    .filterdemo .demo-seg span,
+    .filterdemo .demo-chip{animation:none;}
+    .filterdemo .demo-seg span:nth-child(1){background:var(--ink); color:#fff;}
+    .filterdemo .demo-chip{opacity:1;}
+    .flowcard{animation:none; opacity:1; margin-bottom:10px; transform:none;}
   }
 </style>
 </head>
@@ -242,18 +417,51 @@
       Open the link and look.</p>
 
     <figure>
-      <div class="shot">
-        <img src="assets/howto/01-track.jpg" width="1030" height="1990"
-             alt="The tracker showing one bus live, northbound between Amadeo and Gen. Trias, on the progress strip and on the map.">
-        <!-- Positioned beside what they mark, never on top of it. -->
-        <span class="dot" style="left:6%;   top:5.2%">1</span>
-        <span class="dot" style="left:62%;  top:17.8%">2</span>
-        <span class="dot" style="left:34%;  top:24.6%">3</span>
-        <span class="dot" style="left:32%;  top:64.2%">4</span>
+      <div class="demo annotated" aria-hidden="true">
+        <div class="demo-title">1 bus live</div>
+        <div class="demo-sub">Northbound between Tagaytay and Amadeo · updated 12s ago · trips every 30 mins</div>
+        <div class="demo-seg">
+          <span class="on">All buses</span><span>▲ Northbound</span><span>▼ Southbound</span>
+        </div>
+        <div class="strip" style="padding:0">
+          <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
+          <div class="track nb"><div class="rail"></div><div class="buspill" style="left:28%; animation:none">🚌</div></div>
+          <div class="ticks">
+            <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
+            <div class="tick" style="left:16.7%"><span>TGY</span></div>
+            <div class="tick" style="left:33.3%"><span>AMADEO</span></div>
+            <div class="tick" style="left:50%"><span>GEN.T</span></div>
+            <div class="tick" style="left:66.7%"><span>IMUS</span></div>
+            <div class="tick" style="left:83.3%"><span>PITX</span></div>
+            <div class="tick last" style="left:100%"><span>AYALA</span></div>
+          </div>
+          <div class="track sb"><div class="rail"></div></div>
+          <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
+        </div>
+        <div class="demo-chips">
+          <span class="demo-chip nb"><span class="ar">▲</span><b>98018</b>2 km to AMADEO <span class="ag">12s ago</span></span>
+        </div>
+        <div class="demo-map">
+          <svg viewBox="0 0 300 132" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M96 122 C104 96, 130 84, 142 62 C154 40, 176 26, 196 12"
+                  fill="none" stroke="#b9c0cc" stroke-width="3" stroke-linecap="round"/>
+            <g fill="#8b93a1">
+              <circle cx="96" cy="122" r="3"/><circle cx="115" cy="97" r="3"/>
+              <circle cx="142" cy="62" r="3"/><circle cx="168" cy="36" r="3"/>
+              <circle cx="196" cy="12" r="3"/>
+            </g>
+          </svg>
+          <span class="demo-badge nb" style="left:38.5%; top:74%">🚌</span>
+        </div>
+        <!-- Numbered down the gutter, in the order they are read. -->
+        <span class="dot" style="top:21%">1</span>
+        <span class="dot" style="top:32.5%">2</span>
+        <span class="dot" style="top:54.5%">3</span>
+        <span class="dot" style="top:80.5%">4</span>
       </div>
       <figcaption>
-        <b>1</b> filter by direction · <b>2</b> how fresh the position is ·
-        <b>3</b> the bus on the route strip · <b>4</b> the same bus on the map
+        <b>1</b> filter by direction · <b>2</b> the bus on the route strip ·
+        <b>3</b> how fresh the position is · <b>4</b> the same bus on the map
       </figcaption>
     </figure>
 
@@ -313,12 +521,17 @@
     </div>
 
     <figure>
-      <video controls playsinline preload="none" width="480" height="896"
-             poster="assets/howto/watch-poster.jpg">
-        <source src="assets/howto/watch.mp4" type="video/mp4">
-        Your browser cannot play this video.
-      </video>
-      <figcaption>Filtering by direction, then scrolling down to the sightings. 19 seconds, no sound.</figcaption>
+      <div class="demo filterdemo" aria-hidden="true">
+        <div class="demo-seg">
+          <span>All buses</span><span>▲ Northbound</span><span>▼ Southbound</span>
+        </div>
+        <div class="demo-chips">
+          <span class="demo-chip nb"><span class="ar">▲</span><b>98018</b>2 km to AMADEO <span class="ag">12s ago</span></span>
+          <span class="demo-chip sb"><span class="ar">▼</span><b>21</b>AYALA <span class="ag">40s ago</span></span>
+          <span class="demo-chip nb"><span class="ar">▲</span>12 km to PITX <span class="ag">1m ago</span></span>
+        </div>
+      </div>
+      <figcaption>Tapping a direction drops everything going the other way. The filter moves the strip, the list and the map together.</figcaption>
     </figure>
 
     <div class="step">
@@ -343,11 +556,21 @@
       Amadeo, 6:42am”</b> is useful. “Bus coming” is not.</p>
 
     <figure>
-      <div class="shot">
-        <img src="assets/howto/03-sightings.jpg" width="1030" height="770" loading="lazy"
-             alt="The sightings card, with a box to type in and two recent sightings posted seconds ago.">
+      <div class="demo" aria-hidden="true">
+        <div class="demo-fold">
+          <span class="lbl">
+            <span class="cap">Sightings</span>
+            <span class="val">2 recent sightings posted</span>
+          </span>
+          <span class="chev">▶</span>
+        </div>
+        <div class="demo-field">e.g. Northbound just passed Amadeo, 6:42am</div>
+        <div style="margin-top:10px">
+          <div class="demo-row"><span>Northbound just passed Amadeo, 6:42am</span><span class="t">8m ago</span></div>
+          <div class="demo-row"><span>Two buses waiting at One Ayala bay 3</span><span class="t">40m ago</span></div>
+        </div>
       </div>
-      <figcaption>Sightings clear themselves after two hours, so the board never goes stale.</figcaption>
+      <figcaption>The board stays folded while buses are live and <b>opens itself when none are</b> — which is exactly when it is the only thing that can answer you. Sightings clear after two hours, so it never goes stale.</figcaption>
     </figure>
   </div>
 
@@ -365,13 +588,49 @@
     </div>
 
     <figure>
-      <video controls playsinline preload="none" width="540" height="868"
-             poster="assets/howto/share-poster.jpg">
-        <source src="assets/howto/share.mp4" type="video/mp4">
-        Your browser cannot play this video.
-      </video>
-      <figcaption>The whole thing: pick a direction, start, watch the bus appear
-        on the map, stop. 33 seconds, no sound.</figcaption>
+      <div class="flowstack" aria-hidden="true">
+        <div class="flowcard">
+          <div class="flowstep">Step 1 · pick a direction</div>
+          <div class="demo-status"><span class="sd"></span><span class="txt">Not sharing</span></div>
+          <div class="demo-pick">
+            <div><div class="arw">▲</div><div class="nm">Northbound</div><div class="to">to One Ayala</div></div>
+            <div><div class="arw">▼</div><div class="nm">Southbound</div><div class="to">to Mendez</div></div>
+          </div>
+          <div class="demo-field">Bus number (optional)</div>
+        </div>
+        <div class="flowcard">
+          <div class="flowstep">Step 2 · add the number, start</div>
+          <div class="demo-status"><span class="sd"></span><span class="txt">Not sharing</span></div>
+          <div class="demo-pick">
+            <div class="sel-n"><div class="arw">▲</div><div class="nm">Northbound</div><div class="to">to One Ayala</div></div>
+            <div><div class="arw">▼</div><div class="nm">Southbound</div><div class="to">to Mendez</div></div>
+          </div>
+          <div class="demo-field filled">98019</div>
+          <div class="fakebtn primary" style="margin-top:9px">Start sharing my location</div>
+        </div>
+        <div class="flowcard">
+          <div class="flowstep">Step 3 · the bus is on the map</div>
+          <div class="demo-status"><span class="sd live"></span><span class="txt">Sharing live: ▲ northbound</span></div>
+          <div class="strip" style="padding:0 8px; margin:10px 0 0">
+            <div class="track nb"><div class="rail"></div><div class="buspill" style="left:34%; animation:none">🚌</div></div>
+            <div class="ticks">
+              <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
+              <div class="tick" style="left:33.3%"><span>AMADEO</span></div>
+              <div class="tick" style="left:66.7%"><span>IMUS</span></div>
+              <div class="tick last" style="left:100%"><span>AYALA</span></div>
+            </div>
+          </div>
+          <div class="fakebtn stop" style="margin-top:10px">Stop sharing</div>
+        </div>
+        <div class="flowcard">
+          <div class="flowstep">Step 4 · you get off, you stop</div>
+          <div class="demo-status"><span class="sd"></span><span class="txt">Not sharing</span></div>
+          <p style="font-size:12px; color:var(--muted); margin:8px 0 0; line-height:1.5;">
+            The bus leaves everyone's map immediately. There was never a trail
+            of the trip to delete, because none was ever written.</p>
+        </div>
+      </div>
+      <figcaption>The whole thing: pick a direction, start, the bus appears, stop.</figcaption>
     </figure>
 
     <div class="step">
@@ -402,11 +661,15 @@
     </div>
 
     <figure>
-      <div class="shot">
-        <img src="assets/howto/04-share-setup.jpg" width="1030" height="1184" loading="lazy"
-             alt="The share tab before starting: northbound picked and highlighted in gold, bus number 98019 typed in, and the Start sharing my location button below.">
+      <div class="demo" aria-hidden="true">
+        <div class="demo-pick">
+          <div class="sel-n"><div class="arw">▲</div><div class="nm">Northbound</div><div class="to">to One Ayala, Makati</div></div>
+          <div><div class="arw">▼</div><div class="nm">Southbound</div><div class="to">to Mendez / Tagaytay</div></div>
+        </div>
+        <div class="demo-field filled">98019</div>
+        <div class="fakebtn primary" style="margin-top:10px">Start sharing my location</div>
       </div>
-      <figcaption>Direction picked, bus number in. Ready to start.</figcaption>
+      <figcaption>Direction picked — note the gold — and the bus number in. Ready to start.</figcaption>
     </figure>
 
     <div class="step">
@@ -438,9 +701,15 @@
     </div>
 
     <figure>
-      <div class="shot">
-        <img src="assets/howto/05-sharing-active.jpg" width="1030" height="580" loading="lazy"
-             alt="The share tab while sharing: a green dot, the words Sharing live northbound, and a red Stop sharing button.">
+      <div class="demo" aria-hidden="true">
+        <div class="demo-status">
+          <span class="sd live"></span>
+          <span>
+            <span class="txt">Sharing live: ▲ northbound</span>
+            <span style="display:block; font-size:10.5px; color:var(--muted); margin-top:2px;">Shares only while this page is open and the screen is on.</span>
+          </span>
+        </div>
+        <div class="fakebtn stop" style="margin-top:11px">Stop sharing</div>
       </div>
       <figcaption>While it is running. Green dot, and one button to stop.</figcaption>
     </figure>

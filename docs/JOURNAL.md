@@ -25,6 +25,50 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-07-31 — Made the tracker readable at a glance
+
+**Why.** The page answered its own question below the fold. Measured on a
+390×844 phone, the headline sat 426 px down and the map 695 px down; with an
+operator notice posted plus the first-visit accuracy banner, the map started at
+834 px — off the bottom of the screen entirely. Someone opening the link while
+standing at a stop saw three advisory boxes and a filter before a single bus.
+
+**What changed.** The answer moved above the direction filter. The three
+advisory blocks became one: the notice bar stays, and the accuracy warning
+folded into the privacy line as a permanent clause, which retired a
+localStorage flag — the warning is always true, so it should always be on
+screen rather than dismissable once. Operating hours and sightings became
+`<details>` cards whose summary lines carry the answer, so opening them is
+usually unnecessary. The map grew from a flat 290 px to `min(58vh, 420px)`.
+Headline now at 371 px and the map at 747 px **with a notice showing**; the
+page is 21% shorter.
+
+**Sightings open themselves when no buses are live.** Folding them
+unconditionally would have hidden the only useful thing on the page at 5am.
+A manual open or close by the reader wins for the rest of the visit.
+
+**Defects fixed on the way.** Southbound bus badges had been rendering on top
+of the AYALA and GEN.T labels — `.ticks` was pinned at 26px against 29px
+content. `--muted` was 3.90:1 on white and carried nearly all the small text;
+it and `--gold-deep` now clear WCAG AA. Tap targets went to 44px. Nothing on
+either page was reachable by keyboard: no focus rings, no `<form>` anywhere so
+Enter never submitted, tabs and bus chips were clickable `div`s. All fixed. In
+the guide, the prompt-card stack had a hand-measured 186px min-height against
+cards up to 319px, so on a narrow phone the prompts printed through the
+paragraph below; both stacks are one-cell grids now and size themselves.
+
+**The guide stopped using screenshots.** Every figure on `how-to.html` is drawn
+in HTML and CSS from the same tokens as the app. That deletes 1.5 MB of media,
+removes the last route-specific content in the repository — a fork no longer
+has to reshoot anything — and kills a silent failure mode, since a screenshot
+that no longer matches the app looks exactly like one that does. The cost is
+honest: the recreations are hand-maintained copies, so a layout change means
+updating them in the same commit. `test-boot.js` now checks the two halves a
+machine can see: that the guide loads nothing, and that its copied `:root`
+tokens still match `index.html`'s.
+
+---
+
 ## 2026-07-29 — First live demo trip
 
 **Plan.** Ride northbound from Gen. Trias to One Ayala on an afternoon

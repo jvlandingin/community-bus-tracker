@@ -25,6 +25,63 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-08-01 — Second pass on the UI
+
+Follow-ups to yesterday's restructure, from the same review.
+
+**Dark theme.** The southbound window closes at 8:00 PM, so a good share of
+the time this page gets opened it is dark outside and the light theme is a
+torch in the face. The map swaps to CARTO's `dark_all` — same provider, so
+nothing changes in the privacy panel.
+
+Doing it turned up something the light theme had been hiding: `--maroon` was
+being used both as a fill with white text on it and as text in its own right.
+Those are the same value in light and cannot be in dark, where maroon on a
+near-black card is 1.7:1. Split into fill and ink pairs. Auditing the rendered
+pages afterwards — measuring what actually painted, rather than reading the
+CSS — caught three more: two places in the guide still colouring text with the
+fill token, and a keyframe painting `#fff` on `--ink`, which in dark is white
+on white. Also found `--muted` at 4.40:1 on the two tinted backgrounds; it had
+only ever been checked against paper and white. Both themes now report no text
+under AA on any of the four page/theme combinations.
+
+**Sightings are picked, not typed.** Direction and nearest checkpoint are
+pickers with an optional note. The guide used to have to *ask* people to write
+"Northbound just passed Amadeo, 6:42am" instead of "Bus coming", which is a lot
+to ask of someone typing one-handed at a stop. Now every sighting is specific
+by construction, and because it comes back in a known shape, recent ones draw
+on the progress strip as hollow dashed rings. That fills the gap the board
+existed for: when nobody is sharing GPS the strip is no longer empty. Stored in
+the same free-text column as before, so no migration, and old sightings still
+render as the text they are.
+
+The rings are dashed and hollow on purpose. A sighting is one person's word,
+already minutes old, with no update coming — showing it as a solid bus would be
+worse than showing nothing.
+
+**Kawit.** Splits the 15.5 km Imus–PITX leg, which made a bus crossing CAVITEX
+look stalled, and pulls the checkpoint chain onto the road, since the route
+swings west into Kawit and back east. `docs/ARCHITECTURE.md` had suggested this
+for a while. It also broke the tick labels immediately, exactly as the note
+there predicted, so the label size is measured from the rendered strip now
+instead of hardcoded — eight names fit, and a ninth will too.
+
+**Smaller.** `aria-live` on the headline, which was rewriting itself every six
+seconds and announcing none of it. Focus trapping in the modals. A
+reduced-motion block for the app, which the guide has had all along. Bus chips
+grouped by direction and ordered by progress. And `font-stretch:condensed`
+deleted from all three pages — it had been reaching for a signboard look that
+never rendered on any system font, so the CSS was implying an effect nobody
+had ever seen.
+
+One behaviour changed its mind: the sightings board opens itself when no buses
+are live, and now never closes itself again. Auto-closing was symmetrical and
+wrong — a bus coming live would have shut the board on someone part-way
+through reading it, and posting a sighting closed it on the person who had just
+posted. Taking something away is not as harmless as offering it.
+
+---
+
 ## 2026-07-31 — Made the tracker readable at a glance
 
 **Why.** The page answered its own question below the fold. Measured on a

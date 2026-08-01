@@ -109,6 +109,23 @@ answer itself never folds, which is why the sightings board opens itself when
 no buses are live (see `revealSightings` in `index.html`) — with nobody sharing
 GPS it stops being a footnote and becomes the only answer available.
 
+**Colours come in fill/ink pairs.** `--maroon`, `--gold` and `--lost` are
+fills, with white or near-black text sitting on them. `--brand-ink`,
+`--gold-deep` and `--lost-ink` are the same colours used *as* text. In the
+light theme each pair is nearly the same value, which is why one token did
+both jobs for a year. In dark they diverge completely — maroon reading on a
+near-black card is 1.7:1 — so a new use of any of them has to be chosen by
+what the colour is doing: painting a shape, or spelling a word. All three
+pages share the token block, and `test-boot.js` fails if they drift apart.
+
+**Dark theme, because half the service runs after sunset.** The southbound
+window closes at 8:00 PM. `prefers-color-scheme` swaps the token block, and
+`basemapUrl()` swaps Leaflet's tiles to CARTO's `dark_all` — the same provider
+already disclosed in the privacy panel, so no new third party. The tiles are
+the one part CSS cannot reach, and a light map inside a dark page is the exact
+glare the theme exists to prevent. `.leaflet-container` is themed too, so a
+slow or blocked tile load does not leave a bright panel mid-screen.
+
 **No location history, by design.** `bus_positions` holds one row per sharing
 session, upserted in place. There is no trail table. This is the single most
 important property of the system: it means the tool cannot be used to review a
@@ -194,11 +211,27 @@ Two pieces of the strip's geometry are load-bearing and were both wrong until
 July 2026. `.ticks` must stay taller than a `.tick`: it was pinned at 26 px
 against 29 px of content, so every label overflowed into the southbound track
 below and the southbound bus badges rendered on top of the words. And the label
-type is sized to leave a gap between the two longest neighbouring checkpoint
-names rather than for comfort — seven names share about 290 px on a phone, and
-at the old 8.5px/.04em MENDEZ and TGY met at exactly 0 px and read as one word.
-Adding an eighth checkpoint to `config.txt` will need that type sized down
-again.
+type has to leave a gap between the two longest neighbouring names — at the old
+8.5px/.04em, MENDEZ and TGY met at exactly 0 px and read as one word.
+
+That second one is no longer a fixed number, because it cannot be: how many
+labels there are and how long they are are both `config.txt` decisions, so any
+size hardcoded in CSS is wrong for somebody. `fitTicks()` measures the rendered
+strip and steps `--tick-fs` down from 8 px to 6 px until neighbours clear each
+other, then, if 6 px still is not enough, drops every other label and keeps
+every mark. Adding Kawit — an eighth checkpoint — is what proved this was
+needed, and it now costs nothing.
+
+**Sightings that the strip can place.** A sighting is posted through a
+direction and checkpoint picker rather than as free text, and the composer
+writes one canonical shape (`▲ Northbound at Amadeo · optional note`) into the
+same free-text `body` column the board has always had. Deliberately not a
+schema change: no migration, the admin page still shows a readable sentence,
+and every sighting posted before this existed still renders as the text it is.
+`parseSighting()` reads the shape back so recent ones can be drawn on the strip
+as hollow dashed rings — never solid, never the bus glyph, because a sighting
+is one person's word with no update coming after it. They clear from the strip
+after one headway, which is when the next bus has overtaken the claim.
 
 ## Duplicate sharer handling
 

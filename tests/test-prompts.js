@@ -26,6 +26,11 @@ function build(dirHit) {
     function getSessionId(){ return 'sess'; }
     function rpc(fn,args){ __log__.rpc.push(fn); return Promise.resolve({}); }
     function setShareUI(s,m){ __log__.ui.push(s+'|'+m); }
+    // showAsk/hideAsk go through the shared modal helpers, which live outside
+    // this block because they also manage focus for the privacy dialog. Same
+    // boundary as rpc and setShareUI: stubbed, not extracted.
+    function openModal(id){ if (id==='askModal') __log__.modalHidden=false; }
+    function closeModal(id){ if (id==='askModal') __log__.modalHidden=true; }
     function pickDir(d){ shareDir=d; }
     function writePosition(c){ __log__.writes.push(c); }
     function stopSharing(){ __log__.stopped++; sharing=false; }

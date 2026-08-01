@@ -25,26 +25,59 @@
        "secondary" while clearing WCAG AA (4.5:1) on both --paper and
        --surface. The old #8a7f76 was 3.90:1 on white and carried nearly
        every piece of small text on the page: hints, tick labels, chip ages,
-       the map legend. Do not lighten them back for looks. */
-    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#786e67;
+       the map legend. Do not lighten them back for looks.
+
+       Three colours come in pairs, because they do two jobs that a single
+       value cannot do in both themes. --maroon, --lost and --gold are fills
+       with white or near-black text sitting on them, so they stay put. The
+       -ink partners are the same colours used AS text, and those have to
+       invert: maroon reading on a near-black card would be unreadable. If
+       you add a use of one of these, pick by what the colour is doing —
+       painting a shape, or spelling a word. */
+    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#6f655e;
     --maroon:#7a1f2b; --maroon-deep:#5c161f; --maroon-soft:#f3e6e4;
     --gold:#e39a1c; --gold-deep:#8c5905; --gold-soft:#fbf0da;
     --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
+    --brand-ink:#7a1f2b; --lost-ink:#c4432e;
+    --gold-line:#eeddb4; --maroon-line:#e6cdc9;
+    --ok-ink:#166534; --warn-ink:#92400e;
     --radius:16px;
     /* 44px: the smallest target a thumb finds reliably on a moving bus. */
     --tap:44px;
   }
+
+  /* Dark theme. The route's second operating window runs to 8:00 PM, so a
+     good part of the time this page is read it is dark outside and the light
+     theme is a torch in the face.
+     Every value below was checked against --surface and --paper: the dimmest
+     is --live at 6.5:1, and no text pair is under AA. Fills keep their light
+     values on purpose — white on maroon is 10.2:1 whatever the page behind
+     it is doing. The map's basemap is swapped in JS (see basemapUrl), because
+     Leaflet loads tiles rather than painting them. */
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16120f; --surface:#211b16; --ink:#f3ede4; --muted:#a99d90;
+      --maroon:#7a1f2b; --maroon-deep:#4a1119; --maroon-soft:#3a2126;
+      --gold:#e39a1c; --gold-deep:#e8b45c; --gold-soft:#39301a;
+      --line:#372e26; --live:#4ac694; --lost:#c4432e;
+      --brand-ink:#f0a8b0; --lost-ink:#e8836e;
+      --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --ok-ink:#6ed39b; --warn-ink:#e8b45c;
+    }
+    /* Cards are lifted by their own surface colour in dark, not by a shadow
+       that nothing can be cast onto. */
+    .card, details.card{box-shadow:none;}
+  }
   *{box-sizing:border-box;}
   /* One ring for everything focusable. :focus-visible rather than :focus so
      a thumb tap never leaves a ring behind, but a Tab key always does. */
-  :focus-visible{outline:3px solid var(--maroon); outline-offset:2px; border-radius:4px;}
+  :focus-visible{outline:3px solid var(--brand-ink); outline-offset:2px; border-radius:4px;}
   header :focus-visible{outline-color:#fff;}
   body{
     margin:0; background:var(--paper); color:var(--ink); min-height:100vh;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
-  .display{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; letter-spacing:.02em;}
 
   /* Header: signboard band. The band spans the viewport, but its contents sit
      in the same 520px column as everything else — otherwise on a desktop the
@@ -78,7 +111,7 @@
   }
   #guideLink.seen .newdot{display:none;}
   header .route{
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; font-weight:700; font-size:22px;
+    font-weight:700; font-size:22px;
     letter-spacing:.04em; text-transform:uppercase; line-height:1.1;
   }
   header .route .amp{color:var(--gold);}
@@ -117,7 +150,7 @@
   details.fold > summary .lbl{flex:1; min-width:0;}
   details.fold > summary .cap{
     display:block; font-size:9.5px; font-weight:800; letter-spacing:.08em;
-    color:var(--maroon); text-transform:uppercase;
+    color:var(--brand-ink); text-transform:uppercase;
   }
   details.fold > summary .val{display:block; font-size:13px; font-weight:700; margin-top:3px; line-height:1.4;}
   details.fold > summary .chev{flex:0 0 auto; color:var(--muted); font-size:12px; transition:transform .18s;}
@@ -128,7 +161,7 @@
   /* The quiet variant, for the notes under the map. */
   details.note > summary{
     list-style:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
-    min-height:var(--tap); font-size:11.5px; font-weight:800; color:var(--maroon);
+    min-height:var(--tap); font-size:11.5px; font-weight:800; color:var(--brand-ink);
   }
   details.note > summary::-webkit-details-marker{display:none;}
   details.note > .foldbody{padding:0 0 4px;}
@@ -141,13 +174,13 @@
     flex:1; min-height:var(--tap); border:none; background:transparent; padding:9px 4px; border-radius:9px;
     font-family:inherit; font-size:12.5px; font-weight:800; color:var(--muted); cursor:pointer;
   }
-  .seg button.on-all{background:var(--ink); color:#fff;}
+  .seg button.on-all{background:var(--ink); color:var(--surface);}
   .seg button.on-north{background:var(--gold); color:#3d2a05;}
   .seg button.on-south{background:var(--maroon); color:#fff;}
 
   /* Status */
   .status-head{display:flex; align-items:baseline; gap:8px;}
-  .status-title{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:.02em;}
+  .status-title{font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:.02em;}
   .status-sub{font-size:12.5px; color:var(--muted); margin-top:3px; line-height:1.5;}
 
   /* Dual-track strip */
@@ -157,17 +190,27 @@
   .dirlabel.sb{margin-top:3px;}
   .track{position:relative; height:22px;}
   .track .rail{position:absolute; left:0; right:0; top:9px; height:4px; border-radius:2px;}
-  .track.nb .rail{background:var(--gold-soft); border:1px solid #eeddb4;}
-  .track.sb .rail{background:var(--maroon-soft); border:1px solid #e6cdc9;}
+  .track.nb .rail{background:var(--gold-soft); border:1px solid var(--gold-line);}
+  .track.sb .rail{background:var(--maroon-soft); border:1px solid var(--maroon-line);}
   .buspill{
     position:absolute; top:0; transform:translateX(-50%);
     font-size:14px; line-height:1; padding:3px 5px; border-radius:20px;
-    background:var(--gold); border:1.5px solid #fff;
+    background:var(--gold); border:1.5px solid var(--surface);
     box-shadow:0 1px 4px rgba(43,35,32,.25); transition:left 1s ease;
     white-space:nowrap;
   }
   .buspill.sb{background:var(--maroon); color:#fff;}
   .buspill.stale{opacity:.45;}
+  /* A reported sighting, not a GPS position. Hollow and dashed so it cannot
+     be mistaken for a live bus at a glance — that would be worse than showing
+     nothing, because a sighting is one person's word, already minutes old,
+     with no update coming after it. */
+  .sightmk{
+    position:absolute; top:3px; transform:translateX(-50%);
+    width:16px; height:16px; border-radius:50%;
+    border:2px dashed var(--gold-deep); background:var(--surface);
+  }
+  .sightmk.sb{border-color:var(--brand-ink);}
   /* 32px, not 26px: a .tick is 29px tall (an 8px mark, 3px of margin, then an
      18px line box for the label) and the box used to be fixed at 26px, so
      every label overflowed 3px into the southbound track below and the
@@ -176,18 +219,21 @@
   .ticks{position:relative; height:32px; margin-top:2px;}
   .tick{position:absolute; transform:translateX(-50%); text-align:center;}
   .tick::before{content:''; display:block; width:2px; height:8px; background:var(--line); margin:0 auto 3px;}
-  /* Seven checkpoint names share about 290px on a phone, so the type is
-     sized to leave a gap rather than to be comfortable. At 8.5px with .04em
-     the two longest neighbours (MENDEZ and TGY) met at exactly 0px and read
-     as one word; below 360px they genuinely overlapped. */
-  .tick span{font-size:8px; font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
-  @media (max-width:359px){ .tick span{font-size:7px; letter-spacing:0;} }
+  /* The checkpoint names share the strip's width, so their type is sized to
+     leave a gap rather than to be comfortable. --tick-fs is set by fitTicks()
+     from the real measured layout: how many names there are and how long they
+     are both come from config.txt, so a fixed size here goes wrong the moment
+     someone adds a checkpoint. The value below is only the starting point. */
+  .tick span{font-size:var(--tick-fs,8px); font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
+  /* Set by fitTicks() when even the smallest type will not fit: every mark
+     stays, every other name goes. The end points always keep theirs. */
+  .ticks.thin .tick:nth-child(even):not(.last) span{display:none;}
   .tick.first{transform:none; text-align:left;}
   .tick.first::before{margin:0 0 3px;}
   .tick.last{transform:translateX(-100%); text-align:right;}
   .tick.last::before{margin:0 0 3px auto;}
-  .tick.near span{color:var(--maroon);}
-  .tick.near::before{background:var(--maroon);}
+  .tick.near span{color:var(--brand-ink);}
+  .tick.near::before{background:var(--brand-ink);}
 
   /* Live bus list. Also the text alternative to the strip and the map: it is
      the only one of the three a screen reader can read out, so it stays. */
@@ -200,12 +246,16 @@
   }
   .buschip .arrow{font-size:10px;}
   .buschip.nb .arrow{color:var(--gold-deep);}
-  .buschip.sb .arrow{color:var(--maroon);}
+  .buschip.sb .arrow{color:var(--brand-ink);}
   .buschip .age{color:var(--muted); font-weight:600;}
 
   /* Was a flat 290px at every size, which is a letterbox on a desktop and
      barely a map on a phone. */
   #map{height:min(58vh,420px); min-height:290px; border-radius:12px; margin-top:14px; border:1px solid var(--line);}
+  /* Leaflet paints its container light grey while tiles load, or forever if
+     they never arrive. On a dark page that is a bright panel in the middle of
+     the screen, which is exactly the thing dark mode exists to avoid. */
+  .leaflet-container{background:var(--paper);}
   .maplegend{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:10.5px; color:var(--muted); font-weight:700;}
   .maplegend .sw{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; vertical-align:-1px;}
 
@@ -235,7 +285,7 @@
   .busmk.delayed.sb::after{border-top-color:#9aa1ac;}
   .busmk .cnt{
     position:absolute; top:-7px; right:-7px; min-width:16px; height:16px; padding:0 3px;
-    border-radius:9px; background:var(--ink); color:#fff; border:1.5px solid #fff;
+    border-radius:9px; background:var(--ink); color:var(--surface); border:1.5px solid #fff;
     font-size:9.5px; font-weight:800; line-height:1;
     display:flex; align-items:center; justify-content:center;
   }
@@ -248,7 +298,7 @@
   .buspop .leaflet-popup-tip{background:var(--surface);}
   .buspop .pdir{font-size:9.5px; font-weight:800; letter-spacing:.06em;}
   .buspop .nb .pdir{color:var(--gold-deep);}
-  .buspop .sb .pdir{color:var(--maroon);}
+  .buspop .sb .pdir{color:var(--brand-ink);}
   .buspop .pname{font-weight:800; font-size:13.5px; margin-top:1px;}
   .buspop .page{color:var(--muted); font-weight:600;}
   .mapreset a{display:flex; align-items:center; justify-content:center; color:var(--ink);}
@@ -265,9 +315,9 @@
   .hours{display:flex; gap:10px;}
   .hourbox{flex:1; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:10px 12px;}
   .hourbox .dirname{font-size:10px; font-weight:800; letter-spacing:.06em; color:var(--muted);}
-  .hourbox .times{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; font-size:17px; font-weight:700; margin-top:2px; white-space:pre-line; line-height:1.35;}
+  .hourbox .times{font-size:17px; font-weight:700; letter-spacing:.02em; margin-top:2px; white-space:pre-line; line-height:1.35;}
   .hourbox.nb .dirname{color:var(--gold-deep);}
-  .hourbox.sb .dirname{color:var(--maroon);}
+  .hourbox.sb .dirname{color:var(--brand-ink);}
   .headway{font-size:11.5px; color:var(--muted); margin-top:8px; font-weight:600;}
 
   button.big{
@@ -277,15 +327,16 @@
   .btn-primary{background:var(--maroon); color:#fff;}
   .btn-stop{background:var(--lost); color:#fff;}
   .btn-ghost{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
-  input[type=text]{
+  input[type=text], select{
     width:100%; min-height:var(--tap); padding:12px; border-radius:10px; border:1.5px solid var(--line);
     background:var(--surface); color:var(--ink); font-size:14px; font-family:inherit;
   }
-  input[type=text]:focus{outline:none; border-color:var(--maroon);}
+  input[type=text]:focus, select:focus{outline:none; border-color:var(--brand-ink);}
+  .fielderr{font-size:12px; color:var(--lost-ink); font-weight:700; margin-top:8px;}
   .hint{font-size:12px; color:var(--muted); margin-top:10px; line-height:1.55;}
   .badge{
     display:inline-block; font-size:10px; padding:3px 9px; border-radius:20px;
-    background:var(--maroon-soft); color:var(--maroon); font-weight:800; letter-spacing:.06em;
+    background:var(--maroon-soft); color:var(--brand-ink); font-weight:800; letter-spacing:.06em;
   }
   .sighting{display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:13px;}
   .sighting:last-child{border-bottom:none;}
@@ -302,14 +353,14 @@
   .dirbtn .lbl{font-size:12.5px; font-weight:800; margin-top:5px;}
   .dirbtn .dest{font-size:10.5px; color:var(--muted); font-weight:600;}
   .dirbtn.sel-north{border-color:var(--gold); background:var(--gold-soft);}
-  .dirbtn.sel-south{border-color:var(--maroon); background:var(--maroon-soft);}
+  .dirbtn.sel-south{border-color:var(--brand-ink); background:var(--maroon-soft);}
   .statusdot{width:10px; height:10px; border-radius:50%; background:var(--muted); margin-top:4px; flex-shrink:0;}
   .statusdot.live{background:var(--live); box-shadow:0 0 0 4px rgba(29,138,95,.15);}
   .statusdot.err{background:var(--lost); box-shadow:0 0 0 4px rgba(196,67,46,.15);}
   .status-row{display:flex; gap:10px; align-items:flex-start;}
 
   .noticebar{
-    background:var(--gold-soft); border:1.5px solid #eeddb4; border-radius:12px;
+    background:var(--gold-soft); border:1.5px solid var(--gold-line); border-radius:12px;
     padding:11px 13px; margin:0 0 10px; font-size:13px; line-height:1.5;
   }
   .noticebar .tag{font-size:9.5px; font-weight:800; letter-spacing:.08em; color:var(--gold-deep);}
@@ -329,15 +380,15 @@
     padding:6px 2px; min-height:var(--tap);
   }
   .privacybar b{color:var(--ink);}
-  .privacybar .more{color:var(--maroon); font-weight:800; text-decoration:underline;}
+  .privacybar .more{color:var(--brand-ink); font-weight:800; text-decoration:underline;}
   .privacy-detail h4{font-size:13px; margin:14px 0 4px;}
   .privacy-detail h4:first-child{margin-top:0;}
   .privacy-detail p{font-size:12.5px; color:var(--muted); line-height:1.55; margin-bottom:0;}
-  .privacy-detail .ok{color:#166534;}
-  .privacy-detail .hon{color:#92400e;}
+  .privacy-detail .ok{color:var(--ok-ink);}
+  .privacy-detail .hon{color:var(--warn-ink);}
 
   .modal{position:fixed; inset:0; background:rgba(28,37,48,.55); z-index:4000; display:flex; align-items:center; justify-content:center; padding:22px;}
-  .modal-card{background:#fff; border-radius:16px; padding:20px; max-width:380px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,.25);}
+  .modal-card{background:var(--surface); border-radius:16px; padding:20px; max-width:380px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,.25);}
   .modal-card h3{font-size:16px; margin-bottom:8px; display:flex; align-items:center; gap:8px;}
   .modal-card p{font-size:13px; color:var(--muted); line-height:1.55; margin-bottom:16px;}
   .modal-actions{display:flex; flex-direction:column; gap:8px;}
@@ -356,9 +407,22 @@
     font-size:20px; line-height:1; color:var(--muted);
   }
 
+  /* The guide has honoured this since it was written; the app never did, even
+     though it slides a bus pill along a rail for a full second every time a
+     position lands. Blanket rule rather than a list, because the pieces that
+     move here are transitions on positions and colours, and none of them
+     carries meaning that survives only in the movement. The map's own panning
+     is handled in JS, where Leaflet needs telling. */
+  @media (prefers-reduced-motion:reduce){
+    *, *::before, *::after{
+      animation-duration:.001ms !important; animation-iteration-count:1 !important;
+      transition-duration:.001ms !important; scroll-behavior:auto !important;
+    }
+  }
+
   .gate{position:fixed; inset:0; background:var(--paper); z-index:3000; display:flex; align-items:center; justify-content:center; padding:24px;}
   .gate-card{max-width:360px; width:100%;}
-  .gate h2{margin:0 0 6px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; font-size:24px; text-transform:uppercase;}
+  .gate h2{margin:0 0 6px; font-size:24px; text-transform:uppercase;}
   .gate p{font-size:13px; color:var(--muted); line-height:1.5; margin:0 0 16px;}
 </style>
 </head>
@@ -435,7 +499,7 @@
     <div style="height:10px"></div>
     <button class="big btn-primary" id="gateBtn" type="submit">Enter</button>
     <div style="height:8px"></div>
-    <button class="big btn-ghost" type="button" onclick="document.getElementById('gate').classList.add('hidden'); switchTab('track')">Back to the map</button>
+    <button class="big btn-ghost" type="button" onclick="closeModal('gate'); switchTab('track')">Back to the map</button>
     <div class="hint" id="gateErr"></div>
   </form>
 </div>
@@ -472,8 +536,13 @@
     </div>
 
     <div class="card">
-      <div class="status-head"><div class="status-title display" id="statusText">Loading…</div></div>
-      <div class="status-sub" id="statusSub"></div>
+      <!-- The headline and its subtitle are rewritten every few seconds by
+           polling. Without a live region a screen reader announces the page
+           once at load and then never mentions that the buses moved, which
+           is the entire content of the page. Polite, not assertive: it should
+           wait for a pause, never interrupt. -->
+      <div class="status-head"><div class="status-title" id="statusText" aria-live="polite" aria-atomic="true">Loading…</div></div>
+      <div class="status-sub" id="statusSub" aria-live="polite" aria-atomic="true"></div>
 
       <div class="seg" id="dirSeg">
         <button type="button" id="segAll" class="on-all" onclick="setFilter('all')">All buses</button>
@@ -500,6 +569,7 @@
             <span><span class="sw" style="background:var(--gold)"></span>Northbound ▲</span>
             <span><span class="sw" style="background:var(--maroon)"></span>Southbound ▼</span>
             <span><span class="sw" style="background:#94a3b8"></span>Stops (tap for name)</span>
+            <span><span class="sw" style="background:transparent; border:2px dashed var(--gold-deep); width:11px; height:11px;"></span>Dashed on the strip = reported sighting, not GPS</span>
             <span>Tap a bus for its number and age</span>
           </div>
           <div class="hint" id="sourceNote">Positions come from whoever is on the bus: driver, conductor, or a rider volunteering. The direction is picked by hand, so it can occasionally be wrong.</div>
@@ -518,8 +588,8 @@
       </summary>
       <div class="foldbody">
         <div class="hours">
-          <div class="hourbox nb"><div class="dirname">▲ MENDEZ → ONE AYALA</div><div class="times display" id="nbHours">–</div></div>
-          <div class="hourbox sb"><div class="dirname">▼ ONE AYALA → MENDEZ</div><div class="times display" id="sbHours">–</div></div>
+          <div class="hourbox nb"><div class="dirname">▲ MENDEZ → ONE AYALA</div><div class="times" id="nbHours">–</div></div>
+          <div class="hourbox sb"><div class="dirname">▼ ONE AYALA → MENDEZ</div><div class="times" id="sbHours">–</div></div>
         </div>
         <div class="headway" id="headwayNote"></div>
       </div>
@@ -538,10 +608,23 @@
       </summary>
       <div class="foldbody">
         <div class="hint" style="margin:0 0 12px;" id="sightingIntro">Saw a bus but nobody's sharing GPS? Post it so others know.</div>
+        <!-- Direction and place are pickers rather than free text. The guide
+             used to have to ask people to write "Northbound just passed
+             Amadeo, 6:42am" instead of "Bus coming", which is a lot to ask of
+             someone typing one-handed at a stop. Picked instead of typed, a
+             sighting is always specific, and it comes back in a shape the
+             progress strip can place. -->
         <form onsubmit="event.preventDefault(); addSighting();">
-          <input type="text" id="sightingInput" maxlength="140" placeholder="e.g. Northbound just passed Amadeo, 6:42am">
+          <div class="seg" id="sightSeg" style="margin:0 0 8px;">
+            <button type="button" id="sightNorth" onclick="pickSightDir('north')">▲ Northbound</button>
+            <button type="button" id="sightSouth" onclick="pickSightDir('south')">▼ Southbound</button>
+          </div>
+          <select id="sightWhere" aria-label="Where you saw the bus"></select>
+          <div style="height:8px"></div>
+          <input type="text" id="sightingInput" maxlength="80" placeholder="Anything else? (optional)">
           <div style="height:8px"></div>
           <button class="big btn-ghost" type="submit">Post sighting</button>
+          <div class="fielderr hidden" id="sightErr"></div>
         </form>
         <div id="sightingsList" style="margin-top:12px;"></div>
       </div>
@@ -727,7 +810,7 @@ async function submitKey() {
   const v = document.getElementById('gateKey').value.trim();
   if (!v) return;
   if (await tryKey(v)){
-    document.getElementById('gate').classList.add('hidden');
+    closeModal('gate');
     switchTab('share');
   }
 }
@@ -746,12 +829,50 @@ function ensureClient(){ if (!sb) sb = supabase.createClient(CFG.SUPABASE_URL, C
 // that ask a question deliberately do not: dismissing the direction check
 // without answering would leave sharing paused and the bus off everyone's
 // map with nothing on screen to bring it back.
-function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+//
+// Focus is moved into whatever opens and put back where it came from on the
+// way out, and Tab is kept inside. Without that, a keyboard or screen reader
+// user tabs straight out of the dialog into the page behind it, which is
+// still there, still focusable, and now unreachable visually.
+let modalReturn = null;
+function focusables(el){
+  return [].slice.call(el.querySelectorAll(
+    'button,[href],input,select,textarea,summary,[tabindex]:not([tabindex="-1"])'
+  )).filter(function(e){ return !e.disabled && e.getClientRects().length; });
+}
+// The gate is a full-screen panel rather than a .modal, but it covers the
+// page the same way and needs the same containment.
+function topLayer(){
+  const open = [].slice.call(document.querySelectorAll('.modal, .gate'))
+    .filter(function(e){ return !e.classList.contains('hidden'); });
+  return open.length ? open[open.length-1] : null;
+}
+function openModal(id){
+  const m = document.getElementById(id);
+  if (!m) return;
+  modalReturn = document.activeElement;
+  m.classList.remove('hidden');
+  const f = focusables(m);
+  if (f.length) f[0].focus();
+}
+function closeModal(id){
+  const m = document.getElementById(id);
+  if (!m) return;
+  m.classList.add('hidden');
+  if (modalReturn && modalReturn.getClientRects && modalReturn.getClientRects().length) modalReturn.focus();
+  modalReturn = null;
+}
 document.addEventListener('keydown', function(e){
-  if (e.key !== 'Escape') return;
-  const m = document.getElementById('privModal');
-  if (m && !m.classList.contains('hidden')) closeModal('privModal');
+  const m = topLayer();
+  if (!m) return;
+  if (e.key === 'Escape' && m.id === 'privModal'){ closeModal('privModal'); return; }
+  if (e.key !== 'Tab') return;
+  const f = focusables(m);
+  if (!f.length) return;
+  const first = f[0], last = f[f.length-1];
+  if (!m.contains(document.activeElement)){ e.preventDefault(); first.focus(); }
+  else if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
 });
 (function(){
   const m = document.getElementById('privModal');
@@ -791,11 +912,25 @@ let map, busMarkers = {};   // clustered pub_id -> marker
 let BUSES = [];             // latest fetched positions
 let HOME_BOUNDS = null;     // the whole route, what the reset button goes back to
 
+// CARTO's own dark variant of the basemap already in use: the same provider,
+// the same attribution, no new third party to disclose. A light map inside a
+// dark page is the one thing that would still glare at night.
+const DARK_MQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+function basemapUrl(){
+  return 'https://{s}.basemaps.cartocdn.com/' +
+    (DARK_MQ && DARK_MQ.matches ? 'dark_all' : 'light_all') + '/{z}/{x}/{y}{r}.png';
+}
+let baseLayer = null;
 function initMap() {
   map = L.map('map', { zoomControl:true }).setView([14.33, 120.96], 10);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  baseLayer = L.tileLayer(basemapUrl(), {
     subdomains:'abcd', maxZoom:19, attribution:'© OpenStreetMap © CARTO'
   }).addTo(map);
+  // Someone flipping their phone to dark mode mid-trip should not be left
+  // with the other theme's tiles until they reload.
+  if (DARK_MQ && DARK_MQ.addEventListener){
+    DARK_MQ.addEventListener('change', function(){ if (baseLayer) baseLayer.setUrl(basemapUrl()); });
+  }
 
   STOPS.forEach(function(s){
     if (isNaN(s.lat) || isNaN(s.lng)) return;
@@ -902,7 +1037,43 @@ function buildTicks() {
     const edge = i===0 ? ' first' : (i===CHECKPOINTS.length-1 ? ' last' : '');
     return '<div class="tick'+edge+'" id="tick-'+i+'" style="left:'+pct+'%"><span>'+c.short+'</span></div>';
   }).join('');
+  fitTicks();
 }
+// How many checkpoint labels have to share the strip is a config.txt
+// decision, and their lengths are too. Hardcoding a font size for them meant
+// that adding a checkpoint silently started overlapping the labels — which
+// is exactly what happened when Kawit was added to an eight-name strip that
+// had been tuned for seven. Measure and shrink instead, so config can add
+// checkpoints without touching CSS.
+function fitTicks(){
+  const box = document.getElementById('ticks');
+  if (!box) return;
+  box.classList.remove('thin');
+  const ticks = [].slice.call(box.querySelectorAll('.tick'));
+  if (ticks.length < 2) return;
+  const clashes = function(){
+    for (let i=1;i<ticks.length;i++){
+      const a = ticks[i-1].getBoundingClientRect(), b = ticks[i].getBoundingClientRect();
+      if (!a.width && !b.width) return false;      // no layout (jsdom): leave it alone
+      if (b.left < a.right + 2) return true;
+    }
+    return false;
+  };
+  for (let fs=8; fs>=6; fs-=0.5){
+    box.style.setProperty('--tick-fs', fs+'px');
+    if (!clashes()) return;
+  }
+  // Too many names for the width even at 6px, which is as small as these get
+  // before they stop being readable at all. Drop every other label and keep
+  // every mark: half a legible strip beats a full illegible one, and the
+  // bus pills are still positioned against the full set.
+  box.classList.add('thin');
+}
+let fitTimer=null;
+window.addEventListener('resize', function(){
+  clearTimeout(fitTimer);
+  fitTimer = setTimeout(fitTicks, 150);
+});
 function haversineKm(a,b){
   const R=6371,d2r=Math.PI/180;
   const dLat=(b.lat-a.lat)*d2r,dLng=(b.lng-a.lng)*d2r;
@@ -1114,11 +1285,28 @@ function syncBusMarkers(all) {
   });
 }
 
+// The chips used to come out in whatever order the server returned rows,
+// which mixed the two directions together and put no two buses near each
+// other in any order a reader could use. Group by direction, then order each
+// group by how far along its own journey the bus is, so the first chip in a
+// group is the one closest to arriving.
+function sortForList(list){
+  return list.slice().sort(function(a,b){
+    if (a.direction !== b.direction) return a.direction==='north' ? -1 : 1;
+    const pa = routeProgressKm({lat:a.lat,lng:a.lng}, CHECKPOINTS, ROUTE_CHAIN);
+    const pb = routeProgressKm({lat:b.lat,lng:b.lng}, CHECKPOINTS, ROUTE_CHAIN);
+    if (pa===null || pb===null) return 0;
+    // Northbound runs up the chain, southbound down it: "furthest along"
+    // means the opposite end for each.
+    return a.direction==='north' ? pb-pa : pa-pb;
+  });
+}
+
 function renderBuses() {
   const nbPills=document.getElementById('nbPills'), sbPills=document.getElementById('sbPills');
   const list=document.getElementById('busList');
   const all = clusterBuses(BUSES);
-  const shown = all.filter(function(b){ return dirFilter==='all' || b.direction===dirFilter; });
+  const shown = sortForList(all.filter(function(b){ return dirFilter==='all' || b.direction===dirFilter; }));
   syncBusMarkers(all);
 
   // strip pills
@@ -1133,7 +1321,22 @@ function renderBuses() {
     const pill = '<div class="buspill '+(b.direction==='south'?'sb':'')+(stale?' stale':'')+'" style="left:'+pct+'%">🚌</div>';
     if (b.direction==='north') nb+=pill; else sbz+=pill;
   });
-  nbPills.innerHTML=nb; sbPills.innerHTML=sbz;
+  // Reported sightings, behind the live pills. Only recent ones: a sighting
+  // older than one headway has been overtaken by the next bus, and drawing
+  // it on the strip would claim a currency it does not have. Tying the window
+  // to the route's own headway means a route running every 10 minutes clears
+  // them six times faster than one running hourly, with nothing to configure.
+  const ghostWindow = (SET.headway_min || 30) * 60000;
+  let gnb='', gsb='';
+  SIGHTINGS.forEach(function(s){
+    if (Date.now() - s.ts > ghostWindow) return;
+    if (dirFilter !== 'all' && s.direction !== dirFilter) return;
+    if (CHECKPOINTS.length < 2) return;
+    const pct = (s.idx/(CHECKPOINTS.length-1))*100;
+    const g = '<div class="sightmk'+(s.direction==='south'?' sb':'')+'" style="left:'+pct+'%"></div>';
+    if (s.direction==='north') gnb+=g; else gsb+=g;
+  });
+  nbPills.innerHTML=gnb+nb; sbPills.innerHTML=gsb+sbz;
   CHECKPOINTS.forEach(function(_,i){
     const t=document.getElementById('tick-'+i);
     if (t) t.classList.toggle('near', !!nearSet[i]);
@@ -1161,10 +1364,13 @@ function renderBuses() {
       ' ago · trips every '+SET.headway_min+' mins';
   } else {
     const dirsOpen = withinHours('north')||withinHours('south');
+    const ghosts = gnb.length + gsb.length;
     text.textContent = 'No buses live';
-    sub.textContent = dirsOpen
-      ? 'Nobody is sharing GPS right now. Check sightings below, or ask in the group.'
-      : 'Outside operating hours. Next departures: '+(firstTrip('north')||'see schedule')+' from Mendez, '+(firstTrip('south')||'see schedule')+' from One Ayala.';
+    sub.textContent = !dirsOpen
+      ? 'Outside operating hours. Next departures: '+(firstTrip('north')||'see schedule')+' from Mendez, '+(firstTrip('south')||'see schedule')+' from One Ayala.'
+      : ghosts
+      ? 'Nobody is sharing GPS. The dashed marks on the strip are buses people reported seeing.'
+      : 'Nobody is sharing GPS right now. Post a sighting below if you see one, or ask in the group.';
   }
   revealSightings(shown.length === 0);
 }
@@ -1175,10 +1381,14 @@ function renderBuses() {
 // it by hand, their choice wins for the rest of the visit — an accordion
 // that fights the person using it is worse than one that never moves.
 let sightTouched = false;
+// Opens, never closes. Auto-closing was symmetrical and wrong: a bus coming
+// live while someone is part-way through reading the board would have shut it
+// in their face, and the same thing happened the moment they posted a sighting
+// of their own. Taking something away is never as harmless as offering it.
 function revealSightings(shouldOpen){
   const d = document.getElementById('sightFold');
-  if (!d || sightTouched) return;
-  d.open = shouldOpen;
+  if (!d || sightTouched || !shouldOpen) return;
+  d.open = true;
 }
 // Listening for a click on the summary rather than for the element's own
 // toggle event: toggle also fires for the automatic open above, and it is
@@ -1189,10 +1399,14 @@ function revealSightings(shouldOpen){
   if (s) s.addEventListener('click', function(){ sightTouched = true; });
 })();
 
+// Leaflet animates pans and zooms itself, so CSS cannot reach them.
+function reducedMotion(){
+  return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
 function focusBus(id){
   const b = clusterBuses(BUSES).find(function(x){return x.id===id;});
   if (!b || !map) return;
-  map.setView([b.lat,b.lng], 14);
+  map.setView([b.lat,b.lng], 14, { animate: !reducedMotion() });
   // Tapping the chip and then hunting for which badge it meant is two steps
   // for one question, so the badge answers it on arrival.
   const m = busMarkers[id];
@@ -1229,12 +1443,55 @@ async function pollPositions() {
 // Sightings
 // ============================================================
 function escapeHtml(str){const d=document.createElement('div');d.textContent=str;return d.innerHTML;}
+
+// ---- Sightings the strip can place ------------------------------------
+// The composer writes one canonical shape into the same free-text body the
+// board has always stored, and this reads it back. Deliberately not a schema
+// change: no migration, the admin page still shows a readable sentence, and
+// every sighting posted before this existed still renders as the text it is.
+// Anything that fails to parse is simply not placed on the strip.
+const SIGHT_RE = /^[▲▼]\s+(Northbound|Southbound)\s+at\s+([^·]+?)(?:\s+·\s+(.*))?$/;
+function parseSighting(body){
+  const m = SIGHT_RE.exec((body||'').trim());
+  if (!m) return null;
+  const name = m[2].trim().toLowerCase();
+  let idx = -1;
+  for (let i=0;i<CHECKPOINTS.length;i++){
+    if (CHECKPOINTS[i].name.trim().toLowerCase() === name){ idx = i; break; }
+  }
+  if (idx < 0) return null;                 // a checkpoint this route no longer has
+  return { direction: m[1]==='Northbound' ? 'north' : 'south', idx: idx };
+}
+let SIGHTINGS = [];                          // parsed and placeable, freshest first
+let sightDir = null;
+function pickSightDir(d){
+  sightDir = d;
+  document.getElementById('sightNorth').className = d==='north' ? 'on-north' : '';
+  document.getElementById('sightSouth').className = d==='south' ? 'on-south' : '';
+}
+function buildSightingPlaces(){
+  const sel = document.getElementById('sightWhere');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Where did you see it?</option>' +
+    CHECKPOINTS.map(function(c){ return '<option>'+escapeHtml(c.name)+'</option>'; }).join('');
+}
+function sightError(msg){
+  const el = document.getElementById('sightErr');
+  el.textContent = msg || '';
+  el.classList.toggle('hidden', !msg);
+}
+
 async function pollSightings() {
   if (!shouldPoll()) return;
   const res = await rpc('get_sightings', { p_slug: CFG.ROUTE_SLUG });
   if (res.error) return;
   const data=res.data;
   const n = (data && data.length) || 0;
+  SIGHTINGS = (data||[]).map(function(s){
+    const p = parseSighting(s.body);
+    return p ? { direction:p.direction, idx:p.idx, ts:Date.parse(s.created_at) } : null;
+  }).filter(Boolean);
+  renderBuses();                             // the strip owns the ghost markers
   document.getElementById('sightingsList').innerHTML = n
     ? data.map(function(s){return '<div class="sighting"><span>'+escapeHtml(s.body)+'</span><span class="time">'+timeAgo(Date.parse(s.created_at))+' ago</span></div>';}).join('')
     : '<div class="hint">No sightings yet today.</div>';
@@ -1245,17 +1502,27 @@ async function pollSightings() {
 }
 async function addSighting() {
   const input=document.getElementById('sightingInput');
-  const val=input.value.trim();
-  if (!val) return;
+  const where=document.getElementById('sightWhere').value;
+  if (!sightDir){ sightError('Pick a direction first.'); return; }
+  if (!where){ sightError('Pick where you saw it.'); return; }
+  sightError('');
+  const note = input.value.trim();
+  const val = (sightDir==='north' ? '▲ Northbound' : '▼ Southbound') +
+              ' at ' + where + (note ? ' · ' + note : '');
   const res = await rpc('add_sighting', { p_slug:CFG.ROUTE_SLUG, p_body:val.slice(0,140) });
   if (res.error){
     const m = ((res.error.message||'')+'').toLowerCase();
-    alert(m.indexOf('flood')>=0
+    sightError(m.indexOf('flood')>=0
       ? 'The board is getting a lot of posts right now. Try again in a minute.'
-      : 'Could not post. Check your connection.');
+      : 'Could not post. Check your connection and try again.');
     return;
   }
-  input.value=''; pollSightings();
+  // Clear the whole composer, not just the note: leaving a direction and a
+  // place selected invites posting the same sighting twice.
+  input.value='';
+  document.getElementById('sightWhere').value='';
+  pickSightDir(null);
+  pollSightings();
 }
 
 // ============================================================
@@ -1407,10 +1674,10 @@ function showAsk(o){
   document.getElementById('askYes').textContent=o.yesLabel;
   document.getElementById('askNo').textContent=o.noLabel;
   askOnYes=o.onYes; askOnNo=o.onNo;
-  document.getElementById('askModal').classList.remove('hidden');
+  openModal('askModal');
 }
 function hideAsk(){
-  document.getElementById('askModal').classList.add('hidden');
+  closeModal('askModal');
   askOnYes=null; askOnNo=null; askOpen=false;
   if (endTimer){ clearTimeout(endTimer); endTimer=null; }
 }
@@ -1545,21 +1812,21 @@ function showDuplicateWarning(found){
       'If you\'re on the same bus, it will show as two buses on the map. '+
       'If it\'s a different bus, go ahead. Adding your bus number helps tell them apart.';
   }
-  document.getElementById('dupModal').classList.remove('hidden');
+  openModal('dupModal');
 }
 function dupCancel(){
-  document.getElementById('dupModal').classList.add('hidden');
+  closeModal('dupModal');
   sharing=false; releaseWakeLock();
   setShareUI('off','Not sharing. The bus nearby is already on the map.');
 }
 function dupProceed(){
-  document.getElementById('dupModal').classList.add('hidden');
+  closeModal('dupModal');
   beginWatch(pendingCoords);
 }
 
 function startSharing(){
   if (!accessKey){
-    document.getElementById('gate').classList.remove('hidden');
+    openModal('gate');
     return;
   }
   if (!shareDir){ setShareUI('error','Pick a direction first: northbound or southbound.'); return; }
@@ -1686,14 +1953,14 @@ function setShareUI(state,msg){
 // ============================================================
 let mapReady=false, running=false;
 function configError(msg){
-  document.getElementById('gate').classList.remove('hidden');
+  openModal('gate');
   document.getElementById('gateMsg').textContent='Setup needed';
   document.getElementById('gateErr').textContent=msg;
   document.getElementById('gateKey').style.display='none';
   document.getElementById('gateBtn').style.display='none';
 }
 function showGateError(msg){
-  document.getElementById('gate').classList.remove('hidden');
+  openModal('gate');
   document.getElementById('gateErr').textContent=msg;
   const btn=document.getElementById('gateBtn');
   btn.textContent='Enter'; btn.disabled=false;
@@ -1754,14 +2021,16 @@ function renderHours(){
   document.getElementById('busExpiryNote').textContent =
     'Buses show "live" under 45s, then their age; they disappear about '+humanMins(SET.bus_expiry_min)+' after their last update.';
   document.getElementById('sightingIntro').textContent =
-    'Saw a bus but nobody\'s sharing GPS? Post it so others know. Sightings clear after '+humanMins(SET.sighting_expiry_min)+'.';
+    'Saw a bus but nobody\'s sharing GPS? Post it so others know. It shows on the strip above as a dashed mark for '+
+    humanMins(SET.headway_min)+', and stays on this board for '+humanMins(SET.sighting_expiry_min)+'.';
 }
 function start(){
   document.getElementById('gate').classList.add('hidden');
   ensureClient();
   ROUTE_CHAIN = buildRouteChain(CHECKPOINTS);
   if (!mapReady){
-    initMap(); buildTicks(); renderHours(); renderSourceLink(); renderContactLine(); mapReady=true;
+    initMap(); buildTicks(); buildSightingPlaces(); renderHours();
+    renderSourceLink(); renderContactLine(); mapReady=true;
   }
   if (running) return;
   running=true;

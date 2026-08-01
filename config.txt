@@ -41,6 +41,12 @@ CHECKPOINT = Tagaytay        | TGY    | 14.1187 | 120.9540
 CHECKPOINT = Amadeo          | AMADEO | 14.1701 | 120.9221
 CHECKPOINT = Gen. Trias      | GEN.T  | 14.2912 | 120.9068
 CHECKPOINT = Imus            | IMUS   | 14.3897 | 120.9196
+#  Kawit splits the 15.5 km Imus-PITX leg, which was by far the longest and
+#  made a bus crossing CAVITEX look stalled on the evenly-spaced strip. It
+#  also pulls the checkpoint chain onto the road: the route swings west into
+#  Kawit and back east to PITX, so the straight Imus-PITX line missed the
+#  real road by several km and the wrong-direction guard had to allow for it.
+CHECKPOINT = Kawit           | KAWIT  | 14.4327 | 120.9000
 CHECKPOINT = PITX            | PITX   | 14.5101 | 120.9913
 CHECKPOINT = One Ayala       | AYALA  | 14.5505 | 121.0279
 

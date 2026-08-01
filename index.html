@@ -355,9 +355,13 @@
   .hourbox.sb .dirname{color:var(--brand-ink);}
   .headway{font-size:11.5px; color:var(--muted); margin-top:8px; font-weight:600;}
 
-  button.big{
+  /* Base is .big, not button.big, on purpose: an element+class selector
+     outranks the .btn-* modifiers below it, so qualifying it here silently
+     repainted every primary button in --ink. Equal specificity plus source
+     order means the modifier always wins. */
+  .big{
     width:100%; padding:14px; border-radius:12px; border:none; font-family:inherit;
-    font-size:15px; font-weight:800; cursor:pointer; transition:.15s;
+    font-size:15px; font-weight:800; cursor:pointer; transition:.15s; color:var(--ink);
   }
   .btn-primary{background:var(--maroon); color:#fff;}
   .btn-stop{background:var(--lost); color:#fff;}
@@ -380,9 +384,16 @@
 
   /* Share flow */
   .dirpick{display:flex; gap:10px; margin:6px 0 12px;}
+  /* color, not just font-family. A <button> does not inherit either one: left
+     alone it takes the browser's own buttontext, which is black. That looked
+     right on a white card for as long as there was only a white card, and
+     turned the direction labels into black-on-near-black the moment there was
+     a dark one. The arrow and the label were invisible; only .dest, which
+     sets its own colour, survived. */
   .dirbtn{
     flex:1; padding:16px 8px; border-radius:14px; cursor:pointer; text-align:center;
-    border:2px solid var(--line); background:var(--surface); font-family:inherit;
+    border:2px solid var(--line); background:var(--surface);
+    font-family:inherit; color:var(--ink);
   }
   .dirbtn .big-arrow{font-size:22px; line-height:1;}
   .dirbtn .lbl{font-size:12.5px; font-weight:800; margin-top:5px;}

@@ -107,17 +107,21 @@
   }
   input:focus, textarea:focus, select:focus{outline:none; border-color:var(--brand-ink);}
   textarea{resize:vertical; min-height:70px;}
-  button.big{
+  /* Base is .big, not button.big, on purpose: an element+class selector
+     outranks the .btn-* modifiers below it, so qualifying it here silently
+     repainted every primary button in --ink. Equal specificity plus source
+     order means the modifier always wins. */
+  .big{
     width:100%; min-height:var(--tap); padding:13px; border-radius:12px; border:none;
-    font-family:inherit; font-size:14.5px; font-weight:800; cursor:pointer; transition:.15s;
+    font-family:inherit; font-size:14.5px; font-weight:800; cursor:pointer; transition:.15s; color:var(--ink);
+  }
+  .small{
+    min-height:var(--tap); padding:7px 14px; border-radius:9px; border:none; font-family:inherit;
+    font-size:12px; font-weight:800; cursor:pointer; color:var(--ink);
   }
   .btn-primary{background:var(--maroon); color:#fff;}
   .btn-danger{background:var(--lost); color:#fff;}
   .btn-ghost{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
-  button.small{
-    min-height:var(--tap); padding:7px 14px; border-radius:9px; border:none; font-family:inherit;
-    font-size:12px; font-weight:800; cursor:pointer;
-  }
   .row{display:flex; gap:8px; align-items:center;}
   .row > *{flex:1;}
   .row .tight{flex:0 0 auto;}

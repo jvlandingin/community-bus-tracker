@@ -202,7 +202,11 @@ function run(page, include, label, configText) {
   }
   // The DOM scan only sees what a page with no live data renders, so read
   // the source too: it catches markup built in JS strings as well.
-  for (const page of ['index.html', 'admin.html']) {
+  // The adoption pages are in this scan for a reason of their own: the flyer's
+  // whole purpose is one call to action, and a filter list that hides it
+  // leaves a poster-shaped page with no way to reach the tracker. Same silent
+  // failure as the start button, with nobody on the page to report it.
+  for (const page of ['index.html', 'admin.html', 'flyer.html', 'for-operators.html']) {
     const found = (fs.readFileSync(path.join(APP, page), 'utf8')
       .match(/(?:id|class)="[^"]*share[^"]*"/gi) || []);
     check(found.length === 0, `${page}: none in the source either, including markup built in JS`,
@@ -292,6 +296,47 @@ function run(page, include, label, configText) {
       ? drifted.map(k => `${k}: app ${appTokens[k]} vs guide ${guideTokens[k]}`).join('; ')
       : 'in step');
 
+  // The two adoption pages — the rider flyer and the operator briefing — are
+  // built the same way and carry the same liability. Each one redraws the
+  // tracker's screen in HTML and CSS rather than photographing it, so each
+  // one is a hand-maintained copy of a UI that moves, and each one keeps its
+  // own copy of the token block so it survives being opened on its own or
+  // printed. Everything the guide is held to above, they are held to too:
+  // load nothing, link back to the map, and stay in step with the app.
+  for (const page of ['flyer.html', 'for-operators.html']) {
+    const p = path.join(APP, page);
+    check(fs.existsSync(p), `${page} is in the repository`);
+    if (!fs.existsSync(p)) continue;
+    const src = fs.readFileSync(p, 'utf8');
+
+    const loads = [...new Set((src.match(/(?:src|poster)="([^"]+)"/g) || [])
+      .map(m => m.slice(m.indexOf('"') + 1, -1)))]
+      .filter(u => !u.startsWith('data:'));
+    check(loads.length === 0,
+      `${page}: draws its figures rather than loading any`,
+      loads.length ? 'loads: ' + loads.join(' ') : 'nothing to drop from a deploy');
+
+    check(/href="index\.html"/.test(src), `${page}: links back to the map`);
+
+    const t = tokensOf(src);
+    const sh = Object.keys(appTokens).filter(k => k in t);
+    const dr = sh.filter(k => appTokens[k] !== t[k]);
+    check(sh.length > 6 && dr.length === 0,
+      `${page}: design tokens still match the app's (${sh.length} shared)`,
+      dr.length
+        ? dr.map(k => `${k}: app ${appTokens[k]} vs page ${t[k]}`).join('; ')
+        : 'in step');
+
+    // The flyer's QR code is the one thing on a printed poster that cannot be
+    // typed around if it is wrong, and nothing about it is readable by eye.
+    // It is drawn as an inline path, so at least assert it is still drawn
+    // rather than quietly replaced by a hotlinked image generator.
+    if (page === 'flyer.html') {
+      check(/aria-label="QR code[^"]*"/.test(src) && /<path fill="#000" d="M[\d ]/.test(src),
+        `${page}: the QR code is still an inline path, not a loaded image`);
+    }
+  }
+
   // Each page states its dark palette twice: once under the media query for a
   // device asking for dark, once under [data-theme="dark"] for a reader who
   // picked it. One rule cannot cover both without light-dark(), which is too
@@ -319,7 +364,7 @@ function run(page, include, label, configText) {
   check(!/<script[^>]+src=/i.test(guideSrc),
     'and it asks about the setting with fetch, not by loading a library');
 
-  for (const page of ['index.html', 'admin.html', 'how-to.html']) {
+  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html']) {
     const copies = darkCopies(fs.readFileSync(path.join(APP, page), 'utf8'));
     check(copies.length === 2 && copies[0] === copies[1] && copies[0].length > 0,
       `${page}: both statements of the dark palette are identical`,
@@ -329,7 +374,7 @@ function run(page, include, label, configText) {
 
   // Section 7's lesson, a different filter list: blockers hide live-chat and
   // help widgets by name too, so the link must not be named like one.
-  for (const page of ['index.html', 'how-to.html']) {
+  for (const page of ['index.html', 'how-to.html', 'flyer.html', 'for-operators.html']) {
     const found = (fs.readFileSync(path.join(APP, page), 'utf8')
       .match(/(?:id|class)="[^"]*(?:help|support|chat|widget)[^"]*"/gi) || []);
     check(found.length === 0, `${page}: nothing reads as a help or chat widget`,

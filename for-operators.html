@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community bus tracker — a briefing for the operator</title>
+<meta name="description" content="What the community bus tracker for the Mendez / Tagaytay to One Ayala route is, exactly what it records, what it structurally cannot do, and what its volunteer maintainer is asking of the bus company.">
+<meta name="theme-color" content="#7a1f2b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Community bus tracker — a briefing for the operator">
+<meta property="og:description" content="What it records, what it cannot do, and what we are asking. An unofficial, volunteer-run tool.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚌%3C/text%3E%3C/svg%3E">
+<style>
+  /* Loads nothing, for the same reasons as how-to.html and flyer.html: a
+     figure that 404s off a deploy fails silently, and a screenshot ties the
+     document to one deployment. The recreated screen below is drawn from the
+     same tokens as the app and has to be corrected whenever the tracker's
+     layout changes. test-boot.js section 8 checks what a machine can. */
+  :root{
+    /* Copied from index.html; test-boot.js section 8 fails if it drifts. */
+    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#6f655e;
+    --maroon:#7a1f2b; --maroon-deep:#5c161f; --maroon-soft:#f3e6e4;
+    --gold:#e39a1c; --gold-deep:#8c5905; --gold-soft:#fbf0da;
+    --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
+    --brand-ink:#7a1f2b; --lost-ink:#c4432e;
+    --gold-line:#eeddb4; --maroon-line:#e6cdc9;
+    --ok-ink:#166534; --warn-ink:#92400e;
+    --shadow:0 1px 2px rgba(43,35,32,.04);
+    --radius:16px;
+    /* 44px: the smallest target a thumb finds reliably on a moving bus. */
+    --tap:44px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#16120f; --surface:#211b16; --ink:#f3ede4; --muted:#a99d90;
+      --maroon:#7a1f2b; --maroon-deep:#4a1119; --maroon-soft:#3a2126;
+      --gold:#e39a1c; --gold-deep:#e8b45c; --gold-soft:#39301a;
+      --line:#372e26; --live:#4ac694; --lost:#c4432e;
+      --brand-ink:#f0a8b0; --lost-ink:#e8836e;
+      --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --ok-ink:#6ed39b; --warn-ink:#e8b45c;
+      /* Cards are lifted by their own surface colour in dark, not by a
+         shadow that nothing can be cast onto. */
+      --shadow:none;
+    }
+  }
+  :root[data-theme="dark"]{
+      --paper:#16120f; --surface:#211b16; --ink:#f3ede4; --muted:#a99d90;
+      --maroon:#7a1f2b; --maroon-deep:#4a1119; --maroon-soft:#3a2126;
+      --gold:#e39a1c; --gold-deep:#e8b45c; --gold-soft:#39301a;
+      --line:#372e26; --live:#4ac694; --lost:#c4432e;
+      --brand-ink:#f0a8b0; --lost-ink:#e8836e;
+      --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --ok-ink:#6ed39b; --warn-ink:#e8b45c;
+      /* Cards are lifted by their own surface colour in dark, not by a
+         shadow that nothing can be cast onto. */
+      --shadow:none;
+  }
+
+  /* This page darkens itself, so declare both schemes and stop Chrome's
+     force-dark from doing it a second time. Same reasoning as flyer.html. */
+  :root{color-scheme:light dark;}
+  *{box-sizing:border-box;}
+  :focus-visible{outline:3px solid var(--brand-ink); outline-offset:2px; border-radius:4px;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .doc{max-width:660px; margin:0 auto; padding:0 22px 40px;}
+
+  header{
+    background:linear-gradient(180deg,var(--maroon),var(--maroon-deep));
+    color:#fff; padding:16px 22px 14px;
+  }
+  .headinner{max-width:660px; margin:0 auto;}
+  header .route{font-size:15px; font-weight:800;}
+  header .route .amp{color:var(--gold);}
+  header .sub{font-size:8.5px; font-weight:700; letter-spacing:.13em; opacity:.85; margin-top:3px;}
+
+  .title{padding:26px 0 0;}
+  .title h1{font-size:27px; line-height:1.2; margin:0 0 8px; letter-spacing:-.02em;}
+  .title .stand{font-size:14.5px; color:var(--muted); font-weight:600; margin:0;}
+  .meta{
+    margin-top:14px; font-size:11px; color:var(--muted); font-weight:700;
+    letter-spacing:.04em; text-transform:uppercase;
+  }
+
+  /* The statement that has to be read before anything else on this page. */
+  .disclaim{
+    margin-top:16px; border:2px solid var(--maroon-line); background:var(--maroon-soft);
+    border-radius:12px; padding:14px 16px; font-size:13.5px; font-weight:600;
+  }
+  .disclaim b{color:var(--brand-ink);}
+
+  h2{
+    font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--brand-ink); margin:30px 0 10px;
+    padding-bottom:6px; border-bottom:1px solid var(--line);
+  }
+  h3{font-size:15px; margin:18px 0 5px;}
+  p{margin:0 0 11px; font-size:13.5px;}
+  .lead{font-size:14.5px;}
+  ul{margin:0 0 11px; padding-left:19px; font-size:13.5px;}
+  li{margin-bottom:5px;}
+  strong{font-weight:800;}
+
+  /* The claim this whole document turns on. */
+  .keystone{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:5px solid var(--live); border-radius:12px;
+    padding:15px 17px; margin:14px 0; box-shadow:var(--shadow);
+  }
+  .keystone p:last-child{margin-bottom:0;}
+  .keystone .big{font-size:15px; font-weight:800; margin-bottom:7px; color:var(--ok-ink);}
+
+  table{
+    width:100%; border-collapse:collapse; font-size:12.5px; margin:0 0 14px;
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    overflow:hidden;
+  }
+  th, td{padding:9px 11px; text-align:left; vertical-align:top; border-bottom:1px solid var(--line);}
+  th{
+    font-size:9.5px; text-transform:uppercase; letter-spacing:.07em;
+    color:var(--brand-ink); font-weight:800; background:var(--maroon-soft);
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  td b{font-weight:800;}
+
+  .asks{counter-reset:ask; margin:0; padding:0; list-style:none;}
+  .asks > li{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:14px 16px 14px 54px; margin-bottom:10px; position:relative;
+    box-shadow:var(--shadow); font-size:13.5px;
+  }
+  .asks > li::before{
+    counter-increment:ask; content:counter(ask);
+    position:absolute; left:16px; top:14px;
+    width:26px; height:26px; border-radius:50%;
+    background:var(--maroon); color:#fff; font-size:13px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .asks > li:nth-child(2)::before{background:var(--gold); color:#3d2a05;}
+  .asks > li:nth-child(3)::before{background:var(--ink); color:var(--surface);}
+  .asks b{display:block; font-size:14.5px; margin-bottom:4px;}
+  .asks .how{
+    display:block; margin-top:7px; font-size:12px; color:var(--muted); font-weight:600;
+  }
+
+  .limits{
+    background:var(--gold-soft); border:1px solid var(--gold-line);
+    border-radius:12px; padding:13px 16px;
+  }
+  .limits p:last-child, .limits ul{margin-bottom:0;}
+  .limits b{color:var(--gold-deep);}
+
+  .contact{
+    margin-top:16px; background:var(--maroon); color:#fff;
+    border-radius:14px; padding:17px 19px; font-size:13.5px;
+  }
+  .contact a{color:#fff;}
+  .contact .kicker{
+    font-size:9px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:6px;
+  }
+  .contact .line{margin-top:5px; font-weight:700; word-break:break-word;}
+
+  a{color:var(--brand-ink); font-weight:700;}
+  footer{
+    margin-top:24px; padding-top:14px; border-top:1px solid var(--line);
+    font-size:11px; color:var(--muted); line-height:1.6;
+  }
+
+  /* ---- The recreated tracker screen -------------------------------- */
+  /* Same drawing as flyer.html, smaller. Both are hand-maintained copies of
+     the real UI, so a layout change in index.html means correcting two
+     files, not one. */
+  .demo{
+    position:relative; border:1px solid var(--line); border-radius:13px;
+    background:var(--surface); padding:13px; overflow:hidden; margin-bottom:6px;
+  }
+  .demo-title{font-size:18px; font-weight:800; text-transform:uppercase; line-height:1.1;}
+  .demo-sub{font-size:10px; color:var(--muted); margin-top:3px; line-height:1.45;}
+  .demo-seg{
+    display:flex; background:var(--paper); border:1.5px solid var(--line);
+    border-radius:10px; padding:3px; margin:9px 0 2px;
+  }
+  .demo-seg span{
+    flex:1; text-align:center; padding:6px 2px; border-radius:8px;
+    font-size:9px; font-weight:800; color:var(--muted);
+  }
+  .demo-seg span.on{background:var(--ink); color:var(--surface);}
+  .demo-chips{display:flex; flex-wrap:wrap; gap:5px; margin-top:9px;}
+  .demo-chip{
+    display:inline-flex; align-items:center; gap:5px; padding:5px 9px;
+    border-radius:20px; font-size:9.5px; font-weight:700;
+    border:1.5px solid var(--line); background:var(--paper);
+  }
+  .demo-chip .ar{font-size:8.5px;}
+  .demo-chip.nb .ar{color:var(--gold-deep);}
+  .demo-chip.sb .ar{color:var(--brand-ink);}
+  .demo-chip .ag{color:var(--muted); font-weight:600;}
+  .figcap{font-size:11px; color:var(--muted); text-align:center; margin:0 0 4px;}
+
+  .strip{margin:8px 0 2px; padding:0 14px;}
+  .dirlabel{font-size:8.5px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
+  .dirlabel.nb{text-align:right; margin-bottom:3px;}
+  .track{position:relative; height:21px;}
+  .track .rail{position:absolute; left:0; right:0; top:9px; height:4px; border-radius:2px;}
+  .track.nb .rail{background:var(--gold-soft); border:1px solid var(--gold-line);}
+  .track.sb .rail{background:var(--maroon-soft); border:1px solid var(--maroon-line);}
+  .dirlabel.sb{margin-top:3px;}
+  .buspill{
+    position:absolute; top:0; transform:translateX(-50%);
+    font-size:13px; line-height:1; padding:3px 5px; border-radius:20px;
+    background:var(--gold); border:1.5px solid var(--surface);
+    box-shadow:0 1px 4px rgba(43,35,32,.25); white-space:nowrap;
+  }
+  .buspill.sb{background:var(--maroon);}
+  /* Taller than a .tick's content, matching index.html: otherwise the
+     checkpoint names overflow into the southbound track and the bus pills
+     render on top of them. */
+  .ticks{position:relative; height:32px; margin-top:2px;}
+  .tick{position:absolute; transform:translateX(-50%); text-align:center;}
+  .tick::before{content:''; display:block; width:2px; height:7px; background:var(--line); margin:0 auto 3px;}
+  .tick span{font-size:var(--tick-fs,7.5px); font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
+  .ticks.many{--tick-fs:7.5px;}
+  @media (max-width:430px){ .ticks.many{--tick-fs:6.5px;} }
+  .tick.first{transform:none; text-align:left;}
+  .tick.first::before{margin:0 0 3px;}
+  .tick.last{transform:translateX(-100%); text-align:right;}
+  .tick.last::before{margin:0 0 3px auto;}
+
+  /* ---- Print: an attachable few-page document ---------------------- */
+  @page{size:A4 portrait; margin:16mm 15mm;}
+  @media print{
+    :root{--paper:#ffffff; --surface:#ffffff; --ink:#2b2320; --muted:#585049; --shadow:none;}
+    body{background:#fff; line-height:1.5;}
+    .doc{max-width:none; padding:0;}
+    header{
+      border-radius:8px; margin-bottom:2mm;
+      -webkit-print-color-adjust:exact; print-color-adjust:exact;
+    }
+    .disclaim, .keystone, .contact, .limits, th, .asks > li::before,
+    .demo, .buspill, .demo-seg span.on, .track .rail{
+      -webkit-print-color-adjust:exact; print-color-adjust:exact;
+    }
+    p, ul, table{font-size:10.5pt;}
+    h1{font-size:20pt;}
+    /* Each numbered section starts a fresh page, so the document reads as a
+       few discrete pages rather than one long scroll printed badly. */
+    .page-break{break-before:page;}
+    .keystone, .asks > li, table, .disclaim, .contact, .demo,
+    .limits, h2, h3{break-inside:avoid;}
+    h2, h3{break-after:avoid;}
+    .screenonly{display:none;}
+  }
+</style>
+<script>
+/* Applies a saved theme choice before anything paints, same three lines as
+   the other pages, and the only script here. */
+(function(){
+  try{
+    var p = localStorage.getItem('wt-theme');
+    if (p === 'light' || p === 'dark') document.documentElement.setAttribute('data-theme', p);
+  }catch(e){}
+})();
+</script>
+</head>
+<body>
+
+<header>
+  <div class="headinner">
+    <div class="route">Mendez / Tagaytay <span class="amp">⇄</span> One Ayala</div>
+    <div class="sub">COMMUNITY LIVE TRACKER · UNOFFICIAL · BRIEFING FOR THE OPERATOR</div>
+  </div>
+</header>
+
+<div class="doc">
+
+  <div class="title">
+    <h1>A community-run live bus tracker for your route</h1>
+    <p class="stand">What it is, exactly what it records, what it structurally cannot do,
+    and what we are asking of you.</p>
+    <div class="meta">Prepared by the volunteer who maintains it</div>
+  </div>
+
+  <div class="disclaim">
+    <b>This tool is not affiliated with, operated by, or endorsed by Wonderful Transport.</b>
+    It was built by a commuter, it runs on a personal account, and it says all of this
+    on its own front page and inside its privacy panel. The route name is used only so
+    riders can tell which buses it tracks. Nothing in this document claims otherwise,
+    and nothing in the tool does either.
+  </div>
+
+  <h2>1 · What it is</h2>
+  <p class="lead">Commuters on this corridor currently find out where the bus is by
+  asking in a Messenger group chat. This is the same question answered on a map.
+  Anyone on board — a rider, a conductor, a driver — can tap a button to put their
+  bus's position on a shared map for the length of that one trip. Everyone else can
+  open a link and see it. There is no app to install and no account to create.</p>
+  <p>It covers one route: Mendez / Tagaytay to One Ayala, in both directions, using
+  the checkpoints and stops from your own posted material.</p>
+
+  <p class="figcap">What a rider sees when four buses are sharing. Example screen.</p>
+  <div class="demo" aria-hidden="true">
+    <div class="demo-title">4 buses live</div>
+    <div class="demo-sub">Northbound between Imus and Kawit · updated 8s ago · trips every 30 mins</div>
+    <div class="demo-seg">
+      <span class="on">All buses</span><span>▲ Northbound</span><span>▼ Southbound</span>
+    </div>
+    <div class="strip">
+      <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
+      <div class="track nb">
+        <div class="rail"></div>
+        <div class="buspill" style="left:28.6%">🚌</div>
+        <div class="buspill" style="left:63%">🚌</div>
+      </div>
+      <div class="ticks many">
+        <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
+        <div class="tick" style="left:14.3%"><span>TGY</span></div>
+        <div class="tick" style="left:28.6%"><span>AMADEO</span></div>
+        <div class="tick" style="left:42.9%"><span>GEN.T</span></div>
+        <div class="tick" style="left:57.1%"><span>IMUS</span></div>
+        <div class="tick" style="left:71.4%"><span>KAWIT</span></div>
+        <div class="tick" style="left:85.7%"><span>PITX</span></div>
+        <div class="tick last" style="left:100%"><span>AYALA</span></div>
+      </div>
+      <div class="track sb">
+        <div class="rail"></div>
+        <div class="buspill sb" style="left:15%">🚌</div>
+        <div class="buspill sb" style="left:79%">🚌</div>
+      </div>
+      <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
+    </div>
+    <div class="demo-chips">
+      <span class="demo-chip nb"><span class="ar">▲</span><b>98018</b>3 km to KAWIT <span class="ag">8s ago</span></span>
+      <span class="demo-chip nb"><span class="ar">▲</span><b>98104</b>AMADEO <span class="ag">47s ago</span></span>
+      <span class="demo-chip sb"><span class="ar">▼</span>TGY <span class="ag">2m ago · 2 sharing</span></span>
+      <span class="demo-chip sb"><span class="ar">▼</span><b>98077</b>7 km to KAWIT <span class="ag">1m ago</span></span>
+    </div>
+  </div>
+
+  <h2 class="page-break">2 · What it records, and what it cannot do</h2>
+  <p class="lead">This is the section we would want to read first in your position,
+  so it comes before anything we are asking for.</p>
+
+  <div class="keystone">
+    <div class="big">There is no location history. Anywhere.</div>
+    <p>The database holds <strong>one row per bus that is sharing right now</strong>.
+    Each position update <strong>overwrites</strong> the previous one. There is no
+    trail table, no archive, and no backup of one — the schema has nowhere to put it.
+    When the person on board taps Stop or closes the page, the row is deleted and the
+    bus disappears from every map.</p>
+    <p>The consequence, stated plainly: <strong>this tool cannot be used to review any
+    driver's speed, breaks, route deviation, or working hours</strong> — not because we
+    promise not to, but because the data required to do it is never written down. Nobody
+    can produce it later: not us, not you, and not anyone who compels us. It does not
+    exist.</p>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>What is stored</th><th>For how long</th><th>What it is not</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Current position</b> of a bus that is actively sharing: coordinates,
+        direction, the bus number if one was typed, and a random session ID.</td>
+        <td>Overwritten every few seconds. Deleted on Stop, on closing the page, or
+        automatically once it goes stale.</td>
+        <td>No name, no phone number, no account, nothing identifying the person. No
+        previous position is retained.</td>
+      </tr>
+      <tr>
+        <td><b>Count of devices</b> currently watching the map.</td>
+        <td>A random per-tab ID, deleted three minutes after the tab closes.</td>
+        <td>A live gauge, not a log. No daily totals, no peaks, no history of who
+        watched or when.</td>
+      </tr>
+      <tr>
+        <td><b>Text sightings</b> — "northbound at Amadeo" — for when nobody is
+        sharing GPS.</td>
+        <td>Deleted automatically after a couple of hours.</td>
+        <td>Posted with no name attached.</td>
+      </tr>
+      <tr>
+        <td><b>Route settings</b>: operating hours, headway, a pinned notice.</td>
+        <td>Until an organiser changes them.</td>
+        <td>Not personal data of any kind.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>The direction check never leaves the phone</h3>
+  <p>The app warns someone who picked the wrong direction by tracking how far along the
+  route their bus has travelled. That calculation happens <strong>in the sharing phone's
+  own memory</strong>, is never transmitted or stored, and is discarded when the tab
+  closes. It exists to stop commuters being told a bus is coming when it is going away.</p>
+
+  <h3>Sharing is voluntary, per trip, and stops on its own</h3>
+  <p>Nobody is tracked without acting. A person taps a button, picks a direction, and
+  can stop at any moment. The app also stops by itself: it asks "still on the bus?"
+  after twenty minutes without movement, and ends the session on its own once the bus
+  has been parked at its destination. Closing the browser tab ends it too.</p>
+
+  <h2 class="page-break">3 · Who can do what</h2>
+  <p>Three separate credentials, deliberately not interchangeable. All reads and writes
+  go through server-side functions; the underlying tables are not directly reachable.</p>
+  <table>
+    <thead><tr><th>Credential</th><th>Who holds it</th><th>What it allows</th></tr></thead>
+    <tbody>
+      <tr><td><b>Route name</b><br>public</td><td>Anyone</td>
+          <td>Watching the map. Open to everybody, no key needed.</td></tr>
+      <tr><td><b>Sharing key</b><br>secret</td><td>Posted in the community group chat</td>
+          <td>Putting a bus on the map. Can be rotated at any time, which cuts off
+          everyone using the old one.</td></tr>
+      <tr><td><b>Organiser key</b><br>secret</td><td>The volunteer maintainer only</td>
+          <td>Operating hours, a pinned notice, removing a bad sighting, stopping a
+          particular sharer, and rotating the sharing key.</td></tr>
+    </tbody>
+  </table>
+  <p>If a bus is being shared by someone who should not be, an organiser can stop that
+  session, and rotating the sharing key ends all sharing until the new key is
+  distributed. <strong>That switch can be handed to you.</strong></p>
+
+  <h2>4 · What we are asking</h2>
+  <p class="lead">Three things, in order. The first needs nothing from you but a reply.</p>
+
+  <ol class="asks">
+    <li>
+      <b>Tell us if you want it changed or gone.</b>
+      This is the whole reason for the letter. If anything here concerns you — the
+      route name, the colours, the fact it exists — say so and we will change it or
+      switch it off. The tool has one maintainer and no commercial interest in
+      continuing against your wishes.
+      <span class="how">Needed from you: a reply. Nothing else.</span>
+    </li>
+    <li>
+      <b>Let it be posted where riders will see it, and let crew mention it.</b>
+      A tracker nobody knows about helps nobody. Permission to put a flyer at Mendez
+      Crossing, Olivarez Terminal and One Ayala, and for conductors to point at it when
+      asked "anong oras ang susunod?", would do more for it than anything else — and it
+      reduces the number of people asking your staff that question.
+      <span class="how">Needed from you: permission. No cost, no system to integrate.</span>
+    </li>
+    <li>
+      <b>Work with us, at whatever depth suits you.</b>
+      Options, from smallest to largest — take any, all, or none:
+      <ul>
+        <li><b>Your schedule, kept current.</b> The app shows operating hours and
+        headway. Right now those come from your posted material, which states it may
+        change without notice. Told directly, we would update them the same day and
+        riders would stop relying on a stale poster.</li>
+        <li><b>Crew sharing during trips.</b> A conductor with a mounted phone produces
+        far better coverage than an occasional volunteer rider. Same button, same
+        limits described above.</li>
+        <li><b>Take it over entirely.</b> The tool is free and open source under a
+        licence that lets you run your own copy. We will hand over the route, the keys
+        and the setup, and step back — or shut ours down so there is only one.</li>
+      </ul>
+      <span class="how">Needed from you: a conversation.</span>
+    </li>
+  </ol>
+
+  <h2>5 · What it costs you</h2>
+  <p><strong>Nothing.</strong> There is no invoice attached to any of the options above
+  and there will not be one later. The tool runs on free hosting tiers, is maintained by
+  one volunteer commuter in their own time, carries no advertising, sells nothing, and
+  has no analytics beyond the live count of open tabs described in section 2. The source
+  code is public, so any claim in this document can be checked rather than taken on
+  trust.</p>
+
+  <h2>6 · What it does not do well</h2>
+  <div class="limits">
+    <p><b>Stated here so nobody discovers it later.</b></p>
+    <ul>
+      <li><b>It is only as good as its volunteers.</b> When nobody on board is sharing,
+      the map is empty. An empty map does not mean there is no bus, and the app says so.</li>
+      <li><b>It is not an official schedule</b> and never claims to be. Positions come
+      from passengers' phones, not from dispatch or vehicle hardware.</li>
+      <li><b>A phone must stay awake to share.</b> Mobile browsers suspend GPS when the
+      screen locks, so a session ends when someone pockets their phone. A mounted phone
+      on a charger is the practical answer.</li>
+      <li><b>It cannot tell your bus from another vehicle</b> travelling the same road.
+      The bus number field, typed by the sharer, is the only thing that distinguishes
+      them.</li>
+      <li><b>The direction is picked by hand</b> and can be picked wrongly. The check
+      described in section 2 catches it after a few kilometres, pauses that bus, and
+      asks the person to confirm.</li>
+    </ul>
+  </div>
+
+  <div class="contact">
+    <div class="kicker">To reply, or to ask us to stop</div>
+    <div>One person maintains this and reads everything sent to it.</div>
+    <div class="line">jvlandingin@proton.me</div>
+    <div class="line">Source code: github.com/jvlandingin/community-bus-tracker</div>
+    <div class="line">The tracker itself: community-bus-tracker.netlify.app</div>
+  </div>
+
+  <footer>
+    This tool is not affiliated with, run by, or endorsed by Wonderful Transport.
+    Positions come from passengers and crew who choose to share, so it is not an
+    official schedule and the company is not responsible for it. It is provided as-is,
+    with no warranty of accuracy or uptime. The route name and colours are used so
+    riders can tell which buses it tracks, and for no other purpose.
+    <span class="screenonly"><br><a href="index.html">Open the tracker</a> ·
+    <a href="flyer.html">the rider flyer</a></span>
+  </footer>
+
+</div>
+
+</body>
+</html>

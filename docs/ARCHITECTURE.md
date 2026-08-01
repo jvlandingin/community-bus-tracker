@@ -8,10 +8,15 @@
 - **Backend:** Supabase (Postgres + PostgREST RPC). Free tier.
 - **Map:** Leaflet 1.9.4, vendored locally. Tiles from CARTO light_all basemap.
 - **Supabase client:** supabase-js 2.110.8, UMD build, vendored locally.
-- **App:** three HTML files, no build step, no framework. `index.html` is the
+- **App:** five HTML files, no build step, no framework. `index.html` is the
   tracker, `admin.html` the operator page, `how-to.html` a static guide reached
-  from the ⓘ in the header. The guide loads no images or video: every figure on
-  it is drawn in HTML and CSS from the same design tokens as the tracker.
+  from the ⓘ in the header, `flyer.html` the adoption flyer for riders and
+  `for-operators.html` a briefing for the bus company. None of the last three
+  loads an image or a video: every figure on them is drawn in HTML and CSS from
+  the same design tokens as the tracker. The two adoption pages also carry
+  `@media print` rules — the flyer prints as one A4 poster, the briefing as a
+  few-page document — and `tools/render-flyer.sh` drives headless Chromium to
+  produce those plus a chat-sized PNG. It is run by hand, never at deploy time.
 - **Config:** a plain `config.txt` the user edits on a phone. It now holds no
   secrets at all: only the Supabase URL, the anon key, the public route slug,
   the source code URL, the checkpoints and the stops. Because it holds nothing
@@ -27,6 +32,9 @@ Folder that gets deployed:
 community-bus-tracker/
   index.html          <- the tracker
   admin.html          <- the admin page
+  how-to.html         <- the guide
+  flyer.html          <- the rider flyer, also the printable poster
+  for-operators.html  <- the briefing for the bus company
   config.txt          <- your route's own, holds no secrets, safe to commit
   assets/vendor/      <- leaflet.js, leaflet.css, supabase.js, images/
 ```

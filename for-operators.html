@@ -277,7 +277,11 @@
   @media print{
     :root{--paper:#ffffff; --surface:#ffffff; --ink:#2b2320; --muted:#585049; --shadow:none;}
     body{background:#fff; line-height:1.5;}
-    .doc{max-width:none; padding:0;}
+    /* Same fix as flyer.html: un-set max-width let every section stretch to
+       the full A4 width, which read as "wide" everywhere but the map (sized
+       on its own). A narrower, centred column matches the app's own layout
+       instead of a letter stretched edge to edge. */
+    .doc{max-width:460pt; margin:0 auto; padding:0;}
     header{
       border-radius:8px; margin-bottom:2mm;
       -webkit-print-color-adjust:exact; print-color-adjust:exact;

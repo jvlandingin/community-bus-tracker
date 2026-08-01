@@ -338,7 +338,13 @@
       --shadow:none;
     }
     body{background:#fff;}
-    .sheet{max-width:none; padding:0;}
+    /* Un-setting max-width let the whole poster stretch to the full A4
+       width — the header, the strip, the CTA banner, all of it — which is
+       why everything but the map (sized on its own) still read as "wide."
+       The app itself is a narrow phone column; the poster should look like
+       a large-format print of that column, not a letter stretched edge to
+       edge. */
+    .sheet{max-width:390pt; margin:0 auto; padding:0;}
     header{
       border-radius:10px; margin-bottom:2mm;
       -webkit-print-color-adjust:exact; print-color-adjust:exact;

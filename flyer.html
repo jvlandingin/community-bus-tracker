@@ -356,18 +356,39 @@
     .hero{padding:5mm 0 0;}
     .hero h1{font-size:30pt;}
     .hero .lede{font-size:12pt;}
-    .cta .url{font-size:14pt;}
-    .qr{flex-basis:94px; width:94px; height:94px;}
+    .cta .url{font-size:12pt;}
+    .qr{flex-basis:74px; width:74px; height:74px; padding:3px;}
     .demo{box-shadow:none;}
     /* A poster is read from two metres away and then walked up to. Nothing
        here may split across a page break. */
     .screenwrap, .cta, .limits, .steps li, .point{break-inside:avoid;}
     .backfoot{display:none;}
     footer{font-size:7pt; margin-top:3px; padding-top:3px; line-height:1.35;}
-    /* Full sheet width stretched the ~0.86:1 photo into a flat, wide strip —
-       the opposite of what the real #map looks like. Narrower and centred
-       keeps its true near-square shape; height follows from aspect-ratio. */
-    .demo-map.photo{width:185pt; margin:0 auto;}
+    /* The map fills the card, exactly as it does in the app: same width as
+       the segment control and the progress strip above it. It was briefly
+       narrowed and centred here, which fixed a stretching problem the wrong
+       way — the stretching came from the whole sheet being full-A4 wide
+       (see .sheet above), not from the figure. With the column constrained,
+       full-card-width is both correct and what the real screen looks like.
+       aspect-ratio then sets the height, so it is never squashed. */
+
+    /* The mock's own furniture shrinks so the map can stay full-card-width
+       and the QR still lands on page one. A poster whose call to action is
+       on the back is a poster nobody scans. The map itself is deliberately
+       untouched here — it is the thing being made to look like the app. */
+    .screenlabel{font-size:6.5pt; margin-bottom:2px;}
+    .demo-title{font-size:15pt;}
+    .demo-sub{font-size:7pt;}
+    .demo-seg{margin:5px 0 1px;}
+    .demo-seg span{padding:4px 2px; font-size:7pt;}
+    .strip{margin:5px 0 1px;}
+    .dirlabel{font-size:6.5pt;}
+    .track{height:17px;}
+    .ticks{height:24px;}
+    .tick span{font-size:6pt;}
+    .buspill{font-size:10px; padding:2px 4px;}
+    .demo-chips{gap:2px; margin-top:4px;}
+    .demo-chip{padding:3px 5px; font-size:6pt;}
 
     /* One sheet of A4, or it is a leaflet rather than a poster. What gets
        dropped is the reassurance grid — "walang app", "walang account" and
@@ -378,11 +399,11 @@
        the one failure this whole project is written against. */
     .points, .pointshead{display:none;}
     h2{margin:5px 0 2px; font-size:9.5pt;}
-    .hero{padding:1mm 0 0;}
-    .hero h1{font-size:17pt;}
-    .hero .lede{font-size:10pt; margin-top:4px;}
-    .screenwrap{margin-top:3px;}
-    .demo{padding:8px;}
+    .hero{padding:0.5mm 0 0;}
+    .hero h1{font-size:13.5pt;}
+    .hero .lede{font-size:8.5pt; margin-top:3px;}
+    .screenwrap{margin-top:2px;}
+    .demo{padding:6px;}
     .cta{margin-top:3px; padding:5px 9px;}
     .cta .note{margin-top:4px;}
     .passiton{margin-top:2px; font-size:8.5pt;}

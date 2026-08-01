@@ -299,10 +299,9 @@
     .limits, h2, h3{break-inside:avoid;}
     h2, h3{break-after:avoid;}
     .screenonly{display:none;}
-    /* Same reasoning as flyer.html: the real map is close to square, and
-       stretching the photo to the full page width flattened it into a wide
-       strip instead. Narrower and centred keeps its true shape. */
-    .demo-map.photo{width:280pt; margin:0 auto;}
+    /* Same as flyer.html: the map fills the card the way it does in the app.
+       The stretching this once tried to fix came from .doc being full-A4
+       wide, not from the figure itself. */
   }
 </style>
 <script>

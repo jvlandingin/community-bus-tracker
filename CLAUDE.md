@@ -71,6 +71,11 @@ treated an unguessable session id as a credential.
 times, sharer cap. Edited in `admin.html`, re-read by the app every 60 seconds,
 so a schedule change never needs a redeploy.
 
+**The app keeps exactly two things between visits**, both on the device and
+both named in the privacy panel: whether the guide has been opened, and the
+light/dark/system theme choice. Adding a third means editing that panel in the
+same commit — the panel is the promise, not the code.
+
 **Colours come in fill/ink pairs.** `--maroon`/`--brand-ink`,
 `--gold`/`--gold-deep`, `--lost`/`--lost-ink`. The first of each pair is a
 background with white or near-black text on it; the second is the same colour

@@ -29,15 +29,16 @@
     --brand-ink:#7a1f2b; --lost-ink:#c4432e;
     --gold-line:#eeddb4; --maroon-line:#e6cdc9;
     --ok-ink:#166534; --warn-ink:#92400e;
+    --shadow:0 1px 2px rgba(43,35,32,.04);
     --radius:16px;
     --tap:44px;
   }
 
-  /* Dark theme. Same palette and the same reasoning as index.html — see the
-     comment on its token block. Keep the two in step; test-boot.js compares
-     them. */
+  /* Dark theme. Same palette, same reasoning, and the same deliberate
+     duplication as index.html — see the comment on its token block. The
+     theme is chosen on the tracker; every page honours the choice. */
   @media (prefers-color-scheme: dark){
-    :root{
+    :root:not([data-theme="light"]){
       --paper:#16120f; --surface:#211b16; --ink:#f3ede4; --muted:#a99d90;
       --maroon:#7a1f2b; --maroon-deep:#4a1119; --maroon-soft:#3a2126;
       --gold:#e39a1c; --gold-deep:#e8b45c; --gold-soft:#39301a;
@@ -45,8 +46,22 @@
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
+      /* Cards are lifted by their own surface colour in dark, not by a
+         shadow that nothing can be cast onto. */
+      --shadow:none;
     }
-    .card, details.card{box-shadow:none;}
+  }
+  :root[data-theme="dark"]{
+      --paper:#16120f; --surface:#211b16; --ink:#f3ede4; --muted:#a99d90;
+      --maroon:#7a1f2b; --maroon-deep:#4a1119; --maroon-soft:#3a2126;
+      --gold:#e39a1c; --gold-deep:#e8b45c; --gold-soft:#39301a;
+      --line:#372e26; --live:#4ac694; --lost:#c4432e;
+      --brand-ink:#f0a8b0; --lost-ink:#e8836e;
+      --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --ok-ink:#6ed39b; --warn-ink:#e8b45c;
+      /* Cards are lifted by their own surface colour in dark, not by a
+         shadow that nothing can be cast onto. */
+      --shadow:none;
   }
 
   *{box-sizing:border-box;}
@@ -79,7 +94,7 @@
 
   .card{
     background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
-    padding:16px; margin-bottom:12px; box-shadow:0 1px 2px rgba(43,35,32,.04);
+    padding:16px; margin-bottom:12px; box-shadow:var(--shadow);
   }
   .badge{
     display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.1em;
@@ -437,6 +452,18 @@
     .flowcard{animation:none; opacity:1; margin-bottom:10px; transform:none;}
   }
 </style>
+<script>
+/* Applies a saved theme choice before anything paints. Inline and in the head
+   on purpose: loaded any later, the page would flash the other theme first,
+   which is worst at night, which is when this matters. No attribute means
+   "follow the device", which is what the media query above already does. */
+(function(){
+  try{
+    var p = localStorage.getItem('wt-theme');
+    if (p === 'light' || p === 'dark') document.documentElement.setAttribute('data-theme', p);
+  }catch(e){}
+})();
+</script>
 </head>
 <body>
 

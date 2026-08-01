@@ -292,6 +292,30 @@ function run(page, include, label, configText) {
       ? drifted.map(k => `${k}: app ${appTokens[k]} vs guide ${guideTokens[k]}`).join('; ')
       : 'in step');
 
+  // Each page states its dark palette twice: once under the media query for a
+  // device asking for dark, once under [data-theme="dark"] for a reader who
+  // picked it. One rule cannot cover both without light-dark(), which is too
+  // new for the phones this runs on. The duplication is therefore deliberate,
+  // and this is what stops it rotting into two different dark themes.
+  const darkCopies = src => {
+    const out = [];
+    const re = /(?::root:not\(\[data-theme="light"\]\)|:root\[data-theme="dark"\])\s*\{([^}]*)\}/g;
+    let m;
+    while ((m = re.exec(src))) {
+      const decls = (m[1].match(/--[a-z-]+\s*:\s*[^;]+/g) || [])
+        .map(d => d.replace(/\s+/g, ' ').trim()).sort();
+      out.push(decls.join('; '));
+    }
+    return out;
+  };
+  for (const page of ['index.html', 'admin.html', 'how-to.html']) {
+    const copies = darkCopies(fs.readFileSync(path.join(APP, page), 'utf8'));
+    check(copies.length === 2 && copies[0] === copies[1] && copies[0].length > 0,
+      `${page}: both statements of the dark palette are identical`,
+      copies.length !== 2 ? `found ${copies.length}, expected 2` :
+        (copies[0] === copies[1] ? `${copies[0].split(';').length} tokens` : 'THEY HAVE DRIFTED'));
+  }
+
   // Section 7's lesson, a different filter list: blockers hide live-chat and
   // help widgets by name too, so the link must not be named like one.
   for (const page of ['index.html', 'how-to.html']) {

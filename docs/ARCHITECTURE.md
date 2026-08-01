@@ -126,6 +126,34 @@ the one part CSS cannot reach, and a light map inside a dark page is the exact
 glare the theme exists to prevent. `.leaflet-container` is themed too, so a
 slow or blocked tile load does not leave a bright panel mid-screen.
 
+The reader can override the device: the ☀/☾/◐ control in the tracker's header
+cycles light, dark and follow-the-device. Three states rather than two because
+a two-state toggle has no way back — one tap and you are overriding your own
+system setting permanently, with no control that says "never mind".
+
+Three details make it work:
+
+- **The choice is stored, so the palette must be selectable two ways.** Each
+  page states its dark values twice: under `@media (prefers-color-scheme: dark)`
+  scoped to `:root:not([data-theme="light"])`, and again under
+  `:root[data-theme="dark"]`. CSS cannot express that as one rule without
+  `light-dark()`, which is too new for the phones this has to run on — an older
+  browser would drop every token at once and render something unreadable rather
+  than merely wrong. `test-boot.js` asserts the two copies stay identical.
+- **A tiny inline script in `<head>` applies the stored choice before anything
+  paints.** Loaded any later and the page flashes the other theme first, which
+  is worst at night, which is when it matters. It is the only script in the
+  head of any of the three pages, and it is deliberately three lines.
+- **The control lives only on the tracker**, but all three pages read the
+  preference, because they share an origin and therefore `localStorage`. A copy
+  in the guide and admin headers would be two more things to look at for no
+  more control.
+
+The preference is the second thing this app keeps between visits, after the
+guide-seen dot. Both are named in the privacy panel — the panel used to claim
+nothing was kept once you close the page, which the guide dot had already made
+untrue.
+
 **No location history, by design.** `bus_positions` holds one row per sharing
 session, upserted in place. There is no trail table. This is the single most
 important property of the system: it means the tool cannot be used to review a

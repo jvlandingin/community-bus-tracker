@@ -308,6 +308,17 @@ function run(page, include, label, configText) {
     }
     return out;
   };
+  // The guide hides its sightings section when the route has the board
+  // switched off, by id. Rename one of those ids and the guide silently goes
+  // back to describing a feature the reader cannot find — the same quiet rot
+  // the token check above exists for, so it is checked the same way.
+  for (const id of ['sightingsGuide', 'stripRing', 'stripRingNote']) {
+    check(guideSrc.includes(`id="${id}"`),
+      `the guide still carries #${id}, which its own script hides`);
+  }
+  check(!/<script[^>]+src=/i.test(guideSrc),
+    'and it asks about the setting with fetch, not by loading a library');
+
   for (const page of ['index.html', 'admin.html', 'how-to.html']) {
     const copies = darkCopies(fs.readFileSync(path.join(APP, page), 'utf8'));
     check(copies.length === 2 && copies[0] === copies[1] && copies[0].length > 0,

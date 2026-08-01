@@ -250,6 +250,30 @@ other, then, if 6 px still is not enough, drops every other label and keeps
 every mark. Adding Kawit — an eighth checkpoint — is what proved this was
 needed, and it now costs nothing.
 
+**The whole board can be switched off**, per route, from `admin.html`
+(`sightings_enabled` in the settings JSON). Off hides the card, the composer,
+the ghost markers, the legend row and the paragraph in the privacy panel, stops
+the 15-second poll entirely, and hides the guide's sightings section too. It was
+switched off during the first push for regular users: sightings are the most
+complicated thing a newcomer meets on the page, and the feature is not finished.
+
+Two things about it are worth knowing before touching it:
+
+- **Absent means on.** A route whose stored settings predate the switch keeps
+  the board it already has. Nobody loses a feature by upgrading, and a fork
+  that never opens the admin page gets the full app.
+- **Off hides, it does not lock.** `add_sighting` is still open to anyone with
+  the route slug, so a post made by calling the RPC directly would be invisible
+  to riders and would expire on its own — but it still reaches the admin
+  moderation list. That is stated on the admin page rather than left to be
+  discovered. Enforcing it in the database is a one-function migration if it
+  ever matters; it did not seem worth one for a display decision.
+
+No SQL was needed for any of this: `_check_settings` validates the keys it knows
+about but never rejects unknown ones, and `get_settings` returns the whole
+`settings` object, so a new flag reaches every client for free. Worth
+remembering the next time a setting is proposed.
+
 **Sightings that the strip can place.** A sighting is posted through a
 direction and checkpoint picker rather than as free text, and the composer
 writes one canonical shape (`▲ Northbound at Amadeo · optional note`) into the

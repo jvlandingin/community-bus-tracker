@@ -68,7 +68,7 @@ silently invalidated the reasoning behind `clear_bus_position`, which had
 treated an unguessable session id as a credential.
 
 **Settings live in the database**, not config: operating hours, headway, expiry
-times, sharer cap. Edited in `admin.html`, re-read by the app every 60 seconds,
+times, sharer cap, and whether the sightings board is shown at all. Edited in `admin.html`, re-read by the app every 60 seconds,
 so a schedule change never needs a redeploy.
 
 **The app keeps exactly two things between visits**, both on the device and

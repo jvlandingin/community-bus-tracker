@@ -27,7 +27,9 @@ name the route in link previews.
   the header to override it either way. The map's tiles follow too.
 - **Sightings:** a board for when nobody is sharing GPS. Direction and nearest
   landmark are picked rather than typed, so recent ones also show on the
-  progress strip as dashed marks — clearly not live GPS.
+  progress strip as dashed marks — clearly not live GPS. Can be switched off
+  per route from the admin page, which hides it from the tracker and the guide
+  alike.
 - **Admin page:** operating hours, a pinned notice, live sharers, sighting
   moderation, and key rotation. Needs a separate admin key.
 - **How-to page:** `how-to.html`, reached from the ⓘ in the header. Explains

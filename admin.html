@@ -122,6 +122,16 @@
   .btn-primary{background:var(--maroon); color:#fff;}
   .btn-danger{background:var(--lost); color:#fff;}
   .btn-ghost{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
+  /* A checkbox big enough to hit, with its explanation inside the label so
+     the whole block is the target rather than just the box. */
+  .check{
+    display:flex; gap:11px; align-items:flex-start; cursor:pointer;
+    margin-top:12px; padding:11px 12px; border-radius:12px;
+    border:1.5px solid var(--line); background:var(--paper);
+  }
+  .check input{flex:0 0 auto; width:20px; height:20px; margin:1px 0 0; accent-color:var(--maroon);}
+  .check b{display:block; font-size:13px;}
+  .check .sub{display:block; font-size:11.5px; color:var(--muted); margin-top:3px; line-height:1.5;}
   .row{display:flex; gap:8px; align-items:center;}
   .row > *{flex:1;}
   .row .tight{flex:0 0 auto;}
@@ -250,6 +260,23 @@
   <div class="card">
     <span class="badge">SIGHTINGS</span>
     <div class="hint" style="margin-top:8px;">Posted by anyone, no key needed. Delete spam here; the rest expire on their own.</div>
+
+    <!-- The switch lives here rather than in Freshness + limits, which is
+         folded away: this is the card an organizer already opens to look at
+         sightings, so it is where they will look for the switch. -->
+    <label class="check" for="sightingsOn">
+      <input type="checkbox" id="sightingsOn">
+      <span>
+        <b>Show the sightings board to riders</b>
+        <span class="sub">Off hides the whole board on the tracker: no posting box, no list, and no dashed marks on the route strip. Nothing is deleted, and turning it back on restores everything within a minute.</span>
+      </span>
+    </label>
+    <div class="row" style="margin-top:10px;">
+      <button class="big btn-primary" onclick="saveSettings()">Save</button>
+    </div>
+    <div id="sightStatus"></div>
+    <div class="hint warn" style="margin-top:10px;">Honest limit: this hides the board, it does not lock it. Posting needs no key, so somebody who worked out the call could still add one while it is switched off. Riders would never see it and it expires on its own, but it would still turn up in this list.</div>
+
     <div id="sightingList" style="margin-top:6px;"></div>
   </div>
 
@@ -360,9 +387,15 @@ function timeAgo(ts){
 }
 function note(id, msg, kind){
   const el=document.getElementById(id);
+  if (!el) return;
   el.className = kind==='ok' ? 'ok-note' : 'err-note';
   el.textContent = msg;
   setTimeout(function(){ el.textContent=''; }, 6000);
+}
+// One Save writes the whole settings object, and it can be pressed from any
+// of three cards, so the result has to show up wherever it was pressed.
+function noteSettings(msg, kind){
+  ['hoursStatus','limitsStatus','sightStatus'].forEach(function(id){ note(id, msg, kind); });
 }
 // turn server errors into plain words
 function friendly(err){
@@ -483,6 +516,7 @@ function fillSettingsForm(st){
   document.getElementById('busExpiry').value = st.bus_expiry_min ?? 10;
   document.getElementById('sightingExpiry').value = st.sighting_expiry_min ?? 120;
   document.getElementById('maxSessions').value = st.max_sessions ?? 25;
+  document.getElementById('sightingsOn').checked = st.sightings_enabled !== false;
 }
 async function refreshSettings(){
   const res = await rpc('get_settings', { p_slug:CFG.ROUTE_SLUG });
@@ -498,8 +532,7 @@ async function refreshSettings(){
 async function saveSettings(){
   const north=readWins('north'), south=readWins('south');
   if (!north.length || !south.length){
-    note('hoursStatus','Each direction needs at least one complete window.','err');
-    note('limitsStatus','Each direction needs at least one complete window.','err');
+    noteSettings('Each direction needs at least one complete window.','err');
     return;
   }
   const st = {
@@ -507,16 +540,15 @@ async function saveSettings(){
     headway_min: parseInt(document.getElementById('headway').value,10),
     bus_expiry_min: parseInt(document.getElementById('busExpiry').value,10),
     sighting_expiry_min: parseInt(document.getElementById('sightingExpiry').value,10),
-    max_sessions: parseInt(document.getElementById('maxSessions').value,10)
+    max_sessions: parseInt(document.getElementById('maxSessions').value,10),
+    sightings_enabled: document.getElementById('sightingsOn').checked
   };
   const res = await rpc('admin_set_settings', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_settings:st });
   if (res.error){
-    note('hoursStatus', friendly(res.error), 'err');
-    note('limitsStatus', friendly(res.error), 'err');
+    noteSettings(friendly(res.error), 'err');
     return;
   }
-  note('hoursStatus','Saved. The app picks it up within a minute.','ok');
-  note('limitsStatus','Saved. The app picks it up within a minute.','ok');
+  noteSettings('Saved. The app picks it up within a minute.','ok');
 }
 
 // ============================================================

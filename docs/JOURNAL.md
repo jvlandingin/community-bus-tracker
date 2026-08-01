@@ -32,7 +32,22 @@ Follow-ups to yesterday's restructure, from the same review.
 **Dark theme.** The southbound window closes at 8:00 PM, so a good share of
 the time this page gets opened it is dark outside and the light theme is a
 torch in the face. The map swaps to CARTO's `dark_all` — same provider, so
-nothing changes in the privacy panel.
+nothing changes there in the privacy panel.
+
+It follows the device, and there is a ☀/☾/◐ control in the header to override
+it. Three states, not two: a two-state toggle has no way back to "whatever my
+phone is doing", so one tap and you are overriding your own system setting for
+good. Shipped after being asked for — I had left it out on the grounds that a
+rider opening a Messenger link for fifteen seconds should get the right theme
+with no interaction, which is true, but it ignores the person who runs their
+phone bright all day and wants a dark map at night.
+
+The honest cost: the preference is stored, which makes it the second thing this
+app keeps between visits. The privacy panel claimed nothing was kept once you
+close the page — already untrue, because of the guide-seen dot, and nobody had
+noticed. Both are now named there explicitly. Worth remembering that the panel
+is the promise and the code is only the implementation; a third stored thing
+means editing the panel in the same commit.
 
 Doing it turned up something the light theme had been hiding: `--maroon` was
 being used both as a fill with white text on it and as text in its own right.

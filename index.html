@@ -41,6 +41,7 @@
     --brand-ink:#7a1f2b; --lost-ink:#c4432e;
     --gold-line:#eeddb4; --maroon-line:#e6cdc9;
     --ok-ink:#166534; --warn-ink:#92400e;
+    --shadow:0 1px 2px rgba(43,35,32,.04);
     --radius:16px;
     /* 44px: the smallest target a thumb finds reliably on a moving bus. */
     --tap:44px;
@@ -50,12 +51,20 @@
      good part of the time this page is read it is dark outside and the light
      theme is a torch in the face.
      Every value below was checked against --surface and --paper: the dimmest
-     is --live at 6.5:1, and no text pair is under AA. Fills keep their light
+     is --live at 4.9:1, and no text pair is under AA. Fills keep their light
      values on purpose — white on maroon is 10.2:1 whatever the page behind
      it is doing. The map's basemap is swapped in JS (see basemapUrl), because
-     Leaflet loads tiles rather than painting them. */
+     Leaflet loads tiles rather than painting them.
+
+     The block appears twice on purpose: once for a device asking for dark
+     whose reader has not overridden it, once for a reader who picked dark
+     explicitly. CSS cannot express that as one rule without light-dark(),
+     which is too new for the phones this has to run on — a browser that did
+     not understand it would drop every token at once and render something
+     unreadable rather than merely wrong. test-boot.js keeps the two copies
+     identical so the duplication cannot rot. */
   @media (prefers-color-scheme: dark){
-    :root{
+    :root:not([data-theme="light"]){
       --paper:#16120f; --surface:#211b16; --ink:#f3ede4; --muted:#a99d90;
       --maroon:#7a1f2b; --maroon-deep:#4a1119; --maroon-soft:#3a2126;
       --gold:#e39a1c; --gold-deep:#e8b45c; --gold-soft:#39301a;
@@ -63,10 +72,22 @@
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
+      /* Cards are lifted by their own surface colour in dark, not by a
+         shadow that nothing can be cast onto. */
+      --shadow:none;
     }
-    /* Cards are lifted by their own surface colour in dark, not by a shadow
-       that nothing can be cast onto. */
-    .card, details.card{box-shadow:none;}
+  }
+  :root[data-theme="dark"]{
+      --paper:#16120f; --surface:#211b16; --ink:#f3ede4; --muted:#a99d90;
+      --maroon:#7a1f2b; --maroon-deep:#4a1119; --maroon-soft:#3a2126;
+      --gold:#e39a1c; --gold-deep:#e8b45c; --gold-soft:#39301a;
+      --line:#372e26; --live:#4ac694; --lost:#c4432e;
+      --brand-ink:#f0a8b0; --lost-ink:#e8836e;
+      --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --ok-ink:#6ed39b; --warn-ink:#e8b45c;
+      /* Cards are lifted by their own surface colour in dark, not by a
+         shadow that nothing can be cast onto. */
+      --shadow:none;
   }
   *{box-sizing:border-box;}
   /* One ring for everything focusable. :focus-visible rather than :focus so
@@ -87,7 +108,21 @@
     background:linear-gradient(180deg,var(--maroon),var(--maroon-deep));
     color:#fff; padding:14px 16px 12px;
   }
-  .headbar{max-width:520px; margin:0 auto; position:relative; padding-right:48px;}
+  .headbar{max-width:520px; margin:0 auto; position:relative; padding-right:92px;}
+  /* Theme control. Lives only here, on the tracker: the choice is stored per
+     device and every page reads it, so a second copy in the guide and the
+     admin header would be two more things to look at for no more control. */
+  #themeBtn{
+    position:absolute; top:50%; right:36px; transform:translateY(-50%);
+    width:var(--tap); height:var(--tap); background:none; border:none; padding:0;
+    cursor:pointer; color:#fff; font-family:inherit;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #themeBtn .ico{
+    width:28px; height:28px; border-radius:50%; font-size:14px; line-height:1;
+    background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
+    display:flex; align-items:center; justify-content:center;
+  }
   /* Link to the guide. Deliberately an <a> with a neutral id, not a button
      called help: filter lists hide live-chat and help widgets by name, and
      this app has already lost a control that way once (see
@@ -132,7 +167,7 @@
 
   .card{
     background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
-    padding:16px; margin-bottom:12px; box-shadow:0 1px 2px rgba(43,35,32,.04);
+    padding:16px; margin-bottom:12px; box-shadow:var(--shadow);
   }
 
   /* Progressive disclosure. Native <details>/<summary>, so it is focusable,
@@ -320,9 +355,13 @@
   .hourbox.sb .dirname{color:var(--brand-ink);}
   .headway{font-size:11.5px; color:var(--muted); margin-top:8px; font-weight:600;}
 
-  button.big{
+  /* Base is .big, not button.big, on purpose: an element+class selector
+     outranks the .btn-* modifiers below it, so qualifying it here silently
+     repainted every primary button in --ink. Equal specificity plus source
+     order means the modifier always wins. */
+  .big{
     width:100%; padding:14px; border-radius:12px; border:none; font-family:inherit;
-    font-size:15px; font-weight:800; cursor:pointer; transition:.15s;
+    font-size:15px; font-weight:800; cursor:pointer; transition:.15s; color:var(--ink);
   }
   .btn-primary{background:var(--maroon); color:#fff;}
   .btn-stop{background:var(--lost); color:#fff;}
@@ -345,9 +384,16 @@
 
   /* Share flow */
   .dirpick{display:flex; gap:10px; margin:6px 0 12px;}
+  /* color, not just font-family. A <button> does not inherit either one: left
+     alone it takes the browser's own buttontext, which is black. That looked
+     right on a white card for as long as there was only a white card, and
+     turned the direction labels into black-on-near-black the moment there was
+     a dark one. The arrow and the label were invisible; only .dest, which
+     sets its own colour, survived. */
   .dirbtn{
     flex:1; padding:16px 8px; border-radius:14px; cursor:pointer; text-align:center;
-    border:2px solid var(--line); background:var(--surface); font-family:inherit;
+    border:2px solid var(--line); background:var(--surface);
+    font-family:inherit; color:var(--ink);
   }
   .dirbtn .big-arrow{font-size:22px; line-height:1;}
   .dirbtn .lbl{font-size:12.5px; font-weight:800; margin-top:5px;}
@@ -425,6 +471,18 @@
   .gate h2{margin:0 0 6px; font-size:24px; text-transform:uppercase;}
   .gate p{font-size:13px; color:var(--muted); line-height:1.5; margin:0 0 16px;}
 </style>
+<script>
+/* Applies a saved theme choice before anything paints. Inline and in the head
+   on purpose: loaded any later, the page would flash the other theme first,
+   which is worst at night, which is when this matters. No attribute means
+   "follow the device", which is what the media query above already does. */
+(function(){
+  try{
+    var p = localStorage.getItem('wt-theme');
+    if (p === 'light' || p === 'dark') document.documentElement.setAttribute('data-theme', p);
+  }catch(e){}
+})();
+</script>
 </head>
 <body>
 
@@ -460,7 +518,8 @@
       <p class="hidden" id="contactBody"></p>
 
       <h4>Why you can trust this</h4>
-      <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers, nothing kept once you close the page. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
+      <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
+      <p>Two small things are remembered on your own device, and nowhere else: whether you have opened this guide before (so the dot on the ⓘ stops nagging), and your light or dark theme choice. Both stay in your browser, are never sent anywhere, and are not linked to anything. Clearing your browser data removes them.</p>
     </div>
     <div class="modal-foot">
       <button class="big btn-ghost" onclick="closeModal('privModal')">Close</button>
@@ -508,6 +567,7 @@
   <div class="headbar">
     <div class="route">Mendez / Tagaytay <span class="amp">⇄</span> One Ayala</div>
     <div class="sub">WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER · UNOFFICIAL</div>
+    <button type="button" id="themeBtn" onclick="cycleTheme()"><span class="ico"></span></button>
     <a id="guideLink" href="how-to.html" aria-label="How to use this tracker" title="How to use this tracker"
        onclick="try{localStorage.setItem('wt-guide-seen','1');}catch(e){}"><span class="ico">i<span class="newdot"></span></span></a>
   </div>
@@ -912,13 +972,61 @@ let map, busMarkers = {};   // clustered pub_id -> marker
 let BUSES = [];             // latest fetched positions
 let HOME_BOUNDS = null;     // the whole route, what the reset button goes back to
 
+// ============================================================
+// Theme
+// ============================================================
+// Three states, not two: light, dark, and follow the device. A two-state
+// toggle has no way back to "whatever my phone is doing", so someone who
+// taps it once is stuck overriding their own system setting for good.
+// The choice is the second thing this app keeps between visits (the guide
+// dot is the first), and it is named in the privacy panel rather than left
+// for someone to find.
+const THEMES = ['system','light','dark'];
+const THEME_ICON = { system:'◐', light:'☀', dark:'☾' };
+const THEME_SAYS = {
+  system:'Theme: following your device. Tap for light.',
+  light:'Theme: light. Tap for dark.',
+  dark:'Theme: dark. Tap to follow your device.'
+};
+function themePref(){
+  let p=null;
+  try{ p = localStorage.getItem('wt-theme'); }catch(e){}
+  return (p==='light'||p==='dark') ? p : 'system';
+}
+// What is actually on screen right now, which is what the map has to match.
+function effectiveTheme(){
+  const p = themePref();
+  if (p !== 'system') return p;
+  return (DARK_MQ && DARK_MQ.matches) ? 'dark' : 'light';
+}
+function applyTheme(pref){
+  const root = document.documentElement;
+  if (pref === 'system') root.removeAttribute('data-theme');
+  else root.setAttribute('data-theme', pref);
+  const btn = document.getElementById('themeBtn');
+  if (btn){
+    btn.querySelector('.ico').textContent = THEME_ICON[pref];
+    btn.setAttribute('aria-label', THEME_SAYS[pref]);
+    btn.title = THEME_SAYS[pref];
+  }
+  if (baseLayer) baseLayer.setUrl(basemapUrl());
+}
+function cycleTheme(){
+  const next = THEMES[(THEMES.indexOf(themePref()) + 1) % THEMES.length];
+  try{
+    if (next === 'system') localStorage.removeItem('wt-theme');
+    else localStorage.setItem('wt-theme', next);
+  }catch(e){}
+  applyTheme(next);
+}
+
 // CARTO's own dark variant of the basemap already in use: the same provider,
 // the same attribution, no new third party to disclose. A light map inside a
 // dark page is the one thing that would still glare at night.
 const DARK_MQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 function basemapUrl(){
   return 'https://{s}.basemaps.cartocdn.com/' +
-    (DARK_MQ && DARK_MQ.matches ? 'dark_all' : 'light_all') + '/{z}/{x}/{y}{r}.png';
+    (effectiveTheme() === 'dark' ? 'dark_all' : 'light_all') + '/{z}/{x}/{y}{r}.png';
 }
 let baseLayer = null;
 function initMap() {
@@ -2043,6 +2151,11 @@ function start(){
   // patchy connection does not drop this tab out of the count
   setInterval(markWatching, 60000);
 }
+// The head script has already set the attribute so nothing flashed; this is
+// what puts the right icon and label on the button. Runs unconditionally,
+// before config loads, so the control is correct even on the setup screen.
+applyTheme(themePref());
+
 // The gold dot on the guide link is a first-visit nudge, not a setting. It
 // is the only thing this app keeps between visits, it never leaves the
 // device, and losing it costs nothing but one extra dot.

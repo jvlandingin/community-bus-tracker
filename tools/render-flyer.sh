@@ -15,7 +15,7 @@
 #
 # Outputs:
 #   flyer-a4.pdf         the poster, for printing and putting up at terminals
-#   flyer-chat.png       1080x1620, sized for a Messenger feed
+#   flyer-chat.png       1080x3120, sized for a Messenger feed
 #   for-operators.pdf    the briefing, for attaching to an email
 #
 # The PNGs capture the top of the flyer rather than the whole scroll, which is
@@ -63,8 +63,8 @@ done
 # --- The image. Rendered at half the target size with a 2x device scale,
 #     so text is laid out at phone widths and comes out at retina density. ---
 # shellcheck disable=SC2086
-"$CHROME" $FLAGS --force-device-scale-factor=2 --window-size=540,810 \
+"$CHROME" $FLAGS --force-device-scale-factor=2 --window-size=540,1560 \
   --screenshot="$OUT/flyer-chat.png" "file://$ROOT/flyer.html" 2>/dev/null
-echo "  wrote $OUT/flyer-chat.png (1080x1620)"
+echo "  wrote $OUT/flyer-chat.png (1080x3120)"
 
 echo "Done."

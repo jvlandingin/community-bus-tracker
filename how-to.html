@@ -22,15 +22,35 @@
      quietly stops looking like the app. test-boot.js section 8 compares the
      two blocks and fails if a value differs. */
   :root{
-    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#786e67;
+    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#6f655e;
     --maroon:#7a1f2b; --maroon-deep:#5c161f; --maroon-soft:#f3e6e4;
     --gold:#e39a1c; --gold-deep:#8c5905; --gold-soft:#fbf0da;
     --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
+    --brand-ink:#7a1f2b; --lost-ink:#c4432e;
+    --gold-line:#eeddb4; --maroon-line:#e6cdc9;
+    --ok-ink:#166534; --warn-ink:#92400e;
     --radius:16px;
     --tap:44px;
   }
+
+  /* Dark theme. Same palette and the same reasoning as index.html — see the
+     comment on its token block. Keep the two in step; test-boot.js compares
+     them. */
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#16120f; --surface:#211b16; --ink:#f3ede4; --muted:#a99d90;
+      --maroon:#7a1f2b; --maroon-deep:#4a1119; --maroon-soft:#3a2126;
+      --gold:#e39a1c; --gold-deep:#e8b45c; --gold-soft:#39301a;
+      --line:#372e26; --live:#4ac694; --lost:#c4432e;
+      --brand-ink:#f0a8b0; --lost-ink:#e8836e;
+      --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --ok-ink:#6ed39b; --warn-ink:#e8b45c;
+    }
+    .card, details.card{box-shadow:none;}
+  }
+
   *{box-sizing:border-box;}
-  :focus-visible{outline:3px solid var(--maroon); outline-offset:2px; border-radius:4px;}
+  :focus-visible{outline:3px solid var(--brand-ink); outline-offset:2px; border-radius:4px;}
   header :focus-visible{outline-color:#fff;}
   body{
     margin:0; background:var(--paper); color:var(--ink); min-height:100vh;
@@ -43,7 +63,7 @@
     color:#fff; padding:14px 16px 12px; position:relative;
   }
   header .route{
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed; font-weight:700; font-size:22px;
+    font-weight:700; font-size:22px;
     letter-spacing:.04em; text-transform:uppercase; line-height:1.1;
   }
   header .route .amp{color:var(--gold);}
@@ -63,17 +83,15 @@
   }
   .badge{
     display:inline-block; font-size:9.5px; font-weight:800; letter-spacing:.1em;
-    text-transform:uppercase; color:var(--maroon); background:var(--maroon-soft);
+    text-transform:uppercase; color:var(--brand-ink); background:var(--maroon-soft);
     padding:4px 9px; border-radius:20px;
   }
   .badge.gold{color:var(--gold-deep); background:var(--gold-soft);}
   h1{
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed;
     font-size:27px; font-weight:700; text-transform:uppercase; letter-spacing:.02em;
     line-height:1.1; margin:0 0 8px;
   }
   h2{
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; font-stretch:condensed;
     font-size:20px; font-weight:700; text-transform:uppercase; letter-spacing:.02em;
     margin:12px 0 4px;
   }
@@ -114,6 +132,9 @@
   figcaption{font-size:11.5px; color:var(--muted); margin-top:7px; text-align:center; line-height:1.5;}
   figcaption b{color:var(--ink);}
 
+  /* Guide-only: the stylised map panel behind the drawn route. */
+  :root{--mapbg:#eceae4;}
+  @media (prefers-color-scheme: dark){ :root{--mapbg:#2a241e;} }
   .demo{
     position:relative; border:1px solid var(--line); border-radius:14px;
     background:var(--surface); padding:13px; overflow:hidden;
@@ -126,8 +147,7 @@
   /* translateY rather than the base .dot's negative margin, so a top: here
      is the centre of the row it marks and not 12px above it. */
   .demo.annotated .dot{left:17px; margin-top:0; transform:translateY(-50%);}
-  .demo-title{
-    font-stretch:condensed; font-size:19px; font-weight:700; text-transform:uppercase;
+  .demo-title{ font-size:19px; font-weight:700; text-transform:uppercase;
     letter-spacing:.02em; line-height:1.1;
   }
   .demo-sub{font-size:10.5px; color:var(--muted); margin-top:3px; line-height:1.45;}
@@ -140,7 +160,9 @@
     flex:1; text-align:center; padding:7px 2px; border-radius:8px;
     font-size:9.5px; font-weight:800; color:var(--muted);
   }
-  .demo-seg span.on{background:var(--ink); color:#fff;}
+  .demo-seg span.on{background:var(--ink); color:var(--surface);}
+  .demo-seg span.on-n{background:var(--gold); color:#3d2a05;}
+  .demo-seg span.on-s{background:var(--maroon); color:#fff;}
 
   .demo-chips{display:flex; flex-wrap:wrap; gap:5px; margin-top:9px;}
   .demo-chip{
@@ -150,19 +172,19 @@
   }
   .demo-chip .ar{font-size:9px;}
   .demo-chip.nb .ar{color:var(--gold-deep);}
-  .demo-chip.sb .ar{color:var(--maroon);}
+  .demo-chip.sb .ar{color:var(--brand-ink);}
   .demo-chip .ag{color:var(--muted); font-weight:600;}
 
   /* A stylised route, not a real map: the app draws a live Leaflet map, and
      pretending otherwise here would be the same lie a screenshot tells. */
   .demo-map{
     margin-top:10px; height:132px; position:relative; overflow:hidden;
-    border:1px solid var(--line); border-radius:10px; background:#eceae4;
+    border:1px solid var(--line); border-radius:10px; background:var(--mapbg);
   }
   .demo-map svg{position:absolute; inset:0; width:100%; height:100%;}
   .demo-badge{
     position:absolute; width:23px; height:23px; border-radius:50%;
-    border:2px solid #fff; box-shadow:0 1px 5px rgba(0,0,0,.3);
+    border:2px solid var(--surface); box-shadow:0 1px 5px rgba(0,0,0,.3);
     display:flex; align-items:center; justify-content:center; font-size:11px;
     transform:translate(-50%,-50%);
   }
@@ -177,7 +199,7 @@
   .demo-fold .lbl{flex:1; min-width:0;}
   .demo-fold .cap{
     display:block; font-size:8.5px; font-weight:800; letter-spacing:.08em;
-    color:var(--maroon); text-transform:uppercase;
+    color:var(--brand-ink); text-transform:uppercase;
   }
   .demo-fold .val{display:block; font-size:11.5px; font-weight:700; margin-top:3px;}
   .demo-fold .chev{color:var(--muted); font-size:10px;}
@@ -204,7 +226,7 @@
   .demo-pick .nm{font-size:11px; font-weight:800; margin-top:4px;}
   .demo-pick .to{font-size:9px; color:var(--muted); font-weight:600;}
   .demo-pick > div.sel-n{border-color:var(--gold); background:var(--gold-soft);}
-  .demo-pick > div.sel-s{border-color:var(--maroon); background:var(--maroon-soft);}
+  .demo-pick > div.sel-s{border-color:var(--brand-ink); background:var(--maroon-soft);}
 
   .demo-status{display:flex; gap:9px; align-items:flex-start; margin-bottom:4px;}
   .demo-status .txt{font-weight:800; font-size:12.5px;}
@@ -223,9 +245,9 @@
   .filterdemo .demo-chip.nb{animation:fChipNb 12s infinite;}
   .filterdemo .demo-chip.sb{animation:fChipSb 12s infinite;}
   @keyframes fSegAll{
-    0%,30%{background:var(--ink); color:#fff;}
+    0%,30%{background:var(--ink); color:var(--surface);}
     34%,96%{background:transparent; color:var(--muted);}
-    100%{background:var(--ink); color:#fff;}
+    100%{background:var(--ink); color:var(--surface);}
   }
   @keyframes fSegN{
     0%,30%{background:transparent; color:var(--muted);}
@@ -253,7 +275,7 @@
   .flowcard:nth-child(4){animation-delay:18s;}
   .flowstep{
     font-size:8.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
-    color:var(--maroon); margin-bottom:7px;
+    color:var(--brand-ink); margin-bottom:7px;
   }
   @keyframes cycle4{
     0%{opacity:0; transform:translateY(8px);}
@@ -267,7 +289,7 @@
      one per row of the recreation they mark. */
   .dot{
     position:absolute; width:24px; height:24px; margin:-12px 0 0 -12px;
-    border-radius:50%; background:var(--maroon); color:#fff; border:2px solid #fff;
+    border-radius:50%; background:var(--maroon); color:#fff; border:2px solid var(--surface);
     font-size:11.5px; font-weight:800; display:flex; align-items:center; justify-content:center;
     box-shadow:0 2px 8px rgba(43,35,32,.35);
   }
@@ -290,17 +312,25 @@
   .dirlabel.nb{text-align:right; margin-bottom:3px;}
   .track{position:relative; height:22px;}
   .track .rail{position:absolute; left:0; right:0; top:9px; height:4px; border-radius:2px;}
-  .track.nb .rail{background:var(--gold-soft); border:1px solid #eeddb4;}
-  .track.sb .rail{background:var(--maroon-soft); border:1px solid #e6cdc9;}
+  .track.nb .rail{background:var(--gold-soft); border:1px solid var(--gold-line);}
+  .track.sb .rail{background:var(--maroon-soft); border:1px solid var(--maroon-line);}
   .dirlabel.sb{margin-top:3px;}
   .buspill{
     position:absolute; top:0; transform:translateX(-50%);
     font-size:14px; line-height:1; padding:3px 5px; border-radius:20px;
-    background:var(--gold); border:1.5px solid #fff;
+    background:var(--gold); border:1.5px solid var(--surface);
     box-shadow:0 1px 4px rgba(43,35,32,.25); white-space:nowrap;
     animation:ride 16s linear infinite;
   }
   .buspill.sb{background:var(--maroon); animation-name:ride-back; animation-delay:-8s;}
+  /* Copied from index.html: a reported sighting, hollow and dashed so it can
+     never be read as a live bus. */
+  .sightmk{
+    position:absolute; top:3px; transform:translateX(-50%);
+    width:16px; height:16px; border-radius:50%;
+    border:2px dashed var(--gold-deep); background:var(--surface);
+  }
+  .sightmk.sb{border-color:var(--brand-ink);}
   /* Uneven steps on purpose: a real bus crawls through Imus and runs the
      open stretch. A constant glide reads as a progress bar, not a bus. */
   @keyframes ride{
@@ -316,8 +346,17 @@
   .tick::before{content:''; display:block; width:2px; height:8px; background:var(--line); margin:0 auto 3px;}
   /* Kept in step with index.html: sized to leave a gap between the two
      longest neighbouring checkpoint names, not for comfort. */
-  .tick span{font-size:8px; font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
-  @media (max-width:359px){ .tick span{font-size:7px; letter-spacing:0;} }
+  .tick span{font-size:var(--tick-fs,8px); font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
+  /* index.html sizes these from the measured layout (see fitTicks). This page
+     has no script for it, so the same outcome is written out as breakpoints,
+     tuned to the eight checkpoint names the app ships. .many marks the strips
+     carrying the full set; the four-name one in the share flow is left alone. */
+  .ticks.many{--tick-fs:8px;}
+  @media (max-width:430px){ .ticks.many{--tick-fs:7px;} }
+  @media (max-width:360px){
+    .ticks.many{--tick-fs:6px;}
+    .ticks.many .tick:nth-child(even):not(.last) span{display:none;}
+  }
   .tick.first{transform:none; text-align:left;}
   .tick.first::before{margin:0 0 3px;}
   .tick.last{transform:translateX(-100%); text-align:right;}
@@ -338,7 +377,7 @@
   .promptstack{display:grid;}
   .promptcard{
     grid-area:1/1;
-    background:#fff; border-radius:16px; padding:18px; border:1px solid var(--line);
+    background:var(--surface); border-radius:16px; padding:18px; border:1px solid var(--line);
     box-shadow:0 8px 28px rgba(43,35,32,.13);
     opacity:0; animation:cycle 21s ease-in-out infinite;
   }
@@ -368,11 +407,11 @@
   }
   .statusdot.off{background:var(--muted);}
   .keyline{
-    background:var(--gold-soft); border:1px solid #eeddb4; border-radius:12px;
+    background:var(--gold-soft); border:1px solid var(--gold-line); border-radius:12px;
     padding:12px 14px; font-size:13px; margin:0 0 12px;
   }
   .keyline b{display:block; margin-bottom:2px;}
-  a{color:var(--maroon); font-weight:700;}
+  a{color:var(--brand-ink); font-weight:700;}
   .backfoot{text-align:center; margin-top:18px;}
   .backfoot a{font-size:13px;}
 
@@ -393,7 +432,7 @@
        would otherwise settle on nothing at all. */
     .filterdemo .demo-seg span,
     .filterdemo .demo-chip{animation:none;}
-    .filterdemo .demo-seg span:nth-child(1){background:var(--ink); color:#fff;}
+    .filterdemo .demo-seg span:nth-child(1){background:var(--ink); color:var(--surface);}
     .filterdemo .demo-chip{opacity:1;}
     .flowcard{animation:none; opacity:1; margin-bottom:10px; transform:none;}
   }
@@ -426,13 +465,14 @@
         <div class="strip" style="padding:0">
           <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
           <div class="track nb"><div class="rail"></div><div class="buspill" style="left:28%; animation:none">🚌</div></div>
-          <div class="ticks">
+          <div class="ticks many">
             <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
-            <div class="tick" style="left:16.7%"><span>TGY</span></div>
-            <div class="tick" style="left:33.3%"><span>AMADEO</span></div>
-            <div class="tick" style="left:50%"><span>GEN.T</span></div>
-            <div class="tick" style="left:66.7%"><span>IMUS</span></div>
-            <div class="tick" style="left:83.3%"><span>PITX</span></div>
+            <div class="tick" style="left:14.3%"><span>TGY</span></div>
+            <div class="tick" style="left:28.6%"><span>AMADEO</span></div>
+            <div class="tick" style="left:42.9%"><span>GEN.T</span></div>
+            <div class="tick" style="left:57.1%"><span>IMUS</span></div>
+            <div class="tick" style="left:71.4%"><span>KAWIT</span></div>
+            <div class="tick" style="left:85.7%"><span>PITX</span></div>
             <div class="tick last" style="left:100%"><span>AYALA</span></div>
           </div>
           <div class="track sb"><div class="rail"></div></div>
@@ -498,18 +538,21 @@
       <div class="track nb"><div class="rail"></div><div class="buspill">🚌</div></div>
       <!-- Evenly spaced, like the real strip: the app gives every leg the
            same width rather than scaling by distance. See tests/test-strip.js -->
-      <div class="ticks">
+      <div class="ticks many">
         <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
-        <div class="tick" style="left:16.7%"><span>TGY</span></div>
-        <div class="tick" style="left:33.3%"><span>AMADEO</span></div>
-        <div class="tick" style="left:50%"><span>GEN.T</span></div>
-        <div class="tick" style="left:66.7%"><span>IMUS</span></div>
-        <div class="tick" style="left:83.3%"><span>PITX</span></div>
+        <div class="tick" style="left:14.3%"><span>TGY</span></div>
+        <div class="tick" style="left:28.6%"><span>AMADEO</span></div>
+        <div class="tick" style="left:42.9%"><span>GEN.T</span></div>
+        <div class="tick" style="left:57.1%"><span>IMUS</span></div>
+        <div class="tick" style="left:71.4%"><span>KAWIT</span></div>
+        <div class="tick" style="left:85.7%"><span>PITX</span></div>
         <div class="tick last" style="left:100%"><span>AYALA</span></div>
       </div>
-      <div class="track sb"><div class="rail"></div><div class="buspill sb">🚌</div></div>
+      <div class="track sb"><div class="rail"></div><div class="sightmk sb" style="left:28.6%"></div><div class="buspill sb">🚌</div></div>
       <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
     </div>
+    <p class="hint" style="margin:8px 0 0; text-align:center;">The solid 🚌 are live GPS. The dashed ring is a
+      <b>reported sighting</b> — somebody saw a bus there and said so.</p>
 
     <div class="step">
       <div class="n">3</div>
@@ -552,8 +595,15 @@
     <p>Early morning, late evening, or just a quiet stretch: often no one on board
       is sharing. Post what you saw instead, and everyone else gets something to
       go on.</p>
-    <p class="hint">Short and specific beats vague. <b>“Northbound just passed
-      Amadeo, 6:42am”</b> is useful. “Bus coming” is not.</p>
+    <p>Pick the direction and the nearest landmark — you do not type them, so a
+      sighting is always specific enough to be worth reading. Add a note if there
+      is something to add. <b>What you post appears on the route strip as a
+      dashed mark</b>, so the strip still shows something when nobody's GPS
+      does.</p>
+    <p class="hint">A dashed mark is never a live bus, and the strip does not
+      pretend otherwise: it is one person's word, already a few minutes old,
+      with no update coming after it. It clears itself after about one gap
+      between trips.</p>
 
     <figure>
       <div class="demo" aria-hidden="true">
@@ -564,13 +614,17 @@
           </span>
           <span class="chev">▶</span>
         </div>
-        <div class="demo-field">e.g. Northbound just passed Amadeo, 6:42am</div>
+        <div class="demo-seg" style="margin:10px 0 8px">
+          <span class="on-n">▲ Northbound</span><span>▼ Southbound</span>
+        </div>
+        <div class="demo-field filled">Amadeo</div>
+        <div class="demo-field">Anything else? (optional)</div>
         <div style="margin-top:10px">
-          <div class="demo-row"><span>Northbound just passed Amadeo, 6:42am</span><span class="t">8m ago</span></div>
-          <div class="demo-row"><span>Two buses waiting at One Ayala bay 3</span><span class="t">40m ago</span></div>
+          <div class="demo-row"><span>▲ Northbound at Amadeo</span><span class="t">8m ago</span></div>
+          <div class="demo-row"><span>▼ Southbound at Kawit · heavy traffic</span><span class="t">40m ago</span></div>
         </div>
       </div>
-      <figcaption>The board stays folded while buses are live and <b>opens itself when none are</b> — which is exactly when it is the only thing that can answer you. Sightings clear after two hours, so it never goes stale.</figcaption>
+      <figcaption>Direction and landmark are picked, not typed. The board stays folded while buses are live and <b>opens itself when none are</b> — which is exactly when it is the only thing that can answer you.</figcaption>
     </figure>
   </div>
 
@@ -615,7 +669,7 @@
             <div class="track nb"><div class="rail"></div><div class="buspill" style="left:34%; animation:none">🚌</div></div>
             <div class="ticks">
               <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
-              <div class="tick" style="left:33.3%"><span>AMADEO</span></div>
+              <div class="tick" style="left:28.6%"><span>AMADEO</span></div>
               <div class="tick" style="left:66.7%"><span>IMUS</span></div>
               <div class="tick last" style="left:100%"><span>AYALA</span></div>
             </div>

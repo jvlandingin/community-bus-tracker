@@ -71,6 +71,14 @@ treated an unguessable session id as a credential.
 times, sharer cap. Edited in `admin.html`, re-read by the app every 60 seconds,
 so a schedule change never needs a redeploy.
 
+**Colours come in fill/ink pairs.** `--maroon`/`--brand-ink`,
+`--gold`/`--gold-deep`, `--lost`/`--lost-ink`. The first of each pair is a
+background with white or near-black text on it; the second is the same colour
+used as text. They are nearly identical in the light theme and completely
+different in dark, so pick by what the colour is doing — painting a shape, or
+spelling a word. The three pages each carry their own copy of the token block
+and `test-boot.js` fails if they drift.
+
 ## Invariants
 
 These are load-bearing. Changing any of them needs a deliberate conversation,

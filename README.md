@@ -23,7 +23,9 @@ name the route in link previews.
 - **Share:** a driver, conductor, or volunteer rider taps "I'm on the bus" and
   shares the vehicle's position for that trip. Needs a community key. Stop
   anytime.
-- **Sightings:** a short text board for when nobody is sharing GPS.
+- **Sightings:** a board for when nobody is sharing GPS. Direction and nearest
+  landmark are picked rather than typed, so recent ones also show on the
+  progress strip as dashed marks — clearly not live GPS.
 - **Admin page:** operating hours, a pinned notice, live sharers, sighting
   moderation, and key rotation. Needs a separate admin key.
 - **How-to page:** `how-to.html`, reached from the ⓘ in the header. Explains

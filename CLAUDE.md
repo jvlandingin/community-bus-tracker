@@ -153,6 +153,25 @@ three recreations are wrong. Both drawings carry a visible "example screen"
 label: a mock that could be mistaken for live data is the one thing this
 project's own rules would not forgive.
 
+**The map inside that mock is the one deliberate exception to "drawn, not
+photographed."** On screen it is a real cropped screenshot of this route's own
+map (Leaflet + CARTO), embedded as a data URI so the page still loads nothing
+over the network and can never 404 off a deploy — the property that matters is
+preserved even though the technique changed. It is real because a hand-drawn
+road looked like a hand-drawn road, and the whole point of the mock is to look
+like the actual product. The honest cost: it ties that one figure to Cavite,
+so a fork running a different route has to recapture it — crop a fresh
+screenshot and recompute the badge percentages against the checkpoint pixel
+positions, both described in a comment in `tools/make-route-figure.js`. Print
+does not use the photo — a JPEG reproduces worse on paper than a vector line
+and would have blown the poster's one-page budget — so `@media print` swaps in
+the figure `tools/make-route-figure.js` generates instead: a real road drawn
+from `config.txt`'s own checkpoints, with town labels read off the STOP list's
+own section headers. That vector figure needs no per-fork recapture at all,
+which is why the tool stays in the repo even though the on-screen page no
+longer calls it directly — run it by hand if a fork wants the fully portable
+version back in place of a new screenshot.
+
 The header strip and the "How your data is handled" panel both state that the
 app is not affiliated with or endorsed by any bus company. `flyer.html` and
 `for-operators.html` say it too, the latter before it asks for anything. Keep

@@ -37,9 +37,11 @@ name the route in link previews.
   same design tokens as the app, so it loads no images or video at all and
   works for any route without being recaptured.
 - **Adoption flyer:** `flyer.html`, a one-page pitch for riders in the mix of
-  Tagalog and English the group chat actually uses. It shows a drawn example of
-  the tracker with four buses live, labelled as an example, and prints as a
-  single A4 poster for a terminal wall.
+  Tagalog and English the group chat actually uses. It shows an example of the
+  tracker with four buses live, labelled as an example, and prints as a single
+  A4 poster for a terminal wall. Its map is a real screenshot of this route
+  (see "Running it for your own route" below); print swaps in a generated
+  vector road instead.
 - **Operator briefing:** `for-operators.html`, written for the bus company. It
   leads with what the tool records and what it structurally cannot do, because
   "are you watching our drivers?" is the first question, then asks — in order —
@@ -90,9 +92,9 @@ route-specific thing left on it is the checkpoint names in the example strip, an
 a wrong name there is a cosmetic detail rather than another route's photographs
 presented as yours.
 
-**The two adoption pages are a real exception, and the only one.** A printed
-poster has no runtime to ask what host it is on, so `flyer.html` states the
-deployment's URL as text and carries a QR code drawn as an inline path.
+**The two adoption pages are a real exception, and not just a cosmetic one.** A
+printed poster has no runtime to ask what host it is on, so `flyer.html` states
+the deployment's URL as text and carries a QR code drawn as an inline path.
 `for-operators.html` names a contact address. A fork has to edit those by hand:
 
 ```
@@ -100,9 +102,18 @@ node tools/make-qr.js https://your-route.example    # prints a replacement <svg>
 ```
 
 Both also redraw the tracker's screen, so their checkpoint names come from this
-route. Same trade as the guide — cosmetic if left alone, wrong only in the way a
-neighbouring town's name is wrong. The URL and the QR are not cosmetic, and are
-worth checking before anything gets printed.
+route — cosmetic if left alone, wrong only in the way a neighbouring town's
+name is wrong, same as the guide. **The map inside that mock is not
+cosmetic.** On screen it is a real screenshot of this route (Cavite, in the
+current deployment), embedded inline so the page still loads nothing over the
+network. A fork running elsewhere has to crop a fresh screenshot of their own
+route and recompute the badge positions; both steps are documented in a
+comment at the top of `tools/make-route-figure.js`. Print does not use the
+photo at all — it falls back to the vector road `tools/make-route-figure.js`
+generates from `config.txt`, which needs no recapture and is what that tool is
+for. Run it by hand (`node tools/make-route-figure.js`) to get a fork's own
+route as a portable figure, screen included, if recapturing a screenshot isn't
+wanted.
 
 The route this was built for runs at
 [community-bus-tracker.netlify.app](https://community-bus-tracker.netlify.app).

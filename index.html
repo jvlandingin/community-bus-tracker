@@ -499,8 +499,10 @@
       <h4 class="ok">If you share from the bus</h4>
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID for your session. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
 
-      <h4 class="ok">Sightings</h4>
-      <p>Posted with no name attached and deleted automatically after a couple of hours.</p>
+      <div id="privSightings">
+        <h4 class="ok">Sightings</h4>
+        <p>Posted with no name attached and deleted automatically after a couple of hours.</p>
+      </div>
 
       <h4 class="hon">To be fully honest</h4>
       <p>• The map's background images load from CARTO, a map provider. Like any website you visit, they can see your device's IP address. Everything else (code, fonts) is served from this site itself.<br>
@@ -629,7 +631,7 @@
             <span><span class="sw" style="background:var(--gold)"></span>Northbound ▲</span>
             <span><span class="sw" style="background:var(--maroon)"></span>Southbound ▼</span>
             <span><span class="sw" style="background:#94a3b8"></span>Stops (tap for name)</span>
-            <span><span class="sw" style="background:transparent; border:2px dashed var(--gold-deep); width:11px; height:11px;"></span>Dashed on the strip = reported sighting, not GPS</span>
+            <span id="sightLegend"><span class="sw" style="background:transparent; border:2px dashed var(--gold-deep); width:11px; height:11px;"></span>Dashed on the strip = reported sighting, not GPS</span>
             <span>Tap a bus for its number and age</span>
           </div>
           <div class="hint" id="sourceNote">Positions come from whoever is on the bus: driver, conductor, or a rider volunteering. The direction is picked by hand, so it can occasionally be wrong.</div>
@@ -744,7 +746,11 @@ let CFG = { SUPABASE_URL:'', SUPABASE_ANON_KEY:'', ROUTE_SLUG:'', SOURCE_URL:'',
 // Live settings, fetched from the database (edited in the admin page).
 // Hours are lists of [start, end] windows in 24h HH:MM, per direction.
 let SET = { hours:{ north:[], south:[] }, headway_min:30,
-            bus_expiry_min:10, sighting_expiry_min:120 };
+            bus_expiry_min:10, sighting_expiry_min:120,
+            // Absent means on. A route whose stored settings predate this
+            // switch keeps the board it already has; nobody loses a feature
+            // by upgrading. Turning it off is a deliberate act in admin.html.
+            sightings_enabled:true };
 let NOTICE = null;
 let CHECKPOINTS = [];
 let STOPS = [];
@@ -842,9 +848,12 @@ async function pollSettings(){
   ['headway_min','bus_expiry_min','sighting_expiry_min'].forEach(function(k){
     if (typeof st[k] === 'number') SET[k] = st[k];
   });
+  // Its own line: the loop above only takes numbers.
+  if (typeof st.sightings_enabled === 'boolean') SET.sightings_enabled = st.sightings_enabled;
   NOTICE = res.data.notice || null;
   renderNotice();
   renderHours();
+  applySightingsSetting();
   return true;
 }
 function renderNotice(){
@@ -952,7 +961,7 @@ function switchTab(which) {
   document.getElementById('onbusView').classList.toggle('hidden', which!=='share');
   if (which==='track' && map){
     setTimeout(function(){ map.invalidateSize(); }, 120);
-    if (running){ pollPositions(); pollSightings(); }   // polling may have been paused
+    if (running){ pollPositions(); if (sightingsOn()) pollSightings(); }   // polling may have been paused
   }
   checkControlsVisible();   // self-guarding: clears itself on the track tab
 }
@@ -1436,7 +1445,7 @@ function renderBuses() {
   // them six times faster than one running hourly, with nothing to configure.
   const ghostWindow = (SET.headway_min || 30) * 60000;
   let gnb='', gsb='';
-  SIGHTINGS.forEach(function(s){
+  (sightingsOn() ? SIGHTINGS : []).forEach(function(s){
     if (Date.now() - s.ts > ghostWindow) return;
     if (dirFilter !== 'all' && s.direction !== dirFilter) return;
     if (CHECKPOINTS.length < 2) return;
@@ -1476,6 +1485,8 @@ function renderBuses() {
     text.textContent = 'No buses live';
     sub.textContent = !dirsOpen
       ? 'Outside operating hours. Next departures: '+(firstTrip('north')||'see schedule')+' from Mendez, '+(firstTrip('south')||'see schedule')+' from One Ayala.'
+      : !sightingsOn()
+      ? 'Nobody is sharing GPS right now. Ask in the group chat, or check the operating hours below.'
       : ghosts
       ? 'Nobody is sharing GPS. The dashed marks on the strip are buses people reported seeing.'
       : 'Nobody is sharing GPS right now. Post a sighting below if you see one, or ask in the group.';
@@ -1493,9 +1504,15 @@ let sightTouched = false;
 // live while someone is part-way through reading the board would have shut it
 // in their face, and the same thing happened the moment they posted a sighting
 // of their own. Taking something away is never as harmless as offering it.
+let positionsLoaded = false;
 function revealSightings(shouldOpen){
   const d = document.getElementById('sightFold');
-  if (!d || sightTouched || !shouldOpen) return;
+  if (!d || !sightingsOn() || sightTouched || !shouldOpen) return;
+  // "No buses live" is the placeholder the page starts on, not a fact, until
+  // the first fetch has actually landed. Opening the board on it meant that
+  // every load flashed the board open a moment before the buses arrived --
+  // and since this only ever opens, it then stayed open all session.
+  if (!positionsLoaded) return;
   d.open = true;
 }
 // Listening for a click on the summary rather than for the element's own
@@ -1538,6 +1555,7 @@ async function pollPositions() {
   if (res.error) return;
   // pub_id, not the session id: see sql/04-session-id-privacy.sql. It is
   // stable for the length of a trip, which is all the map needs it for.
+  positionsLoaded = true;
   BUSES = (res.data||[]).map(function(v){
     return { pub_id:v.pub_id, lat:v.lat, lng:v.lng, speed:v.speed,
              direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at) };
@@ -1551,6 +1569,38 @@ async function pollPositions() {
 // Sightings
 // ============================================================
 function escapeHtml(str){const d=document.createElement('div');d.textContent=str;return d.innerHTML;}
+
+// ---- The board can be switched off entirely ---------------------------
+// Sightings are the most complicated thing a first-time rider meets on this
+// page, and the tool is still winning its first regular users. An organizer
+// can park the whole board from admin.html and bring it back when it is
+// ready, with no redeploy.
+//
+// Off hides; it does not lock. add_sighting is still open to anyone with the
+// route slug, so a post made by calling it directly would be invisible to
+// riders and would expire on its own — but it still reaches the admin
+// moderation list. That is said plainly on the admin page rather than left
+// for someone to trip over.
+function sightingsOn(){ return SET.sightings_enabled !== false; }
+
+let sightTimer = null;
+function applySightingsSetting(){
+  const on = sightingsOn();
+  ['sightFold','sightLegend','privSightings'].forEach(function(id){
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('hidden', !on);
+  });
+  // Stop paying for a feature nobody can see. Left running, this is a request
+  // every 15 seconds forever, for rows with nowhere to be drawn.
+  if (on && running && !sightTimer){
+    pollSightings();
+    sightTimer = setInterval(pollSightings, 15000);
+  } else if (!on && sightTimer){
+    clearInterval(sightTimer); sightTimer = null;
+    SIGHTINGS = [];
+  }
+  if (mapReady) renderBuses();          // ghost markers appear or vanish
+}
 
 // ---- Sightings the strip can place ------------------------------------
 // The composer writes one canonical shape into the same free-text body the
@@ -1579,7 +1629,7 @@ function pickSightDir(d){
 }
 function buildSightingPlaces(){
   const sel = document.getElementById('sightWhere');
-  if (!sel) return;
+  if (!sel || !sightingsOn()) return;
   sel.innerHTML = '<option value="">Where did you see it?</option>' +
     CHECKPOINTS.map(function(c){ return '<option>'+escapeHtml(c.name)+'</option>'; }).join('');
 }
@@ -1590,7 +1640,7 @@ function sightError(msg){
 }
 
 async function pollSightings() {
-  if (!shouldPoll()) return;
+  if (!sightingsOn() || !shouldPoll()) return;
   const res = await rpc('get_sightings', { p_slug: CFG.ROUTE_SLUG });
   if (res.error) return;
   const data=res.data;
@@ -2128,7 +2178,7 @@ function renderHours(){
   function humanMins(m){ m=parseInt(m,10)||0; return m>=60 ? (m/60)+(m===60?' hour':' hours') : m+' min'; }
   document.getElementById('busExpiryNote').textContent =
     'Buses show "live" under 45s, then their age; they disappear about '+humanMins(SET.bus_expiry_min)+' after their last update.';
-  document.getElementById('sightingIntro').textContent =
+  if (sightingsOn()) document.getElementById('sightingIntro').textContent =
     'Saw a bus but nobody\'s sharing GPS? Post it so others know. It shows on the strip above as a dashed mark for '+
     humanMins(SET.headway_min)+', and stays on this board for '+humanMins(SET.sighting_expiry_min)+'.';
 }
@@ -2142,9 +2192,12 @@ function start(){
   }
   if (running) return;
   running=true;
-  pollPositions(); pollSightings(); markWatching();
+  pollPositions(); markWatching();
   setInterval(pollPositions, 6000);
-  setInterval(pollSightings, 15000);
+  // The sightings poll is owned by applySightingsSetting, not started here:
+  // it has to be able to stop and start again when an organizer flips the
+  // board off or on, which the app notices within a minute.
+  applySightingsSetting();
   setInterval(renderBuses, 10000);
   setInterval(pollSettings, 60000);
   // 60s against a 3 minute server-side window, so one missed beat on a

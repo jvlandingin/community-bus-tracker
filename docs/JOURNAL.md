@@ -25,6 +25,40 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-08-01 — Parked the sightings board
+
+**Decision.** The sightings board is switched off on this route for now, from
+the admin page. It is the most complicated thing a first-time rider meets on
+the page — a direction to pick, a landmark to pick, a note to maybe write — and
+it arrived in the same week we started trying to win regular users. It also is
+not finished. Nothing is deleted and nothing is uninstalled; the switch is in
+`admin.html` and the app picks the change up within a minute.
+
+**Cheaper than expected, and worth writing down why.** The settings validator
+checks the keys it knows about but never rejects unknown ones, and
+`get_settings` hands back the whole settings object, so a new flag reached
+every client with no migration and nothing to run against the live database.
+Any future setting is that cheap too.
+
+**Absent means on**, so a fork that never opens the admin page still gets the
+full app, and this route can turn it back on the day the feature is ready.
+
+**Off hides, it does not lock**, and the admin page says so. Posting needs no
+key, so someone who worked out the call could still add a sighting while the
+board is off. Riders would never see it and it expires on its own — but it
+would still turn up in the moderation list, which is exactly the sort of thing
+that is baffling six months later if nobody wrote it down. Enforcing it in the
+database is a one-function migration if it ever matters. It did not seem worth
+one for what is really a display decision.
+
+The guide asks the database whether to show its sightings section, with a plain
+`fetch` rather than a script tag, so it still loads no files. Every failure path
+— script off, config missing, network down, database unreachable — leaves the
+section showing. Describing one feature too many is a much smaller problem than
+hiding one that is really there.
+
+---
+
 ## 2026-08-01 — Second pass on the UI
 
 Follow-ups to yesterday's restructure, from the same review.

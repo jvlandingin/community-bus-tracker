@@ -575,10 +575,10 @@
         <div class="tick" style="left:85.7%"><span>PITX</span></div>
         <div class="tick last" style="left:100%"><span>AYALA</span></div>
       </div>
-      <div class="track sb"><div class="rail"></div><div class="sightmk sb" style="left:28.6%"></div><div class="buspill sb">🚌</div></div>
+      <div class="track sb"><div class="rail"></div><div class="sightmk sb" id="stripRing" style="left:28.6%"></div><div class="buspill sb">🚌</div></div>
       <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
     </div>
-    <p class="hint" style="margin:8px 0 0; text-align:center;">The solid 🚌 are live GPS. The dashed ring is a
+    <p class="hint" id="stripRingNote" style="margin:8px 0 0; text-align:center;">The solid 🚌 are live GPS. The dashed ring is a
       <b>reported sighting</b> — somebody saw a bus there and said so.</p>
 
     <div class="step">
@@ -616,7 +616,10 @@
   </div>
 
   <!-- ================= SIGHTINGS ================= -->
-  <div class="card reveal">
+  <!-- Hidden by the script at the foot of this page when the route has the
+       board switched off. Ids, because that is what the script hangs on;
+       test-boot.js checks they are still here. -->
+  <div class="card reveal" id="sightingsGuide">
     <span class="badge">Sightings</span>
     <h2>When nobody is sharing</h2>
     <p>Early morning, late evening, or just a quiet stretch: often no one on board
@@ -869,6 +872,55 @@ document.documentElement.className = 'js';
     });
   }, { rootMargin:'0px 0px -8% 0px' });
   for (var i=0;i<items.length;i++) io.observe(items[i]);
+})();
+
+// The sightings board can be switched off per route from the admin page, and
+// a guide that explains a feature the reader cannot find is worse than one
+// that is a little short. So ask.
+//
+// A plain fetch rather than the supabase client: pulling in a script tag
+// would make this page load a file again, which is the whole property it was
+// rebuilt to have (test-boot.js fails the build if any src or poster comes
+// back). Two small requests, no library.
+//
+// Every failure path leaves the section VISIBLE — script off, config missing,
+// network down, database unreachable, slug unknown. Describing one feature
+// too many is a much smaller problem than hiding one that is really there.
+(function(){
+  var hide = function(){
+    ['sightingsGuide','stripRing','stripRingNote'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  };
+  if (!window.fetch) return;
+  fetch('config.txt?_=' + Date.now()).then(function(r){
+    if (!r.ok) throw 0;
+    return r.text();
+  }).then(function(text){
+    var cfg = {};
+    text.split(/\r?\n/).forEach(function(raw){
+      var line = raw.trim();
+      if (!line || line[0] === '#') return;
+      var eq = line.indexOf('=');
+      if (eq === -1) return;
+      cfg[line.slice(0, eq).trim()] = line.slice(eq + 1).trim();
+    });
+    if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || !cfg.ROUTE_SLUG) throw 0;
+    return fetch(cfg.SUPABASE_URL.replace(/\/$/, '') + '/rest/v1/rpc/get_settings', {
+      method: 'POST',
+      headers: { 'apikey': cfg.SUPABASE_ANON_KEY,
+                 'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
+                 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_slug: cfg.ROUTE_SLUG })
+    });
+  }).then(function(r){
+    if (!r || !r.ok) throw 0;
+    return r.json();
+  }).then(function(data){
+    var st = (data && data.settings) || {};
+    if (st.sightings_enabled === false) hide();
+  }).catch(function(){ /* leave it showing */ });
 })();
 </script>
 </body>

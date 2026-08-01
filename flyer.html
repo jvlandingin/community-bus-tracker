@@ -353,7 +353,7 @@
   /* The screen page and the poster are the same file. A separate poster
      source would be a second copy of the mock to keep in step, which is the
      drift this whole approach exists to avoid. */
-  @page{size:A4 portrait; margin:9mm;}
+  @page{size:A4 portrait; margin:6.5mm;}
   @media print{
     :root{
       --paper:#ffffff; --surface:#ffffff; --ink:#2b2320; --muted:#5b524b;
@@ -379,10 +379,10 @@
        here may split across a page break. */
     .screenwrap, .cta, .limits, .steps li, .point{break-inside:avoid;}
     .backfoot{display:none;}
-    footer{font-size:7.5pt; margin-top:6px; padding-top:5px;}
+    footer{font-size:7pt; margin-top:3px; padding-top:3px; line-height:1.35;}
     .screenonly{display:none;}
     .printonly{display:block;}
-    .demo-map.printonly{height:60px;}
+    .demo-map.printonly{height:120px;}
 
     /* One sheet of A4, or it is a leaflet rather than a poster. What gets
        dropped is the reassurance grid — "walang app", "walang account" and
@@ -392,25 +392,25 @@
        not-affiliated footer both print, because a poster that oversells is
        the one failure this whole project is written against. */
     .points, .pointshead{display:none;}
-    h2{margin:8px 0 4px; font-size:9.5pt;}
-    .hero{padding:3mm 0 0;}
-    .hero h1{font-size:19pt;}
+    h2{margin:6px 0 3px; font-size:9.5pt;}
+    .hero{padding:2mm 0 0;}
+    .hero h1{font-size:17pt;}
     .hero .lede{font-size:10pt; margin-top:4px;}
-    .screenwrap{margin-top:5px;}
-    .demo{padding:10px;}
-    .cta{margin-top:6px; padding:8px 12px;}
+    .screenwrap{margin-top:3px;}
+    .demo{padding:8px;}
+    .cta{margin-top:4px; padding:6px 10px;}
     .cta .note{margin-top:4px;}
-    .passiton{margin-top:4px; font-size:9pt;}
-    .steps{gap:4px;}
+    .passiton{margin-top:3px; font-size:8.5pt;}
+    .steps{gap:3px;}
     .demo-map{height:60px;}
-    .steps li{padding:4px 10px;}
+    .steps li{padding:3px 10px;}
     .steps .tx{font-size:9.5pt;}
     .steps .tx b{font-size:10pt;}
     /* The caveats run in as one dense paragraph on paper rather than four
        bulleted lines. Every word survives — this is the section that must not
        be cut — but it costs a third of the height, which is what buys the
        single sheet. */
-    .limits{padding:8px 12px;}
+    .limits{padding:6px 10px;}
     .limits ul{font-size:8.5pt; padding-left:0; margin:0;}
     .limits li{display:inline; margin:0;}
     .limits li::after{content:" · ";}

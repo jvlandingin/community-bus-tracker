@@ -13,22 +13,22 @@
   is the actual route — every checkpoint and stop in config.txt, projected the
   way Leaflet projects them — and a fork gets its own route's shape for free.
 
-  Where this figure is actually used: flyer.html and for-operators.html now
-  show a REAL SCREENSHOT of this route's map on screen (embedded as a data
-  URI, so the page still loads nothing over the network), because a generated
-  road reads as a drawing next to real tiles and the whole point of the mock
-  is to look like the product. That photo ties itself to Cavite the way this
-  file's output never has to: a fork running elsewhere must crop a fresh
-  screenshot of their own route and recompute the four badge positions from
-  the checkpoint pixels the same way — see the comment above the crop
-  parameters wherever the photo was produced (not tracked by this script).
+  Where this figure is actually used: nowhere on the shipped pages, currently.
+  flyer.html and for-operators.html show a REAL SCREENSHOT of this route's
+  map, on screen and in print alike (embedded as a data URI, so the page
+  still loads nothing over the network), because a generated road read as a
+  drawing next to real tiles and the whole point of the mock is to look like
+  the product. That photo ties itself to Cavite the way this file's output
+  never has to: a fork running elsewhere must crop a fresh screenshot of
+  their own route and recompute the four badge positions from the checkpoint
+  pixels the same way — see the comment above the crop parameters wherever
+  the photo was produced (not tracked by this script).
 
-  This generator's output is what @media print falls back to instead — a
-  photo reproduces worse on paper than a vector line and would have blown the
-  poster's one-page budget — and it is also the quickest way for a fork to get
-  a correct, portable figure back on screen without recapturing anything: run
-  it, drop the output where the photo currently sits, remove the "photo"
-  class from that wrapper. No screenshot, no per-fork photography, ever.
+  This generator stays in the repo as the option for a fork that would rather
+  not photograph anything: run it, drop the output where the photo currently
+  sits, remove the "photo" class from that wrapper. No screenshot, no
+  per-fork photography, at the cost of looking like a diagram rather than the
+  product.
 
   Web Mercator, the same projection Leaflet uses, so the shape is the shape a
   reader will actually see when they open the tracker.

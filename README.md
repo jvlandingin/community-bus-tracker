@@ -38,10 +38,9 @@ name the route in link previews.
   works for any route without being recaptured.
 - **Adoption flyer:** `flyer.html`, a one-page pitch for riders in the mix of
   Tagalog and English the group chat actually uses. It shows an example of the
-  tracker with four buses live, labelled as an example, and prints as a single
-  A4 poster for a terminal wall. Its map is a real screenshot of this route
-  (see "Running it for your own route" below); print swaps in a generated
-  vector road instead.
+  tracker with four buses live, labelled as an example, and prints as an A4
+  poster (usually two sheets — the map is a real screenshot of this route,
+  see "Running it for your own route" below) for a terminal wall.
 - **Operator briefing:** `for-operators.html`, written for the bus company. It
   leads with what the tool records and what it structurally cannot do, because
   "are you watching our drivers?" is the first question, then asks — in order —
@@ -104,16 +103,21 @@ node tools/make-qr.js https://your-route.example    # prints a replacement <svg>
 Both also redraw the tracker's screen, so their checkpoint names come from this
 route — cosmetic if left alone, wrong only in the way a neighbouring town's
 name is wrong, same as the guide. **The map inside that mock is not
-cosmetic.** On screen it is a real screenshot of this route (Cavite, in the
-current deployment), embedded inline so the page still loads nothing over the
-network. A fork running elsewhere has to crop a fresh screenshot of their own
-route and recompute the badge positions; both steps are documented in a
-comment at the top of `tools/make-route-figure.js`. Print does not use the
-photo at all — it falls back to the vector road `tools/make-route-figure.js`
-generates from `config.txt`, which needs no recapture and is what that tool is
-for. Run it by hand (`node tools/make-route-figure.js`) to get a fork's own
-route as a portable figure, screen included, if recapturing a screenshot isn't
-wanted.
+cosmetic.** Both on screen and in print it is a real screenshot of this route
+(Cavite, in the current deployment), embedded inline so the page still loads
+nothing over the network. A fork running elsewhere has to crop a fresh
+screenshot of their own route and recompute the badge positions; both steps
+are documented in a comment above the figure in `flyer.html` and
+`for-operators.html`. In print the photo is sized well under the sheet's full
+width and centred, so it keeps the real map's close-to-square shape instead of
+flattening into a wide strip — which is also why the poster is usually two
+sheets rather than one: the caveats box and the not-affiliated footer spill
+onto a second page rather than the map shrinking until its labels stop being
+legible. `tools/make-route-figure.js` still generates a fully portable vector
+version of the same figure from `config.txt`, needing no screenshot at all —
+not used by either shipped page currently, but there to run by hand
+(`node tools/make-route-figure.js`) for a fork that would rather not
+photograph anything.
 
 The route this was built for runs at
 [community-bus-tracker.netlify.app](https://community-bus-tracker.netlify.app).

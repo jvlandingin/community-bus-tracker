@@ -50,10 +50,20 @@ runbook is re-proven on every commit.
 
 ## Architecture
 
-**Three pages, one config file.** `index.html` is the tracker (watch + share),
-`admin.html` the operator page, `how-to.html` a static guide. `config.txt` holds
-the Supabase URL, anon key, route slug, source URL, checkpoints and stops — no
-secrets, which is why it is committed and why a fork deploys straight from git.
+**Five pages, one config file.** `index.html` is the tracker (watch + share),
+`admin.html` the operator page, `how-to.html` a static guide, `flyer.html` the
+adoption flyer handed to riders, and `for-operators.html` a briefing written for
+the bus company. `config.txt` holds the Supabase URL, anon key, route slug,
+source URL, checkpoints and stops — no secrets, which is why it is committed and
+why a fork deploys straight from git.
+
+The last two exist because the tracker's real problem is that nobody knows it is
+there. Both are self-contained, load nothing, and print: `flyer.html` prints as a
+one-page A4 poster for a terminal wall, `for-operators.html` as a document to
+attach to an email. `tools/render-flyer.sh` drives headless Chromium to produce
+both plus a chat-sized PNG, and `tools/make-qr.js` regenerates the flyer's QR
+code as an inline path when the deployment URL changes. Neither tool runs at
+deploy time and neither needs anything installed.
 
 **Three credentials, not interchangeable.** The route slug is public and unlocks
 reading. The share key lives only in the link posted to the community, and
@@ -81,8 +91,8 @@ same commit — the panel is the promise, not the code.
 background with white or near-black text on it; the second is the same colour
 used as text. They are nearly identical in the light theme and completely
 different in dark, so pick by what the colour is doing — painting a shape, or
-spelling a word. The three pages each carry their own copy of the token block
-and `test-boot.js` fails if they drift.
+spelling a word. All five pages carry their own copy of the token block and
+`test-boot.js` fails if they drift.
 
 ## Invariants
 
@@ -106,8 +116,10 @@ disclosed to users in the app. Do not reintroduce CDN links.
 **Nothing named `share*`, `help*`, `support*`, `chat*` or `widget*` in a DOM id
 or class.** Brave Shields' cosmetic filtering hid the start button because its
 id was `shareBtn`, leaving a page that looked completely normal with no way to
-share. The failure is invisible from our side. `test-boot.js` section 8 scans
-both pages for these names.
+share. The failure is invisible from our side. `test-boot.js` sections 7 and 8
+scan every page for these names, the flyer included: its whole purpose is one
+call to action, and a filter list that hides it leaves a poster-shaped page
+with no way to reach the tracker.
 
 **Reads do not write.** Cleanup happens in `_sweep()`, called only from writes.
 An earlier version ran a DELETE on every read and was documented as fixed long
@@ -128,12 +140,24 @@ That trade is deliberate: the pictures cannot 404 or go stale silently, but
 they are hand-maintained copies of the real UI, so **changing the tracker's
 layout means updating the recreations in the same commit.** `test-boot.js`
 section 8 defends the two halves of this that a machine can check — that the
-guide still loads nothing, and that its copied `:root` tokens still match
+page still loads nothing, and that its copied `:root` tokens still match
 `index.html`'s.
 
+**That now costs three files, not one.** `flyer.html` and `for-operators.html`
+each redraw the tracker's screen the same way, showing four buses live because
+an empty map is what the tool looks like when nobody has heard of it. Every
+string in those drawings is one the app would really print — the headline and
+subtitle come from `renderBuses()`, the chip labels from `busPlace()`, the
+checkpoints and distances off `config.txt`. Change either function and all
+three recreations are wrong. Both drawings carry a visible "example screen"
+label: a mock that could be mistaken for live data is the one thing this
+project's own rules would not forgive.
+
 The header strip and the "How your data is handled" panel both state that the
-app is not affiliated with or endorsed by any bus company. Keep that language
-intact — a community tool gets mistaken for an official one otherwise.
+app is not affiliated with or endorsed by any bus company. `flyer.html` and
+`for-operators.html` say it too, the latter before it asks for anything. Keep
+that language intact everywhere — a community tool gets mistaken for an
+official one otherwise, and a flyer is the thing most likely to cause it.
 
 ## Licence
 

@@ -36,6 +36,15 @@ name the route in link previews.
   watching and sharing. Every figure on it is drawn in HTML and CSS from the
   same design tokens as the app, so it loads no images or video at all and
   works for any route without being recaptured.
+- **Adoption flyer:** `flyer.html`, a one-page pitch for riders in the mix of
+  Tagalog and English the group chat actually uses. It shows a drawn example of
+  the tracker with four buses live, labelled as an example, and prints as a
+  single A4 poster for a terminal wall.
+- **Operator briefing:** `for-operators.html`, written for the bus company. It
+  leads with what the tool records and what it structurally cannot do, because
+  "are you watching our drivers?" is the first question, then asks — in order —
+  to be told if it should stop, for permission to post the flyer, and for
+  whatever cooperation suits them, up to handing the whole thing over.
 
 ## What it deliberately does not do
 
@@ -66,19 +75,34 @@ migration.
    at, in route order.
 4. **Deploy** to any static host. Netlify works well: point it at your fork and
    it publishes on every push to `main`. However you host it, the site must
-   contain `index.html`, `admin.html`, `how-to.html`, `config.txt` and
+   contain `index.html`, `admin.html`, `how-to.html`, `flyer.html`,
+   `for-operators.html`, `config.txt` and
    `assets/`.
 5. **Open `/admin.html`**, sign in with your admin key, and set your operating
    hours. Use the Generate button to make a share key, and post the link it
    gives you in your group chat. That link is the tracker with the key in the
    fragment, and it is what people tap to share from the bus.
 
-There is no exception to "no code changes". `how-to.html` used to be one — its
-screenshots and screen recordings showed this deployment, so a fork had to
-reshoot all of them or delete the page. Its figures are drawn in HTML and CSS
-now, so the only route-specific thing left on it is the checkpoint names in the
-example strip, and a wrong name there is a cosmetic detail rather than another
-route's photographs presented as yours.
+`how-to.html` used to be an exception to "no code changes" — its screenshots and
+screen recordings showed this deployment, so a fork had to reshoot all of them or
+delete the page. Its figures are drawn in HTML and CSS now, so the only
+route-specific thing left on it is the checkpoint names in the example strip, and
+a wrong name there is a cosmetic detail rather than another route's photographs
+presented as yours.
+
+**The two adoption pages are a real exception, and the only one.** A printed
+poster has no runtime to ask what host it is on, so `flyer.html` states the
+deployment's URL as text and carries a QR code drawn as an inline path.
+`for-operators.html` names a contact address. A fork has to edit those by hand:
+
+```
+node tools/make-qr.js https://your-route.example    # prints a replacement <svg>
+```
+
+Both also redraw the tracker's screen, so their checkpoint names come from this
+route. Same trade as the guide — cosmetic if left alone, wrong only in the way a
+neighbouring town's name is wrong. The URL and the QR are not cosmetic, and are
+worth checking before anything gets printed.
 
 The route this was built for runs at
 [community-bus-tracker.netlify.app](https://community-bus-tracker.netlify.app).

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nasaan na ang bus? — Mendez / Tagaytay ⇄ One Ayala</title>
+<!-- This page exists to be pasted into a group chat, so the preview card is
+     doing the same job as the poster. Same reasoning as index.html: no og:url
+     and no og:image, because both would hardcode one deployment's domain into
+     a file whose whole point is that another route needs no code changes. -->
+<meta name="description" content="Live bus positions for the Mendez / Tagaytay to One Ayala route, shared by the people on board. Walang app, walang account, libre. Community-run and unofficial.">
+<meta name="theme-color" content="#7a1f2b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Nasaan na ang bus? — Mendez / Tagaytay ⇄ One Ayala">
+<meta property="og:description" content="Tingnan kung nasaan ang bus bago ka pa lumabas ng bahay. Walang app, walang sign-up. Community-run, hindi opisyal.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚌%3C/text%3E%3C/svg%3E">
+<style>
+  /* This page loads nothing — no font, no image, no script file, no map.
+     The screen of the tracker below is DRAWN in HTML and CSS from the same
+     tokens as the app, exactly like every figure on how-to.html, and for the
+     same two reasons: a screenshot goes stale silently the moment the
+     tracker's layout moves, and it ties the flyer to one deployment so a
+     fork has to recapture it. The cost is the same too, and it is real:
+     changing the tracker's layout means correcting this drawing in the same
+     commit. test-boot.js section 8 defends the half a machine can check. */
+  :root{
+    /* Copied from index.html. Copies drift, so test-boot.js section 8
+       compares this block against the app's and fails if it has. */
+    --paper:#f7f4ee; --surface:#ffffff; --ink:#2b2320; --muted:#6f655e;
+    --maroon:#7a1f2b; --maroon-deep:#5c161f; --maroon-soft:#f3e6e4;
+    --gold:#e39a1c; --gold-deep:#8c5905; --gold-soft:#fbf0da;
+    --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
+    --brand-ink:#7a1f2b; --lost-ink:#c4432e;
+    --gold-line:#eeddb4; --maroon-line:#e6cdc9;
+    --ok-ink:#166534; --warn-ink:#92400e;
+    --shadow:0 1px 2px rgba(43,35,32,.04);
+    --radius:16px;
+    /* 44px: the smallest target a thumb finds reliably on a moving bus. */
+    --tap:44px;
+    /* Flyer-only, and not one of the app's tokens: the stylised panel behind
+       the drawn route. It lives in the palette blocks rather than in a
+       :root of its own so that picking a theme by hand moves it too, and so
+       the dark palette is still stated exactly twice. */
+    --mapbg:#eceae4;
+  }
+
+  /* Stated twice on purpose, once for a device asking for dark and once for
+     a reader who picked it. One rule cannot cover both without light-dark(),
+     which is too new for the phones this has to run on. test-boot.js keeps
+     the two copies identical so the duplication cannot rot. */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#16120f; --surface:#211b16; --ink:#f3ede4; --muted:#a99d90;
+      --maroon:#7a1f2b; --maroon-deep:#4a1119; --maroon-soft:#3a2126;
+      --gold:#e39a1c; --gold-deep:#e8b45c; --gold-soft:#39301a;
+      --line:#372e26; --live:#4ac694; --lost:#c4432e;
+      --brand-ink:#f0a8b0; --lost-ink:#e8836e;
+      --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --ok-ink:#6ed39b; --warn-ink:#e8b45c;
+      /* Cards are lifted by their own surface colour in dark, not by a
+         shadow that nothing can be cast onto. */
+      --shadow:none;
+      --mapbg:#2a241e;
+    }
+  }
+  :root[data-theme="dark"]{
+      --paper:#16120f; --surface:#211b16; --ink:#f3ede4; --muted:#a99d90;
+      --maroon:#7a1f2b; --maroon-deep:#4a1119; --maroon-soft:#3a2126;
+      --gold:#e39a1c; --gold-deep:#e8b45c; --gold-soft:#39301a;
+      --line:#372e26; --live:#4ac694; --lost:#c4432e;
+      --brand-ink:#f0a8b0; --lost-ink:#e8836e;
+      --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --ok-ink:#6ed39b; --warn-ink:#e8b45c;
+      /* Cards are lifted by their own surface colour in dark, not by a
+         shadow that nothing can be cast onto. */
+      --shadow:none;
+      --mapbg:#2a241e;
+  }
+
+
+  /* Declaring both schemes tells the browser this page darkens itself, which
+     stops Chrome's "force dark mode for web contents" from darkening it a
+     second time. That is not a cosmetic worry here: its auto-inversion turns
+     the QR code below into a blank white square, and a QR that does not scan
+     fails silently in exactly the place it matters — someone standing at a
+     terminal in front of a printed poster. */
+  :root{color-scheme:light dark;}
+  *{box-sizing:border-box;}
+  :focus-visible{outline:3px solid var(--brand-ink); outline-offset:2px; border-radius:4px;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  .sheet{max-width:560px; margin:0 auto; padding:0 18px 30px;}
+
+  /* ---- Header band, same signboard as the app ---------------------- */
+  header{
+    background:linear-gradient(180deg,var(--maroon),var(--maroon-deep));
+    color:#fff; padding:13px 18px 11px; text-align:center;
+  }
+  header .route{font-size:16px; font-weight:800; letter-spacing:-.01em;}
+  header .route .amp{color:var(--gold);}
+  header .sub{
+    font-size:8.5px; font-weight:700; letter-spacing:.13em;
+    opacity:.85; margin-top:3px;
+  }
+
+  /* ---- Hero -------------------------------------------------------- */
+  .hero{text-align:center; padding:16px 0 2px;}
+  .hero h1{
+    font-size:29px; line-height:1.06; margin:0; letter-spacing:-.02em;
+    font-weight:800;
+  }
+  .hero h1 em{font-style:normal; color:var(--brand-ink);}
+  .hero .lede{
+    font-size:14px; color:var(--muted); margin:7px auto 0; max-width:400px;
+    font-weight:600;
+  }
+
+  /* ---- The recreated tracker screen -------------------------------- */
+  .screenwrap{margin:10px 0 0;}
+  .screenlabel{
+    display:flex; align-items:center; gap:8px; justify-content:center;
+    font-size:9px; font-weight:800; letter-spacing:.11em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:5px;
+  }
+  .screenlabel::before, .screenlabel::after{
+    content:''; height:1px; background:var(--line); flex:1; max-width:70px;
+  }
+  /* An honest label on the drawing. A mock that could be mistaken for live
+     data is the one thing this tool's own rules would not forgive. */
+  .demo{
+    position:relative; border:1px solid var(--line); border-radius:14px;
+    background:var(--surface); padding:12px; overflow:hidden;
+    box-shadow:0 6px 22px rgba(43,35,32,.10);
+  }
+  .demo-title{
+    font-size:21px; font-weight:800; text-transform:uppercase;
+    letter-spacing:.01em; line-height:1.1;
+  }
+  .demo-sub{font-size:10.5px; color:var(--muted); margin-top:3px; line-height:1.45;}
+  .demo-seg{
+    display:flex; background:var(--paper); border:1.5px solid var(--line);
+    border-radius:10px; padding:3px; margin:10px 0 2px;
+  }
+  .demo-seg span{
+    flex:1; text-align:center; padding:7px 2px; border-radius:8px;
+    font-size:9.5px; font-weight:800; color:var(--muted);
+  }
+  .demo-seg span.on{background:var(--ink); color:var(--surface);}
+
+  .demo-chips{display:flex; flex-wrap:wrap; gap:5px; margin-top:9px;}
+  .demo-chip{
+    display:inline-flex; align-items:center; gap:5px; padding:6px 10px;
+    border-radius:20px; font-size:10px; font-weight:700;
+    border:1.5px solid var(--line); background:var(--paper);
+  }
+  .demo-chip .ar{font-size:9px;}
+  .demo-chip.nb .ar{color:var(--gold-deep);}
+  .demo-chip.sb .ar{color:var(--brand-ink);}
+  .demo-chip .ag{color:var(--muted); font-weight:600;}
+
+  .demo-map{
+    margin-top:8px; height:78px; position:relative; overflow:hidden;
+    border:1px solid var(--line); border-radius:10px; background:var(--mapbg);
+  }
+  .demo-map svg{position:absolute; inset:0; width:100%; height:100%;}
+  .demo-badge{
+    position:absolute; width:23px; height:23px; border-radius:50%;
+    border:2px solid var(--surface); box-shadow:0 1px 5px rgba(0,0,0,.3);
+    display:flex; align-items:center; justify-content:center; font-size:11px;
+    transform:translate(-50%,-50%);
+  }
+  .demo-badge.nb{background:var(--gold);}
+  .demo-badge.sb{background:var(--maroon);}
+
+  /* ---- Progress strip, copied from index.html ---------------------- */
+  .strip{margin:8px 0 2px; padding:0 16px;}
+  .dirlabel{font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
+  .dirlabel.nb{text-align:right; margin-bottom:3px;}
+  .track{position:relative; height:22px;}
+  .track .rail{position:absolute; left:0; right:0; top:9px; height:4px; border-radius:2px;}
+  .track.nb .rail{background:var(--gold-soft); border:1px solid var(--gold-line);}
+  .track.sb .rail{background:var(--maroon-soft); border:1px solid var(--maroon-line);}
+  .dirlabel.sb{margin-top:3px;}
+  .buspill{
+    position:absolute; top:0; transform:translateX(-50%);
+    font-size:14px; line-height:1; padding:3px 5px; border-radius:20px;
+    background:var(--gold); border:1.5px solid var(--surface);
+    box-shadow:0 1px 4px rgba(43,35,32,.25); white-space:nowrap;
+  }
+  .buspill.sb{background:var(--maroon);}
+  /* 32px, matching index.html, not the 26px how-to.html still carries. The
+     box has to stay taller than a .tick's content or every checkpoint name
+     overflows into the southbound track and the southbound bus pills render
+     on top of the words. That bug shipped once already. */
+  .ticks{position:relative; height:32px; margin-top:2px;}
+  .tick{position:absolute; transform:translateX(-50%); text-align:center;}
+  .tick::before{content:''; display:block; width:2px; height:8px; background:var(--line); margin:0 auto 3px;}
+  /* Kept in step with index.html: sized to leave a gap between the two
+     longest neighbouring checkpoint names, not for comfort. The app measures
+     the rendered strip (fitTicks); this page has no script for it, so the
+     same outcome is written out as breakpoints for the eight names shipped. */
+  .tick span{font-size:var(--tick-fs,8px); font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
+  .ticks.many{--tick-fs:8px;}
+  @media (max-width:430px){ .ticks.many{--tick-fs:7px;} }
+  @media (max-width:360px){
+    .ticks.many{--tick-fs:6px;}
+    .ticks.many .tick:nth-child(even):not(.last) span{display:none;}
+  }
+  .tick.first{transform:none; text-align:left;}
+  .tick.first::before{margin:0 0 3px;}
+  .tick.last{transform:translateX(-100%); text-align:right;}
+  .tick.last::before{margin:0 0 3px auto;}
+
+  /* ---- Steps ------------------------------------------------------- */
+  h2{
+    font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--brand-ink); margin:26px 0 10px;
+  }
+  .steps{list-style:none; margin:0; padding:0; display:grid; gap:9px;}
+  .steps li{
+    display:flex; gap:11px; align-items:flex-start;
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:12px 13px; box-shadow:var(--shadow);
+  }
+  .steps .n{
+    flex:0 0 25px; height:25px; border-radius:50%; background:var(--maroon);
+    color:#fff; font-size:12px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .steps li:nth-child(3) .n{background:var(--gold); color:#3d2a05;}
+  .steps .tx{font-size:13px; font-weight:600;}
+  .steps .tx b{display:block; font-size:14px; font-weight:800; margin-bottom:1px;}
+  .steps .tx span{color:var(--muted);}
+
+  /* ---- Reassurance grid -------------------------------------------- */
+  .points{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .point{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:11px 12px; box-shadow:var(--shadow);
+  }
+  .point b{display:block; font-size:12.5px; font-weight:800; margin-bottom:2px;}
+  .point span{font-size:11px; color:var(--muted); font-weight:600; line-height:1.45;}
+  .point.wide{grid-column:1 / -1;}
+  .point.wide b{color:var(--ok-ink);}
+
+  /* ---- Honest limits ----------------------------------------------- */
+  /* The app says this about itself in two places. A flyer that quietly
+     dropped it would be the one piece of the system overselling the rest. */
+  .limits{
+    background:var(--gold-soft); border:1px solid var(--gold-line);
+    border-radius:12px; padding:12px 14px;
+  }
+  .limits b{font-size:12.5px; display:block; margin-bottom:4px; color:var(--gold-deep);}
+  .limits ul{margin:0; padding-left:17px; font-size:11.5px; color:var(--muted); font-weight:600;}
+  .limits li{margin-bottom:3px;}
+  .limits li:last-child{margin-bottom:0;}
+
+  /* ---- Call to action ---------------------------------------------- */
+  .cta{
+    margin-top:12px; background:var(--maroon); color:#fff;
+    border-radius:16px; padding:15px 17px; display:flex; gap:15px; align-items:center;
+  }
+  .cta .words{flex:1; min-width:0;}
+  .cta .kicker{
+    font-size:9px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:5px;
+  }
+  .cta .url{
+    font-size:16px; font-weight:800; word-break:break-all; line-height:1.25;
+    letter-spacing:-.01em;
+  }
+  .cta .url a{color:#fff; text-decoration:none;}
+  .cta .note{font-size:11px; margin-top:7px; opacity:.85; font-weight:600;}
+  .qr{
+    flex:0 0 92px; width:92px; height:92px; background:#fff;
+    border-radius:10px; padding:5px;
+  }
+  .qr svg{display:block; width:100%; height:100%;}
+
+  .passiton{
+    margin-top:12px; text-align:center; font-size:12.5px;
+    font-weight:700; color:var(--muted);
+  }
+
+  footer{
+    margin-top:22px; padding-top:14px; border-top:1px solid var(--line);
+    font-size:10.5px; color:var(--muted); line-height:1.55;
+  }
+  footer b{color:var(--ink);}
+  footer a{color:var(--brand-ink); font-weight:700;}
+  .backfoot{text-align:center; margin-top:14px;}
+  .backfoot a{font-size:13px; color:var(--brand-ink); font-weight:700;}
+
+  /* ---- Print: one A4 poster ---------------------------------------- */
+  /* The screen page and the poster are the same file. A separate poster
+     source would be a second copy of the mock to keep in step, which is the
+     drift this whole approach exists to avoid. */
+  @page{size:A4 portrait; margin:9mm;}
+  @media print{
+    :root{
+      --paper:#ffffff; --surface:#ffffff; --ink:#2b2320; --muted:#5b524b;
+      --shadow:none;
+    }
+    body{background:#fff;}
+    .sheet{max-width:none; padding:0;}
+    header{
+      border-radius:10px; margin-bottom:2mm;
+      -webkit-print-color-adjust:exact; print-color-adjust:exact;
+    }
+    .demo, .cta, .limits, .point, .steps li, .demo-badge, .buspill,
+    .demo-seg span.on, .steps .n, .demo-map, .track .rail{
+      -webkit-print-color-adjust:exact; print-color-adjust:exact;
+    }
+    .hero{padding:5mm 0 0;}
+    .hero h1{font-size:30pt;}
+    .hero .lede{font-size:12pt;}
+    .cta .url{font-size:14pt;}
+    .qr{flex-basis:94px; width:94px; height:94px;}
+    .demo{box-shadow:none;}
+    /* A poster is read from two metres away and then walked up to. Nothing
+       here may split across a page break. */
+    .screenwrap, .cta, .limits, .steps li, .point{break-inside:avoid;}
+    .backfoot{display:none;}
+    footer{font-size:7.5pt; margin-top:6px; padding-top:5px;}
+
+    /* One sheet of A4, or it is a leaflet rather than a poster. What gets
+       dropped is the reassurance grid — "walang app", "walang account" and
+       the rest — because every word of it is on the page the QR opens, and a
+       passer-by reads a headline, a picture and a link, not a feature list.
+       Nothing that qualifies the tool goes: the limits box and the
+       not-affiliated footer both print, because a poster that oversells is
+       the one failure this whole project is written against. */
+    .points, .pointshead{display:none;}
+    h2{margin:8px 0 4px; font-size:9.5pt;}
+    .hero{padding:3mm 0 0;}
+    .hero h1{font-size:19pt;}
+    .hero .lede{font-size:10pt; margin-top:4px;}
+    .screenwrap{margin-top:5px;}
+    .demo{padding:10px;}
+    .cta{margin-top:6px; padding:8px 12px;}
+    .cta .note{margin-top:4px;}
+    .passiton{margin-top:4px; font-size:9pt;}
+    .steps{gap:4px;}
+    .demo-map{height:60px;}
+    .steps li{padding:4px 10px;}
+    .steps .tx{font-size:9.5pt;}
+    .steps .tx b{font-size:10pt;}
+    /* The caveats run in as one dense paragraph on paper rather than four
+       bulleted lines. Every word survives — this is the section that must not
+       be cut — but it costs a third of the height, which is what buys the
+       single sheet. */
+    .limits{padding:8px 12px;}
+    .limits ul{font-size:8.5pt; padding-left:0; margin:0;}
+    .limits li{display:inline; margin:0;}
+    .limits li::after{content:" · ";}
+    .limits li:last-child::after{content:"";}
+    .limits b{font-size:9.5pt;}
+  }
+</style>
+<script>
+/* Applies a saved theme choice before anything paints. Inline and in the head
+   on purpose: loaded any later, the page would flash the other theme first.
+   Same three lines as the other pages, and the only script here. */
+(function(){
+  try{
+    var p = localStorage.getItem('wt-theme');
+    if (p === 'light' || p === 'dark') document.documentElement.setAttribute('data-theme', p);
+  }catch(e){}
+})();
+</script>
+</head>
+<body>
+
+<header>
+  <div class="route">Mendez / Tagaytay <span class="amp">⇄</span> One Ayala</div>
+  <div class="sub">WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER · UNOFFICIAL</div>
+</header>
+
+<div class="sheet">
+
+  <section class="hero">
+    <h1>Nasaan na<br><em>ang bus?</em></h1>
+    <p class="lede">Tingnan kung nasaan ang bus ngayon — bago ka pa lumabas ng bahay.</p>
+  </section>
+
+  <!-- THE RECREATED TRACKER SCREEN.
+       Four buses live, because that is what the tool looks like when it is
+       working and an empty map is what it looks like when nobody has heard
+       of it. Every string below is the one the app would really print: the
+       headline and subtitle come from renderBuses() and the chip labels from
+       busPlace() in index.html, with the checkpoints and distances taken off
+       the real config.txt. Change either function and this drawing is wrong.
+       Decorative in the accessibility sense: aria-hidden, with the same
+       information carried by the prose around it. -->
+  <section class="screenwrap">
+    <div class="screenlabel">Halimbawa · example screen</div>
+    <div class="demo" aria-hidden="true">
+      <div class="demo-title">4 buses live</div>
+      <div class="demo-sub">Northbound between Imus and Kawit · updated 8s ago · trips every 30 mins</div>
+
+      <div class="demo-seg">
+        <span class="on">All buses</span><span>▲ Northbound</span><span>▼ Southbound</span>
+      </div>
+
+      <div class="strip">
+        <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
+        <div class="track nb">
+          <div class="rail"></div>
+          <div class="buspill" style="left:28.6%">🚌</div>
+          <div class="buspill" style="left:63%">🚌</div>
+        </div>
+        <div class="ticks many">
+          <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
+          <div class="tick" style="left:14.3%"><span>TGY</span></div>
+          <div class="tick" style="left:28.6%"><span>AMADEO</span></div>
+          <div class="tick" style="left:42.9%"><span>GEN.T</span></div>
+          <div class="tick" style="left:57.1%"><span>IMUS</span></div>
+          <div class="tick" style="left:71.4%"><span>KAWIT</span></div>
+          <div class="tick" style="left:85.7%"><span>PITX</span></div>
+          <div class="tick last" style="left:100%"><span>AYALA</span></div>
+        </div>
+        <div class="track sb">
+          <div class="rail"></div>
+          <div class="buspill sb" style="left:15%">🚌</div>
+          <div class="buspill sb" style="left:79%">🚌</div>
+        </div>
+        <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
+      </div>
+
+      <!-- Chip order is sortForList()'s: northbound first, each direction
+           sorted by how far along its own journey the bus is. -->
+      <div class="demo-chips">
+        <span class="demo-chip nb"><span class="ar">▲</span><b>98018</b>3 km to KAWIT <span class="ag">8s ago</span></span>
+        <span class="demo-chip nb"><span class="ar">▲</span><b>98104</b>AMADEO <span class="ag">47s ago</span></span>
+        <span class="demo-chip sb"><span class="ar">▼</span>TGY <span class="ag">2m ago · 2 sharing</span></span>
+        <span class="demo-chip sb"><span class="ar">▼</span><b>98077</b>7 km to KAWIT <span class="ag">1m ago</span></span>
+      </div>
+
+      <div class="demo-map">
+        <svg viewBox="0 0 300 120" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M28 110 C48 92, 66 78, 88 68 C120 53, 150 46, 178 34 C210 20, 240 14, 272 8"
+                fill="none" stroke="#b9c0cc" stroke-width="3" stroke-linecap="round"/>
+          <g fill="#8b93a1">
+            <circle cx="28" cy="110" r="3"/><circle cx="72" cy="74" r="3"/>
+            <circle cx="120" cy="57" r="3"/><circle cx="178" cy="34" r="3"/>
+            <circle cx="225" cy="18" r="3"/><circle cx="272" cy="8" r="3"/>
+          </g>
+        </svg>
+        <span class="demo-badge nb" style="left:24%; top:56%">🚌</span>
+        <span class="demo-badge nb" style="left:63%; top:26%">🚌</span>
+        <span class="demo-badge sb" style="left:13%; top:80%">🚌</span>
+        <span class="demo-badge sb" style="left:80%; top:14%">🚌</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta">
+    <div class="words">
+      <div class="kicker">Buksan ngayon</div>
+      <div class="url"><a href="index.html">community-bus-tracker.netlify.app</a></div>
+      <div class="note">I-scan ang QR o i-type ang link. Gumagana sa kahit anong phone.</div>
+    </div>
+    <!-- Drawn, not loaded: a QR image file is one more thing that can 404 off
+         a deploy, and this page's whole property is that it loads nothing.
+         Regenerate for a fork with:  node tools/make-qr.js <url>
+         which prints a replacement for the path below. -->
+    <div class="qr">
+      <svg viewBox="0 0 33 33" role="img" aria-label="QR code for community-bus-tracker.netlify.app">
+        <rect width="33" height="33" fill="#fff"/>
+        <path fill="#000" d="M2 2h7v1h-7zM10 2h3v1h-3zM14 2h3v1h-3zM18 2h1v1h-1zM21 2h2v1h-2zM24 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM10 3h2v1h-2zM14 3h1v1h-1zM16 3h1v1h-1zM19 3h2v1h-2zM24 3h1v1h-1zM30 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM11 4h7v1h-7zM21 4h2v1h-2zM24 4h1v1h-1zM26 4h3v1h-3zM30 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM10 5h1v1h-1zM13 5h3v1h-3zM17 5h1v1h-1zM19 5h1v1h-1zM21 5h1v1h-1zM24 5h1v1h-1zM26 5h3v1h-3zM30 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM12 6h11v1h-11zM24 6h1v1h-1zM26 6h3v1h-3zM30 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM12 7h2v1h-2zM16 7h1v1h-1zM19 7h1v1h-1zM21 7h2v1h-2zM24 7h1v1h-1zM30 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h7v1h-7zM10 9h2v1h-2zM13 9h2v1h-2zM16 9h1v1h-1zM19 9h1v1h-1zM21 9h2v1h-2zM2 10h1v1h-1zM4 10h2v1h-2zM7 10h3v1h-3zM14 10h1v1h-1zM16 10h7v1h-7zM24 10h1v1h-1zM27 10h1v1h-1zM29 10h2v1h-2zM5 11h3v1h-3zM9 11h1v1h-1zM13 11h2v1h-2zM18 11h1v1h-1zM20 11h3v1h-3zM24 11h3v1h-3zM30 11h1v1h-1zM3 12h4v1h-4zM8 12h1v1h-1zM10 12h2v1h-2zM14 12h1v1h-1zM16 12h1v1h-1zM19 12h1v1h-1zM23 12h1v1h-1zM28 12h2v1h-2zM2 13h3v1h-3zM6 13h2v1h-2zM9 13h2v1h-2zM15 13h2v1h-2zM20 13h7v1h-7zM30 13h1v1h-1zM2 14h1v1h-1zM4 14h1v1h-1zM7 14h3v1h-3zM11 14h2v1h-2zM14 14h3v1h-3zM19 14h1v1h-1zM22 14h1v1h-1zM27 14h2v1h-2zM2 15h3v1h-3zM6 15h2v1h-2zM13 15h2v1h-2zM17 15h3v1h-3zM21 15h1v1h-1zM24 15h1v1h-1zM28 15h3v1h-3zM2 16h2v1h-2zM7 16h3v1h-3zM12 16h1v1h-1zM14 16h2v1h-2zM18 16h2v1h-2zM21 16h1v1h-1zM23 16h1v1h-1zM25 16h1v1h-1zM28 16h3v1h-3zM3 17h1v1h-1zM9 17h1v1h-1zM11 17h1v1h-1zM13 17h2v1h-2zM17 17h2v1h-2zM21 17h1v1h-1zM23 17h3v1h-3zM29 17h1v1h-1zM2 18h1v1h-1zM4 18h2v1h-2zM7 18h4v1h-4zM12 18h2v1h-2zM15 18h1v1h-1zM18 18h1v1h-1zM20 18h1v1h-1zM22 18h2v1h-2zM25 18h3v1h-3zM29 18h1v1h-1zM4 19h2v1h-2zM7 19h1v1h-1zM9 19h2v1h-2zM15 19h3v1h-3zM19 19h1v1h-1zM22 19h1v1h-1zM25 19h1v1h-1zM27 19h3v1h-3zM2 20h1v1h-1zM5 20h4v1h-4zM11 20h3v1h-3zM17 20h4v1h-4zM22 20h4v1h-4zM28 20h1v1h-1zM4 21h1v1h-1zM6 21h2v1h-2zM10 21h3v1h-3zM14 21h1v1h-1zM16 21h1v1h-1zM18 21h3v1h-3zM23 21h1v1h-1zM26 21h1v1h-1zM28 21h1v1h-1zM3 22h1v1h-1zM5 22h1v1h-1zM7 22h3v1h-3zM11 22h5v1h-5zM18 22h3v1h-3zM22 22h7v1h-7zM10 23h1v1h-1zM12 23h1v1h-1zM15 23h1v1h-1zM18 23h1v1h-1zM20 23h1v1h-1zM22 23h1v1h-1zM26 23h5v1h-5zM2 24h7v1h-7zM10 24h3v1h-3zM15 24h1v1h-1zM19 24h4v1h-4zM24 24h1v1h-1zM26 24h2v1h-2zM29 24h1v1h-1zM2 25h1v1h-1zM8 25h1v1h-1zM10 25h1v1h-1zM14 25h1v1h-1zM17 25h1v1h-1zM20 25h3v1h-3zM26 25h2v1h-2zM29 25h2v1h-2zM2 26h1v1h-1zM4 26h3v1h-3zM8 26h1v1h-1zM11 26h2v1h-2zM16 26h1v1h-1zM19 26h1v1h-1zM22 26h5v1h-5zM28 26h3v1h-3zM2 27h1v1h-1zM4 27h3v1h-3zM8 27h1v1h-1zM10 27h1v1h-1zM12 27h1v1h-1zM14 27h1v1h-1zM16 27h8v1h-8zM25 27h3v1h-3zM30 27h1v1h-1zM2 28h1v1h-1zM4 28h3v1h-3zM8 28h1v1h-1zM10 28h1v1h-1zM12 28h1v1h-1zM15 28h1v1h-1zM18 28h2v1h-2zM21 28h3v1h-3zM25 28h1v1h-1zM28 28h1v1h-1zM30 28h1v1h-1zM2 29h1v1h-1zM8 29h1v1h-1zM12 29h1v1h-1zM14 29h2v1h-2zM18 29h1v1h-1zM20 29h3v1h-3zM25 29h1v1h-1zM27 29h1v1h-1zM29 29h1v1h-1zM2 30h7v1h-7zM10 30h1v1h-1zM12 30h1v1h-1zM17 30h1v1h-1zM21 30h2v1h-2zM25 30h1v1h-1zM29 30h1v1h-1z"/>
+      </svg>
+    </div>
+  </div>
+
+  <p class="passiton">I-post ito sa group chat ninyo. Mas maraming nag-share, mas kapaki-pakinabang para sa lahat.</p>
+
+  <h2>Paano ito gamitin</h2>
+  <ol class="steps">
+    <li>
+      <span class="n">1</span>
+      <span class="tx"><b>Buksan ang link.</b>
+      <span>Walang ida-download, walang gagawing account. Bubukas agad sa browser mo.</span></span>
+    </li>
+    <li>
+      <span class="n">2</span>
+      <span class="tx"><b>Tingnan kung nasaan ang bus.</b>
+      <span>Makikita mo kung ilan ang bus na live, saan sila, at kung gaano kabago ang bawat posisyon.</span></span>
+    </li>
+    <li>
+      <span class="n">3</span>
+      <span class="tx"><b>Kung nasa bus ka, i-post ang lokasyon.</b>
+      <span>I-tap ang “I'm on the bus”, piliin ang direksyon, at makikita ka na ng iba. Puwede mong itigil anumang oras.</span></span>
+    </li>
+  </ol>
+
+  <h2 class="pointshead">Bakit ito ligtas gamitin</h2>
+  <div class="points">
+    <div class="point">
+      <b>Walang app</b>
+      <span>Browser lang. Walang i-i-install, walang uubos ng storage.</span>
+    </div>
+    <div class="point">
+      <b>Walang account</b>
+      <span>Walang pangalan, walang number, walang email na hihingin.</span>
+    </div>
+    <div class="point">
+      <b>Libre, walang ads</b>
+      <span>Community-run at open source. Walang binebenta, walang tracker.</span>
+    </div>
+    <div class="point">
+      <b>Hindi ka nito sinusundan</b>
+      <span>Kung nanonood ka lang, hindi hinihingi ang location mo.</span>
+    </div>
+    <div class="point wide">
+      <b>Walang itinatagong history ng biyahe</b>
+      <span>Kahit ang nag-share, ang huling posisyon lang ang naka-imbak — pinapalitan ito sa bawat update at nabubura pagtapos. Walang record ng dinaanan, bilis, o tigil ng kahit sinong driver, dahil wala talagang ganoong datos na iniipon.</span>
+    </div>
+  </div>
+
+  <h2>Para maging patas</h2>
+  <div class="limits">
+    <b>Hindi ito opisyal na schedule</b>
+    <ul>
+      <li>Galing sa mga volunteer ang posisyon — pasahero, konduktor, o driver na kusang nag-share.</li>
+      <li>Kapag walang nag-share, walang bus sa mapa. Hindi ibig sabihin walang bus.</li>
+      <li>Puwedeng ma-late nang ilang minuto ang posisyon, o mamali ang direksyon bago ito mahuli ng app.</li>
+      <li>Kung may mukhang mali, mas paniwalaan ang nakikita mo at ang posted na schedule.</li>
+    </ul>
+  </div>
+
+
+  <footer>
+    <b>Hindi ito opisyal.</b> This tool is not affiliated with, run by, or endorsed
+    by Wonderful Transport. It is run by a community volunteer. The route name is
+    used only so you can tell which buses it tracks. Positions come from passengers
+    and crew who choose to share, so this is not an official schedule and the
+    company is not responsible for it. Provided as-is, with no warranty of accuracy
+    or uptime.
+    <div class="backfoot"><a href="index.html">← Buksan ang tracker</a></div>
+  </footer>
+
+</div>
+
+</body>
+</html>

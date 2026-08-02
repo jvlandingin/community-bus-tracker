@@ -357,6 +357,13 @@ function run(page, include, label, configText) {
   // switched off, by id. Rename one of those ids and the guide silently goes
   // back to describing a feature the reader cannot find — the same quiet rot
   // the token check above exists for, so it is checked the same way.
+  // The guide's map figure is a real screenshot, and the bus badge on it is
+  // positioned as a percentage of .mapinner — a wrapper sized to the image
+  // rather than to the figure box, whose shape changes with the viewport.
+  // Drop the wrapper and the badge silently drifts off the road it marks.
+  check(/class="mapinner"/.test(guideSrc),
+    'the guide map keeps the .mapinner wrapper its bus badge is measured against');
+
   for (const id of ['sightingsGuide', 'stripRing', 'stripRingNote']) {
     check(guideSrc.includes(`id="${id}"`),
       `the guide still carries #${id}, which its own script hides`);

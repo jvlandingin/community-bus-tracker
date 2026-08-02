@@ -12,7 +12,7 @@
   tracker, `admin.html` the operator page, `how-to.html` a static guide reached
   from the ⓘ in the header, `flyer.html` the adoption flyer for riders and
   `for-operators.html` a briefing for the bus company. None of the last three
-  loads an image or a video: every figure on them is drawn in HTML and CSS from
+  loads anything over the network: every figure on them is drawn in HTML and CSS from
   the same design tokens as the tracker. The two adoption pages also carry
   `@media print` rules — the flyer prints as one A4 poster, the briefing as a
   few-page document — and `tools/render-flyer.sh` drives headless Chromium to

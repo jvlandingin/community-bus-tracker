@@ -134,7 +134,10 @@ from the app. Keep the markers intact when editing those regions.
 Everything adapts from `config.txt`. `how-to.html` used to be the exception —
 its screenshots and screen recordings showed this deployment, so a fork had to
 recapture them or delete the page. Every figure on it is now drawn in HTML and
-CSS from the same tokens as the app, and the page loads no media at all.
+CSS from the same tokens as the app, and the page loads nothing over the
+network. One figure's map is now a real cropped screenshot embedded as a data
+URI — the same trade the flyer makes, for the same reason: a drawn basemap
+reads as drawn. Everything else on the page is still drawn.
 
 That trade is deliberate: the pictures cannot 404 or go stale silently, but
 they are hand-maintained copies of the real UI, so **changing the tracker's
@@ -161,12 +164,22 @@ property that matters is preserved even though the technique changed. It is
 real because a hand-drawn road looked like a hand-drawn road next to the rest
 of the recreation, and the whole point of the mock is to look like the actual
 product — a vector print fallback was tried and dropped for the same reason.
-The honest cost: it ties that one figure to Cavite, so a fork running a
-different route has to recapture it — crop a fresh screenshot and recompute
-the badge percentages against the checkpoint pixel positions, both described
-in a comment in `flyer.html` and `for-operators.html` above the figure.
+The honest cost: it ties that figure to Cavite, so a fork running a different
+route has to recapture it — crop a fresh screenshot and recompute the bus
+percentages against the checkpoint pixel positions, both described in a
+comment above the figure in each page that carries one.
+
+`how-to.html` carries one too, as of the same reasoning: its map figure was a
+stylised SVG route on a flat panel and read as exactly that. It uses its own
+landscape crop of the same screenshot, cut to that figure's shape, with the
+single bus placed by interpolating along the Tagaytay–Amadeo leg from
+`config.txt`. Its badge percentages are measured against an inner wrapper
+sized to the image rather than to the figure box, because that box's shape
+changes with the viewport and the image's does not. Every other figure on the
+guide is still drawn, and the guide still loads nothing over the network.
+
 `tools/make-route-figure.js` still generates a fully portable, geography-
-agnostic vector version of the same figure — not used by either shipped page
+agnostic vector version of the same figure — not used by any shipped page
 now, but there for a fork that would rather not photograph anything.
 
 **The poster prints as one landscape A4 sheet, in three columns.** Portrait

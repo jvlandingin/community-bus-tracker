@@ -154,6 +154,12 @@
 
   .wrap{max-width:520px; margin:0 auto; padding:12px 14px 48px;}
 
+  /* Admin entry point. Deliberately below the fold and text-only, not another
+     header icon: the admin key is what actually gates the page, so this is a
+     convenience for operators who forget the URL, not a control riders need. */
+  .adminFoot{text-align:center; margin-top:14px;}
+  .adminFoot a{font-size:12px; color:var(--muted); font-weight:600; text-decoration:underline;}
+
   /* Tabs. Real buttons, not clickable divs: a div is not focusable and is
      announced as nothing at all. */
   .tabs{display:flex; gap:8px; margin-bottom:12px;}
@@ -736,6 +742,8 @@
       </div>
     </div>
   </div>
+
+  <div class="adminFoot"><a href="admin.html">Operating this route? Admin panel →</a></div>
 </div>
 
 <script>

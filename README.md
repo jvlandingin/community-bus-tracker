@@ -38,9 +38,11 @@ name the route in link previews.
   works for any route without being recaptured.
 - **Adoption flyer:** `flyer.html`, a one-page pitch for riders in the mix of
   Tagalog and English the group chat actually uses. It shows an example of the
-  tracker with four buses live, labelled as an example, and prints as an A4
-  poster (usually two sheets — the map is a real screenshot of this route,
-  see "Running it for your own route" below) for a terminal wall.
+  tracker with four buses live, labelled as an example, and prints as a single
+  landscape A4 poster for a terminal wall — three columns: headline and
+  caveats, the example screen, then the link with its QR and the three steps.
+  Its map is a real screenshot of this route (see "Running it for your own
+  route" below).
 - **Operator briefing:** `for-operators.html`, written for the bus company. It
   leads with what the tool records and what it structurally cannot do, because
   "are you watching our drivers?" is the first question, then asks — in order —
@@ -108,12 +110,10 @@ cosmetic.** Both on screen and in print it is a real screenshot of this route
 nothing over the network. A fork running elsewhere has to crop a fresh
 screenshot of their own route and recompute the badge positions; both steps
 are documented in a comment above the figure in `flyer.html` and
-`for-operators.html`. In print the photo is sized well under the sheet's full
-width and centred, so it keeps the real map's close-to-square shape instead of
-flattening into a wide strip — which is also why the poster is usually two
-sheets rather than one: the caveats box and the not-affiliated footer spill
-onto a second page rather than the map shrinking until its labels stop being
-legible. `tools/make-route-figure.js` still generates a fully portable vector
+`for-operators.html`. The poster prints as one landscape sheet with the map
+in a column of its own, which is what lets it stay large without the headline
+above it capping its height. `tools/make-route-figure.js` still generates a
+fully portable vector
 version of the same figure from `config.txt`, needing no screenshot at all —
 not used by either shipped page currently, but there to run by hand
 (`node tools/make-route-figure.js`) for a fork that would rather not

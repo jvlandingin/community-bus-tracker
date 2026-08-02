@@ -313,6 +313,12 @@
   }
   .qr svg{display:block; width:100%; height:100%;}
 
+  /* Print-only column groups. display:contents means they generate no box
+     at all on screen — the page below is laid out exactly as if these divs
+     were not here, which is why adding them changed nothing about the
+     screen version or the chat image. In print they become grid columns. */
+  .pgroup{display:contents;}
+
   .passiton{
     margin-top:12px; text-align:center; font-size:12.5px;
     font-weight:700; color:var(--muted);
@@ -331,7 +337,7 @@
   /* The screen page and the poster are the same file. A separate poster
      source would be a second copy of the mock to keep in step, which is the
      drift this whole approach exists to avoid. */
-  @page{size:A4 portrait; margin:6.5mm;}
+  @page{size:A4 landscape; margin:6mm;}
   @media print{
     :root{
       --paper:#ffffff; --surface:#ffffff; --ink:#2b2320; --muted:#5b524b;
@@ -344,11 +350,45 @@
        The app itself is a narrow phone column; the poster should look like
        a large-format print of that column, not a letter stretched edge to
        edge. */
-    .sheet{max-width:390pt; margin:0 auto; padding:0;}
+    /* One landscape sheet, three columns. Portrait made this a tall single
+       column that always broke across two pages with the second barely a
+       third full; landscape is wide and short, which is wrong for one column
+       and right for three.
+
+       The map is the reason for the column assignment. Whatever column holds
+       the headline also caps how tall the mock can be, so the mock gets a
+       column to itself, spanning the full page height — that is what keeps it
+       near the size it had in portrait instead of shrinking to fit under a
+       headline. The two side columns are the print-only .pgroup wrappers.
+
+       Only column 1 stacks; columns 2 and 3 each hold a single item spanning
+       every row. That is deliberate: CSS grid shares row heights across
+       columns, so two independently-stacking columns would tie their items'
+       heights together and open gaps. One stacking column sidesteps it.
+       The span is a large number rather than "1 / -1" because -1 resolves
+       against the EXPLICIT grid, and these rows are all implicit — so
+       "1 / -1" silently collapses to a zero-row span and empties the page. */
+    .sheet{
+      display:grid;
+      grid-template-columns:200pt 290pt 286pt;
+      column-gap:16pt;
+      align-content:start;
+      max-width:none; margin:0; padding:0;
+    }
+    .hero{grid-column:1;}
+    .pgroup.fine{grid-column:1; display:block;}
+    .screenwrap{grid-column:2; grid-row:1 / span 30; align-self:start;}
+    .pgroup.act{grid-column:3; grid-row:1 / span 30; display:block; align-self:start;}
+    /* The band is kept short on purpose: it and the grid have to share one
+       landscape page, and a grid this tall will not fragment — if it does not
+       fit under the header it moves to a page of its own and leaves the
+       header stranded on a blank sheet. */
     header{
-      border-radius:10px; margin-bottom:2mm;
+      border-radius:8px; margin-bottom:3pt; padding:6pt 10pt 5pt;
       -webkit-print-color-adjust:exact; print-color-adjust:exact;
     }
+    header .route{font-size:11pt;}
+    header .sub{font-size:5.5pt; margin-top:1px;}
     .demo, .cta, .limits, .point, .steps li, .demo-badge, .buspill,
     .demo-seg span.on, .steps .n, .demo-map, .track .rail{
       -webkit-print-color-adjust:exact; print-color-adjust:exact;
@@ -356,8 +396,8 @@
     .hero{padding:5mm 0 0;}
     .hero h1{font-size:30pt;}
     .hero .lede{font-size:12pt;}
-    .cta .url{font-size:12pt;}
-    .qr{flex-basis:74px; width:74px; height:74px; padding:3px;}
+    .cta .url{font-size:13.5pt;}
+    .qr{flex-basis:112px; width:112px; height:112px; padding:4px;}
     .demo{box-shadow:none;}
     /* A poster is read from two metres away and then walked up to. Nothing
        here may split across a page break. */
@@ -376,15 +416,14 @@
        and the QR still lands on page one. A poster whose call to action is
        on the back is a poster nobody scans. The map itself is deliberately
        untouched here — it is the thing being made to look like the app. */
-    .screenlabel{font-size:6.5pt; margin-bottom:2px;}
-    .demo-title{font-size:15pt;}
+    .screenlabel{font-size:6pt; margin-bottom:1px;}
+    .demo-title{font-size:13pt;}
     .demo-sub{font-size:7pt;}
     .demo-seg{margin:5px 0 1px;}
     .demo-seg span{padding:4px 2px; font-size:7pt;}
     .strip{margin:5px 0 1px;}
     .dirlabel{font-size:6.5pt;}
     .track{height:17px;}
-    .ticks{height:24px;}
     .tick span{font-size:6pt;}
     .buspill{font-size:10px; padding:2px 4px;}
     .demo-chips{gap:2px; margin-top:4px;}
@@ -400,18 +439,22 @@
     .points, .pointshead{display:none;}
     h2{margin:5px 0 2px; font-size:9.5pt;}
     .hero{padding:0.5mm 0 0;}
-    .hero h1{font-size:13.5pt;}
-    .hero .lede{font-size:8.5pt; margin-top:3px;}
+    .hero h1{font-size:20pt;}
+    .hero .lede{font-size:9pt; margin-top:5px;}
     .screenwrap{margin-top:2px;}
     .demo{padding:6px;}
-    .cta{margin-top:3px; padding:5px 9px;}
+    .cta{
+      margin-top:0; padding:7pt 9pt; gap:6pt;
+      flex-direction:column; align-items:stretch;
+    }
+    .cta .qr{align-self:center;}
     .cta .note{margin-top:4px;}
     .passiton{margin-top:2px; font-size:8.5pt;}
-    .steps{gap:2px;}
+    .steps{gap:5px;}
     .demo-map{height:60px;}
-    .steps li{padding:2px 9px;}
-    .steps .tx{font-size:9.5pt;}
-    .steps .tx b{font-size:10pt;}
+    .steps li{padding:5px 10px;}
+    .steps .tx{font-size:10pt;}
+    .steps .tx b{font-size:11pt;}
     /* The caveats run in as one dense paragraph on paper rather than four
        bulleted lines. Every word survives — this is the section that must not
        be cut — but it costs a third of the height, which is what buys the
@@ -547,6 +590,9 @@
     </div>
   </section>
 
+  <!-- Print-only column group: the call to action and how to use it.
+       display:contents on screen. -->
+  <div class="pgroup act">
   <div class="cta">
     <div class="words">
       <div class="kicker">Buksan ngayon</div>
@@ -585,7 +631,11 @@
       <span>I-tap ang “I'm on the bus”, piliin ang direksyon, at makikita ka na ng iba. Puwede mong itigil anumang oras.</span></span>
     </li>
   </ol>
+  </div><!-- /pgroup act -->
 
+  <!-- Print-only column group: the fine print. display:contents on screen,
+       so this wrapper changes nothing about the page you actually read. -->
+  <div class="pgroup fine">
   <h2 class="pointshead">Bakit ito ligtas gamitin</h2>
   <div class="points">
     <div class="point">
@@ -631,6 +681,7 @@
     or uptime.
     <div class="backfoot"><a href="index.html">← Buksan ang tracker</a></div>
   </footer>
+  </div><!-- /pgroup fine -->
 
 </div>
 

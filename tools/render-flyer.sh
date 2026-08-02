@@ -14,7 +14,8 @@
 # be pointed at any Chromium or Chrome build.
 #
 # Outputs:
-#   flyer-a4.pdf         the poster, for printing and putting up at terminals
+#   flyer-a4.pdf         the poster: one LANDSCAPE A4 sheet, three columns,
+#                        for printing and putting up at terminals
 #   flyer-chat.png       1080x3120, sized for a Messenger feed
 #   for-operators.pdf    the briefing, for attaching to an email
 #

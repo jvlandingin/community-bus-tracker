@@ -164,16 +164,34 @@ product — a vector print fallback was tried and dropped for the same reason.
 The honest cost: it ties that one figure to Cavite, so a fork running a
 different route has to recapture it — crop a fresh screenshot and recompute
 the badge percentages against the checkpoint pixel positions, both described
-in a comment in `flyer.html` and `for-operators.html` above the figure. In
-print the photo is sized narrower than the page and centred, not stretched to
-the full sheet width — the real map is close to square, and a full-width
-photo at that aspect flattens it into a wide strip that looks nothing like
-the app. That sizing costs the poster a second, mostly-empty page carrying
-just the caveats box and the not-affiliated footer; the alternative was
-shrinking the map until its labels stopped being legible, which is worse.
+in a comment in `flyer.html` and `for-operators.html` above the figure.
 `tools/make-route-figure.js` still generates a fully portable, geography-
 agnostic vector version of the same figure — not used by either shipped page
 now, but there for a fork that would rather not photograph anything.
+
+**The poster prints as one landscape A4 sheet, in three columns.** Portrait
+made it a tall single column that always broke across two pages with the
+second barely a third full. Landscape is wide and short: wrong for one
+column, right for three. The columns are headline + caveats, the example
+screen, and the link with its QR plus the three steps.
+
+The map drives that arrangement. Whatever column holds the headline also caps
+how tall the mock can be, so the mock gets a column to itself spanning the
+full page height — that is what keeps it near the size it had in portrait
+rather than shrinking to fit under something. In the layout, only column one
+stacks: columns two and three each hold a single item spanning every row,
+because CSS grid shares row heights across columns and two independently
+stacking columns would tie their items' heights together and open gaps. The
+two side columns are `.pgroup` wrappers that are `display:contents` on
+screen, so they generate no box there and the screen page and the chat image
+are byte-for-byte unaffected by them.
+
+Two traps worth knowing, both of which cost a render each: `grid-row:1/-1`
+silently collapses to a zero-row span here because `-1` resolves against the
+*explicit* grid and these rows are all implicit — use a large `span` instead.
+And the header band has to stay short enough that the grid fits beneath it,
+because a grid this tall will not fragment: if it does not fit it moves to a
+page of its own and leaves the header stranded on a blank sheet.
 
 The header strip and the "How your data is handled" panel both state that the
 app is not affiliated with or endorsed by any bus company. `flyer.html` and

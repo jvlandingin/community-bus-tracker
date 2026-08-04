@@ -134,7 +134,10 @@ from the app. Keep the markers intact when editing those regions.
 Everything adapts from `config.txt`. `how-to.html` used to be the exception —
 its screenshots and screen recordings showed this deployment, so a fork had to
 recapture them or delete the page. Every figure on it is now drawn in HTML and
-CSS from the same tokens as the app, and the page loads no media at all.
+CSS from the same tokens as the app, and the page loads nothing over the
+network. One figure's map is now a real cropped screenshot embedded as a data
+URI — the same trade the flyer makes, for the same reason: a drawn basemap
+reads as drawn. Everything else on the page is still drawn.
 
 That trade is deliberate: the pictures cannot 404 or go stale silently, but
 they are hand-maintained copies of the real UI, so **changing the tracker's
@@ -154,23 +157,54 @@ label: a mock that could be mistaken for live data is the one thing this
 project's own rules would not forgive.
 
 **The map inside that mock is the one deliberate exception to "drawn, not
-photographed."** On screen it is a real cropped screenshot of this route's own
-map (Leaflet + CARTO), embedded as a data URI so the page still loads nothing
-over the network and can never 404 off a deploy — the property that matters is
-preserved even though the technique changed. It is real because a hand-drawn
-road looked like a hand-drawn road, and the whole point of the mock is to look
-like the actual product. The honest cost: it ties that one figure to Cavite,
-so a fork running a different route has to recapture it — crop a fresh
-screenshot and recompute the badge percentages against the checkpoint pixel
-positions, both described in a comment in `tools/make-route-figure.js`. Print
-does not use the photo — a JPEG reproduces worse on paper than a vector line
-and would have blown the poster's one-page budget — so `@media print` swaps in
-the figure `tools/make-route-figure.js` generates instead: a real road drawn
-from `config.txt`'s own checkpoints, with town labels read off the STOP list's
-own section headers. That vector figure needs no per-fork recapture at all,
-which is why the tool stays in the repo even though the on-screen page no
-longer calls it directly — run it by hand if a fork wants the fully portable
-version back in place of a new screenshot.
+photographed."** Both on screen and in print it is a real cropped screenshot
+of this route's own map (Leaflet + CARTO), embedded as a data URI so the page
+still loads nothing over the network and can never 404 off a deploy — the
+property that matters is preserved even though the technique changed. It is
+real because a hand-drawn road looked like a hand-drawn road next to the rest
+of the recreation, and the whole point of the mock is to look like the actual
+product — a vector print fallback was tried and dropped for the same reason.
+The honest cost: it ties that figure to Cavite, so a fork running a different
+route has to recapture it — crop a fresh screenshot and recompute the bus
+percentages against the checkpoint pixel positions, both described in a
+comment above the figure in each page that carries one.
+
+`how-to.html` carries one too, as of the same reasoning: its map figure was a
+stylised SVG route on a flat panel and read as exactly that. It uses its own
+landscape crop of the same screenshot, cut to that figure's shape, with the
+single bus placed by interpolating along the Tagaytay–Amadeo leg from
+`config.txt`. Its badge percentages are measured against an inner wrapper
+sized to the image rather than to the figure box, because that box's shape
+changes with the viewport and the image's does not. Every other figure on the
+guide is still drawn, and the guide still loads nothing over the network.
+
+`tools/make-route-figure.js` still generates a fully portable, geography-
+agnostic vector version of the same figure — not used by any shipped page
+now, but there for a fork that would rather not photograph anything.
+
+**The poster prints as one landscape A4 sheet, in three columns.** Portrait
+made it a tall single column that always broke across two pages with the
+second barely a third full. Landscape is wide and short: wrong for one
+column, right for three. The columns are headline + caveats, the example
+screen, and the link with its QR plus the three steps.
+
+The map drives that arrangement. Whatever column holds the headline also caps
+how tall the mock can be, so the mock gets a column to itself spanning the
+full page height — that is what keeps it near the size it had in portrait
+rather than shrinking to fit under something. In the layout, only column one
+stacks: columns two and three each hold a single item spanning every row,
+because CSS grid shares row heights across columns and two independently
+stacking columns would tie their items' heights together and open gaps. The
+two side columns are `.pgroup` wrappers that are `display:contents` on
+screen, so they generate no box there and the screen page and the chat image
+are byte-for-byte unaffected by them.
+
+Two traps worth knowing, both of which cost a render each: `grid-row:1/-1`
+silently collapses to a zero-row span here because `-1` resolves against the
+*explicit* grid and these rows are all implicit — use a large `span` instead.
+And the header band has to stay short enough that the grid fits beneath it,
+because a grid this tall will not fragment: if it does not fit it moves to a
+page of its own and leaves the header stranded on a blank sheet.
 
 The header strip and the "How your data is handled" panel both state that the
 app is not affiliated with or endorsed by any bus company. `flyer.html` and

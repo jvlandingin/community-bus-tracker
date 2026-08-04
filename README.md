@@ -33,15 +33,17 @@ name the route in link previews.
 - **Admin page:** operating hours, a pinned notice, live sharers, sighting
   moderation, and key rotation. Needs a separate admin key.
 - **How-to page:** `how-to.html`, reached from the ⓘ in the header. Explains
-  watching and sharing. Every figure on it is drawn in HTML and CSS from the
-  same design tokens as the app, so it loads no images or video at all and
-  works for any route without being recaptured.
+  watching and sharing. Its figures are drawn in HTML and CSS from the same
+  design tokens as the app, so it loads nothing over the network. The one
+  exception is the map inside the first figure, a real cropped screenshot of
+  this route embedded inline — a fork recrops that, and nothing else.
 - **Adoption flyer:** `flyer.html`, a one-page pitch for riders in the mix of
   Tagalog and English the group chat actually uses. It shows an example of the
   tracker with four buses live, labelled as an example, and prints as a single
-  A4 poster for a terminal wall. Its map is a real screenshot of this route
-  (see "Running it for your own route" below); print swaps in a generated
-  vector road instead.
+  landscape A4 poster for a terminal wall — three columns: headline and
+  caveats, the example screen, then the link with its QR and the three steps.
+  Its map is a real screenshot of this route (see "Running it for your own
+  route" below).
 - **Operator briefing:** `for-operators.html`, written for the bus company. It
   leads with what the tool records and what it structurally cannot do, because
   "are you watching our drivers?" is the first question, then asks — in order —
@@ -85,35 +87,37 @@ migration.
    gives you in your group chat. That link is the tracker with the key in the
    fragment, and it is what people tap to share from the bus.
 
-`how-to.html` used to be an exception to "no code changes" — its screenshots and
-screen recordings showed this deployment, so a fork had to reshoot all of them or
-delete the page. Its figures are drawn in HTML and CSS now, so the only
-route-specific thing left on it is the checkpoint names in the example strip, and
-a wrong name there is a cosmetic detail rather than another route's photographs
-presented as yours.
+`how-to.html` used to be a bigger exception to "no code changes" — its
+screenshots and screen recordings showed this deployment, so a fork had to
+reshoot all of them or delete the page. Its figures are drawn in HTML and CSS
+now, so the checkpoint names in the example strip are cosmetic if left alone,
+wrong only in the way a neighbouring town's name is wrong.
 
-**The two adoption pages are a real exception, and not just a cosmetic one.** A
-printed poster has no runtime to ask what host it is on, so `flyer.html` states
-the deployment's URL as text and carries a QR code drawn as an inline path.
-`for-operators.html` names a contact address. A fork has to edit those by hand:
+**Three pages carry a real exception, and it is not cosmetic: the map.**
+`how-to.html`, `flyer.html` and `for-operators.html` all show a real cropped
+screenshot of this route's own map (Cavite, in the current deployment),
+embedded inline so the pages still load nothing over the network. A drawn
+basemap reads as drawn, and these figures exist to show a reader what the app
+looks like. A fork running elsewhere has to crop a fresh screenshot of its own
+route and recompute the bus positions against it; both steps are documented in
+a comment above each figure. `tools/make-route-figure.js` generates a fully
+portable vector version of the same figure from `config.txt`, needing no
+screenshot at all — not used by any shipped page currently, but there to run
+by hand (`node tools/make-route-figure.js`) for a fork that would rather not
+photograph anything.
+
+The two adoption pages need two more edits by hand. A printed poster has no
+runtime to ask what host it is on, so `flyer.html` states the deployment's URL
+as text and carries a QR code drawn as an inline path; `for-operators.html`
+names a contact address:
 
 ```
 node tools/make-qr.js https://your-route.example    # prints a replacement <svg>
 ```
 
-Both also redraw the tracker's screen, so their checkpoint names come from this
-route — cosmetic if left alone, wrong only in the way a neighbouring town's
-name is wrong, same as the guide. **The map inside that mock is not
-cosmetic.** On screen it is a real screenshot of this route (Cavite, in the
-current deployment), embedded inline so the page still loads nothing over the
-network. A fork running elsewhere has to crop a fresh screenshot of their own
-route and recompute the badge positions; both steps are documented in a
-comment at the top of `tools/make-route-figure.js`. Print does not use the
-photo at all — it falls back to the vector road `tools/make-route-figure.js`
-generates from `config.txt`, which needs no recapture and is what that tool is
-for. Run it by hand (`node tools/make-route-figure.js`) to get a fork's own
-route as a portable figure, screen included, if recapturing a screenshot isn't
-wanted.
+The poster prints as one landscape sheet with the map in a column of its own,
+which is what lets it stay large without the headline above it capping its
+height.
 
 The route this was built for runs at
 [community-bus-tracker.netlify.app](https://community-bus-tracker.netlify.app).

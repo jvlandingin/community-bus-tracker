@@ -388,6 +388,79 @@ function run(page, include, label, configText) {
       found.join(' ') || 'clean');
   }
 
+  console.log('\n=== 9. the progress strip on the sharing tab ===');
+  // A sharer's own tab reads "Sharing live" whether or not anything ever
+  // reached anybody, so the strip is the only evidence on it that the trip is
+  // really on everyone's map. Two strips ship now and one function draws
+  // both, which is the part that can rot quietly: ids cannot be duplicated,
+  // so everything renderStrip() writes into is found by class, and a rename
+  // on one strip would otherwise just leave the other blank.
+  const stripCard = ok.d.getElementById('onbusStripCard');
+  check(!!stripCard && stripCard.className.includes('hidden'),
+    'the strip card starts hidden: it belongs to a live trip, not to the tab');
+
+  const trackTicks = [...ok.d.querySelectorAll('#trackStrip .tick')];
+  const onbusTicks = [...ok.d.querySelectorAll('#onbusStrip .tick')];
+  check(onbusTicks.length > 1 && onbusTicks.length === trackTicks.length,
+    'both strips are built with the same checkpoint ticks',
+    `${onbusTicks.length} on the sharing tab, ${trackTicks.length} on the tracker`);
+  check(onbusTicks.every(t => t.getAttribute('data-i') !== null),
+    'every tick still names its checkpoint with data-i, which is what marks it "near"');
+  for (const sel of ['#onbusStrip .pills.nb', '#onbusStrip .pills.sb', '#onbusStrip .ticks']) {
+    check(!!ok.d.querySelector(sel), `renderStrip has somewhere to draw: ${sel}`);
+  }
+
+  // Point the shipped drawing function at the sharing tab's strip and check a
+  // bus actually lands on it, on the rail its direction belongs to.
+  const cps = CONFIG.split(/\r?\n/)
+    .filter(l => l.trim().startsWith('CHECKPOINT ='))
+    .map(l => l.split('=')[1].split('|').map(x => x.trim()));
+  const mid = cps[Math.floor(cps.length / 2)];
+  ok.w.renderStrip(ok.d.getElementById('onbusStrip'),
+    [{ id: 'test', lat: +mid[2], lng: +mid[3], direction: 'north', ts: Date.now() }], []);
+  check(!!ok.d.querySelector('#onbusStrip .pills.nb .buspill'),
+    'a northbound bus draws a pill on the sharing tab\'s northbound rail');
+  check(!ok.d.querySelector('#onbusStrip .pills.sb .buspill'),
+    'and nothing on the southbound one');
+  const nearTick = ok.d.querySelector('#onbusStrip .tick.near');
+  check(!!nearTick && nearTick.getAttribute('data-i') === String(cps.indexOf(mid)),
+    'and the checkpoint it is sitting on is the one highlighted',
+    nearTick ? `${nearTick.textContent.trim()} (data-i ${nearTick.getAttribute('data-i')})` : 'none highlighted');
+
+  // Which pill is yours comes from the server (is_self, sql/04), not from
+  // comparing coordinates, so two buses in the same place cannot swap it.
+  const first = cps[0], second = cps[1];
+  ok.w.renderStrip(ok.d.getElementById('onbusStrip'), [
+    { id: 'mine', lat: +first[2], lng: +first[3], direction: 'north', ts: Date.now(), self: true },
+    { id: 'theirs', lat: +second[2], lng: +second[3], direction: 'north', ts: Date.now() }
+  ], []);
+  const ringed = [...ok.d.querySelectorAll('#onbusStrip .pills.nb .buspill')]
+    .filter(p => p.className.includes('me'));
+  check(ringed.length === 1, 'exactly one pill is marked as yours when the feed says so',
+    `${ringed.length} of ${ok.d.querySelectorAll('#onbusStrip .pills.nb .buspill').length} marked`);
+  check(!!ringed[0] && ringed[0].getAttribute('style').includes('left:0'),
+    'and it is the bus the feed flagged, not the other one',
+    ringed[0] && ringed[0].getAttribute('style'));
+  // The ring means "the bus you are sharing", so the CSS has to be able to
+  // find it and the legend line that explains it has to exist.
+  check(/\.buspill\.me\{/.test(fs.readFileSync(path.join(APP, 'index.html'), 'utf8')),
+    'index.html styles .buspill.me, the class renderStrip writes');
+  const legend = ok.d.getElementById('selfLegend');
+  check(!!legend && legend.className.includes('hidden'),
+    'the legend line for the ring is hidden while nobody on this phone is sharing');
+  check(!!legend && /green ring/i.test(legend.textContent),
+    'and it says in words what the colour means', legend && legend.textContent.trim());
+
+  // Revealed by starting a trip, taken away by stopping one.
+  ok.w.switchTab('share');
+  ok.w.setShareUI('on', 'Sharing live');
+  check(!stripCard.className.includes('hidden'), 'starting a trip puts the strip on screen');
+  check(!legend.className.includes('hidden'), 'and explains the ring on the tracker tab too');
+  ok.w.setShareUI('off', 'Not sharing');
+  check(stripCard.className.includes('hidden'),
+    'stopping takes it away again, rather than leaving other buses under a heading about yours');
+  check(legend.className.includes('hidden'), 'and the legend line goes with it');
+
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');
   process.exit(fail ? 1 : 0);
 })();

@@ -258,6 +258,49 @@ other, then, if 6 px still is not enough, drops every other label and keeps
 every mark. Adding Kawit — an eighth checkpoint — is what proved this was
 needed, and it now costs nothing.
 
+**The strip ships twice**, as of August 2026: on the tracker, and on the
+sharing tab while a trip is live. A sharer's own tab says "Sharing live"
+whether or not a single byte reached anybody, so before this there was nothing
+on it that could tell working from broken — and the guide had been drawing a
+strip inside the sharing card since long before the app did it. Three
+consequences worth knowing:
+
+- **One function draws both.** `renderStrip()` takes the container, so
+  everything it writes into is found by class (`.pills.nb`, `.ticks`, and
+  `data-i` on each tick) rather than by id, which can only name one of them.
+  `#ticks` survives on the tracker's copy because `test-boot.js` waits on it
+  to decide the page has booted.
+- **The sharing tab's copy ignores the direction filter.** Someone who left
+  the tracker filtered to Northbound and then shares a southbound trip would
+  otherwise watch their own bus fail to appear, and would be right to conclude
+  the app was broken.
+- **Your own bus is ringed, and the server says which one it is.**
+  `get_positions` has taken `p_self` and answered with `is_self` since
+  `sql/04-session-id-privacy.sql` — it was built for the duplicate-sharer
+  warning, and the tracker now passes it while sharing. Nothing is guessed
+  from coordinates, which would go wrong exactly when it matters: two buses
+  in the same place. Clustering ORs the flag, so two people sharing one bus
+  get one pill that is correctly theirs. The mark is a ring in the live
+  dot's green rather than a different fill, a wider pill or a `YOU` label:
+  gold and maroon are carrying the direction, and at 390 px a pill that
+  grows in either dimension lands on its neighbour or on the direction
+  label. Because that leaves colour doing the talking, the line under the
+  strip names it in words, and the tracker's own colour legend gains a row
+  saying the same — shown only while sharing, since a legend for a mark
+  nobody can see is noise. The flag is dropped and the strips redrawn the
+  moment sharing ends, in `setShareUI()`, so a ring can never outlive the
+  trip it describes.
+- **It cost the biggest polling saving in the app.** A sharer sitting on the
+  sharing tab used to skip the positions feed entirely — roughly 40% of a
+  sharing phone's traffic over a trip. A strip fed by nothing is worse than no
+  strip, so the skip became a throttle: `shouldPoll()` lets that case through
+  once every 18 seconds instead of every 6, keeping two thirds of the saving.
+  A sharer is watching for reassurance, not for a countdown. Both feeds pass
+  their own last-fetch time, so each is throttled against itself, and the
+  strip is refetched and re-measured at the two moments it becomes visible
+  (`refreshOnbusStrip`) rather than waiting out an interval — a hidden strip
+  has no layout, so `fitTicks()` cannot size its labels until it is on screen.
+
 **The whole board can be switched off**, per route, from `admin.html`
 (`sightings_enabled` in the settings JSON). Off hides the card, the composer,
 the ghost markers, the legend row and the paragraph in the privacy panel, stops

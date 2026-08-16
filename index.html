@@ -226,6 +226,11 @@
 
   /* Dual-track strip */
   .strip{margin:18px 0 6px; padding:0 16px;}
+  /* The heading over the sharing tab's copy of the strip. Same type as a
+     folded card's caption, which is what a small maroon label means
+     everywhere else on this page; it is not a summary, so it cannot reuse
+     that rule. */
+  .striplabel{font-size:9.5px; font-weight:800; letter-spacing:.08em; color:var(--brand-ink); text-transform:uppercase;}
   .dirlabel{font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
   .dirlabel.nb{text-align:right; margin-bottom:3px;}
   .dirlabel.sb{margin-top:3px;}
@@ -242,6 +247,13 @@
   }
   .buspill.sb{background:var(--maroon); color:#fff;}
   .buspill.stale{opacity:.45;}
+  /* The bus this phone is sharing. A ring rather than a different fill: gold
+     and maroon are carrying the direction, and the strip is too narrow to
+     widen a pill or hang a word off one without landing on a neighbour. The
+     green is the live dot's, so the ring reads as "the live one that is
+     yours" — and because that is colour doing the talking, the line under
+     the strip names it in words. */
+  .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 3.5px var(--live), 0 1px 4px rgba(43,35,32,.25);}
   /* A reported sighting, not a GPS position. Hollow and dashed so it cannot
      be mistaken for a live bus at a glance — that would be worse than showing
      nothing, because a sighting is one person's word, already minutes old,
@@ -618,11 +630,16 @@
         <button type="button" id="segSouth" onclick="setFilter('south')">▼ Southbound</button>
       </div>
 
-      <div class="strip">
+      <!-- Two strips ship now, this one and the sharing tab's, both drawn by
+           renderStrip() from the same data. The parts it writes into are found
+           by class, not id, because ids cannot be duplicated; #ticks stays as
+           a name for this one because test-boot.js waits on it to decide the
+           page has finished booting. -->
+      <div class="strip" id="trackStrip">
         <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
-        <div class="track nb"><div class="rail"></div><div id="nbPills"></div></div>
+        <div class="track nb"><div class="rail"></div><div class="pills nb"></div></div>
         <div class="ticks" id="ticks"></div>
-        <div class="track sb"><div class="rail"></div><div id="sbPills"></div></div>
+        <div class="track sb"><div class="rail"></div><div class="pills sb"></div></div>
         <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
       </div>
 
@@ -638,6 +655,10 @@
             <span><span class="sw" style="background:var(--maroon)"></span>Southbound ▼</span>
             <span><span class="sw" style="background:#94a3b8"></span>Stops (tap for name)</span>
             <span id="sightLegend"><span class="sw" style="background:transparent; border:2px dashed var(--gold-deep); width:11px; height:11px;"></span>Dashed on the strip = reported sighting, not GPS</span>
+            <!-- The ring is marked on this strip too, so it is explained on
+                 this tab too. Shown only while sharing, by setShareUI(): a
+                 legend line for a mark nobody can see is noise. -->
+            <span id="selfLegend" class="hidden"><span class="sw" style="background:var(--gold); box-shadow:0 0 0 2px var(--live); margin-left:2px;"></span>Green ring = the bus you are sharing</span>
             <span>Tap a bus for its number and age</span>
           </div>
           <div class="hint" id="sourceNote">Positions come from whoever is on the bus: driver, conductor, or a rider volunteering. The direction is picked by hand, so it can occasionally be wrong.</div>
@@ -740,6 +761,25 @@
         plugged in with the screen on. GPS pauses if the screen locks or you switch apps.
         No name or personal info is shared, only this bus's position and direction.
       </div>
+    </div>
+
+    <!-- The same progress strip the tracker shows, on the tab of the person
+         putting a bus on it. Someone sharing has no way to tell the difference
+         between working and broken otherwise: the tab they are on says
+         "Sharing live" whether or not anything reached anybody. This is the
+         evidence, and it is the answer to the question the flyer promises
+         riders — "makikita ka na ng iba" — asked by the sharer instead.
+         Shown only while a trip is live, by setShareUI(). -->
+    <div class="card hidden" id="onbusStripCard">
+      <div class="striplabel">EVERYONE CAN SEE THIS</div>
+      <div class="strip" id="onbusStrip">
+        <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
+        <div class="track nb"><div class="rail"></div><div class="pills nb"></div></div>
+        <div class="ticks"></div>
+        <div class="track sb"><div class="rail"></div><div class="pills sb"></div></div>
+        <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
+      </div>
+      <div class="hint">Everyone with the tracker open is seeing this. Yours is the bus with the green ring. Nothing to post in the group chat.</div>
     </div>
   </div>
 
@@ -971,6 +1011,7 @@ function switchTab(which) {
     setTimeout(function(){ map.invalidateSize(); }, 120);
     if (running){ pollPositions(); if (sightingsOn()) pollSightings(); }   // polling may have been paused
   }
+  if (which==='share') refreshOnbusStrip();
   checkControlsVisible();   // self-guarding: clears itself on the track tab
 }
 let dirFilter = 'all';
@@ -1156,12 +1197,19 @@ function busPopupHtml(b){
 // ============================================================
 // Strip + status
 // ============================================================
+// Every strip on the page gets the same ticks. Which checkpoint a tick is
+// travels as data-i rather than an id, because there is more than one strip
+// now and an id can only name one of them.
+function tickBoxes(){
+  return [].slice.call(document.querySelectorAll('.strip .ticks'));
+}
 function buildTicks() {
-  document.getElementById('ticks').innerHTML = CHECKPOINTS.map(function(c,i){
+  const html = CHECKPOINTS.map(function(c,i){
     const pct = (i/(CHECKPOINTS.length-1))*100;
     const edge = i===0 ? ' first' : (i===CHECKPOINTS.length-1 ? ' last' : '');
-    return '<div class="tick'+edge+'" id="tick-'+i+'" style="left:'+pct+'%"><span>'+c.short+'</span></div>';
+    return '<div class="tick'+edge+'" data-i="'+i+'" style="left:'+pct+'%"><span>'+c.short+'</span></div>';
   }).join('');
+  tickBoxes().forEach(function(box){ box.innerHTML = html; });
   fitTicks();
 }
 // How many checkpoint labels have to share the strip is a config.txt
@@ -1171,7 +1219,12 @@ function buildTicks() {
 // had been tuned for seven. Measure and shrink instead, so config can add
 // checkpoints without touching CSS.
 function fitTicks(){
-  const box = document.getElementById('ticks');
+  tickBoxes().forEach(fitTickBox);
+}
+// A hidden strip has no layout to measure, so clashes() below reports no
+// clash and the size it was given last stands. That is why the sharing tab's
+// copy is re-fitted at the moment it is revealed — see setShareUI().
+function fitTickBox(box){
   if (!box) return;
   box.classList.remove('thin');
   const ticks = [].slice.call(box.querySelectorAll('.tick'));
@@ -1367,6 +1420,9 @@ function clusterBuses(list){
     if (target){
       target.count++;
       target.members.push(b.pub_id);
+      // Two people sharing from one bus is one pill, and it is yours if
+      // either of them is you.
+      if (b.self) target.self=true;
       if (!target.label && b.bus_label) target.label=b.bus_label;
       if (b.ts>target.ts){              // keep the freshest position
         target.lat=b.lat; target.lng=b.lng; target.ts=b.ts; target.speed=b.speed;
@@ -1374,7 +1430,7 @@ function clusterBuses(list){
     } else {
       clusters.push({ id:b.pub_id, lat:b.lat, lng:b.lng, ts:b.ts, speed:b.speed,
                       direction:b.direction, label:b.bus_label||'', count:1,
-                      members:[b.pub_id] });
+                      self:!!b.self, members:[b.pub_id] });
     }
   });
   return clusters;
@@ -1427,45 +1483,68 @@ function sortForList(list){
   });
 }
 
-function renderBuses() {
-  const nbPills=document.getElementById('nbPills'), sbPills=document.getElementById('sbPills');
-  const list=document.getElementById('busList');
-  const all = clusterBuses(BUSES);
-  const shown = sortForList(all.filter(function(b){ return dirFilter==='all' || b.direction===dirFilter; }));
-  syncBusMarkers(all);
-
-  // strip pills
-  let nb='', sbz='';
+// One strip, drawn from a list of buses and the sightings worth showing on
+// it. Two call it: the tracker's strip, which follows the direction filter,
+// and the sharing tab's, which deliberately does not — someone who left the
+// filter on Northbound and then shares a southbound trip would otherwise
+// watch their own bus fail to appear and have every reason to think the app
+// was broken.
+function renderStrip(box, buses, sightings) {
+  if (!box) return;
+  const nbBox = box.querySelector('.pills.nb'), sbBox = box.querySelector('.pills.sb');
+  if (!nbBox || !sbBox) return;
+  let nb='', sbz='', nbMine='', sbMine='';
   const nearSet={};
-  shown.forEach(function(b){
+  buses.forEach(function(b){
     const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
     if (!pl) return;
     pl.ticks.forEach(function(i){ nearSet[i]=true; });
     const pct = pl.pct;
     const stale = freshness(b.ts)==='delayed';
-    const pill = '<div class="buspill '+(b.direction==='south'?'sb':'')+(stale?' stale':'')+'" style="left:'+pct+'%">🚌</div>';
-    if (b.direction==='north') nb+=pill; else sbz+=pill;
+    const pill = '<div class="buspill '+(b.direction==='south'?'sb':'')+(stale?' stale':'')+
+      (b.self?' me':'')+'" style="left:'+pct+'%">🚌</div>';
+    // Your own bus is held back and appended last, so it paints over its
+    // neighbours rather than under them. Pills overlap constantly on a phone
+    // and the one pill this reader is looking for is the one that must not
+    // end up behind another.
+    if (b.direction==='north'){ if (b.self) nbMine+=pill; else nb+=pill; }
+    else { if (b.self) sbMine+=pill; else sbz+=pill; }
   });
+  let gnb='', gsb='';
+  sightings.forEach(function(s){
+    if (CHECKPOINTS.length < 2) return;
+    const pct = (s.idx/(CHECKPOINTS.length-1))*100;
+    const g = '<div class="sightmk'+(s.direction==='south'?' sb':'')+'" style="left:'+pct+'%"></div>';
+    if (s.direction==='north') gnb+=g; else gsb+=g;
+  });
+  nbBox.innerHTML=gnb+nb+nbMine; sbBox.innerHTML=gsb+sbz+sbMine;
+  [].slice.call(box.querySelectorAll('.tick')).forEach(function(t){
+    t.classList.toggle('near', !!nearSet[t.getAttribute('data-i')]);
+  });
+}
+
+function renderBuses() {
+  const list=document.getElementById('busList');
+  const all = clusterBuses(BUSES);
+  const shown = sortForList(all.filter(function(b){ return dirFilter==='all' || b.direction===dirFilter; }));
+  syncBusMarkers(all);
+
   // Reported sightings, behind the live pills. Only recent ones: a sighting
   // older than one headway has been overtaken by the next bus, and drawing
   // it on the strip would claim a currency it does not have. Tying the window
   // to the route's own headway means a route running every 10 minutes clears
   // them six times faster than one running hourly, with nothing to configure.
   const ghostWindow = (SET.headway_min || 30) * 60000;
-  let gnb='', gsb='';
-  (sightingsOn() ? SIGHTINGS : []).forEach(function(s){
-    if (Date.now() - s.ts > ghostWindow) return;
-    if (dirFilter !== 'all' && s.direction !== dirFilter) return;
-    if (CHECKPOINTS.length < 2) return;
-    const pct = (s.idx/(CHECKPOINTS.length-1))*100;
-    const g = '<div class="sightmk'+(s.direction==='south'?' sb':'')+'" style="left:'+pct+'%"></div>';
-    if (s.direction==='north') gnb+=g; else gsb+=g;
+  const ghosts = (sightingsOn() ? SIGHTINGS : []).filter(function(s){
+    return Date.now() - s.ts <= ghostWindow;
   });
-  nbPills.innerHTML=gnb+nb; sbPills.innerHTML=gsb+sbz;
-  CHECKPOINTS.forEach(function(_,i){
-    const t=document.getElementById('tick-'+i);
-    if (t) t.classList.toggle('near', !!nearSet[i]);
+  const trackGhosts = ghosts.filter(function(s){
+    return dirFilter === 'all' || s.direction === dirFilter;
   });
+  renderStrip(document.getElementById('trackStrip'), shown, trackGhosts);
+  // Unfiltered, and sorted only so the two strips draw their pills in the
+  // same order: nothing on the sharing tab sets a filter.
+  renderStrip(document.getElementById('onbusStrip'), sortForList(all), ghosts);
 
   // bus chips
   list.innerHTML = shown.map(function(b){
@@ -1489,13 +1568,12 @@ function renderBuses() {
       ' ago · trips every '+SET.headway_min+' mins';
   } else {
     const dirsOpen = withinHours('north')||withinHours('south');
-    const ghosts = gnb.length + gsb.length;
     text.textContent = 'No buses live';
     sub.textContent = !dirsOpen
       ? 'Outside operating hours. Next departures: '+(firstTrip('north')||'see schedule')+' from Mendez, '+(firstTrip('south')||'see schedule')+' from One Ayala.'
       : !sightingsOn()
       ? 'Nobody is sharing GPS right now. Ask in the group chat, or check the operating hours below.'
-      : ghosts
+      : trackGhosts.length
       ? 'Nobody is sharing GPS. The dashed marks on the strip are buses people reported seeing.'
       : 'Nobody is sharing GPS right now. Post a sighting below if you see one, or ask in the group.';
   }
@@ -1548,24 +1626,40 @@ function focusBus(id){
 
 // Don't spend requests when nobody's looking:
 //  - hidden tab (phone in pocket, app switched away)
-//  - a sharer sitting on the share tab doesn't need the tracker feed at
-//    all; that alone is ~40% of a sharing phone's traffic over a trip.
-function shouldPoll(){
+//  - a sharer sitting on the share tab used to skip the tracker feed
+//    entirely, which was ~40% of a sharing phone's traffic over a trip.
+//    That tab now shows the strip, so the feed is what makes it true and it
+//    cannot be skipped — but it can be slowed down. A sharer is watching for
+//    reassurance, not for a countdown, and 18 seconds still keeps two thirds
+//    of the saving. Callers pass their own last-fetch time so each feed is
+//    throttled against itself.
+const SLOW_FEED_MS = 18000;
+function shouldPoll(lastAt){
   if (document.hidden) return false;
   const shareVisible = !document.getElementById('onbusView').classList.contains('hidden');
-  if (sharing && shareVisible) return false;
+  if (sharing && shareVisible) return Date.now() - (lastAt||0) >= SLOW_FEED_MS;
   return true;
 }
 
+let lastPositionsAt = 0;
 async function pollPositions() {
-  if (!shouldPoll()) return;
-  const res = await rpc('get_positions', { p_slug: CFG.ROUTE_SLUG });
+  if (!shouldPoll(lastPositionsAt)) return;
+  lastPositionsAt = Date.now();
+  // p_self is our own session id, which only this phone holds, and the server
+  // answers with is_self on our row rather than handing anyone else's session
+  // id out (sql/04-session-id-privacy.sql). It is what lets the strip say
+  // which bus is yours instead of guessing from coordinates — which would be
+  // wrong exactly when it matters, with two buses close together. Sent only
+  // while sharing, because that is the only time the answer is used.
+  const res = await rpc('get_positions', sharing
+    ? { p_slug: CFG.ROUTE_SLUG, p_self: getSessionId() }
+    : { p_slug: CFG.ROUTE_SLUG });
   if (res.error) return;
   // pub_id, not the session id: see sql/04-session-id-privacy.sql. It is
   // stable for the length of a trip, which is all the map needs it for.
   positionsLoaded = true;
   BUSES = (res.data||[]).map(function(v){
-    return { pub_id:v.pub_id, lat:v.lat, lng:v.lng, speed:v.speed,
+    return { pub_id:v.pub_id, lat:v.lat, lng:v.lng, speed:v.speed, self:!!v.is_self,
              direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at) };
   });
   // markers are one per clustered bus rather than per sharing session, which
@@ -1647,8 +1741,10 @@ function sightError(msg){
   el.classList.toggle('hidden', !msg);
 }
 
+let lastSightingsAt = 0;
 async function pollSightings() {
-  if (!sightingsOn() || !shouldPoll()) return;
+  if (!sightingsOn() || !shouldPoll(lastSightingsAt)) return;
+  lastSightingsAt = Date.now();
   const res = await rpc('get_sightings', { p_slug: CFG.ROUTE_SLUG });
   if (res.error) return;
   const data=res.data;
@@ -2111,7 +2207,37 @@ function setShareUI(state,msg){
   document.getElementById('onbusStatusText').textContent=msg;
   document.getElementById('onbusSetup').classList.toggle('hidden', state==='on');
   document.getElementById('onbusActive').classList.toggle('hidden', state!=='on');
+  // The strip belongs to a live trip, not to the tab: before starting there
+  // is nothing on it that this person put there, and after stopping it would
+  // be showing other people's buses under a heading about theirs.
+  document.getElementById('onbusStripCard').classList.toggle('hidden', state!=='on');
+  document.getElementById('selfLegend').classList.toggle('hidden', state!=='on');
+  if (state!=='on'){
+    // The ring means "the bus you are sharing", and this phone is not sharing
+    // any more. The rows in hand still say it is, so drop the flag and redraw
+    // now rather than leave a ring on the tracker's strip until the next
+    // fetch. Every way sharing can end comes through here.
+    BUSES.forEach(function(b){ b.self=false; });
+    renderBuses();
+  }
+  refreshOnbusStrip();
   checkControlsVisible();
+}
+// The strip is only worth anything if it is current, and the feed behind it
+// is paused or slowed whenever this tab is not the one on screen. So refetch
+// and re-measure at the two moments it becomes visible — sharing starting,
+// and the tab being opened mid-trip — rather than waiting out an interval
+// with a stale or unfitted strip on screen.
+function refreshOnbusStrip(){
+  const card = document.getElementById('onbusStripCard');
+  if (!card || card.classList.contains('hidden')) return;
+  fitTickBox(document.querySelector('#onbusStrip .ticks'));
+  renderBuses();
+  // Past the throttle deliberately. This runs when a person did something —
+  // started a trip, opened the tab — and the rows in hand may predate their
+  // own bus, or predate the server being told which one it is.
+  lastPositionsAt = 0;
+  if (running) pollPositions();
 }
 
 // ============================================================

@@ -348,6 +348,10 @@
 
   /* ---- Live demo of the progress strip ----------------------------- */
   .strip{margin:6px 0; padding:0 16px;}
+  /* Heading over the copy of the strip the sharing tab shows. Same rule as
+     index.html's .striplabel, kept here rather than imported for the same
+     reason the tokens are. */
+  .striplabel{font-size:9.5px; font-weight:800; letter-spacing:.08em; color:var(--brand-ink); text-transform:uppercase;}
   .dirlabel{font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
   .dirlabel.nb{text-align:right; margin-bottom:3px;}
   .track{position:relative; height:22px;}
@@ -785,7 +789,9 @@
       <div class="body">
         <h3>Start sharing</h3>
         <p>The browser asks for location permission once. Say yes and the bus
-          appears on the map within seconds.</p>
+          appears on the map within seconds. The strip that opens under the
+          button is the one everyone watching is looking at, so you can see
+          your own bus on it without leaving the tab.</p>
       </div>
     </div>
 
@@ -819,7 +825,32 @@
         </div>
         <div class="fakebtn stop" style="margin-top:11px">Stop sharing</div>
       </div>
-      <figcaption>While it is running. Green dot, and one button to stop.</figcaption>
+      <!-- The second card is the app's, not an illustration of one: while a
+           trip is live the sharing tab carries its own copy of the progress
+           strip, under this heading. Recreated here like everything else on
+           this page, so it moves when the app does. -->
+      <div class="demo" style="margin-top:10px" aria-hidden="true">
+        <div class="striplabel">EVERYONE CAN SEE THIS</div>
+        <div class="strip" style="padding:0 8px;">
+          <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
+          <div class="track nb"><div class="rail"></div>
+            <div class="buspill" style="left:46%; animation:none">🚌</div>
+            <div class="buspill" style="left:78%; animation:none">🚌</div>
+          </div>
+          <div class="ticks">
+            <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
+            <div class="tick" style="left:28.6%"><span>AMADEO</span></div>
+            <div class="tick" style="left:66.7%"><span>IMUS</span></div>
+            <div class="tick last" style="left:100%"><span>AYALA</span></div>
+          </div>
+          <div class="track sb"><div class="rail"></div>
+            <div class="buspill sb" style="left:24%; animation:none">🚌</div>
+          </div>
+          <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
+        </div>
+      </div>
+      <figcaption>While it is running. Green dot, one button to stop, and the
+        same strip everyone watching sees — your bus is one of the pills on it.</figcaption>
     </figure>
   </div>
 

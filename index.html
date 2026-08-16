@@ -247,6 +247,13 @@
   }
   .buspill.sb{background:var(--maroon); color:#fff;}
   .buspill.stale{opacity:.45;}
+  /* The bus this phone is sharing. A ring rather than a different fill: gold
+     and maroon are carrying the direction, and the strip is too narrow to
+     widen a pill or hang a word off one without landing on a neighbour. The
+     green is the live dot's, so the ring reads as "the live one that is
+     yours" — and because that is colour doing the talking, the line under
+     the strip names it in words. */
+  .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 3.5px var(--live), 0 1px 4px rgba(43,35,32,.25);}
   /* A reported sighting, not a GPS position. Hollow and dashed so it cannot
      be mistaken for a live bus at a glance — that would be worse than showing
      nothing, because a sighting is one person's word, already minutes old,
@@ -648,6 +655,10 @@
             <span><span class="sw" style="background:var(--maroon)"></span>Southbound ▼</span>
             <span><span class="sw" style="background:#94a3b8"></span>Stops (tap for name)</span>
             <span id="sightLegend"><span class="sw" style="background:transparent; border:2px dashed var(--gold-deep); width:11px; height:11px;"></span>Dashed on the strip = reported sighting, not GPS</span>
+            <!-- The ring is marked on this strip too, so it is explained on
+                 this tab too. Shown only while sharing, by setShareUI(): a
+                 legend line for a mark nobody can see is noise. -->
+            <span id="selfLegend" class="hidden"><span class="sw" style="background:var(--gold); box-shadow:0 0 0 2px var(--live); margin-left:2px;"></span>Green ring = the bus you are sharing</span>
             <span>Tap a bus for its number and age</span>
           </div>
           <div class="hint" id="sourceNote">Positions come from whoever is on the bus: driver, conductor, or a rider volunteering. The direction is picked by hand, so it can occasionally be wrong.</div>
@@ -768,7 +779,7 @@
         <div class="track sb"><div class="rail"></div><div class="pills sb"></div></div>
         <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
       </div>
-      <div class="hint">Everyone with the tracker open is seeing this. Nothing to post in the group chat.</div>
+      <div class="hint">Everyone with the tracker open is seeing this. Yours is the bus with the green ring. Nothing to post in the group chat.</div>
     </div>
   </div>
 
@@ -1409,6 +1420,9 @@ function clusterBuses(list){
     if (target){
       target.count++;
       target.members.push(b.pub_id);
+      // Two people sharing from one bus is one pill, and it is yours if
+      // either of them is you.
+      if (b.self) target.self=true;
       if (!target.label && b.bus_label) target.label=b.bus_label;
       if (b.ts>target.ts){              // keep the freshest position
         target.lat=b.lat; target.lng=b.lng; target.ts=b.ts; target.speed=b.speed;
@@ -1416,7 +1430,7 @@ function clusterBuses(list){
     } else {
       clusters.push({ id:b.pub_id, lat:b.lat, lng:b.lng, ts:b.ts, speed:b.speed,
                       direction:b.direction, label:b.bus_label||'', count:1,
-                      members:[b.pub_id] });
+                      self:!!b.self, members:[b.pub_id] });
     }
   });
   return clusters;
@@ -1479,7 +1493,7 @@ function renderStrip(box, buses, sightings) {
   if (!box) return;
   const nbBox = box.querySelector('.pills.nb'), sbBox = box.querySelector('.pills.sb');
   if (!nbBox || !sbBox) return;
-  let nb='', sbz='';
+  let nb='', sbz='', nbMine='', sbMine='';
   const nearSet={};
   buses.forEach(function(b){
     const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
@@ -1487,8 +1501,14 @@ function renderStrip(box, buses, sightings) {
     pl.ticks.forEach(function(i){ nearSet[i]=true; });
     const pct = pl.pct;
     const stale = freshness(b.ts)==='delayed';
-    const pill = '<div class="buspill '+(b.direction==='south'?'sb':'')+(stale?' stale':'')+'" style="left:'+pct+'%">🚌</div>';
-    if (b.direction==='north') nb+=pill; else sbz+=pill;
+    const pill = '<div class="buspill '+(b.direction==='south'?'sb':'')+(stale?' stale':'')+
+      (b.self?' me':'')+'" style="left:'+pct+'%">🚌</div>';
+    // Your own bus is held back and appended last, so it paints over its
+    // neighbours rather than under them. Pills overlap constantly on a phone
+    // and the one pill this reader is looking for is the one that must not
+    // end up behind another.
+    if (b.direction==='north'){ if (b.self) nbMine+=pill; else nb+=pill; }
+    else { if (b.self) sbMine+=pill; else sbz+=pill; }
   });
   let gnb='', gsb='';
   sightings.forEach(function(s){
@@ -1497,7 +1517,7 @@ function renderStrip(box, buses, sightings) {
     const g = '<div class="sightmk'+(s.direction==='south'?' sb':'')+'" style="left:'+pct+'%"></div>';
     if (s.direction==='north') gnb+=g; else gsb+=g;
   });
-  nbBox.innerHTML=gnb+nb; sbBox.innerHTML=gsb+sbz;
+  nbBox.innerHTML=gnb+nb+nbMine; sbBox.innerHTML=gsb+sbz+sbMine;
   [].slice.call(box.querySelectorAll('.tick')).forEach(function(t){
     t.classList.toggle('near', !!nearSet[t.getAttribute('data-i')]);
   });
@@ -1625,13 +1645,21 @@ let lastPositionsAt = 0;
 async function pollPositions() {
   if (!shouldPoll(lastPositionsAt)) return;
   lastPositionsAt = Date.now();
-  const res = await rpc('get_positions', { p_slug: CFG.ROUTE_SLUG });
+  // p_self is our own session id, which only this phone holds, and the server
+  // answers with is_self on our row rather than handing anyone else's session
+  // id out (sql/04-session-id-privacy.sql). It is what lets the strip say
+  // which bus is yours instead of guessing from coordinates — which would be
+  // wrong exactly when it matters, with two buses close together. Sent only
+  // while sharing, because that is the only time the answer is used.
+  const res = await rpc('get_positions', sharing
+    ? { p_slug: CFG.ROUTE_SLUG, p_self: getSessionId() }
+    : { p_slug: CFG.ROUTE_SLUG });
   if (res.error) return;
   // pub_id, not the session id: see sql/04-session-id-privacy.sql. It is
   // stable for the length of a trip, which is all the map needs it for.
   positionsLoaded = true;
   BUSES = (res.data||[]).map(function(v){
-    return { pub_id:v.pub_id, lat:v.lat, lng:v.lng, speed:v.speed,
+    return { pub_id:v.pub_id, lat:v.lat, lng:v.lng, speed:v.speed, self:!!v.is_self,
              direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at) };
   });
   // markers are one per clustered bus rather than per sharing session, which
@@ -2183,6 +2211,15 @@ function setShareUI(state,msg){
   // is nothing on it that this person put there, and after stopping it would
   // be showing other people's buses under a heading about theirs.
   document.getElementById('onbusStripCard').classList.toggle('hidden', state!=='on');
+  document.getElementById('selfLegend').classList.toggle('hidden', state!=='on');
+  if (state!=='on'){
+    // The ring means "the bus you are sharing", and this phone is not sharing
+    // any more. The rows in hand still say it is, so drop the flag and redraw
+    // now rather than leave a ring on the tracker's strip until the next
+    // fetch. Every way sharing can end comes through here.
+    BUSES.forEach(function(b){ b.self=false; });
+    renderBuses();
+  }
   refreshOnbusStrip();
   checkControlsVisible();
 }
@@ -2196,6 +2233,10 @@ function refreshOnbusStrip(){
   if (!card || card.classList.contains('hidden')) return;
   fitTickBox(document.querySelector('#onbusStrip .ticks'));
   renderBuses();
+  // Past the throttle deliberately. This runs when a person did something —
+  // started a trip, opened the tab — and the rows in hand may predate their
+  // own bus, or predate the server being told which one it is.
+  lastPositionsAt = 0;
   if (running) pollPositions();
 }
 

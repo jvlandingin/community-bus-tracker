@@ -367,6 +367,10 @@
     animation:ride 16s linear infinite;
   }
   .buspill.sb{background:var(--maroon); animation-name:ride-back; animation-delay:-8s;}
+  /* Copied from index.html: the bus this phone is sharing, ringed in the
+     live dot's green. Gold and maroon are carrying the direction, so the
+     mark had to be something other than a fill. */
+  .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 3.5px var(--live), 0 1px 4px rgba(43,35,32,.25);}
   /* Copied from index.html: a reported sighting, hollow and dashed so it can
      never be read as a live bus. */
   .sightmk{
@@ -790,8 +794,9 @@
         <h3>Start sharing</h3>
         <p>The browser asks for location permission once. Say yes and the bus
           appears on the map within seconds. The strip that opens under the
-          button is the one everyone watching is looking at, so you can see
-          your own bus on it without leaving the tab.</p>
+          button is the one everyone watching is looking at, and your bus is
+          the one with the green ring around it, so you can find yourself on
+          it even when several buses are sharing.</p>
       </div>
     </div>
 
@@ -834,7 +839,7 @@
         <div class="strip" style="padding:0 8px;">
           <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
           <div class="track nb"><div class="rail"></div>
-            <div class="buspill" style="left:46%; animation:none">🚌</div>
+            <div class="buspill me" style="left:46%; animation:none">🚌</div>
             <div class="buspill" style="left:78%; animation:none">🚌</div>
           </div>
           <div class="ticks">
@@ -850,7 +855,8 @@
         </div>
       </div>
       <figcaption>While it is running. Green dot, one button to stop, and the
-        same strip everyone watching sees — your bus is one of the pills on it.</figcaption>
+        same strip everyone watching sees. Your bus is the one with the green
+        ring, so you can tell it apart when several are sharing.</figcaption>
     </figure>
   </div>
 

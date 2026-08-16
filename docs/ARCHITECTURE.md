@@ -274,6 +274,22 @@ consequences worth knowing:
   the tracker filtered to Northbound and then shares a southbound trip would
   otherwise watch their own bus fail to appear, and would be right to conclude
   the app was broken.
+- **Your own bus is ringed, and the server says which one it is.**
+  `get_positions` has taken `p_self` and answered with `is_self` since
+  `sql/04-session-id-privacy.sql` — it was built for the duplicate-sharer
+  warning, and the tracker now passes it while sharing. Nothing is guessed
+  from coordinates, which would go wrong exactly when it matters: two buses
+  in the same place. Clustering ORs the flag, so two people sharing one bus
+  get one pill that is correctly theirs. The mark is a ring in the live
+  dot's green rather than a different fill, a wider pill or a `YOU` label:
+  gold and maroon are carrying the direction, and at 390 px a pill that
+  grows in either dimension lands on its neighbour or on the direction
+  label. Because that leaves colour doing the talking, the line under the
+  strip names it in words, and the tracker's own colour legend gains a row
+  saying the same — shown only while sharing, since a legend for a mark
+  nobody can see is noise. The flag is dropped and the strips redrawn the
+  moment sharing ends, in `setShareUI()`, so a ring can never outlive the
+  trip it describes.
 - **It cost the biggest polling saving in the app.** A sharer sitting on the
   sharing tab used to skip the positions feed entirely — roughly 40% of a
   sharing phone's traffic over a trip. A strip fed by nothing is worse than no

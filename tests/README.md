@@ -17,6 +17,7 @@ node test-hours.js      # split operating hours, the en-route allowance
 node test-guard.js      # wrong-direction detection on simulated trips
 node test-strip.js      # progress strip position and wording
 node test-prompts.js    # idle, end-of-trip and direction prompts
+node test-mystop.js     # the saved stop: which bus is coming, how far, how many stops
 node test-boot.js       # loads both pages in a real DOM (needs jsdom)
 ```
 
@@ -92,7 +93,7 @@ For that to gate anything, **`javascript` and `database` have to be added as
 required status checks** on `main` in the repository's branch protection
 settings. Without that they report, but nothing stops a red branch merging.
 
-`netlify.toml` additionally runs the four suites that need nothing installed as
+`netlify.toml` additionally runs the five suites that need nothing installed as
 the site's build command, so a failing one cancels the deploy. That is a second
 line only: by then the commit is already on `main`. The merge gate is the one
 that matters.

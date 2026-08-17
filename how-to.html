@@ -29,6 +29,9 @@
     --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
     --brand-ink:#7a1f2b; --lost-ink:#c4432e;
     --gold-line:#eeddb4; --maroon-line:#e6cdc9;
+    /* The reader's own saved stop. Mirrored from index.html, like every
+       other token here; test-boot.js fails if the two copies drift. */
+    --mine:#4f46b8; --mine-ink:#443aa6;
     --ok-ink:#166534; --warn-ink:#92400e;
     --shadow:0 1px 2px rgba(43,35,32,.04);
     --radius:16px;
@@ -46,6 +49,7 @@
       --line:#372e26; --live:#4ac694; --lost:#c4432e;
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --mine:#4f46b8; --mine-ink:#b3aaf5;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
@@ -59,6 +63,7 @@
       --line:#372e26; --live:#4ac694; --lost:#c4432e;
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --mine:#4f46b8; --mine-ink:#b3aaf5;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
@@ -193,6 +198,23 @@
   .demo-chip.nb .ar{color:var(--gold-deep);}
   .demo-chip.sb .ar{color:var(--brand-ink);}
   .demo-chip .ag{color:var(--muted); font-weight:600;}
+  /* The reader's own saved stop, as index.html draws it between the chips
+     and the map. Drawn from the same tokens as the app, like everything
+     else on this page. */
+  .demo-mystop{
+    display:flex; align-items:center; gap:8px; margin-top:9px;
+    padding:7px 9px; border-radius:10px; background:var(--paper);
+    border:1px solid var(--line); border-left:3px solid var(--mine);
+  }
+  /* index.html's own row gives this wrapper flex:1; without it the box
+     shrink-wraps to less than the width available and the sentence takes a
+     second line it does not need. */
+  .demo-mystop > div{flex:1; min-width:0;}
+  .demo-mystop .who{
+    display:block; font-size:8px; font-weight:800; color:var(--mine-ink);
+    text-transform:uppercase; letter-spacing:.04em;
+  }
+  .demo-mystop .rel{display:block; font-size:10px; font-weight:700; margin-top:1px;}
 
   /* This one figure is a real cropped screenshot of this route's own map
      (Leaflet + CARTO), not a drawing. It used to be a stylised SVG route on a
@@ -541,6 +563,16 @@
         <div class="demo-chips">
           <span class="demo-chip nb"><span class="ar">▲</span><b>98018</b>2 km to AMADEO <span class="ag">12s ago</span></span>
         </div>
+        <!-- The saved stop. The sentence is myStopWords()'s: this reader
+             waits at Amadeo (Highway), which sits on the AMADEO checkpoint,
+             and the one bus drawn above is 2 km short of it — so 2.0 km and
+             "yours is the next stop" are what the real app computes here. -->
+        <div class="demo-mystop">
+          <div>
+            <span class="who">📍 Amadeo (Highway)</span>
+            <span class="rel">▲ Northbound · 2.0 km away · yours is the next stop</span>
+          </div>
+        </div>
         <!-- A real crop of this route's own map, around Amadeo — the same
              screenshot flyer.html uses, cut to this figure's shape. The badge
              sits where a bus 2 km short of Amadeo really is: interpolated
@@ -552,15 +584,22 @@
             <span class="demo-badge nb" style="left:40.3%; top:69.5%">🚌</span>
           </div>
         </div>
-        <!-- Numbered down the gutter, in the order they are read. -->
-        <span class="dot" style="top:21%">1</span>
-        <span class="dot" style="top:32.5%">2</span>
-        <span class="dot" style="top:54.5%">3</span>
-        <span class="dot" style="top:80.5%">4</span>
+        <!-- Numbered down the gutter, in the order they are read. The tops
+             are percentages of this figure, so adding a row to the drawing
+             moves every dot below it and they have to be re-measured, not
+             nudged: 4 and 5 shifted when the saved-stop row went in, 1 to 3
+             only changed because the figure itself got taller. Measured in a
+             real browser at 430 px wide, which is where these were set. -->
+        <span class="dot" style="top:18.6%">1</span>
+        <span class="dot" style="top:28.8%">2</span>
+        <span class="dot" style="top:48.3%">3</span>
+        <span class="dot" style="top:62.5%">4</span>
+        <span class="dot" style="top:82.7%">5</span>
       </div>
       <figcaption>
         <b>1</b> filter by direction · <b>2</b> the bus on the route strip ·
-        <b>3</b> how fresh the position is · <b>4</b> the same bus on the map
+        <b>3</b> how fresh the position is · <b>4</b> how far it still is from
+        your own stop · <b>5</b> the same bus on the map
       </figcaption>
     </figure>
 
@@ -643,6 +682,26 @@
         <p>Every bus says when it last moved: <b>updated 2 mins ago</b>. A bus that
           has gone quiet fades out, and drops off entirely once it is clearly
           stale. <b>A faded bus is a guess, not a position.</b></p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="n">5</div>
+      <div class="body">
+        <h3>Tell it where you wait</h3>
+        <p>Tap <b>Set your stop</b> and pick your usual one from the list. From then
+          on the page does the arithmetic for you: <b>▲ Northbound · 2.0 km away ·
+          yours is the next stop</b>, counted along the road rather than across
+          country, so a bus on the far side of a bend is not reported as nearly
+          here. It only ever counts buses still coming towards you — one that has
+          already gone past is not an answer.</p>
+        <p>If your stop is not on the list, <b>Drop a pin instead</b> and tap the map
+          where you wait. The ➤ button on the map shows where you are, if you want
+          it. <b>Your stop stays on this phone.</b> It is not sent anywhere, no other
+          visitor can see it, and “Remove my stop” deletes it.</p>
+        <p class="hint">It tells you distance and stops, never minutes. Working out
+          how long a bus will take needs a record of how long past trips took, and
+          this tool deliberately keeps no such record — see below.</p>
       </div>
     </div>
   </div>
@@ -910,6 +969,11 @@
       the moment you stop. There is no trail to look back through, so nobody can
       review a driver's speed, breaks, or route. The data to do that does not
       exist.</p>
+    <p><b>Nothing about the people watching, either.</b> The map never needs your
+      location, and the two places that can use it — the ➤ button and “Use my
+      current location” in the stop picker — work entirely inside your phone.
+      A saved stop is kept on your own device and never sent anywhere, so no
+      part of this system can see where anybody is waiting.</p>
     <p class="hint">The full explanation lives in
       <b>“How your data is handled”</b> on the map page.</p>
   </div>

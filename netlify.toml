@@ -1,8 +1,8 @@
 # Deploys come from git now, not drag-and-drop, so a bad commit becomes the
-# live site by itself. These four suites run as the build command and a
+# live site by itself. These five suites run as the build command and a
 # failure cancels the deploy.
 #
-# They are the four that need nothing installed. Each one extracts the
+# They are the five that need nothing installed. Each one extracts the
 # shipped functions out of index.html by their comment markers and runs
 # them, so a failure here means the HTML that is about to be published is
 # broken, not that some copy of it is.
@@ -22,4 +22,5 @@
     node tests/test-hours.js && \
     node tests/test-guard.js && \
     node tests/test-strip.js && \
-    node tests/test-prompts.js"""
+    node tests/test-prompts.js && \
+    node tests/test-mystop.js"""

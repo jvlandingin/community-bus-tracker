@@ -19,10 +19,18 @@ name the route in link previews.
 ## What it does
 
 - **Watch:** open a link, see live bus positions, direction, and how fresh each
-  one is. No key, no sign-up, no location permission requested.
+  one is. No key, no sign-up, no location permission needed.
 - **Share:** a driver, conductor, or volunteer rider taps "I'm on the bus" and
   shares the vehicle's position for that trip. Needs a community key. Stop
   anytime.
+- **Your own stop:** save the stop you wait at and the page says how far the
+  next bus still is from *it* — `▲ Northbound · 3.0 km away · about 5 stops
+  before yours` — measured along the road rather than as the crow flies. Pick
+  from the route's own stop list, or drop a pin. There is also an opt-in ➤
+  control on the map that shows where you are. **All of this stays on your
+  phone**: the stop is saved in the browser, the distance is worked out on the
+  device from positions the page already has, and nothing about a person
+  watching is ever sent anywhere.
 - **Light and dark:** follows the device by default, with a ☀/☾/◐ control in
   the header to override it either way. The map's tiles follow too.
 - **Sightings:** a board for when nobody is sharing GPS. Direction and nearest
@@ -57,6 +65,16 @@ place. There is no trail table. This is the most important property in the
 system: the tool cannot be used to review a driver's speed, breaks, or route,
 because the data to do that does not exist. Do not add a history table without a
 very deliberate conversation about it.
+
+**It never records where anyone watching is.** A reader can save a stop and
+switch on a dot showing their position, and both are computed and kept on their
+own device — no request carries them and no column exists for them. There is
+deliberately no way to show other people where riders are waiting: reads need no
+key, so that would publish it to anyone at all.
+
+**It says how far, not how long.** No arrival times. Predicting minutes needs a
+record of how long past trips took, and that record is exactly what the point
+above refuses to keep.
 
 There are also no accounts, no names, no phone numbers, no third-party code, and
 no analytics beyond one live number: the admin page can see how many devices have

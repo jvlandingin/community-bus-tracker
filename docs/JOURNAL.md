@@ -25,6 +25,70 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-08-17 — Your own stop, on your own phone
+
+**What shipped.** The tracker can be told where you wait. Pick a stop from the
+route's own list (or drop a pin), and the card between the bus chips and the
+map answers the question people actually open the page with: `▲ Northbound ·
+3.0 km away · about 5 stops before yours`. There is also an opt-in ➤ control on
+the map that draws a dot where you are.
+
+**Where this came from.** A proposal to add ETA prediction via federated
+learning — train on each phone during a trip, send only model updates, use a
+Bayesian prior so it works on little data. The Bayesian instinct was right and
+the federated part was not, for a reason worth writing down: **federated
+learning is a way to learn from data you are holding without moving it, and
+this system holds none.** At ten sharing trips a day an "update" from one phone
+is that trip, so it would have created the location history the project exists
+without, in a form that reads as more private than a trail table rather than
+less. It would also have needed an aggregator, a write endpoint that a share
+key from a public group chat could poison invisibly, and on-device training
+competing for the battery of a phone that already cannot survive a screen lock.
+
+The second proposal — let watchers see their own location — was the good one,
+and it needed no model, no server and no SQL at all.
+
+**What was rejected, and why it matters more than what shipped.** The idea came
+with "maybe this can be public or private". Public was rejected outright. Reads
+need no key, so public here means the entire internet, and the feature would
+have broadcast that a particular roadside has a person standing at it right
+now — mostly commuters alone, at a route whose southbound window closes at
+8:00 PM. That is a physical safety problem, not a privacy trade, and it is a
+different category from a sharer: a sharer is an adult on a bus who opted in.
+If demand data is ever genuinely wanted, the watching count is the precedent to
+copy — a number with a floor under it, never a position.
+
+**A stop picker beats a location prompt**, which was the useful surprise. Most
+people check the page from a desk or a kitchen, not from the stop, so a GPS fix
+would have put them somewhere useless. Picking from the 71 stops already in
+`config.txt` is more accurate, persists for a daily commuter, and needs no
+permission — which is why the privacy panel's strongest sentence survives for
+everybody who never opts in.
+
+**The panel moved in the same commit**, as the rule says. It used to promise
+the app "never asks for your location" while watching, which is no longer true,
+so it now says the thing that is: two places can use it, both only if you ask,
+and neither sends it anywhere. The saved stop is the third remembered thing and
+is named alongside the guide dot and the theme. `test-boot.js` now fails if the
+`localStorage` keys the app writes stop matching the ones the panel lists,
+which makes that rule mechanical instead of remembered.
+
+**It says how far, never how long.** Distance and a stop count need no model.
+Minutes would need travel-time history, and that is the conversation the
+no-history invariant demands — so the test suite fails if a sentence on that
+card ever starts implying an arrival time.
+
+**Cost, honestly: the poster broke.** Adding one row to the mock pushed
+`flyer.html` to two sheets — a near-empty first page with the header stranded
+on it, exactly as `CLAUDE.md` warned. The mock column spans the page height, so
+it is the thing that decides one sheet or two, and about 27 px had to be found
+in the furniture around the map without touching the map. The guide's callout
+dots also had to be re-measured, because they are percentages of a figure that
+just got taller. Both are now written down as traps rather than left to be
+rediscovered.
+
+---
+
 ## 2026-08-01 — Parked the sightings board
 
 **Decision.** The sightings board is switched off on this route for now, from

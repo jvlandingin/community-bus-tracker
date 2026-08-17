@@ -14,13 +14,14 @@ made in response to bugs that had already shipped.
 
 ## Commands
 
-The four dependency-free JavaScript suites, run from the repository root:
+The five dependency-free JavaScript suites, run from the repository root:
 
 ```
 node tests/test-hours.js      # split operating hours, the en-route allowance
 node tests/test-guard.js      # wrong-direction detection on simulated trips
 node tests/test-strip.js      # progress strip position and wording
 node tests/test-prompts.js    # idle, end-of-trip and direction prompts
+node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops
 ```
 
 These are also Netlify's build command, so a failure cancels the deploy.
@@ -81,13 +82,26 @@ treated an unguessable session id as a credential.
 times, sharer cap, and whether the sightings board is shown at all. Edited in `admin.html`, re-read by the app every 60 seconds,
 so a schedule change never needs a redeploy.
 
-**The app keeps exactly two things between visits**, both on the device and
-both named in the privacy panel: whether the guide has been opened, and the
-light/dark/system theme choice. Adding a third means editing that panel in the
-same commit — the panel is the promise, not the code.
+**The reader can save a stop**, and the card between the bus chips and the map
+then says how far the next bus still is from it and roughly how many stops.
+Entirely client-side — no request, table or column was added — and measured
+along the checkpoint chain, never straight-line, because across the Tagaytay
+ridge hook a bus 1.2 km away as the crow flies is 3.5 km by road. Stops in
+between are counted by projecting them onto the chain, never by `config.txt`
+order, which is merged from two posters and is not route order. It reports
+distance and stop counts only, never minutes: an ETA needs travel-time history
+this system does not keep, and `test-mystop.js` fails if the wording drifts
+towards implying one.
+
+**The app keeps exactly three things between visits**, all on the device and
+all named in the privacy panel: whether the guide has been opened, the
+light/dark/system theme choice, and the reader's saved stop. Adding a fourth
+means editing that panel in the same commit — the panel is the promise, not the
+code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
+`localStorage` keys the app writes stops matching the set the panel names.
 
 **Colours come in fill/ink pairs.** `--maroon`/`--brand-ink`,
-`--gold`/`--gold-deep`, `--lost`/`--lost-ink`. The first of each pair is a
+`--gold`/`--gold-deep`, `--lost`/`--lost-ink`, `--mine`/`--mine-ink`. The first of each pair is a
 background with white or near-black text on it; the second is the same colour
 used as text. They are nearly identical in the light theme and completely
 different in dark, so pick by what the colour is doing — painting a shape, or
@@ -104,6 +118,15 @@ upserted in place. There is no trail table, so the tool cannot be used to review
 a driver's speed, breaks or route — the data does not exist. This is the single
 most important property of the system. The wrong-direction guard tracks progress
 in the sharing phone's memory only and it dies with the tab.
+
+**No watcher location leaves the device, ever.** The reader can save a stop and
+switch on a dot showing where they are; both are computed and stored on the
+phone, and neither is transmitted. Nothing server-side knows where anybody
+watching the map is, and no feature may change that — a public version of it
+was considered and rejected, because reads need no key, so "public" means the
+whole internet and it would broadcast that a given roadside has somebody
+standing at it right now. If a request ever needs to carry a watcher's
+position, that is the deliberate conversation, not a small follow-up.
 
 **No package.json.** Adding one makes Netlify run `npm install` and publish
 `node_modules` alongside the site, which breaks the no-build-step property.
@@ -199,12 +222,24 @@ two side columns are `.pgroup` wrappers that are `display:contents` on
 screen, so they generate no box there and the screen page and the chat image
 are byte-for-byte unaffected by them.
 
-Two traps worth knowing, both of which cost a render each: `grid-row:1/-1`
+Three traps worth knowing, all of which cost a render each: `grid-row:1/-1`
 silently collapses to a zero-row span here because `-1` resolves against the
 *explicit* grid and these rows are all implicit — use a large `span` instead.
-And the header band has to stay short enough that the grid fits beneath it,
+The header band has to stay short enough that the grid fits beneath it,
 because a grid this tall will not fragment: if it does not fit it moves to a
-page of its own and leaves the header stranded on a blank sheet.
+page of its own and leaves the header stranded on a blank sheet — and that is
+exactly what a two-page render looks like, a near-empty first sheet and
+everything on the second.
+
+And **the mock column has no spare height.** It spans the full page, so it is
+what decides one sheet or two, and anything added to the drawing has to be paid
+for out of the furniture around it — the map is not allowed to shrink, because
+it is the thing being made to look like the app, and its bus badges are
+positioned as percentages of its own box. Adding the saved-stop row cost about
+27 px and took a title size, two track heights and several paddings to buy
+back. Measure before and after with a real render; `@media print` can be
+flipped to `@media all` in a scratch copy to read the heights off the page
+directly, but only the PDF page count is the truth.
 
 The header strip and the "How your data is handled" panel both state that the
 app is not affiliated with or endorsed by any bus company. `flyer.html` and

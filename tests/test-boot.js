@@ -461,6 +461,111 @@ function run(page, include, label, configText) {
     'stopping takes it away again, rather than leaving other buses under a heading about yours');
   check(legend.className.includes('hidden'), 'and the legend line goes with it');
 
+  console.log('\n=== 10. the reader\'s own saved stop ===');
+  // A watcher's location is the one thing this system has never held, so the
+  // feature that finally mentions one has to be provably local. The maths is
+  // covered by test-mystop.js; what is checked here is the part that can only
+  // be seen in a real page — that it draws, that it persists in the one place
+  // it claims to, and that the privacy panel still describes it truthfully.
+  const stopBar = ok.d.getElementById('myStop');
+  const stopLegend = ok.d.getElementById('myStopLegend');
+  check(!!stopBar, 'the tracker has somewhere to put the saved stop');
+  check(!!stopBar && /Set your stop/i.test(stopBar.textContent),
+    'with nothing saved it offers to save one', stopBar && stopBar.textContent.trim().slice(0, 52));
+  check(!!stopLegend && stopLegend.className.includes('hidden'),
+    'and the legend line for the pin stays hidden until there is a pin');
+
+  const cpAt = i => ({ lat: +cps[i][2], lng: +cps[i][3], short: cps[i][1] });
+  const myCp = cpAt(4), busCp = cpAt(1);
+  ok.w.setMyStop('Test Stop', myCp.lat, myCp.lng);
+  check(ok.w.localStorage.getItem('wt-mystop') !== null,
+    'saving a stop puts it in localStorage, on this device');
+  check(!stopLegend.className.includes('hidden'), 'and the legend line for the pin appears');
+  {
+    const saved = JSON.parse(ok.w.localStorage.getItem('wt-mystop'));
+    check(saved.name === 'Test Stop' && Math.abs(saved.lat - myCp.lat) < 1e-9,
+      'what is stored is the stop itself, and nothing else',
+      Object.keys(saved).sort().join(','));
+  }
+
+  // A northbound bus three checkpoints short of it is coming; the same bus
+  // three checkpoints beyond it is not.
+  ok.w.renderMyStop([{ id: 'b1', lat: busCp.lat, lng: busCp.lng, direction: 'north', ts: Date.now() }]);
+  check(/▲ Northbound · [\d.]+ km away · (about \d+ stops? before yours|yours is the next stop)/
+    .test(stopBar.textContent),
+    'a bus still short of your stop is reported with distance and stops',
+    stopBar.textContent.replace(/\s+/g, ' ').trim().slice(0, 72));
+  ok.w.renderMyStop([{ id: 'b2', lat: cpAt(6).lat, lng: cpAt(6).lng, direction: 'north', ts: Date.now() }]);
+  check(/not?[a-z ]*heading your way/i.test(stopBar.textContent),
+    'a bus that has already passed says so rather than reporting itself as near',
+    stopBar.textContent.replace(/\s+/g, ' ').trim().slice(0, 72));
+  ok.w.renderMyStop([]);
+  check(/Nobody is sharing/i.test(stopBar.textContent),
+    'and with nothing on the map it falls back to the page\'s own wording');
+
+  // The picker rewrites its list on every keystroke, so the click handling is
+  // delegated rather than inline. Two of this route's own stops are exactly
+  // the ones an inline onclick would have had to survive: an ampersand and an
+  // apostrophe. Drive the real list and click a real button.
+  ok.w.openStopPicker();
+  const search = ok.d.getElementById('stopSearch');
+  search.value = 'kawit';
+  ok.w.renderStopList();
+  const kawit = [...ok.d.querySelectorAll('#stopList button')]
+    .find(b => b.getAttribute('data-name') === 'S&R Kawit');
+  check(!!kawit, 'searching the picker narrows it to matching stops',
+    [...ok.d.querySelectorAll('#stopList button')].map(b => b.getAttribute('data-name')).join(', '));
+  if (kawit) {
+    kawit.click();
+    const saved = JSON.parse(ok.w.localStorage.getItem('wt-mystop') || '{}');
+    check(saved.name === 'S&R Kawit',
+      'clicking a stop whose name contains "&" saves that exact name', JSON.stringify(saved.name));
+  }
+  search.value = "shakey";
+  ok.w.renderStopList();
+  const apos = ok.d.querySelector('#stopList button[data-name*="Shakey"]');
+  if (apos) {
+    apos.click();
+    check(JSON.parse(ok.w.localStorage.getItem('wt-mystop')).name === "Salaban (Shakey's Bypass)",
+      'and one containing an apostrophe survives too');
+  } else {
+    check(false, 'the apostrophe stop is still in the picker');
+  }
+  search.value = 'zzzz';
+  ok.w.renderStopList();
+  check(/No stop here matches/.test(ok.d.getElementById('stopList').textContent),
+    'a search matching nothing says so instead of going blank');
+
+  ok.w.clearMyStop();
+  check(ok.w.localStorage.getItem('wt-mystop') === null,
+    'removing the stop deletes it rather than blanking it');
+  check(stopLegend.className.includes('hidden'), 'and takes its legend line away again');
+  check(/Set your stop/i.test(stopBar.textContent), 'leaving the offer to set one');
+
+  // The panel is the promise and the code is only the implementation. This is
+  // that rule made mechanical: every key the app writes to localStorage has to
+  // be one the panel has told the reader about. A fourth remembered thing
+  // fails here until the paragraph is rewritten in the same commit.
+  const appSrc = fs.readFileSync(path.join(APP, 'index.html'), 'utf8');
+  const keys = [...new Set([...appSrc.matchAll(/localStorage\.(?:setItem|removeItem)\(\s*'([^']+)'/g)]
+    .map(m => m[1]))].sort();
+  check(keys.join(',') === 'wt-guide-seen,wt-mystop,wt-theme',
+    'the app keeps exactly the three things the privacy panel names', keys.join(',') || 'none');
+  const panel = ok.d.getElementById('privModal').textContent.replace(/\s+/g, ' ');
+  check(/Three small things are remembered on your own device/.test(panel),
+    'and the panel counts them out loud, so a fourth cannot slip in quietly');
+  check(/the stop you saved/i.test(panel), 'naming the saved stop among them');
+  // The old panel promised the app never asks for location while watching.
+  // That is no longer true, so the promise had to move rather than be dropped.
+  check(!/never asks for your location\./.test(panel),
+    'the superseded "never asks for your location" promise is gone');
+  check(/never transmitted, never stored on our side/i.test(panel),
+    'replaced by the one that is still true: it does not leave the phone');
+
+  // Opting the dot on is a per-visit decision, so it must not be remembered.
+  check(!/localStorage\.[a-zA-Z]+\([^)]*myloc/i.test(appSrc),
+    'whether the location dot is on is never written to localStorage');
+
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');
   process.exit(fail ? 1 : 0);
 })();

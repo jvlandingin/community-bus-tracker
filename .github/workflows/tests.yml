@@ -29,7 +29,7 @@ jobs:
       - name: Run the suites
         run: |
           set -euo pipefail
-          for t in test-hours test-guard test-strip test-prompts test-boot; do
+          for t in test-hours test-guard test-strip test-prompts test-mystop test-boot; do
             echo "::group::$t"
             node "tests/$t.js"
             echo "::endgroup::"

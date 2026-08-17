@@ -41,6 +41,12 @@
     --brand-ink:#7a1f2b; --lost-ink:#c4432e;
     --gold-line:#eeddb4; --maroon-line:#e6cdc9;
     --ok-ink:#166534; --warn-ink:#92400e;
+    /* The reader's own saved stop. A fourth pair, and deliberately not any
+       of the three above: gold and maroon are spelling "which direction",
+       and --lost is spelling "stale". A stop belongs to the person reading,
+       which is a fourth thing to say, so it gets a fourth colour rather than
+       borrowing one that already means something else. */
+    --mine:#4f46b8; --mine-ink:#443aa6;
     --shadow:0 1px 2px rgba(43,35,32,.04);
     --radius:16px;
     /* 44px: the smallest target a thumb finds reliably on a moving bus. */
@@ -72,6 +78,9 @@
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
+      /* The fill keeps its light value, like the other three; only the ink
+         partner inverts, because indigo on a near-black card is 2.1:1. */
+      --mine:#4f46b8; --mine-ink:#b3aaf5;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
       --shadow:none;
@@ -85,6 +94,9 @@
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
+      /* The fill keeps its light value, like the other three; only the ink
+         partner inverts, because indigo on a near-black card is 2.1:1. */
+      --mine:#4f46b8; --mine-ink:#b3aaf5;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
       --shadow:none;
@@ -302,6 +314,85 @@
   .buschip.sb .arrow{color:var(--brand-ink);}
   .buschip .age{color:var(--muted); font-weight:600;}
 
+  /* The reader's own stop. It sits between the chips and the map because it
+     is a sharper version of the answer above it, not a second question: with
+     a stop saved, "6 km away" is the same fact the chips already carry,
+     measured from somewhere the reader actually cares about. So it does not
+     fold, for the same reason the headline does not fold.
+
+     Both states are one full-width control at --tap, because on a phone this
+     is read one-handed at a roadside. */
+  .mystop{margin-top:12px;}
+  .mystop-btn{
+    width:100%; display:flex; align-items:center; gap:8px; padding:9px 12px;
+    min-height:var(--tap); border-radius:12px; font-family:inherit;
+    font-size:11.5px; font-weight:700; cursor:pointer; text-align:left;
+    border:1.5px dashed var(--line); background:transparent; color:var(--muted);
+  }
+  .mystop-btn .pin{color:var(--mine-ink); font-size:13px; flex:0 0 auto;}
+  .mystop-live{
+    display:flex; align-items:center; gap:10px; padding:10px 12px;
+    min-height:var(--tap); border-radius:12px; background:var(--paper);
+    border:1.5px solid var(--line); border-left:4px solid var(--mine);
+  }
+  .mystop-live .body{flex:1; min-width:0;}
+  .mystop-live .name{
+    display:block; font-size:10.5px; font-weight:800; color:var(--mine-ink);
+    text-transform:uppercase; letter-spacing:.04em;
+  }
+  .mystop-live .rel{display:block; font-size:12.5px; font-weight:700; margin-top:2px; line-height:1.4;}
+  .mystop-live .rel .quiet{color:var(--muted); font-weight:600;}
+  .mystop-live .edit{
+    flex:0 0 auto; min-height:var(--tap); padding:0 12px; border-radius:10px;
+    border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
+    font-family:inherit; font-size:11px; font-weight:700; cursor:pointer;
+  }
+
+  /* The picker. A list of the route's own stops, searchable, because typing
+     three letters beats scrolling seventy-one names on a moving bus. */
+  .stopsearch{
+    width:100%; padding:11px 12px; min-height:var(--tap); border-radius:10px;
+    border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
+    font-family:inherit; font-size:14px; font-weight:600;
+  }
+  .stoplist{display:flex; flex-direction:column; gap:4px; margin-top:10px;}
+  .stoplist button{
+    display:block; width:100%; text-align:left; padding:10px 12px;
+    min-height:var(--tap); border-radius:10px; font-family:inherit;
+    font-size:12.5px; font-weight:700; cursor:pointer;
+    border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
+  }
+  .stoplist button .approx{color:var(--muted); font-weight:600; font-size:11px;}
+  .stoplist .empty{padding:14px 2px; color:var(--muted); font-size:12.5px; font-weight:600;}
+  .pickrow{display:flex; gap:6px; margin-top:10px;}
+  .pickrow button{
+    flex:1; min-height:var(--tap); border-radius:10px; padding:0 8px;
+    border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
+    font-family:inherit; font-size:11px; font-weight:700; cursor:pointer;
+  }
+  /* Shown over the map while the reader is placing a pin by hand. */
+  .pinmode{
+    position:absolute; left:8px; right:8px; top:8px; z-index:900;
+    padding:8px 10px; border-radius:10px; background:var(--mine); color:#fff;
+    font-size:11.5px; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,.25);
+    display:flex; align-items:center; gap:8px;
+  }
+  .pinmode button{
+    margin-left:auto; flex:0 0 auto; min-height:32px; padding:0 10px;
+    border-radius:8px; border:1.5px solid rgba(255,255,255,.5);
+    background:transparent; color:#fff; font-family:inherit;
+    font-size:11px; font-weight:700; cursor:pointer;
+  }
+  .mapwrap{position:relative;}
+  /* The saved stop on the map. A pin rather than another circle: the map
+     already carries circles for stops, checkpoints and sightings, and this
+     one is the reader's own. */
+  .mypin{
+    width:14px; height:14px; border-radius:50% 50% 50% 0;
+    transform:rotate(-45deg); background:var(--mine);
+    border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+
   /* Was a flat 290px at every size, which is a letterbox on a desktop and
      barely a map on a phone. */
   #map{height:min(58vh,420px); min-height:290px; border-radius:12px; margin-top:14px; border:1px solid var(--line);}
@@ -511,7 +602,9 @@
     </h3>
     <div class="modal-scroll privacy-detail">
       <h4 class="ok">If you're just watching the map</h4>
-      <p>The app never asks for your location. The location permission is only used in “I'm on the bus” mode, and only after you tap Start. No account, no name, no phone number. We can't see who is watching.</p>
+      <p>The app never asks for your location on its own, and you can use the whole map without ever giving it. No account, no name, no phone number. We can't see who is watching.</p>
+      <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the ⊕ button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the tab.</p>
+      <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it.</p>
       <p>One thing is counted, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
 
       <h4 class="ok">If you share from the bus</h4>
@@ -539,7 +632,7 @@
 
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
-      <p>Two small things are remembered on your own device, and nowhere else: whether you have opened this guide before (so the dot on the ⓘ stops nagging), and your light or dark theme choice. Both stay in your browser, are never sent anywhere, and are not linked to anything. Clearing your browser data removes them.</p>
+      <p>Three small things are remembered on your own device, and nowhere else: whether you have opened this guide before (so the dot on the ⓘ stops nagging), your light or dark theme choice, and the stop you saved, if you saved one. All three stay in your browser, are never sent anywhere, and are not linked to anything. Clearing your browser data removes them, and “Remove my stop” in the stop picker deletes the third one on its own.</p>
     </div>
     <div class="modal-foot">
       <button class="big btn-ghost" onclick="closeModal('privModal')">Close</button>
@@ -565,6 +658,25 @@
     <div class="modal-actions">
       <button class="big btn-primary" id="askYes" onclick="askYes()"></button>
       <button class="big btn-ghost" id="askNo" onclick="askNo()"></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal hidden" id="stopModal" role="dialog" aria-modal="true" aria-labelledby="stopTitle">
+  <div class="modal-card tall">
+    <h3 id="stopTitle">📍 Where do you wait?
+      <button class="modal-x" onclick="closeModal('stopModal')" aria-label="Close">✕</button>
+    </h3>
+    <p class="hint" style="margin:0 0 10px;">Pick your usual stop and the map will tell you how far the bus still is from it. It is saved on this phone only — nobody else can see it, and it is never sent anywhere.</p>
+    <input type="text" class="stopsearch" id="stopSearch" placeholder="Type a few letters, e.g. Imus" autocomplete="off" oninput="renderStopList()">
+    <div class="pickrow">
+      <button type="button" id="nearestBtn" onclick="pickNearestStop()">Use my current location</button>
+      <button type="button" onclick="startPinMode()">Drop a pin instead</button>
+    </div>
+    <div class="hint" id="stopPickErr" style="margin-top:8px;"></div>
+    <div class="modal-scroll"><div class="stoplist" id="stopList"></div></div>
+    <div class="modal-foot">
+      <button class="big btn-ghost" id="clearStopBtn" onclick="clearMyStop()">Remove my stop</button>
     </div>
   </div>
 </div>
@@ -609,7 +721,8 @@
   <div id="trackView">
     <div class="privacybar">
       <button type="button" onclick="openModal('privModal')">
-        🔒 <b>No account. No name.</b> Watching the map never uses your location.
+        🔒 <b>No account. No name.</b> Watching never needs your location, and if you
+        do switch it on it stays on your phone.
         Positions are volunteer-reported, so they can be wrong or missing.
         <span class="more">How your data is handled</span>
       </button>
@@ -645,7 +758,19 @@
 
       <div class="buslist" id="busList"></div>
 
-      <div id="map"></div>
+      <!-- Rewritten by renderMyStop() on every poll. Nothing here is sent
+           anywhere: the stop lives in this browser and the distance is
+           worked out on this device from positions the page already has. -->
+      <div class="mystop" id="myStop"></div>
+
+      <div class="mapwrap">
+        <div class="pinmode hidden" id="pinMode">
+          <span>Tap the map where you wait for the bus.</span>
+          <button type="button" onclick="cancelPinMode()">Cancel</button>
+        </div>
+        <div id="map"></div>
+      </div>
+      <div class="hint hidden" id="myLocNote"></div>
 
       <details class="note">
         <summary>ⓘ What the colours mean</summary>
@@ -659,6 +784,10 @@
                  this tab too. Shown only while sharing, by setShareUI(): a
                  legend line for a mark nobody can see is noise. -->
             <span id="selfLegend" class="hidden"><span class="sw" style="background:var(--gold); box-shadow:0 0 0 2px var(--live); margin-left:2px;"></span>Green ring = the bus you are sharing</span>
+            <!-- Shown only once the reader has one, like the ring above: a
+                 legend line for a mark that is not on the map is noise. -->
+            <span id="myStopLegend" class="hidden"><span class="sw" style="background:var(--mine)"></span>Your saved stop (only on this device)</span>
+            <span id="myLocLegend" class="hidden"><span class="sw" style="background:transparent; border:2px solid var(--mine); width:11px; height:11px;"></span>You (never sent anywhere)</span>
             <span>Tap a bus for its number and age</span>
           </div>
           <div class="hint" id="sourceNote">Positions come from whoever is on the bus: driver, conductor, or a rider volunteering. The direction is picked by hand, so it can occasionally be wrong.</div>
@@ -1132,6 +1261,8 @@ function initMap() {
       [HOME_BOUNDS.getNorth()+slack, HOME_BOUNDS.getEast()+slack]));
   }
   addResetControl();
+  addLocateControl();
+  syncMyStopMarker();
 }
 
 function resetView(){
@@ -1154,6 +1285,33 @@ function addResetControl(){
       'stroke-width="2" stroke-linecap="round" aria-hidden="true">'+
       '<circle cx="12" cy="12" r="6"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>';
     L.DomEvent.on(a, 'click', function(e){ L.DomEvent.stop(e); resetView(); });
+    L.DomEvent.disableClickPropagation(box);
+    return box;
+  };
+  ctl.addTo(map);
+}
+// "Where am I" belongs on the map, next to the other map control, rather
+// than as another row on a card whose whole design is about not pushing the
+// answer below the fold. It costs no vertical space and it is where every
+// other map on the reader's phone keeps it.
+function addLocateControl(){
+  const ctl = L.control({ position:'topleft' });
+  ctl.onAdd = function(){
+    const box = L.DomUtil.create('div', 'leaflet-bar mapreset');
+    const a = L.DomUtil.create('a', '', box);
+    a.href = '#';
+    a.id = 'locateBtn';
+    a.setAttribute('role', 'button');
+    a.setAttribute('aria-pressed', 'false');
+    a.title = 'Show my location on the map';
+    a.setAttribute('aria-label', 'Show my location on the map');
+    // A pointer, not a crosshair. The reset control directly above it is
+    // already a circle with four ticks, and at 20 px two crosshairs stacked
+    // on top of each other are one control as far as a reader is concerned.
+    a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
+      'stroke-width="2" stroke-linejoin="round" aria-hidden="true">'+
+      '<path d="M21 3 3 10.6l7.7 2.7L13.4 21z"/></svg>';
+    L.DomEvent.on(a, 'click', function(e){ L.DomEvent.stop(e); toggleMyLocation(); });
     L.DomEvent.disableClickPropagation(box);
     return box;
   };
@@ -1387,6 +1545,323 @@ function dirGuardUpdate(g, p, tsMs, dir, chainPts, chainCum, K){
 }
 // ---- END ROUTE PROGRESS -----------------------------------------------
 
+// ---- THE READER'S OWN STOP (unit tested) ------------------------------
+// A saved stop turns "a bus is somewhere between Imus and Kawit" into "a bus
+// is 6 km from where you actually wait", which is the question a commuter
+// came to the page with. Everything below runs on the reader's own device
+// against positions the page has already fetched. The stop itself lives in
+// this browser and is never sent anywhere: no new table, no new request, and
+// nothing about a person watching the map leaves their phone. That is the
+// whole design — a watcher's location is the one thing this system has never
+// held, and adding a feature about it must not change that.
+//
+// Distance is measured ALONG the checkpoint chain, never straight-line. A
+// straight line from a pin in Bacoor to a bus at Kawit reads about 2 km when
+// the road between them is nearer 6, and it is worst exactly where the route
+// bends hardest — the Kawit swing and the Tagaytay ridge hook, the same two
+// places the wrong-direction guard needs a 25 minute window to survive.
+//
+// Note what this does NOT do: it never turns a distance into minutes. An ETA
+// needs a model of how fast this road runs at this hour, and the honest
+// version of that needs travel-time history the system deliberately does not
+// keep. Distance and a stop count need neither, and cannot be quietly wrong.
+function stopChainKms(stops, pts, cum){
+  // Projected onto the chain and sorted by the result, never read in list
+  // order. config.txt's stop order is merged from two posters and is not
+  // strictly geographic — the same trap that made the direction guard use
+  // the checkpoints instead of these — so anything relying on the order
+  // being route order is wrong. Sorting by projected distance is not.
+  const out = [];
+  for (let i=0;i<stops.length;i++){
+    const s = stops[i];
+    if (!s || isNaN(s.lat) || isNaN(s.lng)) continue;
+    const c = chainPosition({ lat:s.lat, lng:s.lng }, pts, cum);
+    if (c) out.push(c.km);
+  }
+  return out.sort(function(a,b){ return a-b; });
+}
+
+// The nearest bus still coming towards a point on the chain, or null. A bus
+// that has already gone past is not an answer to "how long until I can get
+// on one", so it is skipped rather than reported as very close.
+function approachInfo(buses, myKm, stopKms, filter){
+  if (myKm === null || myKm === undefined || isNaN(myKm)) return null;
+  let best = null;
+  for (let i=0;i<buses.length;i++){
+    const b = buses[i];
+    if (filter && filter !== 'all' && b.direction !== filter) continue;
+    if (b.km === null || b.km === undefined || isNaN(b.km)) continue;
+    // Northbound runs up the chain and southbound down it, so "still to
+    // come" is the opposite sign for each.
+    const away = b.direction === 'south' ? (b.km - myKm) : (myKm - b.km);
+    if (away < 0) continue;
+    if (!best || away < best.km){
+      best = { id:b.id, direction:b.direction, label:b.label, ts:b.ts, km:away, busKm:b.km };
+    }
+  }
+  if (!best) return null;
+  const lo = Math.min(best.busKm, myKm), hi = Math.max(best.busKm, myKm);
+  let n = 0;
+  for (let i=0;i<stopKms.length;i++){ if (stopKms[i] > lo && stopKms[i] < hi) n++; }
+  best.stops = n;
+  return best;
+}
+
+// Wording. Kept next to the maths so a change to one is a change to the
+// other, and so the test suite reads the strings the app really prints.
+function myStopWords(info){
+  if (!info) return null;
+  const dir = info.direction === 'south' ? '▼ Southbound' : '▲ Northbound';
+  // Under half a km the reader can see the road themselves, and a phone's
+  // idea of 300 m is worth less than their eyes. Say "under" and stop.
+  const dist = info.km < 0.5 ? 'under 500 m away'
+             : info.km < 10  ? info.km.toFixed(1) + ' km away'
+             :                 Math.round(info.km) + ' km away';
+  // "About", always. The count comes from projecting stops onto an eight
+  // point chain, so it is a good guide and not a promise, and the route has
+  // stops on spurs that a straight chain cannot place perfectly.
+  const stops = info.stops === 0 ? 'yours is the next stop'
+                                 : 'about ' + info.stops + (info.stops === 1 ? ' stop' : ' stops') + ' before yours';
+  return dir + ' · ' + dist + ' · ' + stops;
+}
+// ---- END MY STOP -------------------------------------------------------
+
+// ---- My stop: storage, the picker, and the marks on the map -----------
+// The saved stop is the THIRD thing this app keeps between visits, after the
+// guide-seen dot and the theme choice. All three are named in the privacy
+// panel, and the panel is the promise the code is only the implementation
+// of: a fourth means editing that panel in the same commit as the feature.
+//
+// Whether the blue dot is switched on is kept in sessionStorage instead, so
+// it dies with the tab and never becomes a fourth remembered thing. Opting
+// in again next visit is a small price for a permission that stays a
+// per-visit decision.
+let MYSTOP = null;        // {name, lat, lng}, in this browser and nowhere else
+let MYSTOP_KM = null;     // where that sits on the checkpoint chain
+let STOP_KMS = [];        // every listed stop, projected onto the chain once
+let myStopMarker = null, myLocMarker = null, myLocRing = null;
+let myLocWatch = null, pinModeOn = false;
+
+function loadMyStop(){
+  let raw = null;
+  try{ raw = localStorage.getItem('wt-mystop'); }catch(e){}
+  if (!raw) return;
+  try{
+    const o = JSON.parse(raw);
+    if (o && typeof o.name === 'string' && isFinite(o.lat) && isFinite(o.lng)){
+      MYSTOP = { name:o.name, lat:+o.lat, lng:+o.lng };
+    }
+  }catch(e){}   // a corrupt value is just no saved stop, never a broken page
+}
+function persistMyStop(){
+  try{
+    if (MYSTOP) localStorage.setItem('wt-mystop', JSON.stringify(MYSTOP));
+    else localStorage.removeItem('wt-mystop');
+  }catch(e){}
+}
+function setMyStop(name, lat, lng){
+  MYSTOP = { name:name, lat:+lat, lng:+lng };
+  persistMyStop();
+  syncMyStopMarker();
+  renderBuses();
+  closeModal('stopModal');
+}
+function clearMyStop(){
+  MYSTOP = null; MYSTOP_KM = null;
+  persistMyStop();
+  syncMyStopMarker();
+  renderBuses();
+  closeModal('stopModal');
+}
+function syncMyStopMarker(){
+  if (!map) return;
+  if (myStopMarker){ map.removeLayer(myStopMarker); myStopMarker = null; }
+  if (!MYSTOP) return;
+  myStopMarker = L.marker([MYSTOP.lat, MYSTOP.lng], {
+    icon: L.divIcon({ className:'', html:'<div class="mypin"></div>', iconSize:[14,14], iconAnchor:[7,14] }),
+    title: 'Your saved stop'
+  }).addTo(map).bindTooltip(MYSTOP.name + ' — your stop, saved on this device only', {direction:'top'});
+}
+
+// Rewritten on every poll, from the same filtered list the chips use: a
+// reader who filtered to Northbound should not be told about a southbound
+// bus here and nowhere else on the page.
+function renderMyStop(shown){
+  const box = document.getElementById('myStop');
+  if (!box) return;
+  const legend = document.getElementById('myStopLegend');
+  if (legend) legend.classList.toggle('hidden', !MYSTOP);
+  if (!MYSTOP){
+    box.innerHTML = '<button type="button" class="mystop-btn" onclick="openStopPicker()">' +
+      '<span class="pin">📍</span><span>Set your stop — see how far the bus still is from it</span></button>';
+    return;
+  }
+  MYSTOP_KM = routeProgressKm({lat:MYSTOP.lat, lng:MYSTOP.lng}, CHECKPOINTS, ROUTE_CHAIN);
+  const withKm = shown.map(function(b){
+    return { id:b.id, direction:b.direction, label:b.label, ts:b.ts,
+             km: routeProgressKm({lat:b.lat, lng:b.lng}, CHECKPOINTS, ROUTE_CHAIN) };
+  });
+  const info = approachInfo(withKm, MYSTOP_KM, STOP_KMS, 'all');
+  const words = myStopWords(info);
+  box.innerHTML = '<div class="mystop-live"><div class="body">' +
+    '<span class="name">' + escapeHtml(MYSTOP.name) + '</span>' +
+    '<span class="rel">' + (words
+      ? escapeHtml(words) + ' <span class="quiet">· updated ' + timeAgo(info.ts) + ' ago</span>'
+      : '<span class="quiet">' + (shown.length
+          ? 'No bus on the map is heading your way right now.'
+          : 'Nobody is sharing GPS right now.') + '</span>') +
+    '</span></div>' +
+    '<button type="button" class="edit" onclick="openStopPicker()">Change</button></div>';
+}
+
+function openStopPicker(){
+  const err = document.getElementById('stopPickErr');
+  if (err) err.textContent = '';
+  const box = document.getElementById('stopSearch');
+  if (box) box.value = '';
+  const clear = document.getElementById('clearStopBtn');
+  if (clear) clear.classList.toggle('hidden', !MYSTOP);
+  renderStopList();
+  openModal('stopModal');
+}
+function renderStopList(){
+  const box = document.getElementById('stopList');
+  if (!box) return;
+  const q = (document.getElementById('stopSearch').value || '').trim().toLowerCase();
+  const hits = STOPS.filter(function(s){
+    return !isNaN(s.lat) && (!q || s.name.toLowerCase().indexOf(q) >= 0);
+  });
+  if (!hits.length){ box.innerHTML = '<div class="empty">No stop here matches that. Try fewer letters, or drop a pin.</div>'; return; }
+  // Names go into data attributes and the coordinates come back off the
+  // element, rather than being interpolated into an inline onclick. Two of
+  // this route's stops would have had to survive that trip through an HTML
+  // attribute and then a JavaScript string: "S&R Kawit" carries an ampersand
+  // and "Salaban (Shakey's Bypass)" an apostrophe. Both happen to work, and
+  // neither is worth relying on when a fork's stop list is arbitrary text
+  // from config.txt.
+  box.innerHTML = hits.map(function(s){
+    return '<button type="button" data-lat="' + s.lat + '" data-lng="' + s.lng +
+      '" data-name="' + escapeHtml(s.name) + '">' +
+      escapeHtml(s.name) + (s.conf === 'L' ? ' <span class="approx">(approx.)</span>' : '') + '</button>';
+  }).join('');
+}
+// One delegated listener, attached once: the list is rewritten on every
+// keystroke, so per-button handlers would be re-bound on each one.
+(function(){
+  const box = document.getElementById('stopList');
+  if (!box) return;
+  box.addEventListener('click', function(e){
+    const b = e.target.closest('button[data-name]');
+    if (!b) return;
+    setMyStop(b.getAttribute('data-name'), +b.getAttribute('data-lat'), +b.getAttribute('data-lng'));
+  });
+})();
+// One fix, not a watch: this answers "which stop am I standing at", which is
+// a question with one answer, and a running GPS watch for it would cost
+// battery for nothing.
+function pickNearestStop(){
+  const err = document.getElementById('stopPickErr');
+  if (!navigator.geolocation){ err.textContent = 'This browser cannot check your location.'; return; }
+  err.textContent = 'Checking your location…';
+  navigator.geolocation.getCurrentPosition(function(pos){
+    const me = { lat:pos.coords.latitude, lng:pos.coords.longitude };
+    let best = null;
+    STOPS.forEach(function(s){
+      if (isNaN(s.lat)) return;
+      const d = haversineKm(me, {lat:s.lat, lng:s.lng});
+      if (!best || d < best.d) best = { s:s, d:d };
+    });
+    if (!best){ err.textContent = 'No stops are configured for this route.'; return; }
+    if (best.d > 3){
+      err.textContent = 'You look about ' + Math.round(best.d) + ' km from the nearest stop (' +
+        best.s.name + '). Pick it from the list if that is the one you want.';
+      return;
+    }
+    setMyStop(best.s.name, best.s.lat, best.s.lng);
+  }, function(){
+    err.textContent = 'Could not get your location. You can pick a stop from the list instead.';
+  }, { enableHighAccuracy:false, maximumAge:30000, timeout:15000 });
+}
+
+function startPinMode(){
+  closeModal('stopModal');
+  pinModeOn = true;
+  const bar = document.getElementById('pinMode');
+  if (bar) bar.classList.remove('hidden');
+  if (map){
+    map.on('click', pinModeClick);
+    map.getContainer().scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block:'center' });
+  }
+}
+function pinModeClick(e){
+  setMyStop('Your pin', e.latlng.lat, e.latlng.lng);
+  cancelPinMode();
+}
+function cancelPinMode(){
+  pinModeOn = false;
+  const bar = document.getElementById('pinMode');
+  if (bar) bar.classList.add('hidden');
+  if (map) map.off('click', pinModeClick);
+}
+
+// The blue dot. Opt-in, per visit, and it never leaves the device: nothing
+// in this function has a network call in it, and that is the point.
+function toggleMyLocation(){
+  if (myLocWatch !== null){ stopMyLocation(''); return; }
+  const note = document.getElementById('myLocNote');
+  if (!navigator.geolocation){ sayLoc('This browser cannot show your location.'); return; }
+  sayLoc('Finding your location…');
+  // Deliberately not high accuracy. A watcher needs "roughly where am I on
+  // this route", which the coarse fix answers, and the precise mode is the
+  // one that drains a phone — on a page people leave open at a bus stop.
+  myLocWatch = navigator.geolocation.watchPosition(function(pos){
+    showMyLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+  }, function(err){
+    stopMyLocation(err && err.code === 1
+      ? 'Location permission was declined, so the map cannot show where you are. Setting your stop above works without it.'
+      : 'Could not get your location.');
+  }, { enableHighAccuracy:false, maximumAge:15000, timeout:20000 });
+  setLocatePressed(true);
+}
+function showMyLocation(lat, lng, accM){
+  sayLoc('');
+  if (!map) return;
+  const legend = document.getElementById('myLocLegend');
+  if (legend) legend.classList.remove('hidden');
+  if (myLocMarker) myLocMarker.setLatLng([lat,lng]);
+  else myLocMarker = L.circleMarker([lat,lng], {
+    radius:6, color:'#ffffff', weight:2, fillColor:'#4f46b8', fillOpacity:1
+  }).addTo(map).bindTooltip('You are here (this stays on your device)', {direction:'top'});
+  // The accuracy ring is not decoration: a coarse fix can be a kilometre out
+  // and a bare dot would state a precision the phone never claimed.
+  const r = Math.max(accM || 0, 25);
+  if (myLocRing) myLocRing.setLatLng([lat,lng]).setRadius(r);
+  else myLocRing = L.circle([lat,lng], { radius:r, color:'#4f46b8', weight:1, opacity:.5, fillOpacity:.08 }).addTo(map);
+}
+function stopMyLocation(msg){
+  if (myLocWatch !== null){ navigator.geolocation.clearWatch(myLocWatch); myLocWatch = null; }
+  if (myLocMarker){ map.removeLayer(myLocMarker); myLocMarker = null; }
+  if (myLocRing){ map.removeLayer(myLocRing); myLocRing = null; }
+  const legend = document.getElementById('myLocLegend');
+  if (legend) legend.classList.add('hidden');
+  setLocatePressed(false);
+  sayLoc(msg || '');
+}
+function sayLoc(msg){
+  const note = document.getElementById('myLocNote');
+  if (!note) return;
+  note.textContent = msg || '';
+  note.classList.toggle('hidden', !msg);
+}
+function setLocatePressed(on){
+  const a = document.getElementById('locateBtn');
+  if (!a) return;
+  a.setAttribute('aria-pressed', on ? 'true' : 'false');
+  a.style.color = on ? '#4f46b8' : '';
+  a.title = on ? 'Stop showing my location' : 'Show my location on the map';
+  a.setAttribute('aria-label', a.title);
+}
+
 // ---- Same-bus clustering ---------------------------------------------
 // Several people can share from one bus (driver + volunteer riders).
 // Rendered naively that looks like several buses coming, which is worse
@@ -1556,6 +2031,8 @@ function renderBuses() {
       escapeHtml(where)+' <span class="age">'+timeAgo(b.ts)+' ago'+
       (b.count>1?' · '+b.count+' sharing':'')+'</span></button>';
   }).join('');
+
+  renderMyStop(shown);
 
   // headline
   const text=document.getElementById('statusText'), sub=document.getElementById('statusSub');
@@ -2320,6 +2797,11 @@ function start(){
   document.getElementById('gate').classList.add('hidden');
   ensureClient();
   ROUTE_CHAIN = buildRouteChain(CHECKPOINTS);
+  // Projected once, here, rather than on every poll: the stop list and the
+  // chain are both fixed for the life of the page, so the answer cannot
+  // change and the work is 71 projections against an 8 point chain.
+  STOP_KMS = stopChainKms(STOPS, CHECKPOINTS, ROUTE_CHAIN);
+  loadMyStop();
   if (!mapReady){
     initMap(); buildTicks(); buildSightingPlaces(); renderHours();
     renderSourceLink(); renderContactLine(); mapReady=true;
@@ -2344,8 +2826,10 @@ function start(){
 applyTheme(themePref());
 
 // The gold dot on the guide link is a first-visit nudge, not a setting. It
-// is the only thing this app keeps between visits, it never leaves the
-// device, and losing it costs nothing but one extra dot.
+// was once the only thing this app kept between visits; it is now one of
+// three, with the theme choice and the saved stop. All three stay on the
+// device, all three are named in the privacy panel, and losing this one
+// costs nothing but one extra dot.
 (function(){
   const link=document.getElementById('guideLink');
   if (!link) return;

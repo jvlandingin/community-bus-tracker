@@ -40,7 +40,7 @@ community-bus-tracker/
 ```
 
 Deploys come from git: Netlify builds the repository on a push to `main`, and
-`netlify.toml` runs the four dependency-free JavaScript suites as the build
+`netlify.toml` runs the five dependency-free JavaScript suites as the build
 command, so a failing one cancels the deploy. Nothing is compiled and nothing is
 installed, so the no-build-step property holds — what gets published is the
 repository exactly as committed. There is deliberately no `package.json`,
@@ -117,14 +117,21 @@ answer itself never folds, which is why the sightings board opens itself when
 no buses are live (see `revealSightings` in `index.html`) — with nobody sharing
 GPS it stops being a footnote and becomes the only answer available.
 
-**Colours come in fill/ink pairs.** `--maroon`, `--gold` and `--lost` are
-fills, with white or near-black text sitting on them. `--brand-ink`,
-`--gold-deep` and `--lost-ink` are the same colours used *as* text. In the
-light theme each pair is nearly the same value, which is why one token did
-both jobs for a year. In dark they diverge completely — maroon reading on a
-near-black card is 1.7:1 — so a new use of any of them has to be chosen by
-what the colour is doing: painting a shape, or spelling a word. All three
-pages share the token block, and `test-boot.js` fails if they drift apart.
+**Colours come in fill/ink pairs.** `--maroon`, `--gold`, `--lost` and
+`--mine` are fills, with white or near-black text sitting on them.
+`--brand-ink`, `--gold-deep`, `--lost-ink` and `--mine-ink` are the same
+colours used *as* text. In the light theme each pair is nearly the same value,
+which is why one token did both jobs for a year. In dark they diverge
+completely — maroon reading on a near-black card is 1.7:1 — so a new use of any
+of them has to be chosen by what the colour is doing: painting a shape, or
+spelling a word. All five pages share the token block, and `test-boot.js` fails
+if they drift apart.
+
+`--mine` is the newest and is a fourth pair rather than a reuse of one of the
+other three on purpose: gold and maroon are already spelling "which direction"
+and `--lost` is spelling "stale", so a saved stop — which belongs to the person
+reading rather than to the route — needed a colour that was not already saying
+something else.
 
 **Dark theme, because half the service runs after sunset.** The southbound
 window closes at 8:00 PM. `prefers-color-scheme` swaps the token block, and
@@ -157,7 +164,8 @@ Three details make it work:
   in the guide and admin headers would be two more things to look at for no
   more control.
 
-The preference is the second thing this app keeps between visits, after the
+The preference is the second of the three things this app keeps between
+visits, after the
 guide-seen dot. Both are named in the privacy panel — the panel used to claim
 nothing was kept once you close the page, which the guide dot had already made
 untrue.
@@ -170,7 +178,10 @@ not add a history table without a very deliberate conversation about it.
 
 Everything added since has been checked against this. The wrong-direction guard
 tracks route progress **in the sharing phone's own memory only**, never sends or
-stores it, and it dies with the tab.
+stores it, and it dies with the tab. The reader's saved stop (August 2026) is
+the same shape of decision: it is a location, it belongs to a *watcher* rather
+than a bus, and it is kept in `localStorage` and read only by the device that
+wrote it. No request carries it and no column exists for it.
 
 **The watching count is present tense only.** July 2026 added the one thing in
 the system that observes watchers at all: the tracker page beats every 60
@@ -335,6 +346,62 @@ and every sighting posted before this existed still renders as the text it is.
 as hollow dashed rings — never solid, never the bus glyph, because a sighting
 is one person's word with no update coming after it. They clear from the strip
 after one headway, which is when the next bus has overtaken the claim.
+
+## The reader's own stop
+
+August 2026. The page could say where the buses were and not where they were
+relative to the person reading, which is the question a commuter actually
+arrives with. A reader can now save a stop, and the card between the bus chips
+and the map answers in the app's own terms: `▲ Northbound · 3.0 km away ·
+about 5 stops before yours`.
+
+**Nothing about a watcher leaves the device, and no SQL was written.** The stop
+lives in `localStorage`, the distance is computed on the phone from positions
+the page had already fetched, and no request, table or column was added. This
+was the whole design constraint: a watcher's location is the one thing this
+system has never held, and the feature that finally mentions one must not
+change that. A *public* version of this — showing other people where riders are
+waiting — was considered and rejected outright: reads need no key, so "public"
+means the whole internet, and broadcasting that a named stop has somebody
+standing at it after dark is a safety problem, not a privacy trade.
+
+**A stop picker, not a location prompt.** The primary path is picking from the
+71 stops already in `config.txt`, which needs no permission at all — and is the
+better answer anyway, because a commuter deciding whether to leave the office
+is not at the stop yet, so a GPS fix would place them at their desk. Location
+is offered twice, both opt-in and both local: "Use my current location" picks
+the nearest stop, and the ➤ control on the map draws a dot. Neither transmits.
+The dot's on/off state is kept in `sessionStorage` deliberately, so it dies
+with the tab and never becomes a fourth remembered thing.
+
+**Distance is measured along the checkpoint chain, never straight-line.** The
+same projection the direction guard uses. Across the Tagaytay ridge hook a bus
+1.2 km away as the crow flies is 3.5 km by road — a 2.9x error, and worst
+exactly where the route bends hardest. Buses that have already passed the stop
+are skipped rather than reported as very close, which straight-line distance
+cannot express at all, since it has no sign.
+
+**Stops in between are counted by projection, not by list order.** The stop
+list is merged from two posters and is not in strict route order — the trap
+that made the guard use the checkpoints instead — so every stop is projected
+onto the chain once at boot and counted by distance. `test-mystop.js` asserts
+that the two orders really do differ, so the reason for this cannot be
+forgotten.
+
+**It never says minutes.** Distance and a stop count need no model. An ETA
+needs to know how fast this road runs at this hour, and the honest version of
+that needs travel-time history the system deliberately does not keep — so the
+card says how far, not how long, and the test suite fails if a sentence ever
+starts implying otherwise.
+
+**It cost three more files.** `flyer.html`, `for-operators.html` and
+`how-to.html` all redraw the tracker's screen, so all three gained the row.
+Two things that cost a render each and are worth knowing before touching it
+again: the flyer went to two sheets the moment the row was added, and had to
+buy the height back out of the mock's own furniture (the poster's mock column
+spans the full page height, so it is what decides one sheet or two); and the
+guide's callout dots are percentages of a figure that just got taller, so
+adding a row there means re-measuring every dot below it, not nudging them.
 
 ## Duplicate sharer handling
 

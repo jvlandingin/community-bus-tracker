@@ -24,6 +24,9 @@
     --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
     --brand-ink:#7a1f2b; --lost-ink:#c4432e;
     --gold-line:#eeddb4; --maroon-line:#e6cdc9;
+    /* The reader's own saved stop. Mirrored from index.html, like every
+       other token here; test-boot.js fails if the two copies drift. */
+    --mine:#4f46b8; --mine-ink:#443aa6;
     --ok-ink:#166534; --warn-ink:#92400e;
     --shadow:0 1px 2px rgba(43,35,32,.04);
     --radius:16px;
@@ -39,6 +42,7 @@
       --line:#372e26; --live:#4ac694; --lost:#c4432e;
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --mine:#4f46b8; --mine-ink:#b3aaf5;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
@@ -53,6 +57,7 @@
       --line:#372e26; --live:#4ac694; --lost:#c4432e;
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --mine:#4f46b8; --mine-ink:#b3aaf5;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
@@ -203,6 +208,25 @@
   .demo-chip.nb .ar{color:var(--gold-deep);}
   .demo-chip.sb .ar{color:var(--brand-ink);}
   .demo-chip .ag{color:var(--muted); font-weight:600;}
+  /* The reader's own saved stop, as index.html draws it between the chips
+     and the map. Worth a briefing's space because it is the part of the tool
+     a bus company is most often asked about: it answers "how far is my bus
+     from me" without the app knowing, or being able to say, where anybody
+     waiting for it is. */
+  .demo-mystop{
+    display:flex; align-items:center; gap:8px; margin-top:9px;
+    padding:7px 9px; border-radius:10px; background:var(--paper);
+    border:1px solid var(--line); border-left:3px solid var(--mine);
+  }
+  /* index.html's own row gives this wrapper flex:1; without it the box
+     shrink-wraps to less than the width available and the sentence takes a
+     second line it does not need. */
+  .demo-mystop > div{flex:1; min-width:0;}
+  .demo-mystop .who{
+    display:block; font-size:8px; font-weight:800; color:var(--mine-ink);
+    text-transform:uppercase; letter-spacing:.04em;
+  }
+  .demo-mystop .rel{display:block; font-size:10px; font-weight:700; margin-top:1px;}
   .figcap{font-size:11px; color:var(--muted); text-align:center; margin:0 0 4px;}
 
   .demo-map{
@@ -386,6 +410,19 @@
       <span class="demo-chip nb"><span class="ar">▲</span><b>98104</b>AMADEO <span class="ag">47s ago</span></span>
       <span class="demo-chip sb"><span class="ar">▼</span>TGY <span class="ag">2m ago · 2 sharing</span></span>
       <span class="demo-chip sb"><span class="ar">▼</span><b>98077</b>7 km to KAWIT <span class="ag">1m ago</span></span>
+    </div>
+
+    <!-- The saved stop. Same sentence and same numbers as flyer.html, from
+         myStopWords(): this reader waits at S&R Kawit and the lead
+         northbound bus above is 3 km short of it. It is worked out on the
+         reader's own phone from positions already on the page — the stop is
+         never sent anywhere and no part of the system can see it, which is
+         the distinction this document exists to make. -->
+    <div class="demo-mystop">
+      <div>
+        <span class="who">📍 S&amp;R Kawit</span>
+        <span class="rel">▲ Northbound · 3.0 km away · about 5 stops before yours</span>
+      </div>
     </div>
     <!-- Same real screenshot as flyer.html, same reasoning, same crop and
          checkpoint pixels — see the comment above the equivalent figure in

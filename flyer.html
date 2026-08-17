@@ -32,6 +32,9 @@
     --line:#e9e2d6; --live:#1d8a5f; --lost:#c4432e;
     --brand-ink:#7a1f2b; --lost-ink:#c4432e;
     --gold-line:#eeddb4; --maroon-line:#e6cdc9;
+    /* The reader's own saved stop. Mirrored from index.html, like every
+       other token here; test-boot.js fails if the two copies drift. */
+    --mine:#4f46b8; --mine-ink:#443aa6;
     --ok-ink:#166534; --warn-ink:#92400e;
     --shadow:0 1px 2px rgba(43,35,32,.04);
     --radius:16px;
@@ -56,6 +59,7 @@
       --line:#372e26; --live:#4ac694; --lost:#c4432e;
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --mine:#4f46b8; --mine-ink:#b3aaf5;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
@@ -70,6 +74,7 @@
       --line:#372e26; --live:#4ac694; --lost:#c4432e;
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
+      --mine:#4f46b8; --mine-ink:#b3aaf5;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
@@ -160,6 +165,25 @@
   .demo-chip.nb .ar{color:var(--gold-deep);}
   .demo-chip.sb .ar{color:var(--brand-ink);}
   .demo-chip .ag{color:var(--muted); font-weight:600;}
+  /* The reader's own saved stop, as index.html draws it between the chips
+     and the map. It is on the poster because it is the answer a commuter
+     actually wants — not "where is the bus" but "how far is it from me" —
+     and because a drawing of the app that omits a row the app now has is a
+     drawing that has drifted. */
+  .demo-mystop{
+    display:flex; align-items:center; gap:8px; margin-top:9px;
+    padding:7px 9px; border-radius:10px; background:var(--paper);
+    border:1px solid var(--line); border-left:3px solid var(--mine);
+  }
+  /* index.html's own row gives this wrapper flex:1; without it the box
+     shrink-wraps to less than the width available and the sentence takes a
+     second line it does not need. */
+  .demo-mystop > div{flex:1; min-width:0;}
+  .demo-mystop .who{
+    display:block; font-size:8px; font-weight:800; color:var(--mine-ink);
+    text-transform:uppercase; letter-spacing:.04em;
+  }
+  .demo-mystop .rel{display:block; font-size:10px; font-weight:700; margin-top:1px;}
 
   .demo-map{
     margin-top:8px; position:relative; overflow:hidden;
@@ -384,10 +408,10 @@
        fit under the header it moves to a page of its own and leaves the
        header stranded on a blank sheet. */
     header{
-      border-radius:8px; margin-bottom:3pt; padding:6pt 10pt 5pt;
+      border-radius:8px; margin-bottom:2pt; padding:4pt 10pt 4pt;
       -webkit-print-color-adjust:exact; print-color-adjust:exact;
     }
-    header .route{font-size:11pt;}
+    header .route{font-size:10.5pt;}
     header .sub{font-size:5.5pt; margin-top:1px;}
     .demo, .cta, .limits, .point, .steps li, .demo-badge, .buspill,
     .demo-seg span.on, .steps .n, .demo-map, .track .rail{
@@ -416,18 +440,32 @@
        and the QR still lands on page one. A poster whose call to action is
        on the back is a poster nobody scans. The map itself is deliberately
        untouched here — it is the thing being made to look like the app. */
-    .screenlabel{font-size:6pt; margin-bottom:1px;}
-    .demo-title{font-size:13pt;}
-    .demo-sub{font-size:7pt;}
-    .demo-seg{margin:5px 0 1px;}
-    .demo-seg span{padding:4px 2px; font-size:7pt;}
-    .strip{margin:5px 0 1px;}
-    .dirlabel{font-size:6.5pt;}
-    .track{height:17px;}
+    /* These got tighter when the saved-stop row was added to the mock. The
+       mock column spans the full page height, so it is what decides whether
+       the poster is one sheet or two, and a new row in it has to be paid for
+       out of the furniture around it. Measured: at 297mm wide the sheet has
+       no slack worth the name, so trim here before adding anything else. */
+    .screenlabel{font-size:5.5pt; margin-bottom:1px;}
+    .demo-title{font-size:11pt;}
+    .demo-sub{font-size:6pt;}
+    .demo-seg{margin:2px 0 1px;}
+    .demo-seg span{padding:2px 2px; font-size:6.5pt;}
+    .strip{margin:3px 0 1px;}
+    .dirlabel{font-size:5.5pt;}
+    .track{height:13px;}
     .tick span{font-size:6pt;}
-    .buspill{font-size:10px; padding:2px 4px;}
-    .demo-chips{gap:2px; margin-top:4px;}
-    .demo-chip{padding:3px 5px; font-size:6pt;}
+    .buspill{font-size:10px; padding:1px 4px;}
+    .demo-chips{gap:2px; margin-top:2px;}
+    .demo-chip{padding:1px 5px; font-size:6pt;}
+    /* The saved-stop row is the newest thing in this column, and adding it
+       is what pushed the poster onto a second sheet the first time round.
+       It keeps the app's own two-line shape rather than being folded into
+       one — the drawing is supposed to look like the screen — so the height
+       it costs was taken out of the furniture above it instead, which is
+       what the note at the top of this block is about. */
+    .demo-mystop{margin-top:3px; padding:2px 5px; gap:4px;}
+    .demo-mystop .who{font-size:5.5pt;}
+    .demo-mystop .rel{font-size:6pt;}
 
     /* One sheet of A4, or it is a leaflet rather than a poster. What gets
        dropped is the reassurance grid — "walang app", "walang account" and
@@ -441,8 +479,8 @@
     .hero{padding:0.5mm 0 0;}
     .hero h1{font-size:20pt;}
     .hero .lede{font-size:9pt; margin-top:5px;}
-    .screenwrap{margin-top:2px;}
-    .demo{padding:6px;}
+    .screenwrap{margin-top:1px;}
+    .demo{padding:4px;}
     .cta{
       margin-top:0; padding:7pt 9pt; gap:6pt;
       flex-direction:column; align-items:stretch;
@@ -544,6 +582,21 @@
         <span class="demo-chip nb"><span class="ar">▲</span><b>98104</b>AMADEO <span class="ag">47s ago</span></span>
         <span class="demo-chip sb"><span class="ar">▼</span>TGY <span class="ag">2m ago · 2 sharing</span></span>
         <span class="demo-chip sb"><span class="ar">▼</span><b>98077</b>7 km to KAWIT <span class="ag">1m ago</span></span>
+      </div>
+
+      <!-- The saved stop. It lives on the reader's own phone and is never
+           sent anywhere, which is why the flyer can show it without the
+           poster implying the tool tracks the people reading it.
+           The sentence is myStopWords()'s. This reader waits at S&R Kawit,
+           which sits on the KAWIT checkpoint, and the lead northbound bus
+           drawn above is 3 km short of it — so 3.0 km and 5 stops are the
+           numbers the real app computes for this exact screen. Move that
+           bus and these change with it. -->
+      <div class="demo-mystop">
+        <div>
+          <span class="who">📍 S&amp;R Kawit</span>
+          <span class="rel">▲ Northbound · 3.0 km away · about 5 stops before yours</span>
+        </div>
       </div>
 
       <!-- A real screenshot of this route's own map (Leaflet + CARTO,

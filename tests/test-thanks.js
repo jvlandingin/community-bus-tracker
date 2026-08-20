@@ -118,5 +118,52 @@ check(!/localStorage\.(setItem|removeItem)\(\s*'wt-ty'/.test(html),
   'the tab\'s memory of its taps is not kept between visits');
 check(/sessionStorage\.setItem\('wt-ty'/.test(html), 'it is kept for the visit only');
 
+console.log('\n=== 9. a tap that never landed must not claim it did ===');
+// Found by testing it for real against a database that had not had
+// sql/07-thanks.sql applied: the button drew, the call 404'd, and the popup
+// still said "Salamat sent" while the sharer saw nothing. Optimistic paint is
+// right -- a thank-you should not wait on a patchy connection -- but a tap
+// that failed has to give the button back rather than bank a delivery that
+// never happened.
+check(/if \(res && res\.error\)\{ failed = true;/.test(html),
+  'a failed call is noticed rather than swallowed whole');
+check(/members\.forEach\(function\(m\)\{ delete t\[m\]; \}\);/.test(html),
+  'and the tap is un-remembered, so the button comes back');
+check(/thanksWarned/.test(html) && /07-thanks\.sql/.test(html),
+  'and the one cause worth naming is named, once, where a maintainer will see it');
+check(/if \(mine && !\('thanks' in mine\)\) thanksTrouble/.test(html),
+  'the sharing side notices an older get_positions too, rather than showing a quiet zero');
+// The rider still gets no error dialog: the returned button is the message.
+check(!/alert\(|showAsk\([^)]*salamat/i.test(html.slice(html.indexOf('async function sayThanks'),
+                                                          html.indexOf('// Everything the badge no longer says'))),
+  'and is still never shown an error for being kind');
+
+console.log('\n=== 10. every RPC the pages call exists in a migration ===');
+// The same failure one step earlier: a page that calls a function no
+// migration defines is a feature that is silently dead on arrival, and
+// nothing else here would catch it. Cheap, so it covers every call, not
+// just this feature's.
+{
+  const sqlDir = path.join(ROOT, 'sql');
+  const sql = fs.readdirSync(sqlDir).filter(f => f.endsWith('.sql'))
+    .map(f => fs.readFileSync(path.join(sqlDir, f), 'utf8')).join('\n');
+  const admin = fs.readFileSync(path.join(ROOT, 'admin.html'), 'utf8');
+  const called = [...new Set([...(html + admin).matchAll(/rpc\(\s*'([a-z_]+)'/g)].map(m => m[1]))].sort();
+  // Anchored on "create ... function", not just "function": a grant line
+  // names the function too, so the looser pattern matched the grant and the
+  // check could never fail. Caught by renaming a function and watching it
+  // stay green.
+  const missing = called.filter(fn =>
+    !new RegExp('create\\s+(?:or\\s+replace\\s+)?function\\s+public\\.' + fn + '\\s*\\(', 'i').test(sql));
+  check(missing.length === 0,
+    `all ${called.length} are defined in sql/`, missing.length ? 'MISSING: ' + missing.join(' ') : called.join(' '));
+  // and each is actually reachable by the anon key the pages carry: a
+  // function that exists but was never granted fails exactly as invisibly.
+  const grants = (sql.match(/grant execute on function[\s\S]*?to\s+anon/gi) || []).join('\n');
+  const ungranted = called.filter(fn => !new RegExp('public\\.' + fn + '\\s*\\(').test(grants));
+  check(ungranted.length === 0, 'and every one of them is granted to anon',
+    ungranted.length ? 'NOT GRANTED: ' + ungranted.join(' ') : 'all granted');
+}
+
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);

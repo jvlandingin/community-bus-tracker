@@ -363,6 +363,19 @@ as hollow dashed rings — never solid, never the bus glyph, because a sighting
 is one person's word with no update coming after it. They clear from the strip
 after one headway, which is when the next bus has overtaken the claim.
 
+**The tracker's pills are buttons; the sharing tab's are not.** Tapping a
+pill flies the map to that bus and opens its popup — one function draws both
+strips, and a fourth argument separates them, because on the sharing tab the
+map is on the other tab and a tappable pill there would do something
+invisible. This is also how "say salamat from the strip" works without
+touching the strip's appearance: the popup is the one home the salamat button
+has, so the strip routes to it rather than growing a second control — a
+count or a button on the strip would need the three static recreations of it
+redrawn, and pills are far too small and too overlapping to carry a 44px
+target anyway (their tap area is an invisible pseudo-element for the same
+reason). The pill id goes through a strict character check before it is
+interpolated into the handler; anything unexpected draws a plain pill.
+
 ## The reader's own stop
 
 August 2026. The page could say where the buses were and not where they were

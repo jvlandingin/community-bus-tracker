@@ -583,6 +583,105 @@
     font-size:20px; line-height:1; color:var(--muted);
   }
 
+  /* ---- Motion ----------------------------------------------------------
+     Everything in this section is decorative. Nothing here says anything
+     that is not also said in words next to it, which is the property that
+     lets the reduced-motion blanket at the end flatten all of it at once
+     without anyone losing information.
+
+     Most of the entrances need no JavaScript: these panels are shown by
+     removing .hidden, and a display:none element's animations are
+     cancelled, so they restart from the first frame every time the panel
+     comes back. Where an entrance must NOT replay on every redraw (chips,
+     map badges, the popup's "Salamat sent"), the class is added once by the
+     code that knows the element is genuinely new, and the next innerHTML
+     rebuild drops it. */
+  @keyframes rise{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  @keyframes popin{0%{opacity:0; transform:scale(.75);} 60%{transform:scale(1.06);} 100%{opacity:1; transform:none;}}
+  @keyframes cardin{from{opacity:0; transform:scale(.96) translateY(6px);} to{opacity:1; transform:none;}}
+  @keyframes veil{from{opacity:0;} to{opacity:1;}}
+  @keyframes fadein{from{opacity:0;} to{opacity:1;}}
+
+  /* Tab switches and reopening folds. Short enough that switching back and
+     forth never feels like waiting. */
+  #trackView, #onbusView{animation:rise .18s ease;}
+  details.fold[open] > .foldbody, details.note[open] > .foldbody{animation:rise .22s ease;}
+
+  /* Modals and the gate: the veil fades, the card scales in. Closing stays
+     instant on purpose — closeModal() hands focus back and the tests read
+     .hidden as gone now, so an exit animation would mean deferring both. */
+  .modal{animation:veil .16s ease;}
+  .modal-card{animation:cardin .2s ease;}
+  .gate{animation:veil .2s ease;}
+  .gate-card{animation:cardin .24s ease;}
+
+  /* Press feedback. The result of a tap can lag seconds behind on a bus's
+     connection; the tap itself should not. The browser's own grey flash is
+     dropped only where a scale answers instead. */
+  .tab,.big{transition:background-color .15s ease, color .15s ease, border-color .15s ease, transform .09s ease;}
+  .buschip,.dirbtn,.seg button,.mystop-btn,.mystop-live .edit,.stoplist button,
+  .pickrow button,.buspop .tybtn,.modal-x,#themeBtn .ico,#guideLink .ico{transition:transform .09s ease;}
+  .tab,.big,.buschip,.dirbtn,.seg button,.mystop-btn,.mystop-live .edit,.stoplist button,
+  .pickrow button,.buspop .tybtn,.modal-x,#themeBtn,#guideLink{-webkit-tap-highlight-color:transparent;}
+  .tab:active,.big:active,.buschip:active,.dirbtn:active,.seg button:active,
+  .mystop-btn:active,.mystop-live .edit:active,.stoplist button:active,
+  .pickrow button:active,.buspop .tybtn:active,.modal-x:active{transform:scale(.97);}
+  #themeBtn:active .ico,#guideLink:active .ico{transform:scale(.88);}
+
+  /* The sharing tab's status dot breathes while live: "this is happening
+     now" is the page's whole claim, and a static dot does not make it. */
+  .statusdot.live{animation:breathe 2.6s ease-in-out infinite;}
+  @keyframes breathe{0%,100%{box-shadow:0 0 0 4px rgba(29,138,95,.15);} 50%{box-shadow:0 0 0 9px rgba(29,138,95,.04);}}
+
+  /* A bus arriving on the page. .arrive is added only to chips and badges
+     whose id was not in the previous draw — everything is rebuilt with
+     innerHTML on every poll, so an unconditional animation here would pulse
+     the whole list every few seconds. The badge fades rather than rises:
+     the badge element is the marker itself and Leaflet owns its transform
+     for positioning. */
+  .buschip.arrive{animation:rise .3s ease;}
+  .busmk.arrive{animation:fadein .45s ease;}
+
+  /* Saying salamat, both ends. The rider's "Salamat sent" pops once, at tap
+     time only (the .pop class is added after the optimistic redraw and the
+     next poll rebuilds the popup without it). The sharer's count line rises
+     in when it first appears and takes a brief gold wash when the number
+     goes up mid-trip — a person just did something, and a silent digit swap
+     does not look like that. */
+  .buspop .tydone.pop{animation:popin .3s ease;}
+  .tyline{animation:rise .3s ease;}
+  .tyline.bump{animation:tybump 1s ease;}
+  @keyframes tybump{0%{background:var(--gold-soft); border-color:var(--gold-line);} 100%{background:var(--paper); border-color:var(--line);}}
+
+  /* The first minute of a trip. The strip card rises in, a one-line salamat
+     to the sharer sits above it for a few seconds, and their own pill's
+     green ring pulses so the eye lands on the right bus. The pulse is gated
+     by .hello on the card, put there and taken away by showTripHello() —
+     left unconditional it would replay on every strip rebuild for the whole
+     trip. No fill-mode on .tyhello: a fill would pin opacity at 1 and the
+     .bye fade-out could never win. */
+  #onbusStripCard{animation:rise .3s ease;}
+  .tyhello{
+    display:flex; align-items:center; gap:7px; margin:0 0 10px;
+    padding:8px 10px; border-radius:10px;
+    background:var(--paper); border:1px solid var(--line);
+    font-weight:800; font-size:13px; color:var(--ok-ink);
+    animation:rise .35s ease;
+  }
+  .tyhello.bye{opacity:0; transition:opacity .7s ease;}
+  #onbusStripCard.hello .buspill.me{animation:mepulse 1.3s ease-in-out infinite;}
+  @keyframes mepulse{
+    0%,100%{box-shadow:0 0 0 2px var(--surface), 0 0 0 3.5px var(--live), 0 1px 4px rgba(43,35,32,.25);}
+    50%{box-shadow:0 0 0 2px var(--surface), 0 0 0 7px var(--live), 0 1px 4px rgba(43,35,32,.25);}
+  }
+
+  /* Theme switching. The class is temporary (cycleTheme() removes it after
+     the crossfade) because left on permanently this transition would sit on
+     every element and slow every interactive state change on the page. */
+  .theming, .theming *{transition:background-color .28s ease, color .28s ease, border-color .28s ease;}
+  #themeBtn .ico.flip{animation:icoflip .32s ease;}
+  @keyframes icoflip{from{opacity:0; transform:rotate(-120deg) scale(.55);} to{opacity:1; transform:none;}}
+
   /* The guide has honoured this since it was written; the app never did, even
      though it slides a bus pill along a rail for a full second every time a
      position lands. Blanket rule rather than a list, because the pieces that
@@ -923,6 +1022,11 @@
          riders — "makikita ka na ng iba" — asked by the sharer instead.
          Shown only while a trip is live, by setShareUI(). -->
     <div class="card hidden" id="onbusStripCard">
+      <!-- The first thing a sharer sees after volunteering, shown by
+           showTripHello() at trip start and gone a few seconds later. It is
+           a thank-you, not a status: the status lives in the dot above and
+           the strip below, and both keep saying it after this line goes. -->
+      <div class="tyhello hidden" id="tyHello">🙏 <span><b>Salamat!</b> Your bus is on everyone's map now.</span></div>
       <div class="striplabel">EVERYONE CAN SEE THIS</div>
       <div class="strip" id="onbusStrip">
         <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
@@ -1231,7 +1335,18 @@ function cycleTheme(){
     if (next === 'system') localStorage.removeItem('wt-theme');
     else localStorage.setItem('wt-theme', next);
   }catch(e){}
+  // Crossfade the swap instead of snapping it. The class comes off again a
+  // beat after the transition ends: see the .theming rule for why it cannot
+  // stay. Only here, not in applyTheme — applyTheme also runs at boot, and
+  // the whole point of the pre-paint script in <head> is that first paint
+  // is already the right theme, with nothing to fade from.
+  const root = document.documentElement;
+  root.classList.add('theming');
+  clearTimeout(cycleTheme._t);
+  cycleTheme._t = setTimeout(function(){ root.classList.remove('theming'); }, 340);
   applyTheme(next);
+  const ico = document.querySelector('#themeBtn .ico');
+  if (ico){ ico.classList.remove('flip'); void ico.offsetWidth; ico.classList.add('flip'); }
 }
 
 // CARTO's own dark variant of the basemap already in use: the same provider,
@@ -1429,6 +1544,10 @@ function thanksDone(b){
 // are sharing — p_self is the one thing that unlocks it, and only this
 // phone holds it.
 let MY_THANKS = 0;
+// What the row said last time it was drawn. This function runs on every
+// poll, so the count alone cannot tell "someone new just tapped" apart from
+// "the same number came around again" — and only the first deserves motion.
+let TY_SHOWN = 0;
 function renderMyThanks(){
   const row = document.getElementById('tyLine');
   if (!row) return;
@@ -1437,6 +1556,13 @@ function renderMyThanks(){
   // Emptied rather than left stale when it goes: the row is aria-live, and a
   // number nobody can see is still a number something might read out.
   row.textContent = words ? '🙏 ' + words : '';
+  // The first appearance already rises in via CSS (display:none restarts the
+  // animation), so the gold wash is only for a count going up on a row that
+  // was already showing.
+  if (words && TY_SHOWN > 0 && MY_THANKS > TY_SHOWN){
+    row.classList.remove('bump'); void row.offsetWidth; row.classList.add('bump');
+  }
+  TY_SHOWN = words ? MY_THANKS : 0;
 }
 // Bounded, because a long visit on a busy route would otherwise grow this
 // without end. The oldest entries falling off only re-offers a button.
@@ -1473,6 +1599,12 @@ async function sayThanks(id){
   // person, and a thank-you that waits on a patchy connection to appear
   // reads as a button that did not work.
   renderBuses();
+  // Pop the acknowledgement once, now. The class is added here rather than
+  // drawn by thanksControl() because the popup is rebuilt on every poll,
+  // and a pop that replays every few seconds stops meaning "your tap
+  // landed" and starts meaning nothing.
+  const ack = document.querySelector('.buspop .tydone');
+  if (ack) ack.classList.add('pop');
   let failed = false;
   for (const m of members){
     let res = null;
@@ -2093,6 +2225,12 @@ function syncBusMarkers(all) {
       m.bindPopup(busPopupHtml(b),
         { closeButton:false, className:'buspop', maxWidth:230, autoPanPadding:[18,18] });
       busMarkers[b.id] = m.addTo(map);
+      // Fade a genuinely new badge in. Added here, at creation, because the
+      // next setIcon() rebuilds the element's className without it, which is
+      // exactly the lifetime wanted: once, not on every poll. It is also why
+      // this is not in busIcon() — that runs on every redraw.
+      const el = m.getElement && m.getElement();
+      if (el) el.classList.add('arrive');
     }
   });
   Object.keys(busMarkers).forEach(function(id){
@@ -2157,10 +2295,22 @@ function renderStrip(box, buses, sightings) {
   });
 }
 
+// Cluster ids from the previous draw, so a chip can tell whether it is new
+// on the page or just redrawn. Starts null so the very first draw counts as
+// all-new: buses appearing as the page comes alive is the one cascade worth
+// showing.
+let CHIPS_SEEN = null;
 function renderBuses() {
   const list=document.getElementById('busList');
   const all = clusterBuses(BUSES);
   const shown = sortForList(all.filter(function(b){ return dirFilter==='all' || b.direction===dirFilter; }));
+  // Which chips are genuinely new since the last draw. Tracked against the
+  // unfiltered list so flipping the direction filter does not make every
+  // returning chip re-announce itself as an arrival.
+  const ids = {};
+  all.forEach(function(b){ ids[b.id] = 1; });
+  const seenBefore = CHIPS_SEEN || {};
+  CHIPS_SEEN = ids;
   syncBusMarkers(all);
 
   // Reported sightings, behind the live pills. Only recent ones: a sighting
@@ -2184,7 +2334,7 @@ function renderBuses() {
   list.innerHTML = shown.map(function(b){
     const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
     const where = pl ? pl.label : 'position unclear';
-    return '<button type="button" class="buschip '+(b.direction==='north'?'nb':'sb')+'" onclick="focusBus(\''+b.id+'\')">'+
+    return '<button type="button" class="buschip '+(b.direction==='north'?'nb':'sb')+(seenBefore[b.id]?'':' arrive')+'" onclick="focusBus(\''+b.id+'\')">'+
       '<span class="arrow">'+(b.direction==='north'?'▲':'▼')+'</span>'+
       (b.label?('<b>'+escapeHtml(b.label)+'</b>'):'')+
       escapeHtml(where)+' <span class="age">'+timeAgo(b.ts)+' ago'+
@@ -2757,11 +2907,46 @@ function startSharing(){
   }, { enableHighAccuracy:true, maximumAge:4000, timeout:20000 });
 }
 
+// The thank-you at the start of a trip: the line above the strip, a pulse on
+// this phone's own pill so the eye lands on the right bus, and one short
+// buzz on phones that do that. Called only from beginWatch(), which only
+// runs at a real trip start — a guard pausing and resuming mid-trip never
+// comes back through here, so the welcome cannot repeat itself at someone
+// forty minutes into sharing. Everything is per-trip state in memory: this
+// deliberately stores nothing, so the privacy panel's list of three stays
+// three.
+let helloT1=null, helloT2=null;
+function showTripHello(){
+  const el=document.getElementById('tyHello');
+  const card=document.getElementById('onbusStripCard');
+  if (!el) return;
+  clearTimeout(helloT1); clearTimeout(helloT2);
+  el.classList.remove('bye'); el.classList.remove('hidden');
+  if (card) card.classList.add('hello');
+  // Haptic, not motion: outside the reduced-motion blanket on purpose, and
+  // quietly ignored on platforms without it.
+  try{ if (navigator.vibrate) navigator.vibrate(15); }catch(e){}
+  helloT1=setTimeout(function(){
+    el.classList.add('bye');
+    if (card) card.classList.remove('hello');
+    helloT2=setTimeout(function(){ el.classList.add('hidden'); el.classList.remove('bye'); }, 750);
+  }, 10000);
+}
+// Every way a trip can end runs through setShareUI's off path, which calls
+// this so the welcome never outlives the trip it welcomed.
+function endTripHello(){
+  clearTimeout(helloT1); clearTimeout(helloT2);
+  const el=document.getElementById('tyHello');
+  const card=document.getElementById('onbusStripCard');
+  if (el){ el.classList.add('hidden'); el.classList.remove('bye'); }
+  if (card) card.classList.remove('hello');
+}
 function beginWatch(firstCoords){
   sharing=true;
   guardPaused=false; endAsked=false; dirGuard=makeDirGuard();
   const label=shareLabel();
   setShareUI('on', label);
+  showTripHello();
   if (firstCoords){
     lastCoords=firstCoords;
     idleRef={ lat:firstCoords.latitude, lng:firstCoords.longitude, t:Date.now() };
@@ -2867,6 +3052,7 @@ function setShareUI(state,msg){
     // The number belonged to that trip. Leaving it on screen after Stop
     // would be the one thing this feature must never do: outlive the trip.
     MY_THANKS = 0;
+    endTripHello();
     renderBuses();
   }
   refreshOnbusStrip();

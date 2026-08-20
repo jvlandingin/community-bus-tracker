@@ -1438,24 +1438,60 @@ function renderMyThanks(){
   // number nobody can see is still a number something might read out.
   row.textContent = words ? '🙏 ' + words : '';
 }
+// Bounded, because a long visit on a busy route would otherwise grow this
+// without end. The oldest entries falling off only re-offers a button.
+function saveThanked(){
+  const t = thankedSet();
+  try{ sessionStorage.setItem('wt-ty', JSON.stringify(Object.keys(t).slice(-200))); }catch(e){}
+}
+// Said once per visit, to the console and nowhere else. A rider must not be
+// shown an error for being kind, but this particular failure has one cause
+// worth naming out loud: sql/07-thanks.sql is a hand-run migration, and until
+// somebody runs it the button is drawn, the call 404s, and the sharing screen
+// shows nothing — which is indistinguishable from nobody having tapped. That
+// is the shipped-and-silent shape of bug this project keeps relearning, so
+// the one person who can fix it gets told where to look.
+let thanksWarned = false;
+function thanksTrouble(err){
+  if (thanksWarned) return;
+  thanksWarned = true;
+  const msg = ((err && (err.message || err.hint)) || err || '') + '';
+  const missing = /does not exist|schema cache|PGRST202|404/i.test(msg);
+  try{
+    console.warn('[tracker] saying salamat is not reaching the database: ' + msg +
+      (missing ? '\nThe database has not had sql/07-thanks.sql applied. Run it in the ' +
+                 'Supabase SQL editor, then reload this page.' : ''));
+  }catch(e){}
+}
 async function sayThanks(id){
   const cl = clusterBuses(BUSES).find(function(x){ return x.id === id; });
   const members = (cl && cl.members) || [id];
   const t = thankedSet();
   members.forEach(function(m){ t[m] = 1; });
-  // Bounded, because a long visit on a busy route would otherwise grow this
-  // without end. The oldest entries falling off only re-offers a button.
-  try{ sessionStorage.setItem('wt-ty', JSON.stringify(Object.keys(t).slice(-200))); }catch(e){}
+  saveThanked();
   // Redraw before the request, not after it. What is being acknowledged is a
   // person, and a thank-you that waits on a patchy connection to appear
   // reads as a button that did not work.
   renderBuses();
+  let failed = false;
   for (const m of members){
-    // Silent either way, exactly like the watching heartbeat: nobody being
-    // kind to a stranger should be shown an error about it, and the server
-    // says nothing back by design (sql/07-thanks.sql).
-    try{ await rpc('say_thanks', { p_slug:CFG.ROUTE_SLUG, p_pub:m, p_watcher:getWatcherId() }); }
-    catch(e){}
+    let res = null;
+    // The server says nothing back on success, by design (sql/07-thanks.sql),
+    // and says nothing on a bus that has already gone either — that is not a
+    // failure and must not be treated as one.
+    try{ res = await rpc('say_thanks', { p_slug:CFG.ROUTE_SLUG, p_pub:m, p_watcher:getWatcherId() }); }
+    catch(e){ res = { error:e }; }
+    if (res && res.error){ failed = true; thanksTrouble(res.error); }
+  }
+  if (failed){
+    // Put the button back rather than leave "Salamat sent" standing over a tap
+    // that never landed. Still no error in front of the rider: the returned
+    // button is the whole message, and it is one they can act on. Claiming a
+    // thank-you was delivered when it was not is the one outcome this feature
+    // has no right to.
+    members.forEach(function(m){ delete t[m]; });
+    saveThanked();
+    renderBuses();
   }
 }
 
@@ -2267,6 +2303,10 @@ async function pollPositions() {
   // bus (sql/07-thanks.sql), so there is nothing here to put on the map even
   // by accident, and this is not carried into BUSES for the same reason.
   const mine = (res.data||[]).find(function(v){ return v.is_self; });
+  // The other half of the same diagnosis, from the sharing side: an older
+  // get_positions has no thanks column at all, which is not the same as a
+  // trip nobody has thanked yet, and is worth saying once.
+  if (mine && !('thanks' in mine)) thanksTrouble('get_positions returned no thanks column');
   MY_THANKS = mine ? (mine.thanks|0) : 0;
   // markers are one per clustered bus rather than per sharing session, which
   // is why renderBuses owns them: it is the one place that clusters.

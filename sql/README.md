@@ -33,6 +33,23 @@ pages catch up it is right again, but do not leave it in that state.
 you impossible to keep after the trip that earned it. Run it against a database
 that already has `01` through `06`; it is safe to re-run.
 
+**If the salamat button appears but nothing reaches the sharer**, this
+migration has almost certainly not been run. The button is drawn by the page,
+so it shows up whatever the database contains; the call behind it then fails,
+and the sharing screen shows no row — which looks exactly like nobody having
+tapped. Since August 2026 the page gives the button back instead of saying
+"Salamat sent" over a tap that did not land, and writes one line to the browser
+console naming this file. To check from the SQL editor:
+
+```sql
+select proname from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+ where n.nspname = 'public' and proname in ('say_thanks');
+```
+
+No row means run `07-thanks.sql`. If it returns a row and the button still does
+nothing, PostgREST is serving a stale schema; `notify pgrst, 'reload schema';`
+forces it.
+
 ## Then two setup commands
 
 Run each on its own, after editing the values.

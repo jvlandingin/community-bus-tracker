@@ -458,6 +458,29 @@ function run(page, include, label, configText) {
   check(!!ringed[0] && ringed[0].getAttribute('style').includes('left:0'),
     'and it is the bus the feed flagged, not the other one',
     ringed[0] && ringed[0].getAttribute('style'));
+  // The two strips are drawn by one function but are not the same control:
+  // on the tracker a pill is a button that flies the map to its bus (and so
+  // to the popup, where the salamat button lives); on the sharing tab the
+  // map is on the other tab, so a tappable pill there would do something
+  // invisible. The fourth argument is what separates them.
+  check([...ok.d.querySelectorAll('#onbusStrip .buspill')]
+      .every(pl => pl.tagName === 'DIV'),
+    'the sharing tab\'s pills are inert, because the map is not on that tab');
+  ok.w.renderStrip(ok.d.getElementById('trackStrip'), [
+    { id: 'abc123-def', lat: +first[2], lng: +first[3], direction: 'north', ts: Date.now() }
+  ], [], true);
+  const tapPill = ok.d.querySelector('#trackStrip .pills.nb .buspill');
+  check(!!tapPill && tapPill.tagName === 'BUTTON'
+      && (tapPill.getAttribute('onclick') || '').includes("focusBus('abc123-def')"),
+    'the tracker\'s pills are buttons that focus their bus on the map',
+    tapPill ? tapPill.outerHTML.slice(0, 90) : 'no pill drawn');
+  ok.w.renderStrip(ok.d.getElementById('trackStrip'), [
+    { id: 'abc\'); alert(1); (\'', lat: +first[2], lng: +first[3], direction: 'north', ts: Date.now() }
+  ], [], true);
+  const oddPill = ok.d.querySelector('#trackStrip .pills.nb .buspill');
+  check(!!oddPill && oddPill.tagName === 'DIV' && !oddPill.getAttribute('onclick'),
+    'an id that is not plain hex draws a plain pill rather than reaching a handler');
+
   // The ring means "the bus you are sharing", so the CSS has to be able to
   // find it and the legend line that explains it has to exist.
   check(/\.buspill\.me\{/.test(fs.readFileSync(path.join(APP, 'index.html'), 'utf8')),

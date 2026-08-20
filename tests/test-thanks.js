@@ -165,5 +165,28 @@ console.log('\n=== 10. every RPC the pages call exists in a migration ===');
     ungranted.length ? 'NOT GRANTED: ' + ungranted.join(' ') : 'all granted');
 }
 
+console.log('\n=== 11. the feature is findable without shouting ===');
+// The button lives in the bus popup, which nobody who has not tapped a bus
+// knows exists. The whole discoverability budget is one muted line under the
+// chips, drawn only when there is somebody to thank — the same rule as the
+// count itself: nothing is shown when there is nothing to act on.
+check(/id="chipNote"/.test(html) && /class="hint hidden" id="chipNote"/.test(html),
+  'the hint exists and ships hidden, so an empty map stays as bare as before');
+{
+  const noteText = (html.match(/id="chipNote"[^>]*>([^<]*)</) || [])[1] || '';
+  check(/salamat/i.test(noteText) && /tap/i.test(noteText),
+    'and it says what to do, not just that a feature exists', noteText.slice(0, 60));
+  check(!/(min|score|rank|rate)/i.test(noteText), 'without promising anything the system does not do');
+}
+check(/note\.classList\.toggle\('hidden', !shown\.some\(function\(b\)\{ return !b\.self; \}\)\)/.test(html),
+  'it appears only when a live bus is somebody else\'s — nobody is invited to thank themselves');
+// The other road to the popup: the tracker's strip pills are buttons that
+// focus their bus. Guarded properly in test-boot section 9 with a real DOM;
+// this only pins that the wiring is the popup, not a second salamat control.
+check(/onclick="focusBus\(/.test(html.slice(html.indexOf('function renderStrip'))),
+  'a strip pill routes to the map popup rather than growing its own button');
+check(!/tybtn/.test(html.slice(html.indexOf('function renderStrip'), html.indexOf('function renderBuses'))),
+  'and no salamat control is drawn on the strip itself');
+
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);

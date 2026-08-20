@@ -273,6 +273,14 @@
      yours" — and because that is colour doing the talking, the line under
      the strip names it in words. */
   .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 3.5px var(--live), 0 1px 4px rgba(43,35,32,.25);}
+  /* On the tracker's strip a pill is a real button: tapping it flies the map
+     to that bus and opens its popup, which is where the salamat button and
+     everything else about the bus already live. Same look either way — the
+     three pages that redraw this strip stay accurate. The pseudo-element is
+     the tap target: the pill itself is far under --tap and cannot grow
+     without landing on its neighbours, so the padding is invisible instead. */
+  button.buspill{cursor:pointer; font:inherit; font-size:14px; line-height:1;}
+  button.buspill::after{content:''; position:absolute; inset:-10px;}
   /* A reported sighting, not a GPS position. Hollow and dashed so it cannot
      be mistaken for a live bus at a glance — that would be worse than showing
      nothing, because a sighting is one person's word, already minutes old,
@@ -917,6 +925,12 @@
            A sibling of the real list, not inside it: renderBuses() rewrites
            #busList's innerHTML and would wipe them mid-animation. -->
       <div id="bootGhosts" aria-hidden="true"><span></span><span></span><span></span></div>
+      <!-- The whole discoverability budget for saying salamat: one muted
+           line, and only while there is a live bus that is somebody else's —
+           on an empty map it is not drawn at all, and nobody is invited to
+           thank themselves. The popup is where the button lives; this only
+           says the popup exists. -->
+      <div class="hint hidden" id="chipNote">Tap any 🚌 — on the strip, the list or the map — to see it up close and say salamat to whoever is sharing it.</div>
 
       <!-- Rewritten by renderMyStop() on every poll. Nothing here is sent
            anywhere: the stop lives in this browser and the distance is
@@ -2299,7 +2313,7 @@ function sortForList(list){
 // filter on Northbound and then shares a southbound trip would otherwise
 // watch their own bus fail to appear and have every reason to think the app
 // was broken.
-function renderStrip(box, buses, sightings) {
+function renderStrip(box, buses, sightings, tappable) {
   if (!box) return;
   const nbBox = box.querySelector('.pills.nb'), sbBox = box.querySelector('.pills.sb');
   if (!nbBox || !sbBox) return;
@@ -2311,8 +2325,15 @@ function renderStrip(box, buses, sightings) {
     pl.ticks.forEach(function(i){ nearSet[i]=true; });
     const pct = pl.pct;
     const stale = freshness(b.ts)==='delayed';
-    const pill = '<div class="buspill '+(b.direction==='south'?'sb':'')+(stale?' stale':'')+
-      (b.self?' me':'')+'" style="left:'+pct+'%">🚌</div>';
+    // A button only where the map it points at is on the same tab, and only
+    // for an id that is exactly the hex the server hands out — anything else
+    // stays a plain pill rather than being interpolated into a handler.
+    const canTap = tappable && b.id && /^[A-Za-z0-9\-]+$/.test(b.id);
+    const cls = 'buspill '+(b.direction==='south'?'sb':'')+(stale?' stale':'')+(b.self?' me':'');
+    const pill = canTap
+      ? '<button type="button" class="'+cls+'" style="left:'+pct+'%" '+
+        'onclick="focusBus(\''+b.id+'\')" aria-label="Show this bus on the map">🚌</button>'
+      : '<div class="'+cls+'" style="left:'+pct+'%">🚌</div>';
     // Your own bus is held back and appended last, so it paints over its
     // neighbours rather than under them. Pills overlap constantly on a phone
     // and the one pill this reader is looking for is the one that must not
@@ -2363,7 +2384,7 @@ function renderBuses() {
   const trackGhosts = ghosts.filter(function(s){
     return dirFilter === 'all' || s.direction === dirFilter;
   });
-  renderStrip(document.getElementById('trackStrip'), shown, trackGhosts);
+  renderStrip(document.getElementById('trackStrip'), shown, trackGhosts, true);
   // Unfiltered, and sorted only so the two strips draw their pills in the
   // same order: nothing on the sharing tab sets a filter.
   renderStrip(document.getElementById('onbusStrip'), sortForList(all), ghosts);
@@ -2381,6 +2402,9 @@ function renderBuses() {
 
   renderMyStop(shown);
   renderMyThanks();
+  // Someone else's bus is the only thing the hint's advice applies to.
+  const note = document.getElementById('chipNote');
+  if (note) note.classList.toggle('hidden', !shown.some(function(b){ return !b.self; }));
 
   // headline
   const text=document.getElementById('statusText'), sub=document.getElementById('statusSub');

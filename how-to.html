@@ -374,6 +374,14 @@
      index.html's .striplabel, kept here rather than imported for the same
      reason the tokens are. */
   .striplabel{font-size:9.5px; font-weight:800; letter-spacing:.08em; color:var(--brand-ink); text-transform:uppercase;}
+  /* index.html's .tyline, same reasoning as .striplabel above: recreated
+     rather than imported, so it has to be corrected when the app's is. */
+  .demo-ty{
+    display:flex; align-items:center; gap:7px; margin-top:8px;
+    padding:8px 10px; border-radius:10px;
+    background:var(--paper); border:1px solid var(--line);
+    font-weight:800; font-size:13px; color:var(--ok-ink);
+  }
   .dirlabel{font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
   .dirlabel.nb{text-align:right; margin-bottom:3px;}
   .track{position:relative; height:22px;}
@@ -704,6 +712,21 @@
           this tool deliberately keeps no such record — see below.</p>
       </div>
     </div>
+
+    <div class="step">
+      <div class="n">6</div>
+      <div class="body">
+        <h3>Say salamat</h3>
+        <p>Tap a bus on the map and its details open, with <b>🙏 Say salamat</b> at
+          the bottom. One tap tells whoever is carrying the phone on that bus that
+          somebody was glad it was there. They are giving up their battery and
+          data for the rest of us, and until you tap, nothing at all comes back
+          the other way.</p>
+        <p class="hint">Only that one person sees it, only while the trip is
+          running, and it disappears with the trip. There is no score and no
+          total — not for a bus, not for a driver, not anywhere.</p>
+      </div>
+    </div>
   </div>
 
   <!-- ================= SIGHTINGS ================= -->
@@ -912,10 +935,14 @@
           </div>
           <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
         </div>
+        <!-- Drawn here because the app draws it, but only once somebody has
+             tapped: a trip with none shows no row at all, never a zero. -->
+        <div class="demo-ty">🙏 3 riders said salamat</div>
       </div>
       <figcaption>While it is running. Green dot, one button to stop, and the
         same strip everyone watching sees. Your bus is the one with the green
-        ring, so you can tell it apart when several are sharing.</figcaption>
+        ring, so you can tell it apart when several are sharing. If riders
+        thank you, that shows here too — for this trip, and only to you.</figcaption>
     </figure>
   </div>
 

@@ -29,7 +29,8 @@ jobs:
       - name: Run the suites
         run: |
           set -euo pipefail
-          for t in test-hours test-guard test-strip test-prompts test-mystop test-boot; do
+          for t in test-hours test-guard test-strip test-prompts test-mystop \
+                   test-thanks test-boot; do
             echo "::group::$t"
             node "tests/$t.js"
             echo "::endgroup::"
@@ -69,12 +70,14 @@ jobs:
                       ../sql/03-kick-block.sql
                       ../sql/04-session-id-privacy.sql
                       ../sql/05-rotate-same-key.sql
-                      ../sql/06-watching-count.sql"
+                      ../sql/06-watching-count.sql
+                      ../sql/07-thanks.sql"
           # Each suite gets its own fresh database, exactly as
           # tests/README.md says, because they move the seeded rows the
           # next one expects.
           for suite in 01-core-tests 02-rotation-tests 03-kick-tests \
-                       04-privacy-tests 05-rotate-tests 06-watching-tests; do
+                       04-privacy-tests 05-rotate-tests 06-watching-tests \
+                       07-thanks-tests; do
             db="bustest_${suite%%-*}"
             echo "::group::$suite"
             psql -q -d postgres -v ON_ERROR_STOP=1 \

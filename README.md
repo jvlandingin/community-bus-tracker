@@ -31,6 +31,13 @@ name the route in link previews.
   phone**: the stop is saved in the browser, the distance is worked out on the
   device from positions the page already has, and nothing about a person
   watching is ever sent anywhere.
+- **Say salamat:** tap a bus on the map and thank whoever is carrying the
+  phone through the trip. The person sharing sees `🙏 3 riders said salamat`
+  under their progress strip; nobody else sees it, on any bus. It belongs to
+  that one trip and is deleted with it — **there is no running total for any
+  driver, and nowhere to keep one**, which is deliberate: an appreciation score
+  attached to a person is the one thing this project's promise to the bus
+  company rules out.
 - **Light and dark:** follows the device by default, with a ☀/☾/◐ control in
   the header to override it either way. The map's tiles follow too.
 - **Sightings:** a board for when nobody is sharing GPS. Direction and nearest

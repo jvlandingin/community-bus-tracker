@@ -51,6 +51,15 @@ design.** Unique on `(route_slug, session_id)`.
 `sid` (identity, used by admin delete), `route_key`, `route_slug`, `body`,
 `created_at`.
 
+### thanks_now
+One row per rider who tapped Salamat on a bus that is sharing **right now**.
+`route_slug`, `session_id`, `mark`, `created_at`, primary key on the first
+three.
+
+It is a child of `bus_positions (route_slug, session_id)` with **ON DELETE
+CASCADE** and ON UPDATE CASCADE, and that is the whole design rather than a
+detail — see "Saying salamat" below.
+
 ### watching_now
 One row per tab with the tracker page open, upserted in place. `route_slug`,
 `watcher_id`, `last_seen`, and nothing else. Rows are deleted three minutes
@@ -94,11 +103,12 @@ to 120, sighting expiry 5 to 1440, max sessions 1 to 200.
 | function | notes |
 |---|---|
 | `get_settings(p_slug)` | returns `{settings, notice}`. Notice is null when unset or expired. |
-| `get_positions(p_slug, p_self)` | filters stale rows, deletes nothing. Returns `pub_id`, **not** the session id, see below. `p_self` is optional: pass your own session id and your own row comes back with `is_self` set, which is how the duplicate-sharer warning skips itself. |
+| `get_positions(p_slug, p_self)` | filters stale rows, deletes nothing. Returns `pub_id`, **not** the session id, see below. `p_self` is optional: pass your own session id and your own row comes back with `is_self` set, which is how the duplicate-sharer warning skips itself. It also carries `thanks` on that row and `null` on every other, see "Saying salamat". |
 | `get_sightings(p_slug)` | newest 8 within the expiry window |
 | `add_sighting(p_slug, p_body)` | 1 to 140 chars; refuses a 6th post inside 60 seconds route-wide |
 | `clear_bus_position(p_slug, p_session)` | takes the real session id, which only the sharer's own phone holds; keeps working across a rotation and from sendBeacon |
 | `mark_watching(p_slug, p_watcher)` | the watching heartbeat, see below. Returns nothing and tells the caller nothing. |
+| `say_thanks(p_slug, p_pub, p_watcher)` | one rider thanking one live bus, see "Saying salamat". Returns nothing and tells the caller nothing. |
 | `ping()` | keep-alive target for the uptime monitor |
 
 ### Why `get_positions` does not return the session id
@@ -172,7 +182,7 @@ works **only while none is set**, so it cannot be used to take over a route.
 ### SQL editor only (execute revoked from anon)
 `rename_route_slug(p_old, p_new)`, and the internal helpers `_hash_admin`,
 `_pub_id`, `_require_admin`, `_check_settings`, `_sweep`, `_sweep_watching`,
-`_watching_window`, `_watching_cap`.
+`_watching_window`, `_watching_cap`, `_thanks_mark`, `_thanks_cap`.
 
 ## The watching count
 
@@ -217,6 +227,75 @@ Design constraints, all of which are the point rather than details:
   request path are content-blocker filter targets, and a blocked heartbeat fails
   invisibly and undercounts. Same lesson as `shareBtn`, see
   `docs/ARCHITECTURE.md`.
+
+## Saying salamat
+
+`sql/07-thanks.sql`. Sharing costs the person on board battery, data and an
+hour of leaving the screen on, and nothing ever came back the other way. The
+progress strip on the sharing tab was the first half of the answer — it proves
+the bus reached the map. This is the second: proof that a person was on the
+other end of it.
+
+Every constraint below exists because a thank-you attached to a person is one
+short step from a rating attached to a driver.
+
+- **The count cannot outlive the trip, structurally.** `thanks_now` is a child
+  of `bus_positions` by foreign key with `ON DELETE CASCADE`. Every path that
+  ends a trip already deletes the parent — `clear_bus_position` from Stop and
+  from `sendBeacon` on page close, `admin_kick`, the stale sweep in `_sweep` —
+  so none of them mentions this table and none of them ever has to. The
+  property is enforced by the schema, not by remembering. That matters more
+  than the usual "we delete it": `for-operators.html` tells the bus company
+  this tool cannot be used to review a driver, and a per-driver appreciation
+  total is precisely the metric that promise is about. **There is nowhere to
+  put one.** A sharer who stops and starts again begins at nothing, because
+  the parent row was deleted and took the children with it.
+- **A number is returned only to the person it is about.** `get_positions`
+  fills `thanks` on the row where `session_id = p_self` and leaves `null`
+  everywhere else — null rather than zero, so a reader cannot tell a
+  much-thanked bus from a quiet one. Only the sharer's own phone holds that
+  session id, and `get_positions` has not published session ids since July 2026
+  (see above), so there is no way to ask on another bus's behalf. This is not
+  only privacy: a count beside every bus on the map would rank the buses
+  currently on the road in front of the riders choosing which to wait for, and
+  put drivers in a competition nobody volunteered for.
+- **Nothing stored says who was grateful.** The row holds `mark`, a salted
+  SHA-256 of `(pub_salt, session_id, watcher_id)` — not the watcher id. So a
+  row here cannot be matched against `watching_now`, which is the only other
+  place a watcher id is ever written, and the same tab thanking two buses
+  leaves two values with nothing in common. All it can do is collide with
+  itself, which is exactly what a second tap should do. No function returns it
+  to anyone, admin included, and `07-thanks-tests.sql` fails if one is added.
+- **The bus is named by its `pub_id`**, which is what every watcher already has
+  off the map, so the only buses that can be thanked are the ones the caller
+  can already see. The real session id is never in a reader's hands and is not
+  needed: `say_thanks` recomputes `_pub_id` over the route's live rows to find
+  the trip, a scan of at most `max_sessions` rows.
+- **A bus that has gone is not an error.** If the trip ended between the map
+  drawing the bus and the thumb landing on it, `say_thanks` returns quietly.
+  Putting an error in front of someone being kind would be graceless, and it
+  would also turn the function into a way to test whether a given `pub_id` is
+  still live.
+- **`say_thanks` takes no key**, because a watcher has none — the same position
+  the watching count is in, and the same honest limit. Anyone reading the
+  source can call it in a loop with invented watcher ids. `_thanks_cap()` (50
+  per trip) bounds that to a small fixed number rather than an unbounded table.
+  It is a kind word, not evidence, and the difference between a number that can
+  be exaggerated and a table that can be filled is the only thing the cap
+  claims.
+- **The name avoids `like`, `fav`, `thumb`, `heart`, `vote`, `star`, `rate`,
+  `social` and `clap`**, in the RPC and in every id and class that draws it.
+  Filter lists were written to kill Facebook Like buttons, and this is the most
+  Like-shaped thing the app will ever ship. Same lesson as `shareBtn` and
+  `mark_watching`, and worse than either, because it fails on the reader's side
+  where nobody would report it. See `docs/ARCHITECTURE.md`.
+
+One consequence to know before changing the direction guard: `onWrongDirection`
+calls `clear_bus_position` to take the bus off the map while the question is
+open, so a sharer who is asked which way they are going comes back with the
+count reset to zero. That is the cascade being honest — the row really was
+deleted — and the alternative is a count that outlives its row, which is the
+one thing this table must not do.
 
 ## Setting up a fresh route
 

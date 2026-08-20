@@ -387,6 +387,23 @@ function run(page, include, label, configText) {
     check(found.length === 0, `${page}: nothing reads as a help or chat widget`,
       found.join(' ') || 'clean');
   }
+  // And the third list, added with the salamat button: the filters written to
+  // kill Facebook Like buttons are the oldest and broadest cosmetic rules
+  // there are, and they match on names like this one's. This scan is the
+  // reason the button is class="tybtn" rather than anything a person would
+  // reach for first. It covers onclick as well as id and class, because a
+  // filter can match an attribute's value as readily as its name, and the
+  // control is drawn from a JS string that a DOM scan would never see.
+  // "star" is deliberately absent: it is a substring of "start", which this
+  // page is full of, and a scan that cries wolf on onbusStartBtn is a scan
+  // somebody eventually deletes. Filter rules for it are written against
+  // star-rating widgets, which nothing here will ever be.
+  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html']) {
+    const found = (fs.readFileSync(path.join(APP, page), 'utf8')
+      .match(/(?:id|class|onclick)="[^"]*(?:like|fav|thumb|heart|vote|social|clap)[^"]*"/gi) || []);
+    check(found.length === 0, `${page}: nothing reads as a like or social widget`,
+      found.join(' ') || 'clean');
+  }
 
   console.log('\n=== 9. the progress strip on the sharing tab ===');
   // A sharer's own tab reads "Sharing live" whether or not anything ever

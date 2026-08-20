@@ -18,6 +18,7 @@ node test-guard.js      # wrong-direction detection on simulated trips
 node test-strip.js      # progress strip position and wording
 node test-prompts.js    # idle, end-of-trip and direction prompts
 node test-mystop.js     # the saved stop: which bus is coming, how far, how many stops
+node test-thanks.js     # saying salamat: the words, who is offered it, what it never draws
 node test-boot.js       # loads both pages in a real DOM (needs jsdom)
 ```
 
@@ -52,6 +53,7 @@ psql -d bustest -f ../sql/03-kick-block.sql
 psql -d bustest -f ../sql/04-session-id-privacy.sql
 psql -d bustest -f ../sql/05-rotate-same-key.sql
 psql -d bustest -f ../sql/06-watching-count.sql
+psql -d bustest -f ../sql/07-thanks.sql
 ```
 
 Then run one suite against it:
@@ -63,6 +65,7 @@ psql -d bustest -f db/03-kick-tests.sql        # 17 checks, stopping a sharer
 psql -d bustest -f db/04-privacy-tests.sql     # 18 checks, session id privacy
 psql -d bustest -f db/05-rotate-tests.sql      # 10 checks, rotation guard
 psql -d bustest -f db/06-watching-tests.sql    # 32 checks, the watching count
+psql -d bustest -f db/07-thanks-tests.sql      # 38 checks, saying salamat
 ```
 
 `dropdb bustest` and build it again between suites. Apply **all** the migration
@@ -83,7 +86,7 @@ check in a way that looks like a schema bug rather than a missing role.
 ## Continuous integration
 
 `.github/workflows/tests.yml` runs everything on every pull request and every
-push to `main`: the five JavaScript suites in one job, and the six database
+push to `main`: the six JavaScript suites in one job, and the seven database
 suites against a `postgres:16` service container in another. The database job
 deliberately repeats the steps above rather than calling a script, so the
 runbook on this page is re-proven on every commit instead of being taken on
@@ -93,7 +96,7 @@ For that to gate anything, **`javascript` and `database` have to be added as
 required status checks** on `main` in the repository's branch protection
 settings. Without that they report, but nothing stops a red branch merging.
 
-`netlify.toml` additionally runs the five suites that need nothing installed as
+`netlify.toml` additionally runs the six suites that need nothing installed as
 the site's build command, so a failing one cancels the deploy. That is a second
 line only: by then the commit is already on `main`. The merge gate is the one
 that matters.

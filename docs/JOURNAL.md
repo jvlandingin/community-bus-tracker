@@ -25,6 +25,70 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-08-20 — Saying salamat to whoever is carrying the phone
+
+**What shipped.** Tapping a bus on the map opens its popup, and the popup now
+ends with **🙏 Say salamat**. One tap. The person sharing that bus sees a line
+under their progress strip: `🙏 3 riders said salamat`. Nobody else sees it, and
+it goes when the trip does.
+
+**Why it is worth having.** Sharing is unpaid work — battery, data, and the
+discipline of leaving the screen unlocked for an hour so the GPS keeps running.
+Until now the only thing a sharer got back was the progress strip added in
+August, which proves the bus reached the map. That answers *is this working*.
+It does not answer *does anyone care*, and for a volunteer those are different
+questions.
+
+**Why it took a database migration and four documents to add a button.** The
+first design was the obvious one — a count per sharer, kept. It was rejected on
+its own merits, and the reasoning is the part worth keeping:
+
+*An appreciation total is a driver metric.* `for-operators.html` tells the bus
+company, before it asks them for anything, that this tool cannot be used to
+review a driver's speed, breaks, route deviation or working hours — **not
+because we promise not to, but because the data is never written down**. A
+running "salamat" total per person is exactly the kind of number a company
+could later ask for, and the moment one exists, that paragraph stops being
+true. So there is no total. A count belongs to one trip, and `thanks_now` is a
+child of the position row by foreign key with `ON DELETE CASCADE` — it cannot
+outlive the trip, and no future code path has to remember to delete it.
+
+*A visible count is a ranking.* The count is returned only on the sharer's own
+row. A number beside every bus on the map would rank the buses currently on the
+road in front of the riders choosing which one to wait for. Nobody driving
+signed up for that.
+
+*A zero is worse than silence.* On a quiet run most trips will collect nothing,
+and "0" parked on the sharing screen for forty minutes turns silence into a
+verdict — the exact opposite of what the feature is for. The row is not drawn
+until there is something to draw. `test-thanks.js` fails if that changes.
+
+**The name was the other real decision.** The oldest and broadest cosmetic
+rules in every content-blocker filter list exist to kill Facebook Like buttons.
+This is the most Like-shaped control the app will ever ship, and it lives on the
+*reader's* side, where somebody losing it to a filter has no reason to think
+anything is missing and no way to tell us — strictly worse than the `shareBtn`
+bug, which at least a sharer could describe as "the button is not there". Hence
+`tybtn`, `tyrow`, `tydone`, `say_thanks`, and a third name scan in
+`test-boot.js` section 8 covering `like`, `fav`, `thumb`, `heart`, `vote`,
+`social` and `clap` across all five pages, in `onclick` as well as `id` and
+`class`.
+
+**Honest limits, both stated in the app.** `say_thanks` takes no key, because a
+watcher has none, so anyone reading the source can inflate a bus's number with
+invented ids; a cap of 50 per trip bounds it. And the count resets if the
+wrong-direction guard pauses a trip, because that path clears the position row
+and the cascade takes the thanks with it. Both are the design working, not
+holes in it.
+
+**Not decided.** Whether the sharer should be told anything at the *end* of a
+trip, when the strip and the line both disappear with the row. A summary would
+be the one thing this design refuses to keep, so if it is ever wanted it has to
+be drawn on the phone from what that phone already saw, and never asked of the
+server.
+
+---
+
 ## 2026-08-17 — Your own stop, on your own phone
 
 **What shipped.** The tracker can be told where you wait. Pick a stop from the

@@ -14,7 +14,7 @@ made in response to bugs that had already shipped.
 
 ## Commands
 
-The five dependency-free JavaScript suites, run from the repository root:
+The six dependency-free JavaScript suites, run from the repository root:
 
 ```
 node tests/test-hours.js      # split operating hours, the en-route allowance
@@ -22,11 +22,12 @@ node tests/test-guard.js      # wrong-direction detection on simulated trips
 node tests/test-strip.js      # progress strip position and wording
 node tests/test-prompts.js    # idle, end-of-trip and direction prompts
 node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops
+node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws
 ```
 
 These are also Netlify's build command, so a failure cancels the deploy.
 
-The fifth suite loads both pages in a real DOM and needs jsdom, which is
+The seventh suite loads both pages in a real DOM and needs jsdom, which is
 installed nowhere in the repository (see "No package.json" below):
 
 ```
@@ -41,7 +42,7 @@ each moves the seeded rows the next would expect. From `tests/`:
 ```
 createdb bustest
 psql -d bustest -f db/00-legacy-baseline.sql
-psql -d bustest -f ../sql/01-base.sql          # then 02, 03, 04, 05 in order
+psql -d bustest -f ../sql/01-base.sql          # then 02 through 07 in order
 psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 ```
 
@@ -93,6 +94,18 @@ distance and stop counts only, never minutes: an ETA needs travel-time history
 this system does not keep, and `test-mystop.js` fails if the wording drifts
 towards implying one.
 
+**A reader can thank a sharer**, once per bus, from the bus's popup on the
+map. Deliberately narrow, and each narrowing is load-bearing: the count belongs
+to one trip and `thanks_now` is a child of `bus_positions` with `ON DELETE
+CASCADE`, so it *cannot* outlive it and nothing has to remember to delete it; it
+is returned only on the sharer's own row, because a count beside every bus would
+rank the buses on the road in front of the riders choosing between them; a zero
+is never drawn, because "0" on the sharing screen for forty minutes turns
+silence into a verdict; and nothing stored identifies the rider who tapped. A
+running total per sharer is the driver metric `for-operators.html` promises
+cannot be produced — if one is ever wanted, that is the deliberate conversation,
+not a follow-up. `test-thanks.js` and `db/07-thanks-tests.sql` hold all of it.
+
 **The app keeps exactly three things between visits**, all on the device and
 all named in the privacy panel: whether the guide has been opened, the
 light/dark/system theme choice, and the reader's saved stop. Adding a fourth
@@ -136,13 +149,17 @@ jsdom is installed only in CI, with `--no-save`.
 `assets/vendor/`. CARTO map tiles are the only remaining third party and are
 disclosed to users in the app. Do not reintroduce CDN links.
 
-**Nothing named `share*`, `help*`, `support*`, `chat*` or `widget*` in a DOM id
-or class.** Brave Shields' cosmetic filtering hid the start button because its
+**Nothing named `share*`, `help*`, `support*`, `chat*`, `widget*`, `like*`,
+`fav*`, `thumb*`, `heart*`, `vote*`, `social*` or `clap*` in a DOM id, class or
+`onclick`.** Brave Shields' cosmetic filtering hid the start button because its
 id was `shareBtn`, leaving a page that looked completely normal with no way to
 share. The failure is invisible from our side. `test-boot.js` sections 7 and 8
 scan every page for these names, the flyer included: its whole purpose is one
 call to action, and a filter list that hides it leaves a poster-shaped page
-with no way to reach the tracker.
+with no way to reach the tracker. The second half of the list arrived with the
+salamat button, which is the most Like-shaped control this app will ever ship
+and sits on the reader's side, where losing it to a filter would never be
+reported. `star` is deliberately absent — it is inside `start`.
 
 **Reads do not write.** Cleanup happens in `_sweep()`, called only from writes.
 An earlier version ran a DELETE on every read and was documented as fixed long

@@ -183,6 +183,22 @@ the same shape of decision: it is a location, it belongs to a *watcher* rather
 than a bus, and it is kept in `localStorage` and read only by the device that
 wrote it. No request carries it and no column exists for it.
 
+**Saying salamat is present tense only, and enforced by the schema.** August
+2026 let a reader tap a bus to thank whoever is carrying the phone. It was
+checked against the rule above and it is the case where the check changed the
+design: an appreciation *total* per sharer is exactly the driver metric that
+`for-operators.html` promises cannot be produced, so there isn't one. A count
+belongs to a single trip and dies with it, and `thanks_now` is a child of
+`bus_positions` by foreign key with `ON DELETE CASCADE` — so it is not swept
+away when the trip ends, it *cannot outlive it*, and no future code path has to
+remember the table exists. Two consequences worth knowing before touching it:
+the count is returned only on the caller's own row, because a number beside
+every bus would rank the buses on the road in front of the riders choosing
+between them; and the direction-guard pause calls `clear_bus_position`, so a
+sharer who is asked which way they are going comes back with the count reset.
+That is the cascade being honest rather than a bug — the row really was
+deleted. Full reasoning in `docs/DATABASE.md`.
+
 **The watching count is present tense only.** July 2026 added the one thing in
 the system that observes watchers at all: the tracker page beats every 60
 seconds with a random per-tab id, and the admin page can see how many devices
@@ -444,6 +460,21 @@ an `<a href>` rather than a button: if a blocker hides it anyway, the page it
 points at is still a plain URL that works. `test-boot.js` section 8 checks both
 pages for those names, alongside the `share*` scan.
 
+And a third list, which is the one that decided the salamat button's name. The
+oldest and broadest cosmetic rules in every filter list exist to kill Facebook
+Like buttons and the social bars around them, and they match on names like
+`like`, `fav`, `thumb`, `heart`, `vote`, `social` and `clap`. A thank-you
+control is the single most filter-shaped thing this app could ever ship, so it
+is `tybtn`, `tyrow`, `tydone` and `tyLine`, and the RPC is `say_thanks`. This
+one is worse than `shareBtn` in one specific way: it lives on the *reader's*
+side, where the person who loses it has no reason to think anything is missing
+and no way to tell us. `test-boot.js` section 8 scans all five pages for those
+names in `id`, `class` and `onclick` — `onclick` too, because the control is
+built in a JS string that a DOM scan never sees, and a filter can match an
+attribute's value as readily as its name. `star` is deliberately not on the
+list: it is a substring of `start`, and a scan that cries wolf on
+`onbusStartBtn` is a scan somebody eventually deletes.
+
 ## Known limitations
 
 **Screen must stay on while sharing.** Mobile browsers suspend JavaScript and
@@ -514,8 +545,9 @@ Measured and reasoned, not guessed:
 Nothing here is claimed without being checked. The suites live outside the
 deploy folder:
 
-- `test-guard.js`, `test-strip.js`, `test-prompts.js`, `test-hours.js` extract
-  the shipped code out of index.html by comment markers and run it, so a passing
+- `test-guard.js`, `test-strip.js`, `test-prompts.js`, `test-hours.js`,
+  `test-mystop.js` and `test-thanks.js` extract the shipped code out of
+  index.html by comment markers and run it, so a passing
   test cannot drift from the app. They need Node, plus config-template.txt one
   level up. `test-boot.js` additionally loads both pages in a real DOM (jsdom)
   over a local HTTP server, including a deploy with `assets/` missing and a
@@ -524,8 +556,9 @@ deploy folder:
   `01-core-tests.sql` runs 55 behavioural checks against it, `02-rotation-tests`
   17 for key rotation, `03-kick-tests` 17 for stopping a sharer,
   `04-privacy-tests` 18 for session id privacy, `05-rotate-tests` 10 for the
-  rotation guard, `06-watching-tests` 32 for the watching count — most of them
-  about what it refuses to keep. Each runs against its own fresh database; see
+  rotation guard, `06-watching-tests` 32 for the watching count and
+  `07-thanks-tests` 38 for saying salamat — the last two almost entirely about
+  what they refuse to keep. Each runs against its own fresh database; see
   `tests/README.md`, which is now accurate about that.
 
 Two lessons worth keeping. The reconstruction was built from a dump of function

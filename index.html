@@ -445,6 +445,27 @@
   .buspop .sb .pdir{color:var(--brand-ink);}
   .buspop .pname{font-weight:800; font-size:13.5px; margin-top:1px;}
   .buspop .page{color:var(--muted); font-weight:600;}
+  /* Saying salamat. The only control in the popup, so it gets the full
+     width and a target a thumb finds on a moving bus. Named tybtn and not
+     any of the obvious words — see the naming note above thanksControl. */
+  .buspop .tyrow{margin-top:7px; padding-top:6px; border-top:1px solid var(--line);}
+  .buspop .tybtn{
+    display:flex; align-items:center; justify-content:center; gap:5px;
+    width:100%; min-height:34px; padding:6px 10px; border-radius:9px;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink);
+    font:inherit; font-weight:800; font-size:12px; cursor:pointer;
+  }
+  .buspop .tybtn:hover{border-color:var(--muted);}
+  .buspop .tybtn:active{background:var(--line);}
+  .buspop .tydone{padding:2px 0; text-align:center; font-weight:800; color:var(--ok-ink);}
+  /* And the other end of it, on the screen of the person being thanked.
+     --ok-ink because it is spelling a word, not painting a shape. */
+  .tyline{
+    display:flex; align-items:center; gap:7px; margin-top:8px;
+    padding:8px 10px; border-radius:10px;
+    background:var(--paper); border:1px solid var(--line);
+    font-weight:800; font-size:13px; color:var(--ok-ink);
+  }
   .mapreset a{display:flex; align-items:center; justify-content:center; color:var(--ink);}
   .mapreset svg{width:19px; height:19px; display:block;}
   /* Leaflet ships 30px controls. On a touch map that is under every
@@ -605,10 +626,12 @@
       <p>The app never asks for your location on its own, and you can use the whole map without ever giving it. No account, no name, no phone number. We can't see who is watching.</p>
       <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the ⊕ button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the tab.</p>
       <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it.</p>
-      <p>One thing is counted, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
+      <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
+      <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number, and it never adds up across trips: <b>no running total is kept for any driver or any bus, anywhere.</b></p>
 
       <h4 class="ok">If you share from the bus</h4>
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID for your session. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
+      <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and it goes when the trip does. Nothing keeps a total for you, so there is no score to go up or down.</p>
 
       <div id="privSightings">
         <h4 class="ok">Sightings</h4>
@@ -909,6 +932,10 @@
         <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
       </div>
       <div class="hint">Everyone with the tracker open is seeing this. Yours is the bus with the green ring. Nothing to post in the group chat.</div>
+      <!-- Drawn only once somebody has tapped, never as a zero. See
+           thanksWords(). aria-live so it is announced when it arrives
+           rather than only found by someone who goes looking. -->
+      <div class="tyline hidden" id="tyLine" aria-live="polite"></div>
     </div>
   </div>
 
@@ -1337,6 +1364,101 @@ function busIcon(dir, fresh, count) {
     html: '🚌' + ((count&&count>1) ? '<span class="cnt">'+(count|0)+'</span>' : '')
   });
 }
+// ---- SAYING SALAMAT (unit tested) ---------------------------------------
+// A rider taps once on a bus to thank whoever is carrying the phone through
+// the trip. Four rules are the whole feature, and they live here rather than
+// in the markup so that a test can hold them:
+//
+//  1. A zero is never drawn. Most trips on a quiet run collect nothing, and
+//     "0" sitting on the sharing screen for an hour turns silence into a
+//     verdict, which is the opposite of the point. None yet means no row.
+//  2. No count is ever drawn on a bus that is not yours, and nobody is
+//     offered the chance to thank themselves. The server enforces the first
+//     half (sql/07-thanks.sql returns null for anyone else's bus); this is
+//     why the UI never has a number to leak. A count beside every bus would
+//     rank the buses on the road in front of the riders choosing between
+//     them, which is a competition nobody volunteered for.
+//  3. A tap is remembered for the tab, so the button stops asking. The
+//     server ignores a repeat regardless — the memory is for the button, not
+//     for the number.
+//  4. The words are a number of people, never a rate or a rank, for the same
+//     reason the saved-stop card refuses to print minutes: it would be
+//     claiming something this system does not know.
+//
+// On the name: tybtn, tyrow, tydone, and say_thanks on the server. Not like,
+// fav, star, thumb, vote, rate or social — those are precisely the substrings
+// content-blocker filter lists exist to match, in an attribute or in a
+// request path, and a blocked control fails invisibly. It is the shareBtn
+// lesson, and the reader's side is where nobody would ever report it.
+function thanksWords(n){
+  n = n|0;
+  if (n < 1) return '';                                   // rule 1
+  return n === 1 ? '1 rider said salamat' : n + ' riders said salamat';
+}
+function thanksControl(id, isSelf, done){
+  if (isSelf) return '';                                  // rule 2
+  if (done) return '<div class="tyrow"><div class="tydone">🙏 Salamat sent</div></div>';
+  return '<div class="tyrow"><button type="button" class="tybtn" ' +
+         'onclick="sayThanks(\'' + id + '\')">🙏 Say salamat</button></div>';
+}
+// ---- END SALAMAT
+
+// Which buses this tab has already thanked. sessionStorage, not local: it
+// belongs to the visit, like the map's blue dot and the watcher id, and it
+// is deliberately NOT one of the three things the privacy panel promises are
+// remembered between visits. Losing it costs nothing — the server drops a
+// repeat on its own, so the worst case is a button that offers itself twice.
+let THANKED = null;
+function thankedSet(){
+  if (THANKED) return THANKED;
+  THANKED = {};
+  try{
+    const raw = JSON.parse(sessionStorage.getItem('wt-ty') || '[]');
+    if (Array.isArray(raw)) raw.forEach(function(k){ THANKED[k] = 1; });
+  }catch(e){}
+  return THANKED;
+}
+// A pill can be two phones sharing one bus, and thanking that bus means
+// thanking both. It counts as done only when every one of them has had it,
+// so a pill that gained a second sharer offers the button again for them.
+function thanksDone(b){
+  const t = thankedSet();
+  return (b.members || [b.id]).every(function(m){ return !!t[m]; });
+}
+// The number the sharer is shown. Their own row only, and only while they
+// are sharing — p_self is the one thing that unlocks it, and only this
+// phone holds it.
+let MY_THANKS = 0;
+function renderMyThanks(){
+  const row = document.getElementById('tyLine');
+  if (!row) return;
+  const words = thanksWords(MY_THANKS);
+  row.classList.toggle('hidden', !words);
+  // Emptied rather than left stale when it goes: the row is aria-live, and a
+  // number nobody can see is still a number something might read out.
+  row.textContent = words ? '🙏 ' + words : '';
+}
+async function sayThanks(id){
+  const cl = clusterBuses(BUSES).find(function(x){ return x.id === id; });
+  const members = (cl && cl.members) || [id];
+  const t = thankedSet();
+  members.forEach(function(m){ t[m] = 1; });
+  // Bounded, because a long visit on a busy route would otherwise grow this
+  // without end. The oldest entries falling off only re-offers a button.
+  try{ sessionStorage.setItem('wt-ty', JSON.stringify(Object.keys(t).slice(-200))); }catch(e){}
+  // Redraw before the request, not after it. What is being acknowledged is a
+  // person, and a thank-you that waits on a patchy connection to appear
+  // reads as a button that did not work.
+  renderBuses();
+  for (const m of members){
+    // Silent either way, exactly like the watching heartbeat: nobody being
+    // kind to a stranger should be shown an error about it, and the server
+    // says nothing back by design (sql/07-thanks.sql).
+    try{ await rpc('say_thanks', { p_slug:CFG.ROUTE_SLUG, p_pub:m, p_watcher:getWatcherId() }); }
+    catch(e){}
+  }
+}
+
 // Everything the badge no longer says, one tap away. The bus number is typed
 // by a sharer and goes straight into innerHTML here, so it is escaped exactly
 // as it is in the chips and on the admin page. The server's 12 character cap
@@ -1349,7 +1471,8 @@ function busPopupHtml(b){
     (b.label ? '<div class="pname">'+escapeHtml(b.label)+'</div>' : '')+
     '<div>'+escapeHtml(pl ? pl.label : 'position unclear')+'</div>'+
     '<div class="page">'+(fresh==='live' ? 'live' : timeAgo(b.ts)+' ago')+
-    ((b.count&&b.count>1) ? ' · '+(b.count|0)+' sharing' : '')+'</div></div>';
+    ((b.count&&b.count>1) ? ' · '+(b.count|0)+' sharing' : '')+'</div>'+
+    thanksControl(b.id, b.self, thanksDone(b))+'</div>';
 }
 
 // ============================================================
@@ -2033,6 +2156,7 @@ function renderBuses() {
   }).join('');
 
   renderMyStop(shown);
+  renderMyThanks();
 
   // headline
   const text=document.getElementById('statusText'), sub=document.getElementById('statusSub');
@@ -2139,6 +2263,11 @@ async function pollPositions() {
     return { pub_id:v.pub_id, lat:v.lat, lng:v.lng, speed:v.speed, self:!!v.is_self,
              direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at) };
   });
+  // Only ever set from our own row. The server sends null for every other
+  // bus (sql/07-thanks.sql), so there is nothing here to put on the map even
+  // by accident, and this is not carried into BUSES for the same reason.
+  const mine = (res.data||[]).find(function(v){ return v.is_self; });
+  MY_THANKS = mine ? (mine.thanks|0) : 0;
   // markers are one per clustered bus rather than per sharing session, which
   // is why renderBuses owns them: it is the one place that clusters.
   renderBuses();
@@ -2695,6 +2824,9 @@ function setShareUI(state,msg){
     // now rather than leave a ring on the tracker's strip until the next
     // fetch. Every way sharing can end comes through here.
     BUSES.forEach(function(b){ b.self=false; });
+    // The number belonged to that trip. Leaving it on screen after Stop
+    // would be the one thing this feature must never do: outlive the trip.
+    MY_THANKS = 0;
     renderBuses();
   }
   refreshOnbusStrip();

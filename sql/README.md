@@ -12,6 +12,7 @@ retry.
 | `04-session-id-privacy.sql` | stops publishing live session ids to every watcher, which let anyone clear the whole route off the map |
 | `05-rotate-same-key.sql` | refuses a share key "rotation" to the key already in use, which used to leave that key working |
 | `06-watching-count.sql` | lets the admin page see how many devices have the map open right now, without recording who |
+| `07-thanks.sql` | lets a rider tap Salamat on a live bus, with no total kept for anyone |
 
 If you are setting up fresh, run all of them. They are separate files because
 they were written in that order against a live deployment, and keeping the
@@ -22,11 +23,15 @@ is applied the heartbeat call fails and is swallowed, and the admin page says it
 could not read the count. Nothing else is affected, and it corrects itself one
 beat after the migration runs.
 
-`04` changes the shape of `get_positions`, so deploy `index.html` and
-`admin.html` from the same commit as the migration. An old page against the new
-function shows no buses; a new page against the old function shows none either.
-Nothing is lost either way, and one poll after the pages catch up it is right
-again, but do not leave it in that state.
+`04` and `07` both change the shape of `get_positions`, so deploy
+`index.html` and `admin.html` from the same commit as either migration. An old
+page against the new function shows no buses; a new page against the old
+function shows none either. Nothing is lost either way, and one poll after the
+pages catch up it is right again, but do not leave it in that state.
+
+`07` also adds a foreign key onto `bus_positions`, which is what makes a thank
+you impossible to keep after the trip that earned it. Run it against a database
+that already has `01` through `06`; it is safe to re-run.
 
 ## Then two setup commands
 

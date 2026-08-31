@@ -256,6 +256,42 @@ that long.
 answer. This is the only automatic stop, because a bus parked at its own
 destination has finished by definition.
 
+## Order on the tracking tab
+
+August 2026. The tab used to open with the headline and the direction filter,
+then the strip, the chips, the saved stop and the map — words first, picture
+after. It now reads: **progress strip, map, saved stop, headline, direction
+filter, bus chips**, with the data statement moved from above the card to the
+foot of the tab.
+
+The reasoning is that the strip and the map are the answer to the question the
+page was opened to ask, and everything that used to sit above them was a
+description of them. The headline is the chip list's empty state written out in
+words (`renderBuses()` writes both from the same branch), so it belongs beside
+that list rather than at the top of the page; the filter moves the strip, the
+map and the list together wherever it is placed, so its position is free. The
+data statement is a standing promise about the whole tab, not a warning about
+any one part of it, so it reads as a footnote — the operator's notice bar stays
+at the top, because that one is time-sensitive and only ever appears when
+something has actually been posted.
+
+**The cost, stated plainly.** `No buses live` carries the operating hours and
+the next departures when nothing is on the map, and it is now below the fold on
+a phone: an empty map explains itself a scroll later than it used to. It is
+still a live region, so a screen reader announces it from wherever it sits.
+Hoisting the headline above the strip only when the count is zero would buy
+that back, and is the obvious follow-up if the empty case turns out to be the
+one people are actually looking at.
+
+A hairline above the headline marks the split: over the line is where the buses
+are, under it is what the app has to say about them.
+
+**This is one of the changes that costs four files.** `flyer.html`,
+`for-operators.html` and `how-to.html` each redraw this screen by hand, so all
+three were reordered in the same commit, and the guide's five numbered callouts
+were renumbered and re-measured against a real 430 px render — they are
+percentages of a figure whose rows just moved.
+
 ## Progress strip
 
 The strip snapped each bus to its nearest checkpoint until July 2026, so a bus
@@ -380,8 +416,8 @@ interpolated into the handler; anything unexpected draws a plain pill.
 
 August 2026. The page could say where the buses were and not where they were
 relative to the person reading, which is the question a commuter actually
-arrives with. A reader can now save a stop, and the card between the bus chips
-and the map answers in the app's own terms: `▲ Northbound · 3.0 km away ·
+arrives with. A reader can now save a stop, and the card
+directly under the map answers in the app's own terms: `▲ Northbound · 3.0 km away ·
 about 5 stops before yours`.
 
 **Nothing about a watcher leaves the device, and no SQL was written.** The stop

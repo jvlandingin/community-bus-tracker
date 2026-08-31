@@ -238,13 +238,23 @@
   .seg button.on-north{background:var(--gold); color:#3d2a05;}
   .seg button.on-south{background:var(--maroon); color:#fff;}
 
-  /* Status */
-  .status-head{display:flex; align-items:baseline; gap:8px;}
+  /* Status. It follows the strip, the map and the saved stop rather than
+     leading them, so it needs a rule of its own to read as the start of
+     something: above the line is where the buses are, below it is what the
+     page has to say about them and the controls for narrowing it down. */
+  .status-head{
+    display:flex; align-items:baseline; gap:8px;
+    margin-top:18px; padding-top:15px; border-top:1px solid var(--line);
+  }
   .status-title{font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:.02em;}
   .status-sub{font-size:12.5px; color:var(--muted); margin-top:3px; line-height:1.5;}
 
   /* Dual-track strip */
   .strip{margin:18px 0 6px; padding:0 16px;}
+  /* The tracking tab's copy opens the card, so it carries no lead-in
+     above it — the card's own padding is the whole gap there. The
+     sharing tab's copy still sits under a label and keeps the 18px. */
+  #trackStrip{margin-top:2px;}
   /* The heading over the sharing tab's copy of the strip. Same type as a
      folded card's caption, which is what a small maroon label means
      everywhere else on this page; it is not a summary, so it cannot reuse
@@ -562,9 +572,12 @@
      phone screen on a first visit. The accuracy warning that lived in the
      dismissable banner is now a permanent clause here, which also retires a
      localStorage flag: it is always true, so it should always be on screen.
-     The operator's notice bar above stays separate; it is time-sensitive and
-     only appears when something has actually been posted. */
-  .privacybar{margin:0 0 12px;}
+     The operator's notice bar stays separate and stays at the top; it is
+     time-sensitive and only appears when something has actually been posted.
+     This one is not: it is the standing promise about the whole tab, so it
+     reads as a foot-note under everything it describes rather than as the
+     first thing between the reader and the buses. */
+  .privacybar{margin:2px 0 12px;}
   .privacybar button{
     width:100%; text-align:left; background:none; border:none; cursor:pointer;
     font-family:inherit; font-size:11.5px; line-height:1.55; color:var(--muted);
@@ -883,16 +896,41 @@
 
   <!-- TRACK -->
   <div id="trackView">
-    <div class="privacybar">
-      <button type="button" onclick="openModal('privModal')">
-        🔒 <b>No account. No name.</b> Watching never needs your location, and if you
-        do switch it on it stays on your phone.
-        Positions are volunteer-reported, so they can be wrong or missing.
-        <span class="more">How your data is handled</span>
-      </button>
-    </div>
-
     <div class="card">
+      <!-- Order on this tab, top to bottom: the picture of where the buses
+           are, then the reader's own stop, then the summary and the controls.
+           The strip and the map answer the question the page was opened to
+           ask, so they come before anything that describes them. The headline
+           and the direction filter sit under the list they belong to: the
+           headline is that list's empty state in words, and the filter moves
+           the strip, the map and the list together from wherever it sits. -->
+      <!-- Two strips ship now, this one and the sharing tab's, both drawn by
+           renderStrip() from the same data. The parts it writes into are found
+           by class, not id, because ids cannot be duplicated; #ticks stays as
+           a name for this one because test-boot.js waits on it to decide the
+           page has finished booting. -->
+      <div class="strip" id="trackStrip">
+        <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
+        <div class="track nb"><div class="rail"></div><div class="pills nb"></div></div>
+        <div class="ticks" id="ticks"></div>
+        <div class="track sb"><div class="rail"></div><div class="pills sb"></div></div>
+        <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
+      </div>
+
+      <div class="mapwrap">
+        <div class="pinmode hidden" id="pinMode">
+          <span>Tap the map where you wait for the bus.</span>
+          <button type="button" onclick="cancelPinMode()">Cancel</button>
+        </div>
+        <div id="map"></div>
+      </div>
+      <div class="hint hidden" id="myLocNote"></div>
+
+      <!-- Rewritten by renderMyStop() on every poll. Nothing here is sent
+           anywhere: the stop lives in this browser and the distance is
+           worked out on this device from positions the page already has. -->
+      <div class="mystop" id="myStop"></div>
+
       <!-- The headline and its subtitle are rewritten every few seconds by
            polling. Without a live region a screen reader announces the page
            once at load and then never mentions that the buses moved, which
@@ -907,19 +945,6 @@
         <button type="button" id="segSouth" onclick="setFilter('south')">▼ Southbound</button>
       </div>
 
-      <!-- Two strips ship now, this one and the sharing tab's, both drawn by
-           renderStrip() from the same data. The parts it writes into are found
-           by class, not id, because ids cannot be duplicated; #ticks stays as
-           a name for this one because test-boot.js waits on it to decide the
-           page has finished booting. -->
-      <div class="strip" id="trackStrip">
-        <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
-        <div class="track nb"><div class="rail"></div><div class="pills nb"></div></div>
-        <div class="ticks" id="ticks"></div>
-        <div class="track sb"><div class="rail"></div><div class="pills sb"></div></div>
-        <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
-      </div>
-
       <div class="buslist" id="busList"></div>
       <!-- Chip-shaped placeholders, shown only while body.booting is on.
            A sibling of the real list, not inside it: renderBuses() rewrites
@@ -931,20 +956,6 @@
            thank themselves. The popup is where the button lives; this only
            says the popup exists. -->
       <div class="hint hidden" id="chipNote">Tap any 🚌 — on the strip, the list or the map — to see it up close and say salamat to whoever is sharing it.</div>
-
-      <!-- Rewritten by renderMyStop() on every poll. Nothing here is sent
-           anywhere: the stop lives in this browser and the distance is
-           worked out on this device from positions the page already has. -->
-      <div class="mystop" id="myStop"></div>
-
-      <div class="mapwrap">
-        <div class="pinmode hidden" id="pinMode">
-          <span>Tap the map where you wait for the bus.</span>
-          <button type="button" onclick="cancelPinMode()">Cancel</button>
-        </div>
-        <div id="map"></div>
-      </div>
-      <div class="hint hidden" id="myLocNote"></div>
 
       <details class="note">
         <summary>ⓘ What the colours mean</summary>
@@ -1021,6 +1032,21 @@
         <div id="sightingsList" style="margin-top:12px;"></div>
       </div>
     </details>
+
+    <!-- The data statement sits at the foot of the tab, under everything it
+         describes. It is the standing promise about the whole page, not a
+         warning about any one part of it, and above the map it was the first
+         thing between the reader and the buses. The operator's notice bar
+         stays at the top: that one is time-sensitive and only ever appears
+         when something has actually been posted. -->
+    <div class="privacybar">
+      <button type="button" onclick="openModal('privModal')">
+        🔒 <b>No account. No name.</b> Watching never needs your location, and if you
+        do switch it on it stays on your phone.
+        Positions are volunteer-reported, so they can be wrong or missing.
+        <span class="more">How your data is handled</span>
+      </button>
+    </div>
   </div>
 
   <!-- SHARE -->

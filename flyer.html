@@ -140,9 +140,13 @@
     background:var(--surface); padding:12px; overflow:hidden;
     box-shadow:0 6px 22px rgba(43,35,32,.10);
   }
+  /* The headline follows the strip, the map and the saved stop, as it does
+     in the app, so it carries the same rule above it: what is over the line
+     is where the buses are, what is under it is the app's own summary. */
   .demo-title{
     font-size:21px; font-weight:800; text-transform:uppercase;
     letter-spacing:.01em; line-height:1.1;
+    margin-top:12px; padding-top:10px; border-top:1px solid var(--line);
   }
   .demo-sub{font-size:10.5px; color:var(--muted); margin-top:3px; line-height:1.45;}
   .demo-seg{
@@ -234,6 +238,8 @@
 
   /* ---- Progress strip, copied from index.html ---------------------- */
   .strip{margin:8px 0 2px; padding:0 16px;}
+  /* It opens the drawing now, so the card's padding is the whole gap. */
+  .demo > .strip{margin-top:0;}
   .dirlabel{font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
   .dirlabel.nb{text-align:right; margin-bottom:3px;}
   .track{position:relative; height:22px;}
@@ -429,7 +435,7 @@
     .backfoot{display:none;}
     footer{font-size:7pt; margin-top:3px; padding-top:3px; line-height:1.35;}
     /* The map fills the card, exactly as it does in the app: same width as
-       the segment control and the progress strip above it. It was briefly
+       the progress strip above it and the segment control below. It was briefly
        narrowed and centred here, which fixed a stretching problem the wrong
        way — the stretching came from the whole sheet being full-A4 wide
        (see .sheet above), not from the figure. With the column constrained,
@@ -446,7 +452,7 @@
        out of the furniture around it. Measured: at 297mm wide the sheet has
        no slack worth the name, so trim here before adding anything else. */
     .screenlabel{font-size:5.5pt; margin-bottom:1px;}
-    .demo-title{font-size:11pt;}
+    .demo-title{font-size:11pt; margin-top:4px; padding-top:3px;}
     .demo-sub{font-size:6pt;}
     .demo-seg{margin:2px 0 1px;}
     .demo-seg span{padding:2px 2px; font-size:6.5pt;}
@@ -543,13 +549,11 @@
   <section class="screenwrap">
     <div class="screenlabel">Halimbawa · example screen</div>
     <div class="demo" aria-hidden="true">
-      <div class="demo-title">4 buses live</div>
-      <div class="demo-sub">Northbound between Imus and Kawit · updated 8s ago · trips every 30 mins</div>
-
-      <div class="demo-seg">
-        <span class="on">All buses</span><span>▲ Northbound</span><span>▼ Southbound</span>
-      </div>
-
+      <!-- Same order as index.html: the strip and the map first, then the
+           reader's saved stop, then the headline, the direction filter and
+           the chip list. Reordering the tracker means reordering all three
+           recreations, this one included, or the poster shows a screen the
+           app no longer draws. -->
       <div class="strip">
         <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
         <div class="track nb">
@@ -573,30 +577,6 @@
           <div class="buspill sb" style="left:79%">🚌</div>
         </div>
         <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
-      </div>
-
-      <!-- Chip order is sortForList()'s: northbound first, each direction
-           sorted by how far along its own journey the bus is. -->
-      <div class="demo-chips">
-        <span class="demo-chip nb"><span class="ar">▲</span><b>98018</b>3 km to KAWIT <span class="ag">8s ago</span></span>
-        <span class="demo-chip nb"><span class="ar">▲</span><b>98104</b>AMADEO <span class="ag">47s ago</span></span>
-        <span class="demo-chip sb"><span class="ar">▼</span>TGY <span class="ag">2m ago · 2 sharing</span></span>
-        <span class="demo-chip sb"><span class="ar">▼</span><b>98077</b>7 km to KAWIT <span class="ag">1m ago</span></span>
-      </div>
-
-      <!-- The saved stop. It lives on the reader's own phone and is never
-           sent anywhere, which is why the flyer can show it without the
-           poster implying the tool tracks the people reading it.
-           The sentence is myStopWords()'s. This reader waits at S&R Kawit,
-           which sits on the KAWIT checkpoint, and the lead northbound bus
-           drawn above is 3 km short of it — so 3.0 km and 5 stops are the
-           numbers the real app computes for this exact screen. Move that
-           bus and these change with it. -->
-      <div class="demo-mystop">
-        <div>
-          <span class="who">📍 S&amp;R Kawit</span>
-          <span class="rel">▲ Northbound · 3.0 km away · about 5 stops before yours</span>
-        </div>
       </div>
 
       <!-- A real screenshot of this route's own map (Leaflet + CARTO,
@@ -639,6 +619,37 @@
         <span class="demo-badge sb" style="left:39.4%; top:10.7%">🚌</span>
         <span class="demo-attr">Leaflet | © OpenStreetMap © CARTO</span>
         <span class="demo-zoom"><b>+</b><b>−</b></span>
+      </div>
+
+      <!-- The saved stop. It lives on the reader's own phone and is never
+           sent anywhere, which is why the flyer can show it without the
+           poster implying the tool tracks the people reading it.
+           The sentence is myStopWords()'s. This reader waits at S&R Kawit,
+           which sits on the KAWIT checkpoint, and the lead northbound bus
+           drawn above is 3 km short of it — so 3.0 km and 5 stops are the
+           numbers the real app computes for this exact screen. Move that
+           bus and these change with it. -->
+      <div class="demo-mystop">
+        <div>
+          <span class="who">📍 S&amp;R Kawit</span>
+          <span class="rel">▲ Northbound · 3.0 km away · about 5 stops before yours</span>
+        </div>
+      </div>
+
+      <div class="demo-title">4 buses live</div>
+      <div class="demo-sub">Northbound between Imus and Kawit · updated 8s ago · trips every 30 mins</div>
+
+      <div class="demo-seg">
+        <span class="on">All buses</span><span>▲ Northbound</span><span>▼ Southbound</span>
+      </div>
+
+      <!-- Chip order is sortForList()'s: northbound first, each direction
+           sorted by how far along its own journey the bus is. -->
+      <div class="demo-chips">
+        <span class="demo-chip nb"><span class="ar">▲</span><b>98018</b>3 km to KAWIT <span class="ag">8s ago</span></span>
+        <span class="demo-chip nb"><span class="ar">▲</span><b>98104</b>AMADEO <span class="ag">47s ago</span></span>
+        <span class="demo-chip sb"><span class="ar">▼</span>TGY <span class="ag">2m ago · 2 sharing</span></span>
+        <span class="demo-chip sb"><span class="ar">▼</span><b>98077</b>7 km to KAWIT <span class="ag">1m ago</span></span>
       </div>
     </div>
   </section>

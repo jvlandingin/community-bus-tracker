@@ -83,8 +83,8 @@ treated an unguessable session id as a credential.
 times, sharer cap, and whether the sightings board is shown at all. Edited in `admin.html`, re-read by the app every 60 seconds,
 so a schedule change never needs a redeploy.
 
-**The reader can save a stop**, and the card between the bus chips and the map
-then says how far the next bus still is from it and roughly how many stops.
+**The reader can save a stop**, and the card directly under the map then says
+how far the next bus still is from it and roughly how many stops.
 Entirely client-side — no request, table or column was added — and measured
 along the checkpoint chain, never straight-line, because across the Tagaytay
 ridge hook a bus 1.2 km away as the crow flies is 3.5 km by road. Stops in
@@ -112,6 +112,16 @@ light/dark/system theme choice, and the reader's saved stop. Adding a fourth
 means editing that panel in the same commit — the panel is the promise, not the
 code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
 `localStorage` keys the app writes stops matching the set the panel names.
+
+**The tracking tab reads picture first, words second.** Top to bottom: the
+progress strip, the map, the saved stop, then the headline, the direction
+filter and the bus chips, with the data statement at the foot of the tab. The
+two things a reader opened the page for come before anything that describes
+them; the headline is the chip list's empty state written out, so it sits with
+that list; and the filter moves the strip, the map and the list together from
+wherever it is placed. The cost is that "No buses live" — which carries the
+operating hours and the next departures — is now below the fold on a phone, so
+an empty map explains itself a scroll later than it used to.
 
 **Colours come in fill/ink pairs.** `--maroon`/`--brand-ink`,
 `--gold`/`--gold-deep`, `--lost`/`--lost-ink`, `--mine`/`--mine-ink`. The first of each pair is a

@@ -25,6 +25,34 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-08-31 — The map goes first
+
+**What changed.** The tracking tab was rearranged. It now opens with the
+progress strip and the map, then the saved stop, then the `No buses live`
+headline and the direction filter with the bus chips under them. The "No
+account. No name." data statement moved from above the card to the foot of the
+tab.
+
+**Why.** Everything that used to sit above the map was a description of the
+map. Somebody opening the link is asking one question, and the answer was three
+rows down. The headline is really the chip list's empty state in words, so it
+now sits with that list; the filter moves the strip, the map and the list
+together from anywhere, so where it sits was never load-bearing.
+
+**What it costs.** When nothing is live, `No buses live` is the line that says
+*outside operating hours, next departures 4:00am and 5:00am* — and it is now
+below the fold on a phone. That is a real trade and it is written down in
+`docs/ARCHITECTURE.md` rather than smoothed over: if the empty map turns out to
+be what people mostly see, the fix is to hoist the headline only when the count
+is zero, not to undo the order.
+
+**Three drawings moved with it.** `flyer.html`, `for-operators.html` and
+`how-to.html` each hand-draw this screen, and the guide's five numbered
+callouts had to be renumbered and re-measured in a real browser. The poster
+still prints as one landscape sheet — checked by rendering it, not by eye.
+
+---
+
 ## 2026-08-20 — Saying salamat to whoever is carrying the phone
 
 **What shipped.** Tapping a bus on the map opens its popup, and the popup now

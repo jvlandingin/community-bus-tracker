@@ -171,6 +171,14 @@
   /* translateY rather than the base .dot's negative margin, so a top: here
      is the centre of the row it marks and not 12px above it. */
   .demo.annotated .dot{left:17px; margin-top:0; transform:translateY(-50%);}
+  /* Only the hero figure reorders the app's screen; the later figures on this
+     page each draw one part of it and still open with their own headline, so
+     both rules below are scoped to the annotated copy. The strip leads it, and
+     the headline picks up the rule the app draws above its own. */
+  .demo.annotated > .strip{margin-top:0;}
+  .demo.annotated .demo-title{
+    margin-top:12px; padding-top:10px; border-top:1px solid var(--line);
+  }
   .demo-title{ font-size:19px; font-weight:700; text-transform:uppercase;
     letter-spacing:.02em; line-height:1.1;
   }
@@ -547,11 +555,10 @@
 
     <figure>
       <div class="demo annotated" aria-hidden="true">
-        <div class="demo-title">1 bus live</div>
-        <div class="demo-sub">Northbound between Tagaytay and Amadeo · updated 12s ago · trips every 30 mins</div>
-        <div class="demo-seg">
-          <span class="on">All buses</span><span>▲ Northbound</span><span>▼ Southbound</span>
-        </div>
+        <!-- Same order as the app: the strip and the map, then the saved
+             stop, then the headline, the filter and the chip list. This is
+             a hand-maintained copy of index.html's screen, so it moves when
+             that screen does — and so do the callout dots below it. -->
         <div class="strip" style="padding:0">
           <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
           <div class="track nb"><div class="rail"></div><div class="buspill" style="left:28%; animation:none">🚌</div></div>
@@ -568,19 +575,6 @@
           <div class="track sb"><div class="rail"></div></div>
           <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
         </div>
-        <div class="demo-chips">
-          <span class="demo-chip nb"><span class="ar">▲</span><b>98018</b>2 km to AMADEO <span class="ag">12s ago</span></span>
-        </div>
-        <!-- The saved stop. The sentence is myStopWords()'s: this reader
-             waits at Amadeo (Highway), which sits on the AMADEO checkpoint,
-             and the one bus drawn above is 2 km short of it — so 2.0 km and
-             "yours is the next stop" are what the real app computes here. -->
-        <div class="demo-mystop">
-          <div>
-            <span class="who">📍 Amadeo (Highway)</span>
-            <span class="rel">▲ Northbound · 2.0 km away · yours is the next stop</span>
-          </div>
-        </div>
         <!-- A real crop of this route's own map, around Amadeo — the same
              screenshot flyer.html uses, cut to this figure's shape. The badge
              sits where a bus 2 km short of Amadeo really is: interpolated
@@ -592,22 +586,42 @@
             <span class="demo-badge nb" style="left:40.3%; top:69.5%">🚌</span>
           </div>
         </div>
-        <!-- Numbered down the gutter, in the order they are read. The tops
-             are percentages of this figure, so adding a row to the drawing
-             moves every dot below it and they have to be re-measured, not
-             nudged: 4 and 5 shifted when the saved-stop row went in, 1 to 3
-             only changed because the figure itself got taller. Measured in a
-             real browser at 430 px wide, which is where these were set. -->
-        <span class="dot" style="top:18.6%">1</span>
-        <span class="dot" style="top:28.8%">2</span>
-        <span class="dot" style="top:48.3%">3</span>
-        <span class="dot" style="top:62.5%">4</span>
-        <span class="dot" style="top:82.7%">5</span>
+        <!-- The saved stop. The sentence is myStopWords()'s: this reader
+             waits at Amadeo (Highway), which sits on the AMADEO checkpoint,
+             and the one bus drawn above is 2 km short of it — so 2.0 km and
+             "yours is the next stop" are what the real app computes here. -->
+        <div class="demo-mystop">
+          <div>
+            <span class="who">📍 Amadeo (Highway)</span>
+            <span class="rel">▲ Northbound · 2.0 km away · yours is the next stop</span>
+          </div>
+        </div>
+        <div class="demo-title">1 bus live</div>
+        <div class="demo-sub">Northbound between Tagaytay and Amadeo · updated 12s ago · trips every 30 mins</div>
+        <div class="demo-seg">
+          <span class="on">All buses</span><span>▲ Northbound</span><span>▼ Southbound</span>
+        </div>
+        <div class="demo-chips">
+          <span class="demo-chip nb"><span class="ar">▲</span><b>98018</b>2 km to AMADEO <span class="ag">12s ago</span></span>
+        </div>
+        <!-- Numbered down the gutter, in the order they are read, which is
+             why reordering the screen renumbers them: the strip's bus, then
+             the same bus on the map, then the distance to the saved stop,
+             then the filter, then the age on the chip. The tops are
+             percentages of this figure, so moving or adding any row means
+             re-measuring every dot below it rather than nudging it. Measured
+             in a real browser at 430 px wide, which is where these were
+             set. -->
+        <span class="dot" style="top:8.5%">1</span>
+        <span class="dot" style="top:39.8%">2</span>
+        <span class="dot" style="top:59.6%">3</span>
+        <span class="dot" style="top:85.6%">4</span>
+        <span class="dot" style="top:94%">5</span>
       </div>
       <figcaption>
-        <b>1</b> filter by direction · <b>2</b> the bus on the route strip ·
-        <b>3</b> how fresh the position is · <b>4</b> how far it still is from
-        your own stop · <b>5</b> the same bus on the map
+        <b>1</b> the bus on the route strip · <b>2</b> the same bus on the map ·
+        <b>3</b> how far it still is from your own stop · <b>4</b> filter by
+        direction · <b>5</b> how fresh the position is
       </figcaption>
     </figure>
 

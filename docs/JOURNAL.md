@@ -67,6 +67,16 @@ the page behind it where the browser can. Hover states exist now, gated to
 distances use tabular figures so the text stops shivering as 9 becomes 10.
 The reduced-motion blanket flattens all of it, unchanged.
 
+**Fewer words.** A follow-up trim, same day: the hints had grown until the
+tracking tab read like a form with terms and conditions. Every hint now says
+its one thing and stops — "Tap any 🚌 to see it up close and say salamat"
+instead of naming the three places a bus can be tapped; the sharing tab's
+strip card no longer repeats its own heading in prose. Nothing pinned by the
+tests moved, no promise was weakened (the privacy row still carries the
+never-leaves-your-phone and can-be-wrong clauses), and the privacy panel
+itself is untouched — long is correct there, behind a tap, where someone has
+asked to read it.
+
 **The honest costs.** The three static recreations only needed their chip
 borders and header bands touched — the glide, being motion, does not exist
 in a drawing — but they are three more files in this commit all the same.

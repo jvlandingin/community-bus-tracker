@@ -954,7 +954,7 @@
     <h3 id="stopTitle">📍 Where do you wait?
       <button class="modal-x" onclick="closeModal('stopModal')" aria-label="Close">✕</button>
     </h3>
-    <p class="hint" style="margin:0 0 10px;">Pick your usual stop and the map will tell you how far the bus still is from it. It is saved on this phone only — nobody else can see it, and it is never sent anywhere.</p>
+    <p class="hint" style="margin:0 0 10px;">Pick your usual stop to see how far the bus is from it. Saved on this phone only, never sent anywhere.</p>
     <input type="text" class="stopsearch" id="stopSearch" placeholder="Type a few letters, e.g. Imus" autocomplete="off" oninput="renderStopList()">
     <div class="pickrow">
       <button type="button" id="nearestBtn" onclick="pickNearestStop()">Use my current location</button>
@@ -971,7 +971,7 @@
 <div class="gate hidden" id="gate">
   <form class="card gate-card" onsubmit="event.preventDefault(); submitKey();">
     <h2>🚌 WT Live Tracker</h2>
-    <p id="gateMsg">Watching the map is open to everyone, no key needed. Sharing your location from the bus needs the community access key from the Messenger group, or the full link shared there.</p>
+    <p id="gateMsg">Watching the map needs no key. Sharing from the bus needs the access key from the group chat, or the full link posted there.</p>
     <div style="height:6px"></div>
     <input type="text" id="gateKey" placeholder="Access key" autocomplete="off" autofocus>
     <div style="height:10px"></div>
@@ -1065,7 +1065,7 @@
            on an empty map it is not drawn at all, and nobody is invited to
            thank themselves. The popup is where the button lives; this only
            says the popup exists. -->
-      <div class="hint hidden" id="chipNote">Tap any 🚌 — on the strip, the list or the map — to see it up close and say salamat to whoever is sharing it.</div>
+      <div class="hint hidden" id="chipNote">Tap any 🚌 to see it up close and say salamat.</div>
 
       <details class="note">
         <summary>ⓘ What the colours mean</summary>
@@ -1085,7 +1085,7 @@
             <span id="myLocLegend" class="hidden"><span class="sw" style="background:transparent; border:2px solid var(--mine); width:11px; height:11px;"></span>You (never sent anywhere)</span>
             <span>Tap a bus for its number and age</span>
           </div>
-          <div class="hint" id="sourceNote">Positions come from whoever is on the bus: driver, conductor, or a rider volunteering. The direction is picked by hand, so it can occasionally be wrong.</div>
+          <div class="hint" id="sourceNote">Positions come from whoever is on the bus. The direction is picked by hand, so it can be wrong.</div>
           <div class="hint" id="busExpiryNote"></div>
         </div>
       </details>
@@ -1120,7 +1120,7 @@
         <span class="chev" aria-hidden="true">▶</span>
       </summary>
       <div class="foldbody">
-        <div class="hint" style="margin:0 0 12px;" id="sightingIntro">Saw a bus but nobody's sharing GPS? Post it so others know.</div>
+        <div class="hint" style="margin:0 0 12px;" id="sightingIntro">Post it so others know.</div>
         <!-- Direction and place are pickers rather than free text. The guide
              used to have to ask people to write "Northbound just passed
              Amadeo, 6:42am" instead of "Bus coming", which is a lot to ask of
@@ -1151,9 +1151,9 @@
          when something has actually been posted. -->
     <div class="privacybar">
       <button type="button" onclick="openModal('privModal')">
-        🔒 <b>No account. No name.</b> Watching never needs your location, and if you
-        do switch it on it stays on your phone.
-        Positions are volunteer-reported, so they can be wrong or missing.
+        🔒 <b>No account. No name.</b> Your location is never needed and never
+        leaves your phone. Positions are volunteer-reported, so they can be
+        wrong or missing.
         <span class="more">How your data is handled</span>
       </button>
     </div>
@@ -1182,7 +1182,7 @@
         </div>
         <div style="font-size:12.5px; font-weight:800; margin:2px 0 6px;">Bus number <span style="font-weight:600; color:var(--muted);">(optional, but it helps)</span></div>
         <input type="text" id="busLabel" maxlength="12" placeholder="e.g. 98018">
-        <div class="hint" style="margin-top:6px;">If someone else is also sharing from this bus, the number lets the app show it as one bus instead of two.</div>
+        <div class="hint" style="margin-top:6px;">If two people share the same bus, the number shows it as one bus, not two.</div>
         <div style="height:10px"></div>
         <button class="big btn-primary" id="onbusStartBtn" type="submit">Start sharing my location</button>
       </form>
@@ -1196,9 +1196,9 @@
       </div>
 
       <div class="hint">
-        For the driver, conductor, or any rider who volunteers. Keep the phone mounted or
-        plugged in with the screen on. GPS pauses if the screen locks or you switch apps.
-        No name or personal info is shared, only this bus's position and direction.
+        For the driver, conductor, or any rider. Keep the screen on — GPS pauses
+        if it locks. Only the bus's position and direction are shared, never
+        anything about you.
       </div>
     </div>
 
@@ -1223,7 +1223,7 @@
         <div class="track sb"><div class="rail"></div><div class="pills sb"></div></div>
         <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
       </div>
-      <div class="hint">Everyone with the tracker open is seeing this. Yours is the bus with the green ring. Nothing to post in the group chat.</div>
+      <div class="hint">Yours is the bus with the green ring. Nothing to post in the group chat.</div>
       <!-- Drawn only once somebody has tapped, never as a zero. See
            thanksWords(). aria-live so it is announced when it arrives
            rather than only found by someone who goes looking. -->
@@ -2189,7 +2189,7 @@ function renderMyStop(shown){
   if (legend) legend.classList.toggle('hidden', !MYSTOP);
   if (!MYSTOP){
     box.innerHTML = '<button type="button" class="mystop-btn" onclick="openStopPicker()">' +
-      '<span class="pin">📍</span><span>Set your stop — see how far the bus still is from it</span></button>';
+      '<span class="pin">📍</span><span>Set your stop — see how far the bus is from it</span></button>';
     return;
   }
   MYSTOP_KM = routeProgressKm({lat:MYSTOP.lat, lng:MYSTOP.lng}, CHECKPOINTS, ROUTE_CHAIN);
@@ -3425,13 +3425,15 @@ function renderHours(){
   document.getElementById('sbHours').textContent = hoursLabel('south');
   document.getElementById('hoursSummary').textContent = hoursSummaryLine();
   document.getElementById('headwayNote').textContent =
-    'Trips roughly every '+SET.headway_min+' minutes (times above are the scheduled departure windows from each end).';
+    'Trips roughly every '+SET.headway_min+' minutes. Times above are departure windows from each end.';
   function humanMins(m){ m=parseInt(m,10)||0; return m>=60 ? (m/60)+(m===60?' hour':' hours') : m+' min'; }
   document.getElementById('busExpiryNote').textContent =
     'Buses show "live" under 45s, then their age; they disappear about '+humanMins(SET.bus_expiry_min)+' after their last update.';
+  // The folded card's summary already asks the question; this line only adds
+  // the mechanics.
   if (sightingsOn()) document.getElementById('sightingIntro').textContent =
-    'Saw a bus but nobody\'s sharing GPS? Post it so others know. It shows on the strip above as a dashed mark for '+
-    humanMins(SET.headway_min)+', and stays on this board for '+humanMins(SET.sighting_expiry_min)+'.';
+    'A sighting shows on the strip as a dashed mark for '+humanMins(SET.headway_min)+
+    ', and stays on this board for '+humanMins(SET.sighting_expiry_min)+'.';
 }
 function start(){
   document.getElementById('gate').classList.add('hidden');

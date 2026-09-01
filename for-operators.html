@@ -28,7 +28,7 @@
        other token here; test-boot.js fails if the two copies drift. */
     --mine:#4f46b8; --mine-ink:#443aa6;
     --ok-ink:#166534; --warn-ink:#92400e;
-    --shadow:0 1px 2px rgba(43,35,32,.04);
+    --shadow:0 1px 2px rgba(43,35,32,.05), 0 10px 28px -18px rgba(43,35,32,.28);
     --radius:16px;
     /* 44px: the smallest target a thumb finds reliably on a moving bus. */
     --tap:44px;
@@ -80,6 +80,7 @@
   header{
     background:linear-gradient(180deg,var(--maroon),var(--maroon-deep));
     color:#fff; padding:16px 22px 14px;
+    box-shadow:inset 0 -3px 0 var(--gold);
   }
   .headinner{max-width:660px; margin:0 auto;}
   header .route{font-size:15px; font-weight:800;}
@@ -212,6 +213,9 @@
   .demo-chip .ar{font-size:8.5px;}
   .demo-chip.nb .ar{color:var(--gold-deep);}
   .demo-chip.sb .ar{color:var(--brand-ink);}
+  /* Direction on the border too, as the app's chips now carry it. */
+  .demo-chip.nb{border-color:var(--gold-line);}
+  .demo-chip.sb{border-color:var(--maroon-line);}
   .demo-chip .ag{color:var(--muted); font-weight:600;}
   /* The reader's own saved stop, as index.html draws it between the chips
      and the map. Worth a briefing's space because it is the part of the tool

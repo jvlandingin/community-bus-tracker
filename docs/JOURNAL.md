@@ -25,6 +25,68 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-09-01 — Third pass on the UI: depth and motion
+
+A modernisation pass, all presentation: nothing moved, nothing was reworded,
+and no request, key or stored thing changed, so the privacy panel's list of
+three stands untouched.
+
+**The buses actually move now.** The strip pill has carried `transition:left`
+since July, and it turned out to be dead code: the pills were rebuilt with
+`innerHTML` on every poll, and a brand-new element starts at its new position
+with nothing to glide from, so every bus teleported every six seconds.
+renderStrip now keeps each bus's pill element alive between draws, keyed by
+bus id, and only touches its position and classes — the transition finally
+has something to move. The map badges got the same treatment through the
+other door: Leaflet reuses a divIcon's element across `setIcon`, so a
+transition on the marker transform makes a badge glide to each new fix. One
+trap cost a review round rather than a shipped bug: Leaflet removes its
+zoom-animation class *before* it rewrites every marker's transform at the end
+of a zoom, so a bare transition smears the badges across the map on every
+pinch. The glide is gated by a steady-state class the map code drops at
+zoomstart and restores ~80ms after zoomend.
+
+**Depth.** The single 2px card shadow read as flat next to anything modern;
+`--shadow` is now a hairline of contact plus a wide soft falloff, in every
+page's token block, with dark still `none` — nothing there to cast onto. The
+header band carries a gold trim line, like the buses do, on all five pages.
+The active tab and the primary button wear the header's own gradient rather
+than a maroon that nearly matches. Bus chips carry their direction on the
+border as well as the arrow — border only, never a tinted fill, because
+`--muted` was tuned to clear AA on paper and white and the ages inside the
+chips are the smallest text on the page. And Leaflet's own chrome (zoom
+buttons, attribution strip) now follows the tokens: it was the last white
+panel left glaring on the dark map.
+
+**Motion.** Entrances use a hard-decelerate curve and modals a whisper of
+overshoot; colour changes on the small controls crossfade instead of
+snapping; the headline rises when its words actually change (never the
+subtitle, whose "updated 12s ago" changes every poll); the modal veil blurs
+the page behind it where the browser can. Hover states exist now, gated to
+`(hover:hover)` so nothing sticks half-pressed on a phone. Ages and
+distances use tabular figures so the text stops shivering as 9 becomes 10.
+The reduced-motion blanket flattens all of it, unchanged.
+
+**Fewer words.** A follow-up trim, same day: the hints had grown until the
+tracking tab read like a form with terms and conditions. Every hint now says
+its one thing and stops — "Tap any 🚌 to see it up close and say salamat"
+instead of naming the three places a bus can be tapped; the sharing tab's
+strip card no longer repeats its own heading in prose. Nothing pinned by the
+tests moved, no promise was weakened (the privacy row still carries the
+never-leaves-your-phone and can-be-wrong clauses), and the privacy panel
+itself is untouched — long is correct there, behind a tap, where someone has
+asked to read it.
+
+**The honest costs.** The three static recreations only needed their chip
+borders and header bands touched — the glide, being motion, does not exist
+in a drawing — but they are three more files in this commit all the same.
+And pill layering is no longer DOM order (moving a node cancels its
+transition, so your own pill can no longer be appended last): it is z-index
+now, stated in the CSS, which is one more thing the recreations' visual
+order silently depends on.
+
+---
+
 ## 2026-08-31 — The map goes first
 
 **What changed.** The tracking tab was rearranged. It now opens with the

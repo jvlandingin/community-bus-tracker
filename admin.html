@@ -19,7 +19,7 @@
     --brand-ink:#7a1f2b; --lost-ink:#c4432e;
     --gold-line:#eeddb4; --maroon-line:#e6cdc9;
     --ok-ink:#166534; --warn-ink:#92400e;
-    --shadow:0 1px 2px rgba(43,35,32,.04);
+    --shadow:0 1px 2px rgba(43,35,32,.05), 0 10px 28px -18px rgba(43,35,32,.28);
     --tap:44px;
   }
 
@@ -64,6 +64,7 @@
   header{
     background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); color:#fff;
     padding:14px 16px 12px; position:relative;
+    box-shadow:inset 0 -3px 0 var(--gold);
   }
   /* Band spans the viewport, contents sit in the content column. */
   .headbar{max-width:560px; margin:0 auto;}

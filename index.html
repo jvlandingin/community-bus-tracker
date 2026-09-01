@@ -47,7 +47,12 @@
        which is a fourth thing to say, so it gets a fourth colour rather than
        borrowing one that already means something else. */
     --mine:#4f46b8; --mine-ink:#443aa6;
-    --shadow:0 1px 2px rgba(43,35,32,.04);
+    /* Two layers: a hairline of contact and a wide, soft falloff. The old
+       single 2px line read as flat next to any modern app; the falloff is
+       what makes a card sit on the page instead of being drawn on it. The
+       dark blocks below still set this to none — cards there are lifted by
+       their surface colour, because there is nothing to cast a shadow onto. */
+    --shadow:0 1px 2px rgba(43,35,32,.05), 0 10px 28px -18px rgba(43,35,32,.28);
     --radius:16px;
     /* 44px: the smallest target a thumb finds reliably on a moving bus. */
     --tap:44px;
@@ -123,6 +128,9 @@
   header{
     background:linear-gradient(180deg,var(--maroon),var(--maroon-deep));
     color:#fff; padding:14px 16px 12px;
+    /* The gold trim line every bus in this livery carries. Inset so it adds
+       no height, and on every page's band so they read as one product. */
+    box-shadow:inset 0 -3px 0 var(--gold);
   }
   .headbar{max-width:520px; margin:0 auto; position:relative; padding-right:92px;}
   /* Theme control. Lives only here, on the tracker: the choice is stored per
@@ -188,7 +196,9 @@
     font-family:inherit; font-size:13px; font-weight:800; color:var(--muted); user-select:none;
     transition:.15s;
   }
-  .tab.active{background:var(--maroon); color:#fff; border-color:var(--maroon);}
+  /* The same gradient as the header band, so the active tab reads as part
+     of the signboard rather than a maroon rectangle that nearly matches. */
+  .tab.active{background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); color:#fff; border-color:var(--maroon-deep);}
 
   .card{
     background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
@@ -271,8 +281,18 @@
     position:absolute; top:0; transform:translateX(-50%);
     font-size:14px; line-height:1; padding:3px 5px; border-radius:20px;
     background:var(--gold); border:1.5px solid var(--surface);
-    box-shadow:0 1px 4px rgba(43,35,32,.25); transition:left 1s ease;
+    box-shadow:0 1px 4px rgba(43,35,32,.25);
+    /* The left transition only means something because renderStrip() keeps
+       each bus's pill element alive between polls (keyed by data-bus) — a
+       rebuilt element starts at its new position with nothing to glide
+       from. The curve eases both ends but stays near-linear through the
+       middle: this is a vehicle moving, not a panel arriving. */
+    transition:left 1s cubic-bezier(.45,.05,.35,.95), opacity .5s ease;
     white-space:nowrap;
+    /* Paint order used to be DOM order, with your own pill appended last.
+       Elements are updated in place now, so the layering is said outright:
+       your pill must never end up under a neighbour's. */
+    z-index:1;
   }
   .buspill.sb{background:var(--maroon); color:#fff;}
   .buspill.stale{opacity:.45;}
@@ -282,7 +302,7 @@
      green is the live dot's, so the ring reads as "the live one that is
      yours" — and because that is colour doing the talking, the line under
      the strip names it in words. */
-  .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 3.5px var(--live), 0 1px 4px rgba(43,35,32,.25);}
+  .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 3.5px var(--live), 0 1px 4px rgba(43,35,32,.25); z-index:2;}
   /* On the tracker's strip a pill is a real button: tapping it flies the map
      to that bus and opens its popup, which is where the salamat button and
      everything else about the bus already live. Same look either way — the
@@ -337,6 +357,12 @@
   .buschip .arrow{font-size:10px;}
   .buschip.nb .arrow{color:var(--gold-deep);}
   .buschip.sb .arrow{color:var(--brand-ink);}
+  /* Direction on the border as well as the arrow, so a mixed list scans at
+     a glance. Border only, never a tinted fill: --muted was tuned to clear
+     AA on --paper and --surface, and the ages inside these chips are the
+     smallest text on the page. */
+  .buschip.nb{border-color:var(--gold-line);}
+  .buschip.sb{border-color:var(--maroon-line);}
   .buschip .age{color:var(--muted); font-weight:600;}
 
   /* The reader's own stop. It sits between the chips and the map because it
@@ -500,6 +526,18 @@
   .leaflet-touch .leaflet-bar a, .leaflet-bar a{
     width:var(--tap); height:var(--tap); line-height:var(--tap); font-size:20px;
   }
+  /* Leaflet's chrome is white and stays white. In light it merely clashes;
+     in dark the zoom buttons and the attribution strip are the only bright
+     panels left on the page — the .leaflet-container rule above exists for
+     exactly this glare, so the controls follow the same tokens. Overridden
+     here for the same reason as the sizes: the vendored file is not ours to
+     edit. */
+  .leaflet-bar a{background:var(--surface); color:var(--ink); border-bottom-color:var(--line);}
+  .leaflet-bar a:hover, .leaflet-bar a:focus{background:var(--paper); color:var(--ink);}
+  .leaflet-bar a.leaflet-disabled{background:var(--paper); color:var(--muted);}
+  .leaflet-touch .leaflet-bar, .leaflet-touch .leaflet-control-layers{border-color:var(--line);}
+  .leaflet-container .leaflet-control-attribution{background:var(--surface); color:var(--muted);}
+  .leaflet-container .leaflet-control-attribution a{color:var(--brand-ink);}
 
   /* Hours */
   .hours{display:flex; gap:10px;}
@@ -518,7 +556,13 @@
     width:100%; padding:14px; border-radius:12px; border:none; font-family:inherit;
     font-size:15px; font-weight:800; cursor:pointer; transition:.15s; color:var(--ink);
   }
-  .btn-primary{background:var(--maroon); color:#fff;}
+  /* Header gradient again, and a soft glow in the fill's own colour. The
+     glow is a fixed rgba of --maroon rather than a token: in dark it reads
+     as the brand colour bleeding, which is the effect, not a bug. */
+  .btn-primary{
+    background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); color:#fff;
+    box-shadow:0 2px 10px -4px rgba(122,31,43,.5);
+  }
   .btn-stop{background:var(--lost); color:#fff;}
   .btn-ghost{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
   input[type=text], select{
@@ -591,7 +635,15 @@
   .privacy-detail .ok{color:var(--ok-ink);}
   .privacy-detail .hon{color:var(--warn-ink);}
 
-  .modal{position:fixed; inset:0; background:rgba(28,37,48,.55); z-index:4000; display:flex; align-items:center; justify-content:center; padding:22px;}
+  /* The veil blurs the page as well as dimming it. Progressive: a browser
+     without backdrop-filter just gets the dim, which is what shipped for a
+     year. Slightly lighter dim than before, because the blur is doing part
+     of the separating. */
+  .modal{
+    position:fixed; inset:0; background:rgba(28,37,48,.45); z-index:4000;
+    display:flex; align-items:center; justify-content:center; padding:22px;
+    -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  }
   .modal-card{background:var(--surface); border-radius:16px; padding:20px; max-width:380px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,.25);}
   .modal-card h3{font-size:16px; margin-bottom:8px; display:flex; align-items:center; gap:8px;}
   .modal-card p{font-size:13px; color:var(--muted); line-height:1.55; margin-bottom:16px;}
@@ -631,30 +683,62 @@
   @keyframes fadein{from{opacity:0;} to{opacity:1;}}
 
   /* Tab switches and reopening folds. Short enough that switching back and
-     forth never feels like waiting. */
-  #trackView, #onbusView{animation:rise .18s ease;}
-  details.fold[open] > .foldbody, details.note[open] > .foldbody{animation:rise .22s ease;}
+     forth never feels like waiting. The curve is a hard-decelerate: motion
+     spends its speed at the start and settles gently, which is what makes
+     the same 200ms read as smooth rather than abrupt. */
+  #trackView, #onbusView{animation:rise .22s cubic-bezier(.2,.7,.25,1);}
+  details.fold[open] > .foldbody, details.note[open] > .foldbody{animation:rise .26s cubic-bezier(.2,.7,.25,1);}
 
-  /* Modals and the gate: the veil fades, the card scales in. Closing stays
-     instant on purpose — closeModal() hands focus back and the tests read
-     .hidden as gone now, so an exit animation would mean deferring both. */
+  /* Modals and the gate: the veil fades, the card scales in with a whisper
+     of overshoot (the y2 > 1 in the bezier), which is what separates
+     "arrived" from "stopped". Closing stays instant on purpose —
+     closeModal() hands focus back and the tests read .hidden as gone now,
+     so an exit animation would mean deferring both. */
   .modal{animation:veil .16s ease;}
-  .modal-card{animation:cardin .2s ease;}
+  .modal-card{animation:cardin .26s cubic-bezier(.22,1.2,.36,1);}
   .gate{animation:veil .2s ease;}
-  .gate-card{animation:cardin .24s ease;}
+  .gate-card{animation:cardin .3s cubic-bezier(.22,1.2,.36,1);}
 
   /* Press feedback. The result of a tap can lag seconds behind on a bus's
      connection; the tap itself should not. The browser's own grey flash is
      dropped only where a scale answers instead. */
-  .tab,.big{transition:background-color .15s ease, color .15s ease, border-color .15s ease, transform .09s ease;}
+  .tab,.big{transition:background-color .15s ease, color .15s ease, border-color .15s ease, transform .09s ease, filter .15s ease;}
+  /* Colour changes on the small controls used to snap (only transform was
+     transitioned); every state change now crossfades, which is most of what
+     "smooth" means on a page where controls repaint by class swap. */
   .buschip,.dirbtn,.seg button,.mystop-btn,.mystop-live .edit,.stoplist button,
-  .pickrow button,.buspop .tybtn,.modal-x,#themeBtn .ico,#guideLink .ico{transition:transform .09s ease;}
+  .pickrow button,.buspop .tybtn,.modal-x,#themeBtn .ico,#guideLink .ico{
+    transition:transform .09s ease, background-color .2s ease, color .2s ease, border-color .2s ease;
+  }
   .tab,.big,.buschip,.dirbtn,.seg button,.mystop-btn,.mystop-live .edit,.stoplist button,
   .pickrow button,.buspop .tybtn,.modal-x,#themeBtn,#guideLink{-webkit-tap-highlight-color:transparent;}
   .tab:active,.big:active,.buschip:active,.dirbtn:active,.seg button:active,
   .mystop-btn:active,.mystop-live .edit:active,.stoplist button:active,
   .pickrow button:active,.buspop .tybtn:active,.modal-x:active{transform:scale(.97);}
   #themeBtn:active .ico,#guideLink:active .ico{transform:scale(.88);}
+
+  /* Hover, gated to devices that actually have one. On touch, hover styles
+     stick after a tap and read as a control left half-pressed. */
+  @media (hover:hover) and (pointer:fine){
+    .tab:not(.active):hover{border-color:var(--muted); color:var(--ink);}
+    .big:hover{filter:brightness(1.06);}
+    .buschip:hover,.mystop-btn:hover,.mystop-live .edit:hover,
+    .stoplist button:hover,.pickrow button:hover,.buspop .tybtn:hover,
+    .dirbtn:hover,.stopsearch:hover{border-color:var(--muted);}
+    .mystop-btn:hover{color:var(--ink);}
+    details.fold > summary:hover .chev,details.note > summary:hover{color:var(--ink);}
+    #themeBtn:hover .ico,#guideLink:hover .ico{background:rgba(255,255,255,.28);}
+  }
+
+  /* Ages and distances tick over every few seconds; equal-width digits stop
+     the text around them shivering as 9 becomes 10. */
+  .buschip .age,.status-sub,.mystop-live .rel,.buspop .page,.sighting .time{font-variant-numeric:tabular-nums;}
+
+  /* The privacy text and the stop picker scroll inside a pinned card; the
+     default scrollbar is the one piece of browser chrome left inside it. */
+  .modal-scroll::-webkit-scrollbar{width:8px;}
+  .modal-scroll::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+  .modal-scroll::-webkit-scrollbar-track{background:transparent;}
 
   /* The sharing tab's status dot breathes while live: "this is happening
      now" is the page's whole claim, and a static dot does not make it. */
@@ -667,8 +751,34 @@
      the whole list every few seconds. The badge fades rather than rises:
      the badge element is the marker itself and Leaflet owns its transform
      for positioning. */
-  .buschip.arrive{animation:rise .3s ease;}
+  .buschip.arrive{animation:rise .3s cubic-bezier(.2,.7,.25,1);}
   .busmk.arrive{animation:fadein .45s ease;}
+  .buspill.arrive{animation:fadein .45s ease;}
+
+  /* A bus badge on the map glides to each new position instead of teleporting
+     every poll. Leaflet places markers with a transform, so the transition
+     sits on that — but only under .glide, a steady-state class the map code
+     manages: it comes off at zoomstart and back ~80ms after zoomend, because
+     Leaflet rewrites every marker's transform when a zoom settles, and a
+     transition live at that moment would send the badges smearing across the
+     map. (The zoom-anim guard alone is not enough: Leaflet removes that class
+     before it repositions the markers.) Linear, not eased: this is a vehicle
+     moving, not a panel arriving. A new badge is exempt for its first paint
+     by .arrive being an animation, not a transition — it fades in at its
+     position rather than sliding in from wherever the last badge was. */
+  .glide .leaflet-marker-icon.busmk{transition:transform 1s linear;}
+  .leaflet-zoom-anim .leaflet-marker-icon.busmk{transition:none;}
+
+  /* The checkpoint a bus is near is highlighted by class; crossfade the
+     handover as a bus moves from one tick's neighbourhood to the next. */
+  .tick span{transition:color .3s ease;}
+  .tick::before{transition:background-color .3s ease;}
+
+  /* The headline going from "1 bus live" to "2 buses live" is the page's
+     most watched sentence changing; it rises in like everything else new.
+     Class is added by renderBuses() only when the words actually changed —
+     the subtitle updates every poll and deliberately does not move. */
+  .status-title.swap{animation:rise .3s cubic-bezier(.2,.7,.25,1);}
 
   /* Saying salamat, both ends. The rider's "Salamat sent" pops once, at tap
      time only (the .pop class is added after the optimistic redraw and the
@@ -1483,6 +1593,23 @@ function initMap() {
   addResetControl();
   addLocateControl();
   syncMyStopMarker();
+
+  // The steady-state switch for the badge glide (see .glide in the CSS).
+  // Off from the moment a zoom starts; back only once the post-zoom marker
+  // repositioning has had a frame to paint, so the transition never sees
+  // that jump as something to animate. Pans need nothing: Leaflet moves the
+  // whole pane and never touches the markers' own transforms.
+  const mapEl = map.getContainer();
+  let glideTimer = null;
+  map.on('zoomstart', function(){
+    clearTimeout(glideTimer);
+    mapEl.classList.remove('glide');
+  });
+  map.on('zoomend viewreset', function(){
+    clearTimeout(glideTimer);
+    glideTimer = setTimeout(function(){ mapEl.classList.add('glide'); }, 80);
+  });
+  mapEl.classList.add('glide');
 }
 
 function resetView(){
@@ -2343,41 +2470,104 @@ function renderStrip(box, buses, sightings, tappable) {
   if (!box) return;
   const nbBox = box.querySelector('.pills.nb'), sbBox = box.querySelector('.pills.sb');
   if (!nbBox || !sbBox) return;
-  let nb='', sbz='', nbMine='', sbMine='';
   const nearSet={};
+  const nbPills=[], sbPills=[];
   buses.forEach(function(b){
     const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
     if (!pl) return;
     pl.ticks.forEach(function(i){ nearSet[i]=true; });
-    const pct = pl.pct;
     const stale = freshness(b.ts)==='delayed';
     // A button only where the map it points at is on the same tab, and only
     // for an id that is exactly the hex the server hands out — anything else
     // stays a plain pill rather than being interpolated into a handler.
     const canTap = tappable && b.id && /^[A-Za-z0-9\-]+$/.test(b.id);
-    const cls = 'buspill '+(b.direction==='south'?'sb':'')+(stale?' stale':'')+(b.self?' me':'');
-    const pill = canTap
-      ? '<button type="button" class="'+cls+'" style="left:'+pct+'%" '+
-        'onclick="focusBus(\''+b.id+'\')" aria-label="Show this bus on the map">🚌</button>'
-      : '<div class="'+cls+'" style="left:'+pct+'%">🚌</div>';
-    // Your own bus is held back and appended last, so it paints over its
-    // neighbours rather than under them. Pills overlap constantly on a phone
-    // and the one pill this reader is looking for is the one that must not
-    // end up behind another.
-    if (b.direction==='north'){ if (b.self) nbMine+=pill; else nb+=pill; }
-    else { if (b.self) sbMine+=pill; else sbz+=pill; }
+    (b.direction==='north'?nbPills:sbPills).push({
+      key: String(b.id||''),
+      tag: canTap ? 'BUTTON' : 'DIV',
+      cls: 'buspill '+(b.direction==='south'?'sb':'')+(stale?' stale':'')+(b.self?' me':''),
+      left: pl.pct+'%',
+      onclick: canTap ? 'focusBus(\''+b.id+'\')' : null
+    });
   });
-  let gnb='', gsb='';
+  const nbGhosts=[], sbGhosts=[];
   sightings.forEach(function(s){
     if (CHECKPOINTS.length < 2) return;
-    const pct = (s.idx/(CHECKPOINTS.length-1))*100;
-    const g = '<div class="sightmk'+(s.direction==='south'?' sb':'')+'" style="left:'+pct+'%"></div>';
-    if (s.direction==='north') gnb+=g; else gsb+=g;
+    const g = { sb: s.direction==='south', left: (s.idx/(CHECKPOINTS.length-1))*100+'%' };
+    if (s.direction==='north') nbGhosts.push(g); else sbGhosts.push(g);
   });
-  nbBox.innerHTML=gnb+nb+nbMine; sbBox.innerHTML=gsb+sbz+sbMine;
+  syncPills(nbBox, nbGhosts, nbPills);
+  syncPills(sbBox, sbGhosts, sbPills);
   [].slice.call(box.querySelectorAll('.tick')).forEach(function(t){
     t.classList.toggle('near', !!nearSet[t.getAttribute('data-i')]);
   });
+}
+
+// The pills used to be rebuilt with innerHTML on every poll, which quietly
+// made .buspill's left transition dead code: a brand-new element starts at
+// its new position with nothing to glide from, so every bus teleported
+// every six seconds. Each bus's pill is now kept alive between draws, keyed
+// by data-bus, and only its left and classes are touched — which is the
+// whole difference between a strip that ticks and a strip where the buses
+// visibly move. Which pill paints over which is no longer DOM order (your
+// own pill used to be appended last; moving a node cancels its transition,
+// so nothing may be reordered) — it is z-index on .buspill and .buspill.me.
+// The sighting marks are static per draw and stay rebuilt.
+function syncPills(container, ghosts, pills){
+  const old = {};
+  [].slice.call(container.querySelectorAll('.buspill')).forEach(function(el){
+    const k = el.getAttribute('data-bus');
+    if (k !== null && !(k in old)) old[k] = el;
+    else container.removeChild(el);
+  });
+  [].slice.call(container.querySelectorAll('.sightmk')).forEach(function(el){
+    container.removeChild(el);
+  });
+  ghosts.forEach(function(g){
+    const el = document.createElement('div');
+    el.className = 'sightmk' + (g.sb ? ' sb' : '');
+    el.setAttribute('style', 'left:'+g.left);
+    container.appendChild(el);
+  });
+  pills.forEach(function(p){
+    let el = old[p.key];
+    if (el && el.tagName !== p.tag){ container.removeChild(el); el = null; }
+    else if (el) delete old[p.key];
+    const fresh = !el;
+    if (fresh){
+      el = document.createElement(p.tag === 'BUTTON' ? 'button' : 'div');
+      if (p.tag === 'BUTTON'){
+        el.type = 'button';
+        el.setAttribute('aria-label', 'Show this bus on the map');
+      }
+      el.setAttribute('data-bus', p.key);
+      el.textContent = '🚌';
+    }
+    // .arrive only on a genuinely new pill, so the fade-in cannot replay on
+    // every poll; the next sync writes the class list without it.
+    el.className = p.cls + (fresh ? ' arrive' : '');
+    if (p.onclick) el.setAttribute('onclick', p.onclick);
+    else el.removeAttribute('onclick');
+    // The style attribute wholesale rather than el.style.left: it is the one
+    // thing ever written there, and an attribute write with the same value
+    // is a no-op that cannot disturb a glide already in progress.
+    el.setAttribute('style', 'left:'+p.left);
+    if (fresh) container.appendChild(el);
+  });
+  Object.keys(old).forEach(function(k){
+    if (old[k].parentNode === container) container.removeChild(old[k]);
+  });
+}
+
+// The headline moves only when its words change. renderBuses runs every few
+// seconds and the count is usually the same, so an unconditional animation
+// here would pulse the page's biggest text at nobody forever; and it is the
+// title alone that gets this, never the subtitle, whose "updated 12s ago"
+// changes on nearly every poll. The text is written either way — the element
+// is aria-live, and that only announces on a real change.
+function setHeadline(el, words){
+  if (!el || el.textContent === words) return;
+  el.textContent = words;
+  el.classList.remove('swap'); void el.offsetWidth; el.classList.add('swap');
 }
 
 // Cluster ids from the previous draw, so a chip can tell whether it is new
@@ -2437,13 +2627,13 @@ function renderBuses() {
   if (shown.length) {
     const freshest = shown.reduce(function(a,b){ return b.ts>a.ts?b:a; });
     const pl = busPlace(freshest, CHECKPOINTS, ROUTE_CHAIN);
-    text.textContent = shown.length + (shown.length===1?' bus live':' buses live');
+    setHeadline(text, shown.length + (shown.length===1?' bus live':' buses live'));
     sub.textContent = (freshest.direction==='north'?'Northbound':'Southbound')+
       (pl ? ' '+pl.sentence : '')+' · updated '+timeAgo(freshest.ts)+
       ' ago · trips every '+SET.headway_min+' mins';
   } else {
     const dirsOpen = withinHours('north')||withinHours('south');
-    text.textContent = 'No buses live';
+    setHeadline(text, 'No buses live');
     sub.textContent = !dirsOpen
       ? 'Outside operating hours. Next departures: '+(firstTrip('north')||'see schedule')+' from Mendez, '+(firstTrip('south')||'see schedule')+' from One Ayala.'
       : !sightingsOn()

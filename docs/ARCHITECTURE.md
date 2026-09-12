@@ -292,6 +292,50 @@ three were reordered in the same commit, and the guide's five numbered callouts
 were renumbered and re-measured against a real 430 px render — they are
 percentages of a figure whose rows just moved.
 
+## The map
+
+September 2026. The map used to be CARTO's stock tiles with grey dots for
+the stops and an emoji for each bus, which is what any map with pins on it
+looks like. Four changes, none of which adds a request, a stored thing or a
+third party:
+
+- **The basemap is two tile layers from the one provider.** CARTO serves
+  its Positron and Dark Matter styles as `nolabels` and `only_labels`
+  variants. The base goes in Leaflet's own tile pane; the labels go in a
+  pane above the stop marks and below the bus badges, so place names float
+  over what the app draws instead of being painted over by it. Same host,
+  same attribution line, and the sentence in the privacy panel is still
+  exactly true.
+- **The base tiles are faded** by a CSS filter on the tile pane alone, so
+  the livery is the only strong colour on the map. The label pane is
+  separate and stays crisp. Dark fades less, because it is already dim.
+- **Stops are pips and checkpoints are stations.** The 71 stops are small
+  paper-filled circles with a maroon ring, hidden below zoom 12 by a class
+  on the map container (`data-z`) rather than by adding and removing 71
+  paths. The checkpoints are larger marks with the strip's own short names
+  beside them as permanent tooltips, on the side away from their neighbours
+  along the chain so MENDEZ and TGY, a thumb apart at the whole-route zoom,
+  do not collide. Both are coloured by CSS class, not by Leaflet options,
+  so they follow the theme.
+- **The bus badge is drawn.** An inline SVG bus, white on the disc, with
+  the windscreen and lamps cut in the disc's own colour. 🚌 was a different
+  picture on every phone and a blurry one on most. A live badge breathes
+  with a ring in its own colour; stale ones hold still; the reduced-motion
+  blanket flattens it.
+
+**There is deliberately no route line.** One was built and taken out the
+same day: the road is not known precisely enough to draw, a straight line
+between checkpoints put the route across water, and a line that is wrong is
+worse than none — riders would read a bus beside it as off its route. If
+one is ever wanted, it needs real road geometry that somebody has checked
+on the ground, not a router's guess.
+
+The three static recreations carry the same checkpoint marks and the same
+drawn badge, so they still match the app. Their basemap photos still show
+the old grey stop dots, because the photo is a photo; recapturing it needs
+a browser that can reach CARTO and is the one part of this that could not
+be done in the same commit.
+
 ## Progress strip
 
 The strip snapped each bus to its nearest checkpoint until July 2026, so a bus

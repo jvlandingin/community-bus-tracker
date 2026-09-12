@@ -451,6 +451,44 @@
      they never arrive. On a dark page that is a bright panel in the middle of
      the screen, which is exactly the thing dark mode exists to avoid. */
   .leaflet-container{background:var(--paper);}
+
+  /* ---- This route's map, not a map with pins on it ------------------------
+     The map used to be CARTO's stock tiles with grey dots on them, which is
+     what any map with markers looks like. Three things make it this route's:
+     1. The basemap is two tile layers from the one provider: `nolabels` in
+        Leaflet's own tile pane under everything the app draws, and
+        `only_labels` in a pane above the stops but below the bus badges, so
+        place names float over the marks instead of being painted over by
+        them. Same host, same attribution, nothing new in the privacy panel.
+     2. The base tiles are faded, so the livery is the only strong colour on
+        the map. The filter sits on the tile pane alone: the label layer has
+        its own pane and stays crisp.
+     3. Stops are pips in the livery, hidden below zoom 12 where 71 of them
+        are a rash, and checkpoints are station marks with the strip's own
+        short names beside them. The names ride in a pane under the bus
+        badges: a badge under a label is a bus nobody can tap. Leaflet paths
+        take a className and CSS stroke beats the presentation attribute, so
+        the colours follow the theme tokens rather than being frozen at draw
+        time.
+     There is deliberately no route line. The exact road is not known well
+     enough to draw, and a line that is wrong — or that cuts across water
+     between two checkpoints — is worse than none. */
+  .leaflet-tile-pane{filter:saturate(.5) contrast(.94);}
+  .stopmk{stroke:var(--maroon); fill:var(--paper);}
+  .leaflet-container[data-z="lo"] .stopmk{display:none;}
+  .cpmk{stroke:var(--maroon); fill:var(--paper);}
+  .leaflet-tooltip.cplabel{
+    background:var(--surface); color:var(--ink); border:1px solid var(--line);
+    border-radius:5px; padding:1px 5px; font-size:9.5px; font-weight:800;
+    letter-spacing:.06em; box-shadow:var(--shadow); white-space:nowrap; opacity:1;
+  }
+  .leaflet-tooltip.cplabel::before{display:none;}
+  /* Dark: the tiles are already dim, so fade less. Stated twice for the same
+     reason the token block is (see its comment). */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .leaflet-tile-pane{filter:saturate(.7) brightness(.85);}
+  }
+  :root[data-theme="dark"] .leaflet-tile-pane{filter:saturate(.7) brightness(.85);}
   .maplegend{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:10.5px; color:var(--muted); font-weight:700;}
   .maplegend .sw{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; vertical-align:-1px;}
 
@@ -467,6 +505,29 @@
   .busmk.sb{background:var(--maroon);}
   .busmk.aging{opacity:.8;}
   .busmk.delayed{background:#9aa1ac; opacity:.55;}
+  /* The glyph is drawn, not an emoji: 🚌 is a different picture on every
+     phone and a blurry one on most. The windscreen and lamps are cut in the
+     disc's own colour so the bus reads as white on gold or white on maroon. */
+  .busmk svg{width:19px; height:19px; display:block; fill:#fff;}
+  .busmk .win{fill:var(--gold);}
+  .busmk.sb .win{fill:var(--maroon);}
+  .busmk.delayed .win{fill:#9aa1ac;}
+  /* A live badge breathes: a ring in its own colour that swells and fades,
+     so "this one is reporting right now" is visible without reading an age.
+     The depth shadow is repeated in both keyframes because the animation
+     owns box-shadow while it runs. Stale badges hold still, which is the
+     point — the reduced-motion blanket at the foot of the sheet flattens
+     it for everyone who asked. */
+  @keyframes breathe-nb{
+    0%{box-shadow:0 1px 6px rgba(0,0,0,.35), 0 0 0 0 rgba(227,154,28,.55);}
+    100%{box-shadow:0 1px 6px rgba(0,0,0,.35), 0 0 0 13px rgba(227,154,28,0);}
+  }
+  @keyframes breathe-sb{
+    0%{box-shadow:0 1px 6px rgba(0,0,0,.35), 0 0 0 0 rgba(122,31,43,.55);}
+    100%{box-shadow:0 1px 6px rgba(0,0,0,.35), 0 0 0 13px rgba(122,31,43,0);}
+  }
+  .busmk.live.nb{animation:breathe-nb 2.4s ease-out infinite;}
+  .busmk.live.sb{animation:breathe-sb 2.4s ease-out infinite;}
   /* Direction tail. Colour alone would say northbound only to people who can
      tell gold from maroon, and only if they read the legend first. */
   .busmk::before,.busmk::after{content:''; position:absolute; left:50%; width:0; height:0;}
@@ -1073,7 +1134,7 @@
           <div class="maplegend">
             <span><span class="sw" style="background:var(--gold)"></span>Northbound ▲</span>
             <span><span class="sw" style="background:var(--maroon)"></span>Southbound ▼</span>
-            <span><span class="sw" style="background:#94a3b8"></span>Stops (tap for name)</span>
+            <span><span class="sw" style="background:var(--paper); border:1.5px solid var(--maroon); width:8px; height:8px;"></span>Stops (zoom in, tap for name)</span>
             <span id="sightLegend"><span class="sw" style="background:transparent; border:2px dashed var(--gold-deep); width:11px; height:11px;"></span>Dashed on the strip = reported sighting, not GPS</span>
             <!-- The ring is marked on this strip too, so it is explained on
                  this tab too. Shown only while sharing, by setShareUI(): a
@@ -1515,7 +1576,7 @@ function applyTheme(pref){
     btn.setAttribute('aria-label', THEME_SAYS[pref]);
     btn.title = THEME_SAYS[pref];
   }
-  if (baseLayer) baseLayer.setUrl(basemapUrl());
+  rethemeTiles();
 }
 function cycleTheme(){
   const next = THEMES[(THEMES.indexOf(themePref()) + 1) % THEMES.length];
@@ -1541,35 +1602,72 @@ function cycleTheme(){
 // the same attribution, no new third party to disclose. A light map inside a
 // dark page is the one thing that would still glare at night.
 const DARK_MQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-function basemapUrl(){
+// Two layers from the same basemap, split at the labels (see the CSS note
+// above .stopmk): `nolabels` goes under the stops, `only_labels` over them.
+function basemapUrl(part){
   return 'https://{s}.basemaps.cartocdn.com/' +
-    (effectiveTheme() === 'dark' ? 'dark_all' : 'light_all') + '/{z}/{x}/{y}{r}.png';
+    (effectiveTheme() === 'dark' ? 'dark_' : 'light_') + part + '/{z}/{x}/{y}{r}.png';
 }
-let baseLayer = null;
+let baseLayer = null, labelLayer = null;
+function rethemeTiles(){
+  if (baseLayer) baseLayer.setUrl(basemapUrl('nolabels'));
+  if (labelLayer) labelLayer.setUrl(basemapUrl('only_labels'));
+}
+// Which side of a checkpoint its name sits on: away from its neighbours
+// along the chain, so MENDEZ and TGY, 4.8 km apart and a thumb's width at
+// the whole-route zoom, are pushed to opposite sides instead of into each
+// other. Ends have one neighbour and lean away from it.
+function labelSide(i){
+  const c = CHECKPOINTS[i], p = CHECKPOINTS[i-1] || c, n = CHECKPOINTS[i+1] || c;
+  return ((p.lng - c.lng) + (n.lng - c.lng)) > 0 ? 'left' : 'right';
+}
 function initMap() {
   map = L.map('map', { zoomControl:true }).setView([14.33, 120.96], 10);
-  baseLayer = L.tileLayer(basemapUrl(), {
+  // Panes, bottom to top: tiles (200), the stops in overlayPane (400),
+  // place-name tiles (450), checkpoint marks (460) and their names (470),
+  // then Leaflet's own markerPane (600) for the buses.
+  map.createPane('labels').style.zIndex = 450;
+  map.createPane('cpmarks').style.zIndex = 460;
+  map.createPane('cplabels').style.zIndex = 470;
+  map.getPane('labels').style.pointerEvents = 'none';
+  map.getPane('cplabels').style.pointerEvents = 'none';
+  baseLayer = L.tileLayer(basemapUrl('nolabels'), {
     subdomains:'abcd', maxZoom:19, attribution:'© OpenStreetMap © CARTO'
+  }).addTo(map);
+  labelLayer = L.tileLayer(basemapUrl('only_labels'), {
+    subdomains:'abcd', maxZoom:19, pane:'labels'
   }).addTo(map);
   // Someone flipping their phone to dark mode mid-trip should not be left
   // with the other theme's tiles until they reload.
   if (DARK_MQ && DARK_MQ.addEventListener){
-    DARK_MQ.addEventListener('change', function(){ if (baseLayer) baseLayer.setUrl(basemapUrl()); });
+    DARK_MQ.addEventListener('change', rethemeTiles);
   }
 
   STOPS.forEach(function(s){
     if (isNaN(s.lat) || isNaN(s.lng)) return;
     const rough = (s.conf === 'L');
     L.circleMarker([s.lat, s.lng], {
-      radius: rough?3:4, color: rough?'#b6bdc9':'#64748b',
-      fillColor: rough?'#ffffff':'#64748b', fillOpacity: rough?0.7:1, weight: rough?1:1.5
+      className:'stopmk', radius: rough?2.5:3.5, weight: rough?1:1.75,
+      fillOpacity: rough?.6:1, interactive:true
     }).addTo(map).bindTooltip(s.name + (rough?' (approx.)':''), {direction:'top'});
   });
-  CHECKPOINTS.forEach(function(c){
+  CHECKPOINTS.forEach(function(c, i){
+    if (isNaN(c.lat) || isNaN(c.lng)) return;
+    const side = labelSide(i);
     L.circleMarker([c.lat, c.lng], {
-      radius:6, color:'#7a1f2b', fillColor:'#ffffff', fillOpacity:1, weight:2.5
-    }).addTo(map).bindTooltip(c.name, {direction:'top'});
+      className:'cpmk', radius:5.5, weight:2.5, fillOpacity:1, pane:'cpmarks'
+    }).addTo(map).bindTooltip(c.short || c.name, {
+      permanent:true, direction:side, className:'cplabel', pane:'cplabels',
+      offset:[side==='right' ? 7 : -7, 0], interactive:false
+    });
   });
+  // The stop pips come and go with zoom by a class on the container (CSS
+  // does the hiding), so 71 paths are never added or removed.
+  const syncZoomClass = function(){
+    map.getContainer().setAttribute('data-z', map.getZoom() < 12 ? 'lo' : 'hi');
+  };
+  map.on('zoomend', syncZoomClass);
+  syncZoomClass();
   const pts = STOPS.filter(function(s){return !isNaN(s.lat);}).map(function(s){return [s.lat,s.lng];});
   if (pts.length>1) {
     HOME_BOUNDS = L.latLngBounds(pts);
@@ -1677,13 +1775,28 @@ function freshness(ts){
 // marker sits on the position it is reporting. The old pill was sized by its
 // own text against a hand-picked anchor, which put a bus with a long number
 // most of a block from where it actually was.
+// Front view of a bus, white on the disc, with the windscreen and lamps cut
+// in the disc's colour (class win, coloured in CSS by direction). Drawn
+// rather than 🚌 because the emoji is a different picture on every phone.
+const BUS_GLYPH =
+  '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+  '<rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/>' +
+  '<rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/>' +
+  '<rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/>' +
+  '<rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/>' +
+  '<rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/>' +
+  '<rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/>' +
+  '<circle class="win" cx="8.3" cy="14.5" r="1.3"/>' +
+  '<circle class="win" cx="15.7" cy="14.5" r="1.3"/>' +
+  '</svg>';
 function busIcon(dir, fresh, count) {
   return L.divIcon({
     className: 'busmk ' + (dir==='north'?'nb':'sb') + ' ' + fresh,
     iconSize:[30,30], iconAnchor:[15,15], popupAnchor:[0,-22],
-    html: '🚌' + ((count&&count>1) ? '<span class="cnt">'+(count|0)+'</span>' : '')
+    html: BUS_GLYPH + ((count&&count>1) ? '<span class="cnt">'+(count|0)+'</span>' : '')
   });
 }
+
 // ---- SAYING SALAMAT (unit tested) ---------------------------------------
 // A rider taps once on a bus to thank whoever is carrying the phone through
 // the trip. Four rules are the whole feature, and they live here rather than

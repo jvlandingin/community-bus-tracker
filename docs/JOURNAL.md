@@ -25,6 +25,33 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-09-12 — The map becomes this route's map
+
+A presentation pass on the map only. Nothing moved on the page, no request
+changed, nothing new is stored, and CARTO is still the only third party —
+the privacy panel's sentence about it is unchanged and still exactly true.
+
+**What changed.** The basemap is now two CARTO layers, base without labels
+under the app's own marks and labels alone above them, so place names sit
+over the stop pips rather than under them. The base is faded so maroon and
+gold are the only strong colours on the map. Stops became small pips in the
+livery that hide below zoom 12; checkpoints became station marks with the
+strip's short names beside them. The bus badge is a drawn SVG instead of an
+emoji, and a live one breathes.
+
+**What was tried and dropped.** A route line. The exact road is not known,
+the public routers cannot be reached from where this was built, and a
+straight line between checkpoints crossed water at the Manila Bay end. A
+line that is wrong is worse than none, because a bus a kilometre beside it
+reads as a bus off its route. Taken out the same day, tool and all.
+
+**The honest costs.** The three recreations carry the new badge and the
+checkpoint marks, but their basemap photos still show the old grey stop
+dots, which is a recapture that needs a browser with CARTO access. And the
+faded base is a CSS filter over the whole tile pane, which is one more
+thing for an old phone to composite; if the map ever stutters on one, that
+filter is the first suspect.
+
 ## 2026-09-01 — Third pass on the UI: depth and motion
 
 A modernisation pass, all presentation: nothing moved, nothing was reworded,

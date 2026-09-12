@@ -123,6 +123,15 @@ wherever it is placed. The cost is that "No buses live" — which carries the
 operating hours and the next departures — is now below the fold on a phone, so
 an empty map explains itself a scroll later than it used to.
 
+**The map is this route's, not a map with pins on it.** CARTO's basemap is
+split into its `nolabels` and `only_labels` layers with the stop marks
+between them, the base is faded so the livery is the only strong colour,
+stops are pips that hide below zoom 12, checkpoints are station marks
+labelled with the strip's short names, and the bus badge is an inline SVG
+rather than 🚌. No new request, storage or third party. **There is
+deliberately no route line**: the road is not known well enough to draw and
+a wrong line is worse than none. `docs/ARCHITECTURE.md` has the reasoning.
+
 **Colours come in fill/ink pairs.** `--maroon`/`--brand-ink`,
 `--gold`/`--gold-deep`, `--lost`/`--lost-ink`, `--mine`/`--mine-ink`. The first of each pair is a
 background with white or near-black text on it; the second is the same colour

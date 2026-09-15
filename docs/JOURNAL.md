@@ -25,6 +25,70 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-09-15 — CARTO started charging rent, in watermarks
+
+**What happened.** The live map began showing "API KEY REQUIRED" printed
+diagonally across every tile. Not our doing: CARTO changed its terms in
+late August 2026 and now watermarks any tile fetched without an API key.
+It hit the deployed site and the redesign branch alike, because both ask
+the same host for tiles. Nobody told us; it was noticed by looking.
+
+**The fix.** A free key, no account needed, in `config.txt` as
+`CARTO_API_KEY`, appended to the tile URL as `?key=`. Left blank the map
+still works and stays watermarked, which is on purpose: a fork that has
+not read the setup notes should see its own route on a recognisable map
+rather than a broken one. The warning goes to the console, where the only
+person who can act on it will be.
+
+The key is public, like everything in that file. That is worth stating
+plainly because the file's whole pitch has been "no secrets here": the
+Supabase anon key unlocks nothing, but a copied CARTO key spends this
+deployment's monthly tile allowance. Different kind of thing, same file.
+
+**And then it moved to Netlify, which cost the repo a property.** Putting
+the key in Netlify's build settings instead keeps it out of a public
+repository, which is the theft route that actually happens — bots trawl
+GitHub for keys, they do not read deployed config files. So
+`tools/write-basemap-key.js` now runs first in the build and writes the
+variable into `config.txt` on the way past.
+
+Be clear about what that is and is not. It is not secrecy: `config.txt` is
+fetched by the browser, so the key is one devtools panel away on the live
+site, exactly as it was when it was committed. Hiding it from users means
+proxying every tile through a function, which ties this to one host and
+spends that host's bandwidth on map tiles — a bigger decision, not taken.
+
+What it did cost is the sentence this repo has repeated since the move to
+git deploys: *what gets published is the repository exactly as committed.*
+That is now false by one line, and both `netlify.toml` and
+`docs/ARCHITECTURE.md` say so rather than quietly keeping the old claim.
+It is a small break and a real one: for the first time the deployed site
+can differ from the commit, and the next person debugging a strange
+production-only symptom needs to know that is possible.
+
+**What was tried.** Drawing our own basemap, with no tile provider at all.
+It got further than expected. A coastline traced out of the map screenshot
+already embedded in `flyer.html`, georeferenced against the eight
+checkpoints whose pixel positions are recorded in the comment above that
+figure, came to 8.7 KB at about 56 m per pixel. At the whole-route zoom it
+looked good and entirely on-brand.
+
+Two things stopped it. Zoomed in, a drawn map has nothing to show, and
+knowing which corner the bus is on is the one job the strip and the saved
+stop do not already do. And the trace invents water: text labels and the
+old grey marker dots in the screenshot read as coastline, which at zoom 13
+put a lake across the route near Tagaytay. That is the same failure as the
+route line crossing the sea, and it was rejected for the same reason.
+
+The idea is not dead, it is blocked on data. Natural Earth is public domain
+and reachable but has fourteen points for our whole coastline. The detailed
+Philippine boundary set on GitHub is GADM-derived and its licence forbids
+redistribution, so it cannot ship in an AGPL repo people fork.
+OpenStreetMap has the right detail and the right licence and we already
+credit it, and needs a tool run somewhere with network access to fetch the
+corridor's coastline, major roads and place names. That is the next move if
+the map is worth owning outright — and this week is the argument that it is.
+
 ## 2026-09-12 — The map becomes this route's map
 
 A presentation pass on the map only. Nothing moved on the page, no request

@@ -6,7 +6,11 @@
   `https://community-bus-tracker.netlify.app`; the admin page is
   `/admin.html`, which Netlify also serves as `/admin`.
 - **Backend:** Supabase (Postgres + PostgREST RPC). Free tier.
-- **Map:** Leaflet 1.9.4, vendored locally. Tiles from CARTO light_all basemap.
+- **Map:** Leaflet 1.9.4, vendored locally. Tiles from CARTO's Positron and
+  Dark Matter basemaps, each split into its `nolabels` and `only_labels`
+  layers. Since late August 2026 CARTO watermarks tiles fetched without an
+  API key; the key is free, lives in `config.txt` as `CARTO_API_KEY`, and is
+  deliberately optional — no key means watermarked tiles, not a broken map.
 - **Supabase client:** supabase-js 2.110.8, UMD build, vendored locally.
 - **App:** five HTML files, no build step, no framework. `index.html` is the
   tracker, `admin.html` the operator page, `how-to.html` a static guide reached
@@ -40,12 +44,24 @@ community-bus-tracker/
 ```
 
 Deploys come from git: Netlify builds the repository on a push to `main`, and
-`netlify.toml` runs the five dependency-free JavaScript suites as the build
+`netlify.toml` runs the six dependency-free JavaScript suites as the build
 command, so a failing one cancels the deploy. Nothing is compiled and nothing is
-installed, so the no-build-step property holds — what gets published is the
-repository exactly as committed. There is deliberately no `package.json`,
-because it would make Netlify run `npm install` and publish `node_modules`
-alongside the site.
+installed. There is deliberately no `package.json`, because it would make
+Netlify run `npm install` and publish `node_modules` alongside the site.
+
+**One line of the published site is no longer the committed one**, as of
+September 2026. `tools/write-basemap-key.js` runs first and writes the CARTO
+basemap key into `config.txt` from the `CARTO_API_KEY` environment variable in
+Netlify's build settings. The point is narrow and worth stating exactly: it
+keeps the key out of a public repository, where bots trawl for exactly this
+kind of thing, and it lets the key be rotated without a commit. It does **not**
+make the key secret from users — `config.txt` is fetched by the browser, so the
+key is one devtools panel away on the deployed site. Anyone who wants that would
+have to proxy every tile through a function, which ties the project to one host,
+spends that host's bandwidth on tiles, and is a different decision from this
+one. Unset, the script is a no-op and the map is watermarked, so a fork
+deploying straight from git still works. Everything else published is the
+repository exactly as committed.
 
 It used to be drag-and-drop, which replaced the entire site in one go, so all
 four items above had to be in the folder every time. Deploying index.html alone
@@ -322,6 +338,23 @@ third party:
   picture on every phone and a blurry one on most. A live badge breathes
   with a ring in its own colour; stale ones hold still; the reduced-motion
   blanket flattens it.
+
+**The basemap needs a key now, and that is a standing risk.** CARTO started
+watermarking keyless tiles in late August 2026, with no warning to anyone
+relying on them, and the deployed site carried the watermark until a key was
+added. The key is free within a fair-use allowance and goes in `config.txt`,
+which means it is published: unlike the Supabase anon key, which unlocks
+nothing because the tables have RLS with no policies, a copied CARTO key
+spends this deployment's tile allowance. `warnIfNoBasemapKey()` says so in
+the console rather than on screen, because it is the maintainer's problem
+and riders cannot act on it.
+
+The broader lesson is the one worth keeping: **the basemap is the only part
+of this app that somebody else can change the terms of.** Everything else is
+vendored, self-hosted, or in a database we control. A drawn basemap built
+from open data we ship ourselves would close that gap, and was prototyped —
+see the journal entry for 2026-09-15 for what it looked like and why it is
+not here yet.
 
 **There is deliberately no route line.** One was built and taken out the
 same day: the road is not known precisely enough to draw, a straight line

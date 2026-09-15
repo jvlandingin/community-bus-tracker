@@ -28,6 +28,20 @@ ROUTE_SLUG = your-route-slug
 # hide it.
 CONTACT_EMAIL = you@example.com
 
+# --- CARTO basemap key (free; leave blank and the map still works) ---
+# CARTO began stamping "API KEY REQUIRED" across keyless map tiles in
+# late August 2026. A key is free and needs no account:
+#   https://carto.com/basemaps/apikey
+# Blank is allowed on purpose: the map still loads, just watermarked.
+#
+# This one IS worth knowing about. Like everything here it ships to the
+# browser and anyone can read it, and unlike the Supabase key above --
+# which unlocks nothing, because the tables have RLS with no policies --
+# a copied CARTO key spends YOUR monthly tile allowance. Restrict it to
+# your own domain in CARTO's dashboard if they offer that, and expect to
+# replace it if the map goes quiet.
+CARTO_API_KEY =
+
 # ============================================================
 #  Operating hours, headway, and expiry times are NOT here
 #  any more. They live in the database and are edited in

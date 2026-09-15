@@ -1299,7 +1299,8 @@
 // ============================================================
 // Settings load from config.txt. Edit that file, not this one.
 // ============================================================
-let CFG = { SUPABASE_URL:'', SUPABASE_ANON_KEY:'', ROUTE_SLUG:'', SOURCE_URL:'', CONTACT_EMAIL:'' };
+let CFG = { SUPABASE_URL:'', SUPABASE_ANON_KEY:'', ROUTE_SLUG:'', SOURCE_URL:'', CONTACT_EMAIL:'',
+            CARTO_API_KEY:'' };
 // Live settings, fetched from the database (edited in the admin page).
 // Hours are lists of [start, end] windows in 24h HH:MM, per direction.
 let SET = { hours:{ north:[], south:[] }, headway_min:30,
@@ -1604,9 +1605,25 @@ function cycleTheme(){
 const DARK_MQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 // Two layers from the same basemap, split at the labels (see the CSS note
 // above .stopmk): `nolabels` goes under the stops, `only_labels` over them.
+//
+// CARTO began watermarking keyless tiles in late August 2026: they still
+// arrive, but with "API KEY REQUIRED" printed across them. The key is free
+// and goes in config.txt as CARTO_API_KEY. Deliberately not required: a
+// deployment without one gets watermarked tiles rather than a broken map,
+// because a fork that has not read the setup notes should still see its own
+// route on a map it can recognise. warnIfNoBasemapKey() says so in the
+// console, which is where the person who can fix it will be looking; a
+// banner in front of riders would be shouting at the wrong audience.
 function basemapUrl(part){
-  return 'https://{s}.basemaps.cartocdn.com/' +
-    (effectiveTheme() === 'dark' ? 'dark_' : 'light_') + part + '/{z}/{x}/{y}{r}.png';
+  const style = (effectiveTheme() === 'dark' ? 'dark_' : 'light_') + part;
+  return 'https://{s}.basemaps.cartocdn.com/' + style + '/{z}/{x}/{y}{r}.png' +
+    (CFG.CARTO_API_KEY ? '?key=' + encodeURIComponent(CFG.CARTO_API_KEY) : '');
+}
+function warnIfNoBasemapKey(){
+  if (CFG.CARTO_API_KEY) return;
+  console.warn('config.txt has no CARTO_API_KEY, so the map tiles will carry ' +
+    'CARTO\'s "API KEY REQUIRED" watermark. A key is free: ' +
+    'https://carto.com/basemaps/apikey');
 }
 let baseLayer = null, labelLayer = null;
 function rethemeTiles(){
@@ -1631,6 +1648,7 @@ function initMap() {
   map.createPane('cplabels').style.zIndex = 470;
   map.getPane('labels').style.pointerEvents = 'none';
   map.getPane('cplabels').style.pointerEvents = 'none';
+  warnIfNoBasemapKey();
   baseLayer = L.tileLayer(basemapUrl('nolabels'), {
     subdomains:'abcd', maxZoom:19, attribution:'© OpenStreetMap © CARTO'
   }).addTo(map);

@@ -102,12 +102,20 @@ migration.
    anon key, route slug, source URL, checkpoints and stops. Checkpoints are the
    handful of labels on the progress strip. Stops are every place the bus calls
    at, in route order.
-4. **Deploy** to any static host. Netlify works well: point it at your fork and
+4. **Get a free CARTO basemap key** at
+   [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey) and put it in
+   `config.txt` as `CARTO_API_KEY`. Since late August 2026 CARTO stamps
+   "API KEY REQUIRED" across tiles requested without one. Leaving it blank is
+   allowed and the map still works, watermarked. Note that this key is public
+   like everything else in `config.txt`, and unlike the Supabase anon key it is
+   worth something to a stranger: it spends your monthly tile allowance.
+   Restrict it to your domain if CARTO's dashboard lets you.
+5. **Deploy** to any static host. Netlify works well: point it at your fork and
    it publishes on every push to `main`. However you host it, the site must
    contain `index.html`, `admin.html`, `how-to.html`, `flyer.html`,
    `for-operators.html`, `config.txt` and
    `assets/`.
-5. **Open `/admin.html`**, sign in with your admin key, and set your operating
+6. **Open `/admin.html`**, sign in with your admin key, and set your operating
    hours. Use the Generate button to make a share key, and post the link it
    gives you in your group chat. That link is the tracker with the key in the
    fragment, and it is what people tap to share from the bus.

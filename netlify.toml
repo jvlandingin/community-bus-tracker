@@ -7,10 +7,18 @@
 # them, so a failure here means the HTML that is about to be published is
 # broken, not that some copy of it is.
 #
-# Nothing is compiled and nothing is installed, so the no-build-step
-# property still holds: what gets published is the repository exactly as
-# committed. There is deliberately no package.json, because it would make
-# Netlify run npm install and then publish node_modules along with the site.
+# Nothing is compiled and nothing is installed. There is deliberately no
+# package.json, because it would make Netlify run npm install and then
+# publish node_modules along with the site.
+#
+# One line of the published site is no longer the committed one. The first
+# build step writes the CARTO basemap key into config.txt from the
+# CARTO_API_KEY environment variable, set in Netlify's build settings, so
+# the key is not sitting in a public repository for a bot to find. It does
+# not make the key secret from anyone using the site: config.txt is still
+# fetched by the browser. Unset, it is a no-op and the map is watermarked,
+# so a fork deploying straight from git still works. Everything else that
+# gets published is the repository exactly as committed.
 #
 # test-boot.js is missing from this list because it needs jsdom, and the
 # six database suites need a PostgreSQL. Both run in GitHub Actions
@@ -19,6 +27,7 @@
 [build]
   publish = "."
   command = """
+    node tools/write-basemap-key.js && \
     node tests/test-hours.js && \
     node tests/test-guard.js && \
     node tests/test-strip.js && \

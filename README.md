@@ -103,13 +103,22 @@ migration.
    handful of labels on the progress strip. Stops are every place the bus calls
    at, in route order.
 4. **Get a free CARTO basemap key** at
-   [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey) and put it in
-   `config.txt` as `CARTO_API_KEY`. Since late August 2026 CARTO stamps
-   "API KEY REQUIRED" across tiles requested without one. Leaving it blank is
-   allowed and the map still works, watermarked. Note that this key is public
-   like everything else in `config.txt`, and unlike the Supabase anon key it is
-   worth something to a stranger: it spends your monthly tile allowance.
-   Restrict it to your domain if CARTO's dashboard lets you.
+   [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey). Since late
+   August 2026 CARTO stamps "API KEY REQUIRED" across tiles requested without
+   one. Leaving it unset is allowed and the map still works, watermarked.
+
+   Two places to put it. Either `CARTO_API_KEY` in `config.txt`, which is
+   simplest and commits the key to your repository, or an environment variable
+   of the same name in your host's build settings, which keeps it out of the
+   repository — `tools/write-basemap-key.js` runs first in the Netlify build
+   and writes it into `config.txt` on the way past. The environment variable
+   wins if you set both, so you can rotate a committed key without a commit.
+
+   Either way the key reaches the browser and is readable by anyone using the
+   site; the environment variable only keeps it away from bots trawling public
+   repositories. Unlike the Supabase anon key, which unlocks nothing because
+   the tables have RLS with no policies, a stolen CARTO key spends your monthly
+   tile allowance. Restrict it to your domain if CARTO's dashboard lets you.
 5. **Deploy** to any static host. Netlify works well: point it at your fork and
    it publishes on every push to `main`. However you host it, the site must
    contain `index.html`, `admin.html`, `how-to.html`, `flyer.html`,

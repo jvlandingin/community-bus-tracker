@@ -44,12 +44,24 @@ community-bus-tracker/
 ```
 
 Deploys come from git: Netlify builds the repository on a push to `main`, and
-`netlify.toml` runs the five dependency-free JavaScript suites as the build
+`netlify.toml` runs the six dependency-free JavaScript suites as the build
 command, so a failing one cancels the deploy. Nothing is compiled and nothing is
-installed, so the no-build-step property holds — what gets published is the
-repository exactly as committed. There is deliberately no `package.json`,
-because it would make Netlify run `npm install` and publish `node_modules`
-alongside the site.
+installed. There is deliberately no `package.json`, because it would make
+Netlify run `npm install` and publish `node_modules` alongside the site.
+
+**One line of the published site is no longer the committed one**, as of
+September 2026. `tools/write-basemap-key.js` runs first and writes the CARTO
+basemap key into `config.txt` from the `CARTO_API_KEY` environment variable in
+Netlify's build settings. The point is narrow and worth stating exactly: it
+keeps the key out of a public repository, where bots trawl for exactly this
+kind of thing, and it lets the key be rotated without a commit. It does **not**
+make the key secret from users — `config.txt` is fetched by the browser, so the
+key is one devtools panel away on the deployed site. Anyone who wants that would
+have to proxy every tile through a function, which ties the project to one host,
+spends that host's bandwidth on tiles, and is a different decision from this
+one. Unset, the script is a no-op and the map is watermarked, so a fork
+deploying straight from git still works. Everything else published is the
+repository exactly as committed.
 
 It used to be drag-and-drop, which replaced the entire site in one go, so all
 four items above had to be in the folder every time. Deploying index.html alone

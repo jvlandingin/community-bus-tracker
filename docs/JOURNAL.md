@@ -45,6 +45,27 @@ plainly because the file's whole pitch has been "no secrets here": the
 Supabase anon key unlocks nothing, but a copied CARTO key spends this
 deployment's monthly tile allowance. Different kind of thing, same file.
 
+**And then it moved to Netlify, which cost the repo a property.** Putting
+the key in Netlify's build settings instead keeps it out of a public
+repository, which is the theft route that actually happens — bots trawl
+GitHub for keys, they do not read deployed config files. So
+`tools/write-basemap-key.js` now runs first in the build and writes the
+variable into `config.txt` on the way past.
+
+Be clear about what that is and is not. It is not secrecy: `config.txt` is
+fetched by the browser, so the key is one devtools panel away on the live
+site, exactly as it was when it was committed. Hiding it from users means
+proxying every tile through a function, which ties this to one host and
+spends that host's bandwidth on map tiles — a bigger decision, not taken.
+
+What it did cost is the sentence this repo has repeated since the move to
+git deploys: *what gets published is the repository exactly as committed.*
+That is now false by one line, and both `netlify.toml` and
+`docs/ARCHITECTURE.md` say so rather than quietly keeping the old claim.
+It is a small break and a real one: for the first time the deployed site
+can differ from the commit, and the next person debugging a strange
+production-only symptom needs to know that is possible.
+
 **What was tried.** Drawing our own basemap, with no tile provider at all.
 It got further than expected. A coastline traced out of the map screenshot
 already embedded in `flyer.html`, georeferenced against the eight

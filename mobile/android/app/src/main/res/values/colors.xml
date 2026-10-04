@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The tracker's livery, from index.html's :root (maroon, maroon-deep and gold tokens). -->
+    <color name="colorPrimary">#7A1F2B</color>
+    <color name="colorPrimaryDark">#5C161F</color>
+    <color name="colorAccent">#E39A1C</color>
+</resources>

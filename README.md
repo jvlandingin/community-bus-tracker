@@ -22,7 +22,8 @@ name the route in link previews.
   one is. No key, no sign-up, no location permission needed.
 - **Share:** a driver, conductor, or volunteer rider taps "I'm on the bus" and
   shares the vehicle's position for that trip. Needs a community key. Stop
-  anytime.
+  anytime. In a browser the screen has to stay on; the Android app in
+  `mobile/` keeps sharing with it locked.
 - **Your own stop:** save the stop you wait at and the page says how far the
   next bus still is from *it* — `▲ Northbound · 3.0 km away · about 5 stops
   before yours` — measured along the road rather than as the crow flies. Pick
@@ -174,6 +175,8 @@ the repository.
   known limitations, and the scale reasoning.
 - `docs/DATABASE.md` covers the tables, the RPC surface, and which calls need
   which key.
+- `mobile/README.md` covers the Android app for sharers: what it adds, how to
+  build and sign it, and what still needs a real trip to prove.
 
 Both are written to be read before changing anything, and both record decisions
 that look arbitrary until you know why.

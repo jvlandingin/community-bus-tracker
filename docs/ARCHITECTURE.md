@@ -46,8 +46,10 @@ community-bus-tracker/
 Deploys come from git: Netlify builds the repository on a push to `main`, and
 `netlify.toml` runs the six dependency-free JavaScript suites as the build
 command, so a failing one cancels the deploy. Nothing is compiled and nothing is
-installed. There is deliberately no `package.json`, because it would make
-Netlify run `npm install` and publish `node_modules` alongside the site.
+installed. There is deliberately no `package.json` at the root, because it
+would make Netlify run `npm install` and publish `node_modules` alongside the
+site. The one in `mobile/` is for the Android app and is outside that: Netlify
+only installs from the base directory, so it never runs at deploy time.
 
 **One line of the published site is no longer the committed one**, as of
 September 2026. `tools/write-basemap-key.js` runs first and writes the CARTO
@@ -603,12 +605,13 @@ list: it is a substring of `start`, and a scan that cries wolf on
 
 ## Known limitations
 
-**Screen must stay on while sharing.** Mobile browsers suspend JavaScript and
-GPS when the screen locks or the user switches apps. This is a platform
-restriction, not a bug. The app requests a screen wake lock and re-acquires it
-when the page becomes visible again, but it cannot survive backgrounding.
-Practical answer: a mounted phone on a charger. Long-term answer: a dedicated
-GPS tracker device.
+**Screen must stay on while sharing in a browser.** Mobile browsers suspend
+JavaScript and GPS when the screen locks or the user switches apps. This is a
+platform restriction, not a bug. The page requests a screen wake lock and
+re-acquires it when the page becomes visible again, but it cannot survive
+backgrounding. On Android the answer is now the app in `mobile/` (see "The
+Android app" above). On an iPhone it is still a mounted phone on a charger,
+and long term a dedicated GPS tracker device.
 
 **Nothing detects a wrong vehicle going the right way.** A car, a jeepney, or
 another company's bus on the same corridor is indistinguishable from a Wonderful
@@ -665,6 +668,39 @@ Measured and reasoned, not guessed:
   of re-deriving it. It costs one write per watcher per minute against six reads
   per watcher per minute, so it is under 3% on top of what a watcher already
   sends.
+
+## The Android app
+
+`mobile/` is a Capacitor shell for sharers, added October 2026, because the
+first known limitation below was the one that kept costing buses: a sharer
+who locked the screen or opened Messenger dropped off the map. A browser
+cannot fix that, and neither can an installable web app or a Trusted Web
+Activity, which is still Chrome and is still suspended. Only native code can
+run an Android foreground service.
+
+It loads the live site rather than bundling a copy, so a deploy updates the
+app's screens with no new APK. Inside it, `watchTripGps()` in `index.html`
+finds `window.Capacitor.Plugins.BackgroundGeolocation` and takes fixes from
+the plugin's foreground service instead of `navigator.geolocation`.
+Everything downstream is unchanged and shared with the browser: the same
+`writePosition`, heartbeat and trip guards, under the same tests. That was
+the reason for Capacitor over a hand-written Kotlin app, which would have
+needed its own copy of the guards with no tests watching it.
+
+What the app adds, and only inside it: no screen wake lock (keeping the
+screen on is the cost it exists to remove), the notification permission
+Android 13 needs before the sharing notification can show, and a
+notification whenever a trip question is asked with the app in the
+background. That last one matters most for the wrong-direction guard, which
+takes the bus off the map until it is answered: without the notification a
+sharer with the screen off would stop sharing and never know why.
+
+Nothing about the data model changes. No new request, no new table, no
+location kept on the phone, and no `ACCESS_BACKGROUND_LOCATION`: the service
+only starts from a tap on Start with the app on screen, and its notification
+cannot be dismissed while it runs. `mobile/README.md` has the build, the
+signing key that every APK handed out must share, and the real-trip checks
+that have not been done yet.
 
 ## Testing
 

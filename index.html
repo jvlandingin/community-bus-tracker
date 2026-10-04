@@ -956,6 +956,7 @@
 
       <h4 class="ok">If you share from the bus</h4>
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID for your session. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
+      <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop.</p>
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and it goes when the trip does. Nothing keeps a total for you, so there is no score to go up or down.</p>
 
       <div id="privSightings">
@@ -1227,7 +1228,7 @@
         <div class="statusdot" id="onbusDot"></div>
         <div>
           <div style="font-weight:800; font-size:14.5px;" id="onbusStatusText">Not sharing</div>
-          <div class="hint" style="margin-top:2px;">Shares only while this page is open and the screen is on.</div>
+          <div class="hint" style="margin-top:2px;" id="gpsLiveHint">Shares only while this page is open and the screen is on.</div>
         </div>
       </div>
 
@@ -1257,8 +1258,8 @@
       </div>
 
       <div class="hint">
-        For the driver, conductor, or any rider. Keep the screen on — GPS pauses
-        if it locks. Only the bus's position and direction are shared, never
+        For the driver, conductor, or any rider. <span id="gpsSetupHint">Keep the screen on — GPS pauses
+        if it locks.</span> Only the bus's position and direction are shared, never
         anything about you.
       </div>
     </div>
@@ -3032,7 +3033,7 @@ async function markWatching(){
 // ============================================================
 // Share mode (multi-bus, direction-aware)
 // ============================================================
-let watchId=null, sharing=false, lastWrite=0, shareDir=null, lastCoords=null, hbTimer=null;
+let stopWatch=null, sharing=false, lastWrite=0, shareDir=null, lastCoords=null, hbTimer=null;
 let sessionId=null;
 function getSessionId(){
   if (sessionId) return sessionId;
@@ -3089,6 +3090,9 @@ function writeErrorMessage(err){
 // for the rest of the trip, the single most common way sharing dies.
 let wakeLock=null;
 async function acquireWakeLock(){
+  // The Android app keeps GPS running with the screen off, so holding the
+  // screen on there would only burn the battery the app exists to save.
+  if (inApp()) return;
   if (!('wakeLock' in navigator)) return;
   try{
     wakeLock = await navigator.wakeLock.request('screen');
@@ -3106,6 +3110,91 @@ document.addEventListener('visibilitychange', function(){
   // minute later
   if (running) markWatching();
 });
+
+// ---- The Android app: GPS that keeps going with the screen off --------
+// mobile/ is a Capacitor shell that loads this same page from the live
+// site, so there is still one copy of everything here. Inside it, Capacitor
+// puts its native plugins on window.Capacitor.Plugins, and the trip's GPS
+// comes from BackgroundGeolocation: an Android foreground service, shown as
+// a notification for as long as the bus is shared, which is what lets a
+// sharer lock the screen or switch to Messenger without dropping off the
+// map. In a browser every function here finds no plugin and the page
+// behaves exactly as it always has. Nothing in this section stores or
+// sends anything the browser version does not: the fixes go to the same
+// writePosition(), and the only thing kept is the latest one, in memory.
+function appPlugin(name){
+  try{
+    const C=window.Capacitor;
+    if (C && C.isNativePlatform && C.isNativePlatform() && C.Plugins && C.Plugins[name]) return C.Plugins[name];
+  }catch(e){}
+  return null;
+}
+function inApp(){ return !!appPlugin('BackgroundGeolocation'); }
+// Plugin calls answer with promises. A notification that fails to post is
+// not worth an unhandled rejection, or anything else the sharer would see.
+function appQuiet(f){ try{ const p=f(); if (p && p.catch) p.catch(function(){}); }catch(e){} }
+
+// Same contract as navigator.geolocation.watchPosition, so beginWatch does
+// not care which one it got: onPos receives something with .coords, onErr
+// something with .code. Returns the function that stops it.
+function watchTripGps(onPos, onErr){
+  const bg=appPlugin('BackgroundGeolocation');
+  if (!bg){
+    const id=navigator.geolocation.watchPosition(onPos, onErr,
+      { enableHighAccuracy:true, maximumAge:4000, timeout:20000 });
+    return function(){ navigator.geolocation.clearWatch(id); };
+  }
+  let stopped=false;
+  const id=bg.addWatcher({
+    backgroundTitle:'Sharing your bus live',
+    backgroundMessage:'Your bus is on the map. Open the app and tap Stop sharing when you get off.',
+    requestPermissions:true, stale:false, distanceFilter:0
+  }, function(loc, err){
+    if (stopped) return;
+    if (err){ onErr({ code: err.code==='NOT_AUTHORIZED' ? 1 : 2 }); return; }
+    if (!loc) return;
+    onPos({ coords:{ latitude:loc.latitude, longitude:loc.longitude, accuracy:loc.accuracy,
+                     speed: typeof loc.speed==='number' ? loc.speed : null } });
+  });
+  return function(){ stopped=true; appQuiet(function(){ return bg.removeWatcher({ id:id }); }); };
+}
+
+// The trip guards ask on screen, and with the screen off nobody sees the
+// question. The wrong-direction one takes the bus off the map until it is
+// answered, so a sharer who never looks would silently stop sharing. In
+// the app, a question asked while the page is hidden also goes out as a
+// notification; tapping it opens the app with the question waiting.
+const ASK_NOTE_ID=7301;
+function askNotify(title, body){
+  const ln=appPlugin('LocalNotifications');
+  if (!ln || !document.hidden) return;
+  appQuiet(function(){ return ln.schedule({ notifications:[{ id:ASK_NOTE_ID, title:title, body:body }] }); });
+}
+function askUnnotify(){
+  const ln=appPlugin('LocalNotifications');
+  if (!ln) return;
+  appQuiet(function(){ return ln.cancel({ notifications:[{ id:ASK_NOTE_ID }] }); });
+}
+// Android 13 and later hide every notification, the sharing one included,
+// until the app is allowed to post them. Asked at the start of a trip,
+// because that is the moment the reason is obvious.
+function askNotifyPermission(){
+  const ln=appPlugin('LocalNotifications');
+  if (!ln) return;
+  appQuiet(function(){ return ln.requestPermissions(); });
+}
+document.addEventListener('visibilitychange', function(){
+  if (!askOpen) return;
+  if (document.hidden) askNotify(document.getElementById('askTitle').textContent,
+                                 document.getElementById('askBody').textContent);
+  else askUnnotify();
+});
+function showAppHints(){
+  if (!inApp()) return;
+  const a=document.getElementById('gpsSetupHint'), b=document.getElementById('gpsLiveHint');
+  if (a) a.textContent='The screen can lock and you can switch apps: sharing keeps going, with a notification showing while it does.';
+  if (b) b.textContent='Keeps sharing with the screen off. Tap Stop sharing when you get off.';
+}
 
 async function writePosition(coords){
   if (guardPaused) return;
@@ -3146,9 +3235,11 @@ function showAsk(o){
   document.getElementById('askNo').textContent=o.noLabel;
   askOnYes=o.onYes; askOnNo=o.onNo;
   openModal('askModal');
+  askNotify(o.title, o.body);
 }
 function hideAsk(){
   closeModal('askModal');
+  askUnnotify();
   askOnYes=null; askOnNo=null; askOpen=false;
   if (endTimer){ clearTimeout(endTimer); endTimer=null; }
 }
@@ -3305,6 +3396,7 @@ function startSharing(){
   sharing=true;
   setShareUI('on','Getting your location…');
   acquireWakeLock();
+  askNotifyPermission();
   registerUnloadCleanup();
   // One fix first, so we can check for a duplicate before publishing anything.
   navigator.geolocation.getCurrentPosition(async function(pos){
@@ -3365,7 +3457,7 @@ function beginWatch(firstCoords){
     idleRef={ lat:firstCoords.latitude, lng:firstCoords.longitude, t:Date.now() };
     lastWrite=Date.now(); writePosition(firstCoords);
   }
-  watchId=navigator.geolocation.watchPosition(function(pos){
+  stopWatch=watchTripGps(function(pos){
     if (!sharing) return;
     lastCoords=pos.coords;
     checkTripGuards(pos.coords);
@@ -3376,11 +3468,11 @@ function beginWatch(firstCoords){
     writePosition(pos.coords);
   }, function(err){
     sharing=false;
-    if (watchId!==null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+    if (stopWatch){ stopWatch(); stopWatch=null; }
     if (hbTimer){ clearInterval(hbTimer); hbTimer=null; }
     releaseWakeLock();
     setShareUI('error', gpsErrorMessage(err));
-  }, { enableHighAccuracy:true, maximumAge:4000, timeout:20000 });
+  });
   // heartbeat: a bus idling at a stop doesn't fire watchPosition; re-send last fix
   hbTimer=setInterval(function(){
     if (sharing && !guardPaused && lastCoords && Date.now()-lastWrite>20000){
@@ -3412,7 +3504,7 @@ async function stopSharing(){
   sharing=false;
   guardPaused=false; dirGuard=null; idleRef=null;
   if (askOpen) hideAsk();
-  if (watchId!==null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+  if (stopWatch){ stopWatch(); stopWatch=null; }
   if (hbTimer){ clearInterval(hbTimer); hbTimer=null; }
   releaseWakeLock();
   await rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:getSessionId() });
@@ -3577,7 +3669,7 @@ function start(){
   loadMyStop();
   if (!mapReady){
     initMap(); buildTicks(); buildSightingPlaces(); renderHours();
-    renderSourceLink(); renderContactLine(); mapReady=true;
+    renderSourceLink(); renderContactLine(); showAppHints(); mapReady=true;
   }
   if (running) return;
   running=true;

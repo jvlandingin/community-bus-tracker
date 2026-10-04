@@ -50,6 +50,14 @@ psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 to `main`, deliberately using the same steps as `tests/README.md` so the
 runbook is re-proven on every commit.
 
+The Android app builds from `mobile/` (JDK 21 and the Android SDK needed);
+`.github/workflows/android.yml` does it whenever `mobile/` changes:
+
+```
+cd mobile && npm ci && npx cap sync android
+cd android && ./gradlew assembleDebug
+```
+
 ## Architecture
 
 **Five pages, one config file.** `index.html` is the tracker (watch + share),
@@ -132,6 +140,16 @@ rather than 🚌. No new request, storage or third party. **There is
 deliberately no route line**: the road is not known well enough to draw and
 a wrong line is worse than none. `docs/ARCHITECTURE.md` has the reasoning.
 
+**Android sharers can use an app** (`mobile/`, October 2026) that keeps GPS
+running with the screen locked. It is a Capacitor shell that loads the live
+site, not a copy, and the only code that knows about it is `watchTripGps()`
+and the notification helpers beside it in `index.html`: they take fixes from
+the native background-geolocation plugin when `window.Capacitor` offers it,
+and fall back to `navigator.geolocation` everywhere else. All trip logic stays
+in the page, under the existing tests. Keep it that way: logic added to the
+native side has no tests and no browser twin. `test-boot.js` section 11 boots
+the page with a stand-in bridge. `mobile/README.md` has the signing rules.
+
 **Colours come in fill/ink pairs.** `--maroon`/`--brand-ink`,
 `--gold`/`--gold-deep`, `--lost`/`--lost-ink`, `--mine`/`--mine-ink`. The first of each pair is a
 background with white or near-black text on it; the second is the same colour
@@ -160,12 +178,15 @@ whole internet and it would broadcast that a given roadside has somebody
 standing at it right now. If a request ever needs to carry a watcher's
 position, that is the deliberate conversation, not a small follow-up.
 
-**No package.json.** Adding one makes Netlify run `npm install` and publish
-`node_modules` alongside the site, which breaks the no-build-step property.
-jsdom is installed only in CI, with `--no-save`.
+**No package.json at the root.** Adding one makes Netlify run `npm install`
+and publish `node_modules` alongside the site, which breaks the no-build-step
+property. jsdom is installed only in CI, with `--no-save`. `mobile/package.json`
+is the one exception and is safe only because it is not at the base directory;
+nothing the website loads may come from it.
 
-**No third-party code or fonts.** Leaflet and supabase-js are vendored in
-`assets/vendor/`. CARTO map tiles are the only remaining third party and are
+**No third-party code or fonts on the website.** Leaflet and supabase-js are vendored in
+`assets/vendor/`. (The Android app compiles Capacitor and its two plugins
+into the APK; the site itself loads none of it.) CARTO map tiles are the only remaining third party and are
 disclosed to users in the app. Do not reintroduce CDN links.
 
 **Nothing named `share*`, `help*`, `support*`, `chat*`, `widget*`, `like*`,

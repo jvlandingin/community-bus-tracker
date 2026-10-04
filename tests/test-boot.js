@@ -49,7 +49,7 @@ function serve(include, configText) {
   });
 }
 
-function run(page, include, label, configText) {
+function run(page, include, label, configText, setup) {
   return new Promise(resolve => {
     const server = serve(include, configText);
     server.listen(0, async () => {
@@ -65,6 +65,7 @@ function run(page, include, label, configText) {
           window.fetch = function(u, o){
             return fetch(new URL(u, `http://127.0.0.1:${port}/`), o);
           };
+          if (setup) setup(window);
         }
       });
       // Wait for the page to actually finish booting rather than for a
@@ -605,6 +606,59 @@ function run(page, include, label, configText) {
   // Opting the dot on is a per-visit decision, so it must not be remembered.
   check(!/localStorage\.[a-zA-Z]+\([^)]*myloc/i.test(appSrc),
     'whether the location dot is on is never written to localStorage');
+
+  console.log('\n=== 11. inside the Android app ===');
+  // mobile/ loads this same page in a Capacitor shell, whose bridge puts the
+  // native plugins on window.Capacitor.Plugins before the page's own script
+  // runs. Stand in for that bridge and check the page hands the trip's GPS
+  // to the background service instead of the browser, and that in a plain
+  // browser nothing about sharing has changed.
+  const browserHint = ok.d.getElementById('gpsSetupHint').textContent;
+  check(/Keep the screen on/.test(browserHint), 'in a browser, the sharer is still told to keep the screen on', browserHint);
+
+  const native = { watchers: [], removed: [], notePerms: 0, browserWatch: 0, wakeLocks: 0 };
+  const inApp = await run('/index.html#k=TESTKEY', () => true, 'app', null, window => {
+    window.Capacitor = {
+      isNativePlatform: () => true,
+      Plugins: {
+        BackgroundGeolocation: {
+          addWatcher(opts, cb){ native.watchers.push({ opts, cb }); return 'w' + native.watchers.length; },
+          removeWatcher(o){ native.removed.push(o.id); return Promise.resolve(); }
+        },
+        LocalNotifications: {
+          requestPermissions(){ native.notePerms++; return Promise.resolve({ display: 'granted' }); },
+          schedule(){ return Promise.resolve(); },
+          cancel(){ return Promise.resolve(); }
+        }
+      }
+    };
+    const fix = { coords: { latitude: 14.2912, longitude: 120.9068, speed: 0, accuracy: 8 } };
+    Object.defineProperty(window.navigator, 'geolocation', { value: {
+      getCurrentPosition(ok){ setTimeout(() => ok(fix), 0); },
+      watchPosition(){ native.browserWatch++; return 1; },
+      clearWatch(){}
+    } });
+    Object.defineProperty(window.navigator, 'wakeLock', { value: {
+      request(){ native.wakeLocks++; return Promise.resolve({ addEventListener(){}, release(){} }); }
+    } });
+  });
+  check(/sharing keeps going/.test(inApp.d.getElementById('gpsSetupHint').textContent),
+    'the setup hint says the screen can lock');
+  inApp.w.pickDir('north');
+  inApp.w.startSharing();
+  const until = Date.now() + 10000;
+  while (!native.watchers.length && Date.now() < until) await new Promise(r => setTimeout(r, 50));
+  check(native.watchers.length === 1, 'starting a trip adds one background GPS watcher');
+  check(native.browserWatch === 0, 'and does not also start the browser\'s watchPosition');
+  check(native.wakeLocks === 0, 'no screen wake lock is taken: keeping the screen on is what the app saves');
+  check(native.notePerms === 1, 'notification permission is asked for, or Android 13 hides the sharing notification');
+  const w0 = native.watchers[0] && native.watchers[0].opts;
+  check(!!w0 && typeof w0.backgroundMessage === 'string' && w0.backgroundMessage.length > 0,
+    'the watcher carries a notification message, which is what makes it a foreground service');
+  await inApp.w.stopSharing();
+  check(native.removed.length === 1 && native.removed[0] === 'w1', 'Stop sharing removes that watcher',
+    native.removed.join(',') || 'none removed');
+  inApp.w.close();
 
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');
   process.exit(fail ? 1 : 0);

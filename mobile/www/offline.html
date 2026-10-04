@@ -1,0 +1,29 @@
+<!doctype html>
+<!-- Shown by the Android app when the live site cannot be loaded, which on
+     this route mostly means no signal. It is local to the APK, so it cannot
+     use the site's tokens file; these are copied from index.html's :root. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>No connection</title>
+<style>
+  :root{ --paper:#f7f4ee; --ink:#2b2320; --muted:#6f655e; --maroon:#7a1f2b; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#16120f; --ink:#f3ede4; --muted:#a99d90; } }
+  body{ margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+        background:var(--paper); color:var(--ink); font:16px/1.5 system-ui, sans-serif; padding:24px; box-sizing:border-box; }
+  main{ max-width:340px; text-align:center; }
+  h1{ font-size:20px; margin:0 0 8px; }
+  p{ color:var(--muted); margin:0 0 20px; }
+  a{ display:inline-block; background:var(--maroon); color:#fff; text-decoration:none;
+     padding:12px 22px; border-radius:10px; font-weight:600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Can't reach the tracker</h1>
+  <p>The map and the buses on it come from the internet. Check your data or Wi‑Fi, then try again.</p>
+  <a href="https://community-bus-tracker.netlify.app/">Try again</a>
+</main>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Bus Tracker</string>
+    <string name="title_activity_main">Bus Tracker</string>
+    <string name="package_name">org.communitybustracker.app</string>
+    <string name="custom_url_scheme">org.communitybustracker.app</string>
+    <!-- The persistent notification while a bus is being shared. Android will
+         not keep GPS running with the screen off without it, and it is also
+         how the sharer knows, from any app, that they are still live. -->
+    <string name="capacitor_background_geolocation_notification_channel_name">Sharing a bus</string>
+    <string name="capacitor_background_geolocation_notification_icon">drawable/ic_tracking</string>
+</resources>

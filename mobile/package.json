@@ -1,0 +1,19 @@
+{
+  "name": "community-bus-tracker-android",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "description": "Android shell for the tracker: loads the live site and adds background GPS for sharers.",
+  "scripts": {
+    "sync": "cap sync android",
+    "apk": "cap sync android && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor-community/background-geolocation": "1.2.26",
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/local-notifications": "8.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2"
+  }
+}

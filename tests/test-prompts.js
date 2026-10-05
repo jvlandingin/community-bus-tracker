@@ -11,7 +11,7 @@ let fail = 0;
 function check(cond, label) { console.log((cond ? 'PASS  ' : 'FAIL  ') + label); if (!cond) fail++; }
 
 function build(dirHit) {
-  const log = { rpc: [], ui: [], writes: [], stopped: 0, ask: null, modalHidden: true, timers: [] };
+  const log = { rpc: [], ui: [], writes: [], stopped: 0, ask: null, modalHidden: true, timers: [], notes: [], unnotes: 0 };
   let now = 0;
   const els = {};
   const doc = { getElementById: id => els[id] || (els[id] = {
@@ -31,6 +31,11 @@ function build(dirHit) {
     // boundary as rpc and setShareUI: stubbed, not extracted.
     function openModal(id){ if (id==='askModal') __log__.modalHidden=false; }
     function closeModal(id){ if (id==='askModal') __log__.modalHidden=true; }
+    // The Android app's notification hand-off is a boundary too: in a browser
+    // it is a no-op, and in the app it is a native call. What matters here is
+    // that every question is handed to it and every answer takes it back.
+    function askNotify(t,b){ __log__.notes.push(t); }
+    function askUnnotify(){ __log__.unnotes++; }
     function pickDir(d){ shareDir=d; }
     function writePosition(c){ __log__.writes.push(c); }
     function stopSharing(){ __log__.stopped++; sharing=false; }
@@ -165,6 +170,23 @@ const nearby = (c, dlat) => ({ latitude: c.latitude + dlat, longitude: c.longitu
   check(t.state().guardPaused === false, 'kept direction: sharing resumes');
   t.check(midRoute);
   check(t.log.modalHidden === true, 'kept direction: does not nag again');
+}
+
+// 9. every question is also handed to the app's notification, and every
+// way it closes takes the notification back, the automatic stop included
+{
+  const t = build({ km: 4.2 }); t.setDir('north'); t.armGuard(); t.setCoords(midRoute);
+  t.check(midRoute);
+  check(t.log.notes.length === 1 && /which way/i.test(t.log.notes[0]), 'notify: wrong direction question handed to the app');
+  t.askYes();
+  check(t.log.unnotes === 1, 'notify: answering withdraws it');
+
+  const u = build(null); u.setDir('north'); u.setCoords(ayala);
+  u.check(ayala);
+  for (let i = 0; i < 5; i++) { u.tick(MIN); u.check(ayala); }
+  check(u.log.notes.length === 1, 'notify: end of trip question handed to the app');
+  u.tick(5 * MIN);
+  check(u.log.stopped === 1 && u.log.unnotes === 1, 'notify: the automatic stop withdraws it too');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

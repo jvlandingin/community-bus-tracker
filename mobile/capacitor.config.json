@@ -1,0 +1,22 @@
+{
+  "appId": "org.communitybustracker.app",
+  "appName": "Bus Tracker",
+  "webDir": "www",
+  "server": {
+    "url": "https://community-bus-tracker.netlify.app",
+    "androidScheme": "https",
+    "errorPath": "offline.html"
+  },
+  "android": {
+    "useLegacyBridge": true
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_tracking",
+      "iconColor": "#7a1f2b"
+    }
+  }
+}

@@ -25,6 +25,77 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-09 — If it were built again from scratch
+
+A review rather than a change: what would come out the same if the whole thing
+were rebuilt today, and what would not. Nothing in the code moved. It is written
+down because the useful part was the list, and a list that lives only in a
+conversation gets rebuilt from nothing next time.
+
+**The core would come out the same.** One row per sharing session and no history
+table; every read and write through `SECURITY DEFINER` functions over tables
+with RLS and no policies; three separate credentials and open reads; polling
+rather than Realtime; distance along the checkpoint chain and never minutes; a
+stop picker instead of a location prompt; static pages, vendored libraries, no
+framework; a Capacitor shell that loads the live site. These are the decisions
+that make the project what it is, and none of them would be made differently.
+
+**What a rider or driver would actually notice is small.** Four things:
+
+- *The name.* The link preview and the browser tab say "WT Live", which reads as
+  the bus company's initials. The header does say UNOFFICIAL, but the preview is
+  seen in the group chat before anyone opens the page, and it carries no such
+  word. A rebuild would use a name that does not borrow the company's.
+  `for-operators.html` already calls it "Community bus tracker". Not decided:
+  the name is the maintainer's call.
+- *The pictures on the flyer and the guide would always match the app*, because
+  they would be captured from a labelled demo mode of the real tracker by the
+  headless-Chromium script that already exists, instead of drawn by hand. Today
+  their map photos still show the old grey stop dots.
+- *No sightings board.* It was switched off the same day it was redesigned, and
+  the group chat already does its job. Riders see no difference, since it is
+  off.
+- *The Android app would have come first*, and been tried on a real trip before
+  any of the design passes. Same app, about two months earlier. As of this entry
+  `mobile/README.md` still lists that trip as not done.
+
+**What only matters behind the scenes, or to another route:**
+
+- **`sql/` cannot build an empty database.** `01-base.sql` opens with
+  `alter table public.routes`; nothing in `sql/` creates `routes`,
+  `bus_positions` or `sightings`, and nothing inserts a route row. Those exist
+  only in `tests/db/00-legacy-baseline.sql`, the reconstruction of the original
+  production database, which also seeds a test share key, fake buses and a spam
+  sighting, so running it is not the answer either. Checked against a fresh
+  PostgreSQL 16 by following the README exactly: `01` to `05` and `07` fail with
+  `relation "public.routes" does not exist`, and the only table created is
+  `watching_now`. All 187 database checks pass, but only as upgrades of the
+  baseline, so CI has never tried a fresh install. This is the lesson from
+  `tests/README.md` again: a runbook nobody has followed end to end is not a
+  runbook. It matters if another community wants its own copy, and it matters
+  to this route if its database ever has to be rebuilt.
+- **The route is not all in `config.txt`.** `set_bus_position` hardcodes a
+  Cavite bounding box (`sql/03-kick-block.sql`), so a deployment anywhere else
+  would have every position refused, and the page would explain it as being
+  outside "the Mendez to Makati route". The header, the direction destinations,
+  the closing-hours sentence, the trip questions and the map's default centre are
+  fixed text in `index.html`.
+- **The code would be organised differently**, invisibly to anyone using it.
+  ES modules instead of one long inline script, so the tests import the shipped
+  code rather than cutting `index.html` apart at comment markers (one cut takes
+  everything from `function haversineKm` up to `function timeAgo`, so it depends
+  on the order the functions happen to be in). One shared token stylesheet
+  instead of five copies and a drift test. The site published from a
+  subfolder, which would make a root `package.json` harmless. Roughly half the
+  rules in `CLAUDE.md` exist to compensate for these, and would not be needed.
+
+**If one thing is done, it is the fresh install**: a schema file that builds the
+database from empty plus a function that creates a route, and a CI job that
+installs from nothing, so the README's setup steps are proven on every commit
+the way the test runbook already is.
+
+---
+
 ## 2026-09-15 — CARTO started charging rent, in watermarks
 
 **What happened.** The live map began showing "API KEY REQUIRED" printed

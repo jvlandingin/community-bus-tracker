@@ -946,18 +946,18 @@ few minutes. Their captions use the flyer's and the briefing's own lines
 wherever those have one, so the videos promise nothing those two documents do
 not.
 
-**Three files.** `tools/render-demo.js` is the engine: the browser, the clock,
+**Four files.** `tools/render-demo.js` is the engine: the browser, the clock,
 the stand-in database, and the director the scripts are written in.
 `tools/demo-stage.html` is the stage around the phones: phones posed and
 turned in 3D, a camera that zooms into one of them, headlines that rise out of
 a mask, callouts and rings that stay on something in a phone while the phone
 moves, the route board's own dot matrix as a sign, a split-flap counter,
 sampaguita flying from one phone to the other for a salamat, and the livery
-stripes as the wipe between scenes. `tools/demo-cuts.js` holds the two scripts:
-what happens when, on which phone, and every word. The first version of the
-videos was one phone and a caption per step, which was clear and looked like a
-screen recording with subtitles; the stage exists because a video in a group
-chat is competing with everything else in the feed.
+stripes as the wipe between scenes. `tools/demo-cuts.js` holds the two
+scripts: what happens when, on which phone, and every word. The first version
+of the videos was one phone and a caption per step, which was clear and looked
+like a screen recording with subtitles; the stage exists because a video in a
+group chat is competing with everything else in the feed.
 
 **The tracker in them is the real one.** Each phone on the stage is
 `index.html` in a phone-sized frame, tapped, typed into and scrolled through
@@ -1014,9 +1014,17 @@ Chromium does not cancel a CSS animation that script has paused when the class
 that started it is taken away, so a paused wipe stayed over the whole frame
 after its class came off.
 
-**No sound.** Most video in a group chat plays muted, and music or a voice is
-the one thing a person adds better than a script, so the captions carry
-everything and a sound track is left to whoever posts it.
+**Interface sounds, no music.** Taps, keys, the wipe, the counter flipping,
+the board slamming in, the salamat and the ticket each have a short sound,
+made by `tools/demo-sound.js` from sine waves and seeded noise. The director
+notes a cue on the frame where the thing happens, so the sound cannot drift
+from the picture, and nothing is recorded or downloaded, so there is no
+licence to track. They are synthesized because they cannot be auditioned
+here: they are kept short and quiet, and checked by level rather than by ear.
+Music, or a voice, is still left to whoever posts the video, the one thing a
+person chooses better than a script, and most group-chat video plays muted
+anyway, so the pictures still carry everything. `--sound` redoes only the
+track under a video already rendered.
 
 **What a fork changes.** The captions name this route's places and the scripts
 drive its stops by name (`ROADS` in `tools/demo-cuts.js`), so a fork rewrites

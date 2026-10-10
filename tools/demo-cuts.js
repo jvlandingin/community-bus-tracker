@@ -154,6 +154,7 @@ module.exports = {
       // -- 0. The cover: the flyer's question over the view from the ridge
       await d.card('title', titleCard(P, { time: 'dawn', size: 84,
         lines: ['Nasaan na', '<em>ang bus?</em>'], note: 'Halimbawa lang ang mga bus' }), { theme: 'maroon', instant: true });
+      d.cue('chord');
       await d.wait(3.3);
 
       // -- 1. The buses, without words: the two lines, then one bus live
@@ -230,7 +231,9 @@ module.exports = {
       await d.wait(.85);
       await d.scroll('rider', { target: '.mapwrap', offset: 30 }, .6);
       await d.tap('rider', await marker(d, 'rider', '98018'), { after: .8 });
-      await d.tap('rider', '.buspop .tybtn', { after: 1.4 });
+      await d.tap('rider', '.buspop .tybtn', { after: .1 });
+      d.cue('chime');
+      await d.wait(1.3);
       await d.expect('rider', '!!document.querySelector(".buspop .tydone")', 'the popup saying the salamat was sent');
 
       // -- 4. On a bus yourself
@@ -266,7 +269,9 @@ module.exports = {
       await d.poll('rider');
       await d.wait(1.3);
       await d.ff(null);
-      await d.tap('rider', '#onbusActive .btn-stop', { after: .3 });
+      await d.tap('rider', '#onbusActive .btn-stop', { after: .1 });
+      d.cue('ticket');
+      await d.wait(.2);
       await d.expect('rider', '!document.getElementById("tktModal").classList.contains("hidden")', 'the salamat ticket on screen');
       await d.focus('rider', '#tktCard', { s: 1.1, fx: 270, fy: 500, sec: 1.0 });
       await d.wait(3.0);
@@ -283,6 +288,7 @@ module.exports = {
         '<p class="fine rise d8" style="text-align:center; margin:0 30px 14px"><b>Hindi ito opisyal.</b> Not affiliated with, run by, or endorsed by Wonderful Transport. ' +
           'Kapag walang nag-share, walang bus sa mapa.</p>' +
         '<div class="coachbar">' + road() + coach(P, 'dawn') + '</div>', { theme: 'maroon' });
+      d.cue('chord');
       await d.tag(null);
       await d.wait(6.5);
     }

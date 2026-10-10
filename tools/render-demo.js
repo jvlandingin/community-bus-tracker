@@ -9,18 +9,22 @@
 //
 // --stills saves PNGs of the given seconds instead of a video, which is how
 // to look at a change in a minute rather than ten; --until stops early;
-// --fps changes the frame rate. Each scene's start time is printed.
+// --fps changes the frame rate; --sound redoes only the sound of a video
+// already rendered, in a minute or two. Each scene's start time is printed.
 //
-// Outputs, 1080x1920 portrait, H.264 at 30 frames a second, with no sound:
+// Outputs, 1080x1920 portrait, H.264 at 30 frames a second, with interface
+// sounds (taps, wipes, the counter, the board) made by tools/demo-sound.js
+// and no music:
 //   demo-riders.mp4      in the mix of Tagalog and English the group chat
 //                        uses, with the flyer's own lines wherever the flyer
 //                        has one
 //   demo-operators.mp4   in English, with the briefing's lines
 //
-// Three files make them. This one is the engine: the browser, the clock,
+// Four files make them. This one is the engine: the browser, the clock,
 // the stand-in database and the director the scripts are written in.
 // tools/demo-stage.html is the stage, the moving graphics around the phones.
 // tools/demo-cuts.js holds the two scripts: what happens when, and the words.
+// tools/demo-sound.js makes the sound from the cues the director notes.
 //
 // Nothing on a phone's screen is drawn for the video. Each phone is the
 // real index.html in a frame on the stage, tapped through with the
@@ -73,6 +77,7 @@ const path = require('path');
 const http = require('http');
 const { spawn } = require('child_process');
 const { renderer } = require('./make-pictures.js');
+const sound = require('./demo-sound.js');
 
 const ROOT = path.join(__dirname, '..');
 const W = 540, H = 960, SCALE = 2;          // CSS pixels, and the video is twice that
@@ -585,8 +590,11 @@ class Director {
     this.buses = new Map();
     this.tracks = new Map();        // where each phone's GPS is going
     this.phones = [];
+    this.cues = [];                // the sounds, by the frame they belong to (tools/demo-sound.js)
   }
   get T() { return this.n / this.fps; }
+  // A sound on this frame. Off camera nothing is heard.
+  cue(kind) { if (this.filming) this.cues.push({ t: this.T, kind }); }
   where() { return ' at ' + this.T.toFixed(2) + 's'; }
 
   async ev(expr) {
@@ -721,6 +729,7 @@ class Director {
   // The camera: zoom so that something in a phone sits at (fx, fy) on the
   // stage, at scale s, over sec.
   async focus(pid, target, o) {
+    if ((o.sec || 0) >= 0.8) this.cue('drift');
     const ok = await this.call('focus', pid, target, Object.assign({}, o, { dur: Math.round((o.sec || 0) * 1000) }));
     if (!ok) throw new Error('focus' + this.where() + ': nothing in ' + pid + ' matches ' + JSON.stringify(target));
   }
@@ -735,6 +744,7 @@ class Director {
     if (!r.inside && !o.anyway) throw new Error('tap' + this.where() + ': ' + JSON.stringify(target) + ' is outside ' + pid + '\'s screen; scroll first');
     let x = r.x + r.w * (o.ax === undefined ? .5 : o.ax), y = r.y + r.h * (o.ay === undefined ? .5 : o.ay);
     await this.call('tap', x, y);
+    this.cue('tap');
     await this.wait(0.17);
     // Measured again just before the press: a phone still settling from a
     // move would otherwise take its target out from under the finger.
@@ -749,6 +759,7 @@ class Director {
   async type(text, per) {
     for (const ch of text) {
       await this.send('Input.insertText', { text: ch });
+      this.cue('key');
       await this.wait(per || 0.11);
     }
   }
@@ -798,34 +809,36 @@ class Director {
   label(pid, text) { return this.call('label', pid, text || null); }
   hilite(pid) { return this.call('hilite', pid); }
   tag(text) { return this.call('tag', text || null); }
-  ff(text, kind) { return this.call('ff', text || null, kind); }
+  ff(text, kind) { if (text) this.cue('tick'); return this.call('ff', text || null, kind); }
   title(key, o) {
+    this.cue('swish');
     console.log('  ' + this.T.toFixed(2).padStart(6) + 's  ' + (o.kicker || '') + ' / ' + String(o.lines[0]).replace(/<[^>]*>/g, ''));
     return this.call('title', key, o);
   }
   untitle(key) { return this.call('untitle', key); }
-  callout(key, o) { return this.call('callout', key, o); }
-  ring(key, o) { return this.call('ring', key, o); }
+  callout(key, o) { this.cue('pop'); return this.call('callout', key, o); }
+  ring(key, o) { this.cue('pop'); return this.call('ring', key, o); }
   unmark(key) { return this.call('unmark', key); }
   // The route board's own dot matrix, for any words its font can draw.
   led(key, lines, o) {
     lines = [].concat(lines);
     const svg = this.P.S.signboardSvg(lines, { id: 'led-' + key + '-' + this.n, pitch: o.pitch || 3, center: true });
     if (!svg) throw new Error('the LED board cannot draw "' + lines.join(' / ') + '": a character has no dots in SIGN_FONT');
+    this.cue('slam');
     return this.call('led', key, svg, o);
   }
   unled(key) { return this.call('unled', key); }
-  flap(key, o) { return this.call('flap', key, o); }
-  setflap(key, value, o) { return this.call('setflap', key, value, o); }
+  flap(key, o) { this.cue('flap'); return this.call('flap', key, o); }
+  setflap(key, value, o) { this.cue('flap'); return this.call('setflap', key, value, o); }
   unflap(key) { return this.call('unflap', key); }
   flowers(o) { return this.call('flowers', o); }
-  burst(x, y, o) { return this.call('burst', x, y, o || {}); }
+  burst(x, y, o) { this.cue('sparkle'); return this.call('burst', x, y, o || {}); }
   card(key, html, o) { return this.call('card', key, html, o || {}); }
   uncard(key) { return this.call('uncard', key); }
   // The livery wipe: in covers the frame (it takes 0.7 s, filmed), out
   // uncovers it again; between the two the script rearranges what is under.
-  async wipeIn() { await this.call('wipe', 'in'); await this.wait(0.7); }
-  wipeOut() { return this.call('wipe', 'out'); }
+  async wipeIn() { this.cue('whoosh'); await this.call('wipe', 'in'); await this.wait(0.7); }
+  wipeOut() { this.cue('whooshOut'); return this.call('wipe', 'out'); }
 }
 
 // ============================================================
@@ -849,6 +862,20 @@ const SETTINGS = {
 };
 // Monday 12 October 2026, 7:12 AM in Manila: inside the morning departures.
 const EPOCH = Date.UTC(2026, 9, 11, 23, 12, 0);
+
+// The cues, synthesized into a track and put under the picture. The video
+// stream is copied, not encoded again.
+async function addSound(file, cues, seconds) {
+  if (!fs.existsSync(file)) throw new Error('--sound needs ' + file + ' rendered first');
+  const wav = file.replace(/\.mp4$/, '.wav'), tmp = file.replace(/\.mp4$/, '.tmp.mp4');
+  fs.writeFileSync(wav, sound.synth(cues, seconds));
+  await new Promise((res, rej) => spawn('ffmpeg', ['-y', '-loglevel', 'error', '-i', file, '-i', wav,
+    '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '160k', '-shortest', '-movflags', '+faststart', tmp],
+    { stdio: ['ignore', 'inherit', 'inherit'] }).on('exit', c => c === 0 ? res() : rej(new Error('ffmpeg exited with ' + c))));
+  fs.renameSync(tmp, file);
+  fs.unlinkSync(wav);
+  console.log('  sound: ' + cues.length + ' cues');
+}
 
 async function render(cdp, base, name, opt) {
   const cut = opt.cuts[name];
@@ -884,14 +911,17 @@ async function render(cdp, base, name, opt) {
 
   let sink = null, ff = null, done = null;
   const file = path.join(opt.out, cut.file);
-  if (!opt.stills) {
+  if (!opt.stills && !opt.soundOnly) {
     ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-c:v', 'mjpeg', '-framerate', String(opt.fps), '-i', '-',
       '-c:v', 'libx264', '-preset', 'slow', '-crf', '23', '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-level:v', '4.1',
       '-movflags', '+faststart', file], { stdio: ['pipe', 'inherit', 'inherit'] });
     done = new Promise((res, rej) => ff.on('exit', c => c === 0 ? res() : rej(new Error('ffmpeg exited with ' + c))));
     sink = ff.stdin;
   }
-  const d = new Director({ send, pending, thrown }, { fps: opt.fps, sink, stills: opt.stills, until: opt.until,
+  // --sound plays the cut again without filming it (an empty list of
+  // stills takes no pictures) only to collect the cues, for a video that is
+  // already rendered: the clock makes the second run frame-for-frame the same.
+  const d = new Director({ send, pending, thrown }, { fps: opt.fps, sink, stills: opt.soundOnly ? [] : opt.stills, until: opt.until,
     out: opt.out, name, kit: opt.kit, P: opt.P, epoch: EPOCH });
   const t0 = Date.now();
   try {
@@ -902,6 +932,7 @@ async function render(cdp, base, name, opt) {
     cdp.listeners.splice(cdp.listeners.indexOf(listen), 1);
   }
   if (ff) { ff.stdin.end(); await done; }
+  if (!opt.stills) await addSound(file, d.cues, d.n / opt.fps);
   await cdp.send('Target.closeTarget', { targetId });
   const secs = d.n / opt.fps;
   console.log('  ' + name + ': ' + secs.toFixed(1) + ' s of video, ' + d.n + ' frames, in ' + ((Date.now() - t0) / 1000).toFixed(0) + ' s' +
@@ -919,9 +950,10 @@ async function main() {
     else if (a === '--fps') opt.fps = +args[++i];
     else if (a === '--stills') opt.stills = args[++i].split(',').map(Number);
     else if (a === '--until') opt.until = +args[++i];
+    else if (a === '--sound') opt.soundOnly = true;
     else if (a === 'all') names.push(...Object.keys(cuts));
     else if (cuts[a]) names.push(a);
-    else { console.error('usage: node tools/render-demo.js [' + Object.keys(cuts).join('|') + '|all] [--out DIR] [--fps N] [--stills S,S] [--until S]'); process.exit(2); }
+    else { console.error('usage: node tools/render-demo.js [' + Object.keys(cuts).join('|') + '|all] [--out DIR] [--fps N] [--stills S,S] [--until S] [--sound]'); process.exit(2); }
   }
   if (!names.length) names.push(...Object.keys(cuts));
   fs.mkdirSync(opt.out, { recursive: true });

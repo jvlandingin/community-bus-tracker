@@ -74,8 +74,10 @@ node tools/render-demo.js    # assets/flyer: the two demo videos (needs ffmpeg t
 The third plays the real `index.html` on one or two phones with the flyer's
 made-up buses, on a stage of moving words and transitions, and films it frame
 by frame; `--stills 6,21.5` saves those seconds as PNGs instead, which is how
-to check a change in a minute rather than ten. Set `CARTO_API_KEY` in the
-environment or its map is watermarked; it never talks to the database.
+to check a change in a minute rather than ten, and `--sound` redoes only the
+interface sounds (`tools/demo-sound.js`) under a video already rendered. Set
+`CARTO_API_KEY` in the environment or its map is watermarked; it never talks
+to the database.
 
 Two more rewrite committed text. `node tools/embed-fonts.js` copies the font
 files in `assets/fonts/` into the three static pages as data URIs; run it after

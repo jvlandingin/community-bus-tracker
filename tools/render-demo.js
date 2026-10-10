@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Renders the demo videos: the real tracker, played with made-up buses and
-// recorded frame by frame, with captions, for the group chat and for the bus
-// company.
+// Renders the demo videos: the real tracker, played with made-up buses on
+// one or two phones, filmed frame by frame on a stage of moving words,
+// signs and transitions, for the group chat and for the bus company.
 //
 //   node tools/render-demo.js                    both cuts, into assets/flyer/
 //   node tools/render-demo.js riders             one cut
@@ -9,24 +9,26 @@
 //
 // --stills saves PNGs of the given seconds instead of a video, which is how
 // to look at a change in a minute rather than ten; --until stops early;
-// --fps changes the frame rate. Each caption's start time is printed.
+// --fps changes the frame rate. Each scene's start time is printed.
 //
 // Outputs, 1080x1920 portrait, H.264 at 30 frames a second, with no sound:
 //   demo-riders.mp4      in the mix of Tagalog and English the group chat
 //                        uses, with the flyer's own lines wherever the flyer
-//                        has one: watching, saving a stop, saying salamat,
-//                        sharing from the bus, the ticket at the end
-//   demo-operators.mp4   in English, with the briefing's lines: sharing in
-//                        one tap, what riders see, what is never recorded,
-//                        and who to tell if the company wants it changed
+//                        has one
+//   demo-operators.mp4   in English, with the briefing's lines
 //
-// Nothing in a video is drawn by hand. The stage is a page made here, with
-// the real index.html running in a phone-sized frame on it, so the videos
-// show what the tracker ships today and re-rendering is how they are kept
-// current: the same rule as the flyer's PDF and the icons. A change to the
-// tracker's layout can break a step below (a tap on something that moved),
-// and then the render stops and names the step rather than recording the
-// wrong thing.
+// Three files make them. This one is the engine: the browser, the clock,
+// the stand-in database and the director the scripts are written in.
+// tools/demo-stage.html is the stage, the moving graphics around the phones.
+// tools/demo-cuts.js holds the two scripts: what happens when, and the words.
+//
+// Nothing on a phone's screen is drawn for the video. Each phone is the
+// real index.html in a frame on the stage, tapped through with the
+// browser's own input events, so the videos show what the tracker ships
+// today and re-rendering is how they are kept current: the same rule as
+// the flyer's PDF and the icons. A change to the tracker's layout can break
+// a step (a tap on something that moved), and then the render stops and
+// says which rather than recording the wrong thing.
 //
 // The buses are made up, and every frame that shows the tracker says so, the
 // way the flyer's example screen does: "Halimbawa · example screen" in the
@@ -36,30 +38,34 @@
 // what this project's rules would not forgive. Sped-up stretches say so too,
 // and the buses are the flyer's example ones, at the flyer's example places.
 //
-// No request reaches the database. The page's calls to Supabase are answered
-// by a stand-in inside the page (prelude(), below), anything else addressed
-// to Supabase is refused, and the browser is told to block the host besides,
-// so rendering can never put a bus on anybody's real map. The map tiles are
-// real: they come from CARTO, as in the app, with CARTO_API_KEY taken from
-// the environment the way the Netlify build takes it
-// (tools/write-basemap-key.js). Without it the tiles carry CARTO's
-// "API KEY REQUIRED" watermark, which is fine for a draft and not for a post.
+// No request reaches the database. The pages' calls to Supabase are answered
+// by a stand-in inside the browser (prelude(), below), anything else
+// addressed to Supabase is refused, and the browser is told to block the
+// host besides, so rendering can never put a bus on anybody's real map. Two
+// phones on one stage are two people on one route: the stand-in keeps a row
+// per sharing phone, so a salamat tapped on one phone arrives on the other
+// by the same rules the SQL keeps. The map tiles are real: they come from
+// CARTO, as in the app, with CARTO_API_KEY taken from the environment the
+// way the Netlify build takes it (tools/write-basemap-key.js). Without it the
+// tiles carry CARTO's "API KEY REQUIRED" watermark, which is fine for a
+// draft and not for a post.
 //
-// The clock is the page's own, replaced. Date, the timers and animation
+// The clock is the pages' own, replaced. Date, the timers and animation
 // frames move only when the renderer advances them, one video frame at a
-// time, and CSS animations are paused and placed by hand on every frame. That
-// is what keeps the video smooth on a slow machine and the same on every run,
-// and what lets a script skip two hours ahead for the ticket.
+// time, and every CSS animation, the stage's and the tracker's alike, is
+// frozen and placed by hand on each frame. That is what keeps the video
+// smooth on a slow machine and the same on every run, and what lets a script
+// skip two hours ahead for the ticket.
 //
-// The scripts (CUTS, below) name this route's stops, so a fork rewrites
-// them. The boards, the link and its QR code come from index.html and
-// flyer.html, so they follow those.
+// The scripts name this route's stops, so a fork rewrites them. The boards,
+// the link and its QR code come from index.html and flyer.html, so they
+// follow those.
 //
 // Needs Chromium (chrome-headless-shell first, as in render-flyer.sh) and
 // ffmpeg with libx264, and nothing installed: like the other tools it drives
 // the browser directly over its debugging pipe, because there is
-// deliberately no package.json in this repository. Both cuts take about ten
-// minutes, nearly all of it screenshots.
+// deliberately no package.json in this repository. Both cuts take about
+// twenty minutes, nearly all of it screenshots.
 'use strict';
 const fs = require('fs');
 const os = require('os');
@@ -195,10 +201,11 @@ function serve(pages) {
 // 3. What runs in each frame before the page's own scripts
 // ============================================================
 // A clock that moves only when told to, a stand-in for the database, and a
-// GPS that reports wherever the script has put the bus. It is installed in
-// the stage and again in the tracker's frame, which borrows the stage's
-// clock, so the two move together. This function is sent to the browser as
-// source text and runs there, not here.
+// GPS that reports wherever the script has put each phone's bus. It is
+// installed in the stage and again in every phone's frame, which borrows the
+// stage's clock and database, so they all move together and two phones are
+// two people on one route. This function is sent to the browser as source
+// text and runs there, not here.
 function prelude(cfg) {
   if (window.__vclockWin === window) return;
   let C = null;
@@ -239,7 +246,7 @@ function prelude(cfg) {
       try { fn.apply(self, args || []); }
       catch (e) { K.errors.push(String((e && e.stack) || e)); }
     };
-    // dt of video time, at rate times as fast for the page: timers and
+    // dt of video time, at rate times as fast for the pages: timers and
     // Date follow the rate, CSS animations never do, so a sped-up stretch
     // still has its glides and pops at their own speed.
     K.advance = async (dt, rate) => {
@@ -279,20 +286,24 @@ function prelude(cfg) {
       }
     };
     // CSS animations and transitions run on the compositor's own clock, so
-    // each is paused when first seen and then placed by hand on every frame,
-    // from how long this clock says it has been running.
+    // each is frozen when first seen and then placed by hand on every frame,
+    // from how long this clock says it has been running. Frozen with a
+    // playback rate of zero, never with pause(): Chromium stops cancelling a
+    // CSS animation once script has paused it, so a class taken off would
+    // leave its animation applied, and one put back would not restart. At
+    // its end each is let go to finish the way it would have by itself.
     K.stepAnimations = () => {
       for (const win of K.wins) {
         let list = [];
         try { list = win.document.getAnimations(); } catch (e) { continue; }
         for (const a of list) {
           let s = K.anims.get(a);
-          if (!s) { s = { start: K.at, done: false }; K.anims.set(a, s); try { a.pause(); } catch (e) {} }
+          if (!s) { s = { start: K.at, done: false }; K.anims.set(a, s); try { a.playbackRate = 0; } catch (e) {} }
           if (s.done) continue;
           const elapsed = K.at - s.start;
           let end = Infinity;
           try { end = a.effect.getComputedTiming().endTime; } catch (e) {}
-          if (elapsed >= end) { s.done = true; try { a.finish(); } catch (e) {} }
+          if (elapsed >= end) { s.done = true; try { a.playbackRate = 1; a.finish(); } catch (e) {} }
           else { try { a.currentTime = elapsed; } catch (e) {} }
         }
       }
@@ -303,24 +314,29 @@ function prelude(cfg) {
     return K;
   }
 
-  // The database, as far as the tracker can tell. It holds what the script
-  // puts in it and answers the calls index.html makes; nothing is sent.
+  // The database, as far as the tracker can tell: the script's made-up
+  // buses, and a row for every phone that is sharing, keyed by its session
+  // the way bus_positions is. It answers the calls index.html makes, by the
+  // same rules the SQL keeps (sql/04, sql/07): a sharer's own row comes back
+  // marked as theirs with its salamat count, everybody else's never shows a
+  // count, a rider's second salamat for one bus is ignored, and a row past
+  // the route's expiry is left out. Nothing is sent anywhere.
   function makeDemo(K) {
-    const D = { settings: cfg.settings, notice: null, buses: [], me: null, myThanks: 0, gps: null };
+    const D = { settings: cfg.settings, notice: null, buses: [], gps: {}, sharers: new Map(), thanked: new Set(), n: 0 };
     const iso = ms => new K.real.Date(ms).toISOString();
-    // Rows past the route's expiry are left out, as get_positions does.
+    const expiry = () => (D.settings.bus_expiry_min || 10) * 60000;
     D.positions = self => {
       const now = K.now();
-      const rows = D.buses.filter(b => (b.age || 0) < (D.settings.bus_expiry_min || 10) * 60).map(b => ({
+      const rows = D.buses.filter(b => (b.age || 0) * 1000 < expiry()).map(b => ({
         pub_id: b.pub_id, lat: b.lat, lng: b.lng, speed: b.speed || 0,
         direction: b.direction, bus_label: b.bus_label || null,
         updated_at: iso(now - (b.age || 0) * 1000), is_self: false, thanks: null
       }));
-      if (D.me) {
-        const mine = !!self && self === D.me.session;
-        rows.push({ pub_id: 'demo0000000000000000000000000me1', lat: D.me.lat, lng: D.me.lng,
-          speed: D.me.speed, direction: D.me.direction, bus_label: D.me.label,
-          updated_at: iso(D.me.at), is_self: mine, thanks: mine ? D.myThanks : null });
+      for (const [session, s] of D.sharers) {
+        if (now - s.at > expiry()) continue;
+        const mine = !!self && self === session;
+        rows.push({ pub_id: s.pub, lat: s.lat, lng: s.lng, speed: s.speed, direction: s.direction,
+          bus_label: s.label, updated_at: iso(s.at), is_self: mine, thanks: mine ? s.thanks : null });
       }
       return rows;
     };
@@ -334,11 +350,20 @@ function prelude(cfg) {
       else if (fn === 'get_sightings') data = [];
       else if (fn === 'route_exists') data = true;
       else if (fn === 'set_bus_position') {
-        D.me = { session: a.p_session, lat: a.p_lat, lng: a.p_lng, speed: a.p_speed,
-                 direction: a.p_direction, label: a.p_label, at: K.now() };
-      } else if (fn === 'clear_bus_position') { D.me = null; D.myThanks = 0; }
+        let s = D.sharers.get(a.p_session);
+        if (!s) { s = { pub: ('d3m0sharer' + (++D.n)).padEnd(32, '0'), thanks: 0 }; D.sharers.set(a.p_session, s); }
+        Object.assign(s, { lat: a.p_lat, lng: a.p_lng, speed: a.p_speed, direction: a.p_direction, label: a.p_label, at: K.now() });
+      } else if (fn === 'clear_bus_position') D.sharers.delete(a.p_session);
+      else if (fn === 'say_thanks') {
+        const key = a.p_pub + ' ' + a.p_watcher;
+        for (const s of D.sharers.values()) {
+          if (s.pub === a.p_pub && !D.thanked.has(key)) { D.thanked.add(key); s.thanks++; }
+        }
+      }
       return Promise.resolve(answer(JSON.stringify(data), 'application/json'));
     };
+    // Riders on other phones, thanking a bus one of the script's phones is sharing.
+    D.addThanks = (session, n) => { const s = D.sharers.get(session); if (s) s.thanks += n; };
     return D;
   }
 
@@ -356,6 +381,31 @@ function prelude(cfg) {
 
   function install(win) {
     const C = win.__vclock;
+    // Which phone this frame is, from its address: each one is a different
+    // person, so each keeps its own localStorage and sessionStorage, in
+    // memory, seeded from the address. Two frames of one origin would
+    // otherwise share a session id and be the same sharer.
+    let pid = null;
+    try {
+      const q = new URLSearchParams(win.location.search);
+      pid = q.get('phone');
+      if (pid) {
+        const seed = JSON.parse(q.get('store') || '{}');
+        const store = init => {
+          const m = new Map(Object.entries(init || {}));
+          return {
+            getItem: k => m.has(String(k)) ? m.get(String(k)) : null,
+            setItem: (k, v) => { m.set(String(k), String(v)); },
+            removeItem: k => { m.delete(String(k)); },
+            clear: () => m.clear(),
+            key: i => Array.from(m.keys())[i] || null,
+            get length() { return m.size; }
+          };
+        };
+        Object.defineProperty(win, 'localStorage', { configurable: true, value: store(seed.local) });
+        Object.defineProperty(win, 'sessionStorage', { configurable: true, value: store(seed.session) });
+      }
+    } catch (e) {}
     const RealDate = win.Date;
     function FakeDate(...a) {
       if (!new.target) return new RealDate(C.now()).toString();
@@ -394,7 +444,7 @@ function prelude(cfg) {
       const beacon = win.navigator.sendBeacon && win.navigator.sendBeacon.bind(win.navigator);
       win.navigator.sendBeacon = (url, data) => /supabase/.test(String(url)) ? true : (beacon ? beacon(url, data) : false);
     } catch (e) {}
-    // The sharer's GPS, once a second, from wherever the script put the bus.
+    // This phone's GPS, once a second, from wherever the script put its bus.
     const geo = {
       getCurrentPosition(ok, fail) {
         C.add(win, () => { const p = fix(); if (p) ok(p); else if (fail) fail({ code: 2 }); }, 600, [], false);
@@ -403,7 +453,7 @@ function prelude(cfg) {
       clearWatch(id) { C.timers.delete(id); }
     };
     function fix() {
-      const g = C.demo.gps;
+      const g = pid && C.demo.gps && C.demo.gps[pid];
       if (!g) return null;
       return { coords: { latitude: g.lat, longitude: g.lng, accuracy: 8, speed: g.speed || 0,
         altitude: null, altitudeAccuracy: null, heading: null }, timestamp: C.now() };
@@ -476,8 +526,13 @@ function routeKit() {
 }
 
 // ============================================================
-// 5. The stage: the phone, the captions, the label, the cards
+// 5. The stage, with the tracker's own look put into it
 // ============================================================
+// tools/demo-stage.html keeps no copy of the tracker's fonts, colours or
+// icons: they are taken out of index.html here, the way styleguide.html
+// takes them, and put in where the stage's two placeholders are. The words
+// on the route board, the link and its QR code come from the same places
+// as the flyer's.
 function pieces() {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const css = html.slice(html.indexOf('<style>') + 7, html.indexOf('</style>'));
@@ -494,218 +549,27 @@ function pieces() {
   const cfg = fs.readFileSync(path.join(ROOT, 'config.txt'), 'utf8');
   const email = ((cfg.match(/^CONTACT_EMAIL\s*=\s*(.*)$/m) || [])[1] || '').trim();
   if (!root || !sprite || !qr || !url || words.length < 1) throw new Error('could not read the tokens, icons, route words, link or QR code out of index.html and flyer.html');
-  const S = renderer();
-  return { faces, root, sprite, words, qr, url, email, S };
-}
-
-const STAGE_CSS = `
-  html,body{margin:0; width:${W}px; height:${H}px; overflow:hidden; background:var(--paper); color:var(--ink);
-    font-family:var(--font-ui); -webkit-font-smoothing:antialiased;}
-  .gi{display:inline-block; width:1.2em; height:1.2em; vertical-align:-.22em; flex:0 0 auto;}
-  #cap{position:absolute; left:30px; right:30px; top:26px; height:150px;}
-  #cap .c{position:absolute; left:0; right:0; top:0;}
-  #cap .k{display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; letter-spacing:.14em;
-    text-transform:uppercase; color:var(--gold-deep);}
-  #cap .k b{display:inline-flex; align-items:center; justify-content:center; width:21px; height:21px; border-radius:50%;
-    background:var(--maroon); color:#fff; font-size:12px; letter-spacing:0;}
-  #cap .t{font-size:31px; font-weight:700; line-height:1.08; margin-top:8px; letter-spacing:-.005em;}
-  #cap .t em{font-style:normal; color:var(--brand-ink);}
-  #cap .b{font-family:var(--font-text); font-size:16.5px; line-height:1.38; color:var(--muted); margin-top:8px;}
-  #cap .b b{color:var(--ink); font-weight:600;}
-  #cap .c.in{animation:capin .5s var(--ease) .22s both;}
-  #cap .c.out{animation:capout .22s var(--ease) both;}
-  @keyframes capin{from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;}}
-  @keyframes capout{from{opacity:1;} to{opacity:0; transform:translateY(-8px);}}
-  #eg{position:absolute; left:30px; right:30px; top:181px; display:flex; align-items:center; gap:10px;
-    font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); white-space:nowrap;}
-  #eg:before, #eg:after{content:""; flex:1; height:1px; background:#dcd3c6;}
-  #phone{position:absolute; left:56px; top:204px; width:428px; height:748px; border-radius:38px; background:#211a18;
-    box-shadow:0 36px 60px -30px rgba(43,35,32,.6), inset 0 0 0 1.5px #3b312d;}
-  #screen{position:absolute; left:8px; top:8px; width:412px; height:732px; border-radius:31px; overflow:hidden; background:var(--paper);}
-  #addr{height:30px; display:flex; align-items:center; justify-content:center; gap:5px; background:#ece6dc;
-    font-family:var(--font-text); font-size:12.5px; font-weight:600; color:#51463f;}
-  #addr .gi{width:13px; height:13px;}
-  #app{display:block; border:0; width:412px; height:702px; background:var(--paper);}
-  #ff{position:absolute; right:30px; top:22px; height:22px; padding:0 9px 0 8px; border-radius:999px; z-index:12;
-    background:var(--maroon); color:#fff; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
-    display:flex; align-items:center; gap:5px; opacity:0; transition:opacity .3s var(--ease);}
-  #ff.on{opacity:1;}
-  #ff svg{width:13px; height:13px; fill:#fff;}
-  #ring{position:absolute; border-radius:16px; border:3px solid var(--gold); z-index:15; pointer-events:none; opacity:0;
-    box-shadow:0 0 0 5px rgba(227,154,28,.2), 0 0 26px rgba(227,154,28,.5);
-    transition:opacity .35s var(--ease), left .45s var(--ease), top .45s var(--ease), width .45s var(--ease), height .45s var(--ease);}
-  #ring.on{opacity:1;}
-  .tap{position:absolute; width:52px; height:52px; margin:-26px 0 0 -26px; z-index:20; pointer-events:none;}
-  .tap:before, .tap:after{content:""; position:absolute; inset:0; border-radius:50%;}
-  .tap:before{background:rgba(255,255,255,.6); border:2px solid rgba(43,35,32,.55); animation:press .75s var(--ease) both;}
-  .tap:after{border:2.5px solid rgba(43,35,32,.5); animation:spread .75s var(--ease) both;}
-  @keyframes press{0%{transform:scale(.45); opacity:0;} 22%{transform:scale(.82); opacity:1;} 55%{transform:scale(.7); opacity:1;} 100%{transform:scale(.7); opacity:0;}}
-  @keyframes spread{0%, 30%{transform:scale(.7); opacity:0;} 42%{opacity:.9;} 100%{transform:scale(1.75); opacity:0;}}
-
-  #card{position:absolute; inset:0; z-index:30; pointer-events:none;}
-  .cd{position:absolute; inset:0; background:var(--paper); overflow:hidden; display:flex; flex-direction:column;}
-  .cd.in{animation:cdin .55s var(--ease) both;}
-  .cd.out{animation:cdout .5s var(--ease) both;}
-  @keyframes cdin{from{opacity:0;} to{opacity:1;}}
-  @keyframes cdout{from{opacity:1;} to{opacity:0;}}
-  .cd .rise{animation:rise .7s var(--ease) both;}
-  .cd .rise.d1{animation-delay:.15s;} .cd .rise.d2{animation-delay:.35s;} .cd .rise.d3{animation-delay:.6s;}
-  .cd .rise.d4{animation-delay:.9s;} .cd .rise.d5{animation-delay:1.2s;} .cd .rise.d6{animation-delay:1.6s;}
-  @keyframes rise{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;}}
-  /* The band every page of this project opens with: maroon, the gold trim
-     a bus in this livery carries, and the route on its LED board. */
-  .cd .band{flex:0 0 auto; background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); box-shadow:inset 0 -3px 0 var(--gold);
-    color:#fff; padding:30px 24px 20px; text-align:center;}
-  .cd .board{display:inline-block; padding:4px; border-radius:var(--r-s);
-    background:radial-gradient(120% 140% at 30% 0%, #1d1513 0%, #0b0807 70%);
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), inset 0 3px 10px rgba(0,0,0,.75), 0 1px 0 rgba(255,255,255,.08);}
-  .cd .board svg{display:block;}
-  .cd .sub{font-size:12px; font-weight:600; letter-spacing:.06em; opacity:.88; margin-top:12px;}
-  .cd .pic{flex:0 0 auto; height:212px; position:relative; overflow:hidden;}
-  .cd .pic.low{height:150px;}
-  .cd .pic.low > svg{top:-40px;}
-  .cd .pic > svg{position:absolute; left:50%; top:0; width:716px; height:auto; transform:translateX(-50%);}
-  .cd .mid{flex:1 1 auto; display:flex; flex-direction:column; justify-content:center; padding:0 34px;}
-  .cd .foot{flex:0 0 auto; padding:0 30px 30px; text-align:center;}
-  .cd h1{font-size:62px; line-height:.98; font-weight:700; text-align:center; margin:0; letter-spacing:-.012em;}
-  .cd h1.s{font-size:44px; line-height:1.04;}
-  .cd h1 em, .cd h2 em{font-style:normal; color:var(--brand-ink);}
-  .cd h2{font-size:40px; line-height:1.05; font-weight:700; margin:0; letter-spacing:-.006em;}
-  .cd .lede{font-family:var(--font-text); font-size:20px; line-height:1.42; color:var(--muted); text-align:center; margin:20px 4px 0;}
-  .cd .eg{font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);}
-  .cd .kick{font-size:13px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-deep); margin:0 0 12px;}
-  .cd .kick.c{text-align:center;}
-  .cd ul{list-style:none; margin:28px 0 0; padding:0;}
-  .cd li{position:relative; font-family:var(--font-text); font-size:21.5px; line-height:1.42; color:var(--ink); padding:0 0 0 32px; margin:0 0 22px;}
-  .cd li:before{content:""; position:absolute; left:2px; top:.45em; width:11px; height:11px; border-radius:50%; background:var(--maroon);}
-  .cd li b{font-weight:600;}
-  .cd .note{font-family:var(--font-text); font-size:19px; line-height:1.45; color:var(--ink); margin:18px 0 0;}
-  .cd .url{font-size:31px; font-weight:700; color:var(--brand-ink); text-align:center; letter-spacing:-.005em;}
-  .cd .qrbig{width:236px; height:236px; margin:24px auto 0; background:#fff; border-radius:var(--r-l); padding:13px; box-sizing:border-box;
-    border:1px solid var(--line); box-shadow:var(--sh-1);}
-  .cd .qrbig svg{display:block; width:100%; height:100%;}
-  .cd .n{font-family:var(--font-text); font-size:16.5px; line-height:1.42; color:var(--muted); text-align:center; margin:16px 0 0;}
-  .cd .pass{font-family:var(--font-text); font-size:19px; line-height:1.42; color:var(--ink); text-align:center; margin:26px 0 0;}
-  .cd .pts{display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin:24px 0 0;}
-  .cd .pts span{font-size:15px; font-weight:700; padding:8px 14px; border-radius:999px; background:var(--surface);
-    border:1.5px solid var(--line); color:var(--ink);}
-  .cd .cta{margin:28px 0 0; border-radius:var(--r-l); background:var(--maroon); color:#fff; padding:22px; display:flex; gap:18px; align-items:center;}
-  .cd .cta .w{flex:1; min-width:0;}
-  .cd .cta .kk{font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--gold);}
-  .cd .cta .u{font-size:23px; font-weight:700; line-height:1.15; margin-top:6px; word-break:break-word;}
-  .cd .cta .n2{font-family:var(--font-text); font-size:15px; line-height:1.4; margin-top:10px; opacity:.92;}
-  .cd .cta .qrw{flex:0 0 120px; text-align:center;}
-  .cd .cta .qr{width:120px; height:120px; background:#fff; border-radius:var(--r-m); padding:7px; box-sizing:border-box;}
-  .cd .cta .qc{font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--gold); margin-top:7px;}
-  .cd .cta .qr svg{display:block; width:100%; height:100%;}
-  .cd .fine{font-family:var(--font-text); font-size:13.5px; line-height:1.5; color:var(--muted); text-align:center; margin:0;}
-  .cd .fine b{color:var(--ink); font-weight:600;}
-`;
-
-function stageHtml(cut, P) {
-  return `<!DOCTYPE html><html lang="${cut.lang}"><head><meta charset="utf-8"><title>Demo stage</title>
-<style>${P.faces}\n${P.root}\n${STAGE_CSS}</style></head><body>
-${P.sprite}
-<div id="cap"></div>
-<div id="eg">${cut.label}</div>
-<div id="phone"><div id="screen"><div id="addr"><svg class="gi" aria-hidden="true"><use href="#i-lock"/></svg>${P.url}</div><iframe id="app" title="Bus Tracker"></iframe></div></div>
-<div id="ff"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5v13l9-6.5zM12 5.5v13l9-6.5z"/></svg><span></span></div>
-<div id="ring"></div>
-<div id="taps"></div>
-<div id="card"></div>
-<script>
-(function(){
-  const C = window.__vclock;
-  const $ = id => document.getElementById(id);
-  const app = () => $('app').contentWindow;
-  // An element in the tracker, by selector or by an expression run in its
-  // own scope, where its let-bindings (map, busMarkers) can be seen.
-  function find(t){
-    const w = app();
-    if (typeof t === 'string') return w.document.querySelector(t);
-    return w.eval(t.js);
-  }
-  function rect(t){
-    const el = find(t);
-    if (!el || !el.getBoundingClientRect) return null;
-    const r = el.getBoundingClientRect(), f = $('app').getBoundingClientRect();
-    if (!r.width && !r.height) return null;
-    return { x: f.left + r.left, y: f.top + r.top, w: r.width, h: r.height, ft: f.top,
-             inside: r.top >= 0 && r.bottom <= f.height && r.left >= 0 && r.right <= f.width };
-  }
-  window.__stage = {
-    app, rect,
-    open(url){ $('app').src = url; },
-    booted(){
-      const d = app().document;
-      const t = d && d.getElementById('ticks');
-      return !!(t && t.innerHTML.trim()) && d.readyState === 'complete';
-    },
-    fontsReady(){ return Promise.all([document.fonts.ready, app().document.fonts.ready]).then(() => true); },
-    caption(html){
-      const box = $('cap');
-      [].slice.call(box.children).forEach(el => {
-        el.classList.add('out');
-        setTimeout(() => el.remove(), 240);
-      });
-      if (!html) return;
-      const c = document.createElement('div');
-      c.className = 'c in'; c.innerHTML = html;
-      box.appendChild(c);
-    },
-    card(html, instant){
-      const box = $('card');
-      [].slice.call(box.children).forEach(el => {
-        el.classList.remove('in'); el.classList.add('out');
-        setTimeout(() => el.remove(), 520);
-      });
-      if (!html) return;
-      const c = document.createElement('div');
-      c.className = instant ? 'cd' : 'cd in'; c.innerHTML = html;
-      box.appendChild(c);
-    },
-    tap(x, y){
-      const t = document.createElement('div');
-      t.className = 'tap'; t.style.left = x + 'px'; t.style.top = y + 'px';
-      $('taps').appendChild(t);
-      setTimeout(() => t.remove(), 800);
-    },
-    ring(r){
-      const el = $('ring');
-      if (!r){ el.classList.remove('on'); return; }
-      const p = 7;
-      el.style.left = (r.x - p) + 'px'; el.style.top = (r.y - p) + 'px';
-      el.style.width = (r.w + 2*p - 6) + 'px'; el.style.height = (r.h + 2*p - 6) + 'px';
-      el.classList.add('on');
-    },
-    // The words stay while the chip fades out, so it never fades as an
-    // empty pill.
-    fastForward(text){
-      if (text) $('ff').querySelector('span').textContent = text;
-      $('ff').classList.toggle('on', !!text);
-    },
-    scrollTo(y){ app().scrollTo(0, y); },
-    scrollY(){ return app().scrollY; },
-    async frame(dt, rate, state){
-      if (state) Object.assign(C.demo, state);
-      await C.advance(dt, rate);
-      await C.painted();
-      return { errors: C.errors.splice(0) };
-    }
+  const stage = fs.readFileSync(path.join(__dirname, 'demo-stage.html'), 'utf8');
+  if (stage.indexOf('/*TOKENS*/') < 0 || stage.indexOf('<!--SPRITE-->') < 0) throw new Error('tools/demo-stage.html has lost its placeholders');
+  return {
+    faces, root, sprite, words, qr, url, email, S: renderer(),
+    stage: stage.replace('/*TOKENS*/', faces + '\n' + root).replace('<!--SPRITE-->', sprite)
   };
-})();
-</script>
-</body></html>`;
 }
 
 // ============================================================
-// 6. The director: frames, taps, waits and moving buses
+// 6. The director: frames, phones, taps, words and moving buses
 // ============================================================
+// What tools/demo-cuts.js writes its scripts in. Every call that moves
+// something starts it and returns; wait() is what lets time pass, one
+// frame at a time, and each frame is filmed.
 class Stop extends Error {}
 
 class Director {
   constructor(page, opt) {
-    Object.assign(this, page);
+    this.send = page.send;
+    this.pending = page.pending;
+    this.thrown = page.thrown;
     this.fps = opt.fps;
     this.sink = opt.sink;
     this.stills = opt.stills;       // seconds to save as PNG, or null for a video
@@ -713,26 +577,30 @@ class Director {
     this.out = opt.out;
     this.name = opt.name;
     this.kit = opt.kit;
+    this.P = opt.P;
     this.n = 0;
     this.rate = 1;
-    this.vt = opt.epoch;            // the page's clock, mirrored here
+    this.filming = true;
+    this.vt = opt.epoch;            // the pages' clock, mirrored here
     this.buses = new Map();
-    this.track = null;              // where the sharer's GPS is going
-    this.thanks = 0;
+    this.tracks = new Map();        // where each phone's GPS is going
+    this.phones = [];
   }
   get T() { return this.n / this.fps; }
+  where() { return ' at ' + this.T.toFixed(2) + 's'; }
 
   async ev(expr) {
     const r = await this.send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });
     if (r.exceptionDetails) {
       const d = r.exceptionDetails;
-      throw new Error('in the page: ' + ((d.exception && d.exception.description) || d.text));
+      throw new Error('in the page' + this.where() + ': ' + ((d.exception && d.exception.description) || d.text));
     }
     return r.result.value;
   }
-  app(js) { return this.ev('__stage.app().eval(' + JSON.stringify(js) + ')'); }
+  call(fn, ...args) { return this.ev('__stage.' + fn + '(' + args.map(a => JSON.stringify(a === undefined ? null : a)).join(',') + ')'); }
+  app(pid, js) { return this.ev('__stage.app(' + JSON.stringify(pid) + ').eval(' + JSON.stringify(js) + ')'); }
 
-  // ---- what the database says, this frame --------------------------------
+  // ---- what the database and the GPS say, this frame ----------------------
   rows() {
     const out = [];
     for (const [id, b] of this.buses) {
@@ -741,8 +609,7 @@ class Director {
       // A live bus wrote a few seconds ago, over and over; a stale one
       // stopped writing and its age only grows.
       const age = b.every ? ((this.vt / 1000 + b.phase) % b.every) : b.age + (this.vt - b.v0) / 1000;
-      const moving = f > 0 && f < 1;
-      out.push({ pub_id: id, lat: p.lat, lng: p.lng, direction: b.dir, bus_label: b.label, age, speed: moving ? 8.5 : 0 });
+      out.push({ pub_id: id, lat: p.lat, lng: p.lng, direction: b.dir, bus_label: b.label, age, speed: f > 0 && f < 1 ? 8.5 : 0 });
       for (let i = 1; i < (b.count || 1); i++) {
         out.push({ pub_id: id + 'x' + i, lat: p.lat + 0.00022 * i, lng: p.lng + 0.00015 * i, direction: b.dir,
           bus_label: null, age: age + 9 * i, speed: 0 });
@@ -751,15 +618,18 @@ class Director {
     return out;
   }
   gpsNow() {
-    const t = this.track;
-    if (!t) return null;
-    const f = Math.max(0, Math.min(1, (this.vt - t.v0) / Math.max(1, t.v1 - t.v0)));
-    const p = t.road.at(t.d0 + (t.d1 - t.d0) * f);
-    return { lat: p.lat, lng: p.lng, speed: f < 1 ? 9 : 0 };
+    const out = {};
+    for (const [pid, t] of this.tracks) {
+      const f = Math.max(0, Math.min(1, (this.vt - t.v0) / Math.max(1, t.v1 - t.v0)));
+      const p = t.road.at(t.d0 + (t.d1 - t.d0) * f);
+      out[pid] = { lat: p.lat, lng: p.lng, speed: f < 1 ? 9 : 0 };
+    }
+    return out;
   }
+  state() { return { buses: this.rows(), gps: this.gpsNow() }; }
 
   // A made-up bus on a road (stop names, in the order it drives them), from
-  // where the chain reads km0 to where it reads km1 over secs of the page's
+  // where the chain reads km0 to where it reads km1 over secs of the pages'
   // time. Live ones "write" every few seconds; a stale one stopped writing.
   bus(id, o) {
     const road = this.kit.road(o.road);
@@ -769,25 +639,24 @@ class Director {
       every: o.stale ? 0 : (o.every || 6), phase: o.phase || 0, age: o.age || 0 });
   }
   unbus(id) { this.buses.delete(id); }
-  gps(o) {
-    if (!o) { this.track = null; return; }
+  // Where a phone's GPS says it is, moving the same way along a road.
+  gps(pid, o) {
+    if (!o) { this.tracks.delete(pid); return; }
     const road = this.kit.road(o.road);
-    this.track = { road, d0: road.find(o.km0), d1: road.find(o.km1 === undefined ? o.km0 : o.km1),
-      v0: this.vt, v1: this.vt + (o.secs || 0) * 1000 };
+    this.tracks.set(pid, { road, d0: road.find(o.km0), d1: road.find(o.km1 === undefined ? o.km0 : o.km1),
+      v0: this.vt, v1: this.vt + (o.secs || 0) * 1000 });
   }
 
-  // ---- frames -------------------------------------------------------------
+  // ---- frames -----------------------------------------------------------------
   async frame() {
-    if (this.until !== null && this.T >= this.until) throw new Stop();
+    if (this.filming && this.until !== null && this.T >= this.until) throw new Stop();
     const dt = 1000 / this.fps;
-    const state = { buses: this.rows(), gps: this.gpsNow(), myThanks: this.thanks };
-    const r = await this.ev('__stage.frame(' + dt + ',' + this.rate + ',' + JSON.stringify(state) + ')');
-    if (r.errors.length) throw new Error('the tracker threw at ' + this.T.toFixed(2) + 's:\n' + r.errors.join('\n'));
-    if (this.thrown.length) throw new Error('the page threw at ' + this.T.toFixed(2) + 's:\n' + this.thrown.splice(0).join('\n'));
+    const r = await this.ev('__stage.frame(' + dt + ',' + this.rate + ',' + JSON.stringify(this.state()) + ')');
+    if (r.errors.length) throw new Error('the tracker threw' + this.where() + ':\n' + r.errors.join('\n'));
+    if (this.thrown.length) throw new Error('the page threw' + this.where() + ':\n' + this.thrown.splice(0).join('\n'));
     this.vt += dt * this.rate;
     await this.idle();
-    await this.capture();
-    this.n++;
+    if (this.filming) { await this.capture(); this.n++; }
   }
   async idle() {
     const t0 = Date.now();
@@ -807,46 +676,75 @@ class Director {
     const shot = await this.send('Page.captureScreenshot', { format: 'jpeg', quality: 94, optimizeForSpeed: true });
     if (!this.sink.write(Buffer.from(shot.data, 'base64'))) await new Promise(r => this.sink.once('drain', r));
   }
-  async wait(sec) {
-    const end = this.n + Math.round(sec * this.fps);
-    while (this.n < end) await this.frame();
+  // Let sec of video pass. each(T), if given, runs before every frame: it
+  // is how a script keeps a counter in step with what a phone shows.
+  async wait(sec, each) {
+    const frames = Math.round(sec * this.fps);
+    for (let i = 0; i < frames; i++) {
+      if (each) await each(this.T);
+      await this.frame();
+    }
+  }
+  // Time that passes off camera: setting up before the first frame.
+  async offCamera(sec) {
+    this.filming = false;
+    try { for (let i = 0; i < Math.round(sec * this.fps); i++) await this.frame(); }
+    finally { this.filming = true; }
   }
 
-  // ---- what the viewer reads ------------------------------------------------
-  say(o) {
-    console.log('  ' + this.T.toFixed(2).padStart(6) + 's  ' + (o.k || o.t || ''));
-    const step = o.n ? '<b>' + o.n + '</b>' : '';
-    const html = (o.k ? '<div class="k">' + step + o.k + '</div>' : '') +
-      (o.t ? '<div class="t">' + o.t + '</div>' : '') + (o.b ? '<div class="b">' + o.b + '</div>' : '');
-    return this.ev('__stage.caption(' + JSON.stringify(html) + ')');
+  // ---- phones -------------------------------------------------------------------
+  // Each phone is index.html in a frame on the stage, a person of its own:
+  // its own storage (seeded with store), its own GPS, and the share key in
+  // its link the way the group chat's link carries one. The address bar
+  // shows only the host, never the key.
+  phone(pid, o) {
+    o = o || {};
+    const q = '?phone=' + encodeURIComponent(pid) + (o.store ? '&store=' + encodeURIComponent(JSON.stringify(o.store)) : '');
+    this.phones.push(pid);
+    return this.call('phone', pid, { url: '/index.html' + q + '#k=demo-share-key', host: this.P.url, pose: o.pose, label: o.label });
   }
-  // A full-frame card over everything. The first one of a video is there
-  // from its first frame, so it is not faded in over the phone.
-  card(html, instant) { return this.ev('__stage.card(' + JSON.stringify(html || '') + ',' + !!instant + ')'); }
-  fastForward(text) { return this.ev('__stage.fastForward(' + JSON.stringify(text || '') + ')'); }
-  async ring(target) {
-    if (!target) return this.ev('__stage.ring(null)');
-    const r = await this.rect(target, 'highlight');
-    return this.ev('__stage.ring(' + JSON.stringify(r) + ')');
+  // Waits for every phone to boot, then lets a second and a half pass off
+  // camera: the first thing the tracker does is load, at whatever speed this
+  // machine has, and that is not worth filming.
+  async boot() {
+    const t0 = Date.now();
+    for (const pid of this.phones) {
+      while (!(await this.call('booted', pid))) {
+        if (Date.now() - t0 > 30000) throw new Error('phone ' + pid + ' did not boot on the stage');
+        await new Promise(r => setTimeout(r, 50));
+      }
+    }
+    await this.call('fontsReady');
+    await this.offCamera(1.5);
   }
-  async rect(target, what) {
-    const r = await this.ev('__stage.rect(' + JSON.stringify(target) + ')');
-    if (!r) throw new Error('step "' + what + '" at ' + this.T.toFixed(2) + 's: nothing on screen matches ' + JSON.stringify(target));
+  pose(pid, to, sec, ease) { return this.call('pose', pid, to, Math.round((sec || 0) * 1000), ease); }
+  // The camera: zoom so that something in a phone sits at (fx, fy) on the
+  // stage, at scale s, over sec.
+  async focus(pid, target, o) {
+    const ok = await this.call('focus', pid, target, Object.assign({}, o, { dur: Math.round((o.sec || 0) * 1000) }));
+    if (!ok) throw new Error('focus' + this.where() + ': nothing in ' + pid + ' matches ' + JSON.stringify(target));
+  }
+  async rect(pid, target, what) {
+    const r = await this.call('rect', pid, target);
+    if (!r) throw new Error(what + this.where() + ': nothing in ' + pid + ' matches ' + JSON.stringify(target));
     return r;
   }
-
-  // ---- what the viewer's thumb does ----------------------------------------
-  async tap(target, o) {
+  async tap(pid, target, o) {
     o = o || {};
-    const r = await this.rect(target, 'tap');
-    if (!r.inside && !o.anyway) throw new Error('step "tap" at ' + this.T.toFixed(2) + 's: ' + JSON.stringify(target) + ' is outside the phone screen; scroll first');
-    const x = r.x + (o.dx === undefined ? r.w / 2 : o.dx), y = r.y + (o.dy === undefined ? r.h / 2 : o.dy);
-    await this.ev('__stage.tap(' + x + ',' + y + ')');
+    const r = await this.rect(pid, target, 'tap');
+    if (!r.inside && !o.anyway) throw new Error('tap' + this.where() + ': ' + JSON.stringify(target) + ' is outside ' + pid + '\'s screen; scroll first');
+    let x = r.x + r.w * (o.ax === undefined ? .5 : o.ax), y = r.y + r.h * (o.ay === undefined ? .5 : o.ay);
+    await this.call('tap', x, y);
     await this.wait(0.17);
+    // Measured again just before the press: a phone still settling from a
+    // move would otherwise take its target out from under the finger.
+    const r2 = await this.rect(pid, target, 'tap');
+    x = r2.x + r2.w * (o.ax === undefined ? .5 : o.ax); y = r2.y + r2.h * (o.ay === undefined ? .5 : o.ay);
     await this.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
     await this.send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', buttons: 1, clickCount: 1 });
     await this.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', buttons: 0, clickCount: 1 });
     await this.wait(o.after === undefined ? 0.45 : o.after);
+    return { x, y };
   }
   async type(text, per) {
     for (const ch of text) {
@@ -854,318 +752,84 @@ class Director {
       await this.wait(per || 0.11);
     }
   }
-  // The tracker's own scroll, eased, over sec. The ring was measured where
-  // things were, so it goes first, and the caller puts it back if wanted.
-  async scroll(to, sec) {
-    await this.ev('__stage.ring(null)');
+  // A phone's own scroll, eased, over sec. The tracked marks follow it.
+  async scroll(pid, to, sec) {
     let y = to;
     if (typeof to !== 'number') {
-      const r = await this.rect(to.target, 'scroll');
-      const top = await this.ev('__stage.scrollY()');
-      y = Math.max(0, top + (r.y - r.ft) - (to.offset || 0));
+      const r = await this.app(pid, '(function(){var e=document.querySelector(' + JSON.stringify(to.target) + ');return e?e.getBoundingClientRect().top:null})()');
+      if (r === null) throw new Error('scroll' + this.where() + ': nothing in ' + pid + ' matches ' + to.target);
+      y = Math.max(0, (await this.call('scrollY', pid)) + r - (to.offset || 0));
     }
-    const from = await this.ev('__stage.scrollY()');
+    const from = await this.call('scrollY', pid);
     const frames = Math.max(1, Math.round((sec || 0.7) * this.fps));
     for (let i = 1; i <= frames; i++) {
       const f = i / frames, e = f < .5 ? 4 * f * f * f : 1 - Math.pow(-2 * f + 2, 3) / 2;
-      await this.ev('__stage.scrollTo(' + (from + (y - from) * e) + ')');
+      await this.call('scrollTo', pid, from + (y - from) * e);
       await this.frame();
     }
   }
-  // Skip ahead. The other buses hold still; the sharer's GPS is wherever
+  // Skip ahead. The made-up buses hold still; each phone's GPS is wherever
   // the script last sent it, which it has to have done before this, because
-  // the page's timers each fire once on the far side of the gap and would
-  // otherwise find the bus hours later in the same place, and ask whether
+  // the pages' timers each fire once on the far side of the gap and would
+  // otherwise find a bus hours later in the same place, and ask whether
   // anybody is still on it.
   async skip(ms) {
     this.vt += ms;
     for (const b of this.buses.values()) { b.v0 += ms; b.v1 += ms; }
-    if (this.track) { this.track.v0 += ms; this.track.v1 += ms; }
-    const state = { buses: this.rows(), gps: this.gpsNow(), myThanks: this.thanks };
-    await this.ev('Object.assign(__demo,' + JSON.stringify(state) + '); __vclock.skip(' + ms + ')');
+    for (const t of this.tracks.values()) { t.v0 += ms; t.v1 += ms; }
+    await this.ev('__stage.skip(' + ms + ',' + JSON.stringify(this.state()) + ')');
+  }
+  async expect(pid, js, what) {
+    if (!(await this.app(pid, js))) throw new Error(this.where() + ' ' + pid + ' is not showing what the script expects: ' + what);
   }
   // The next poll, now. The sharing tab fetches every 18 seconds while it is
   // on screen (SLOW_FEED_MS), so a salamat would otherwise land whenever
-  // that happened to come round rather than on its caption.
-  poll() { return this.app('lastPositionsAt = 0; pollPositions()'); }
-  async expect(js, what) {
-    const ok = await this.app(js);
-    if (!ok) throw new Error('at ' + this.T.toFixed(2) + 's the tracker is not showing what the script expects: ' + what);
+  // that happened to come round rather than on its cue.
+  poll(pid) { return this.app(pid, 'lastPositionsAt = 0; pollPositions()'); }
+  // Riders this script does not film, thanking the bus a phone shares.
+  async thanks(pid, n) {
+    const session = await this.app(pid, 'getSessionId()');
+    await this.ev('__demo.addThanks(' + JSON.stringify(session) + ',' + n + ')');
   }
-}
 
-// ============================================================
-// 7. The two cuts
-// ============================================================
-// Every bus is one of the flyer's example ones, at the flyer's example
-// places. Distances are where the chain reads them, so "km0: 38.26" is
-// 3.0 km and five stops before S&R Kawit on the saved-stop card: the
-// flyer's own example screen, set moving.
-const ROADS = {
-  // Imus to Kawit, the way the stops run up to the S&R and past it.
-  kawit: ['New Imus City Hall', 'Ospital ng Imus', 'Alapan 2-B', 'Savemore - The Avenue', 'Veraneo',
-          'Baypoint Estates', 'Kalayaan Road', 'Evo City', 'S&R Kawit', 'Gahak'],
-  amadeo: ['Tagaytay Olivarez', 'Salaban (Shakey\'s Bypass)', 'Loma', 'Amadeo (Highway)', 'Dagatan', 'Banaybanay'],
-  ridge: ['Crossing Mendez', 'NBI Tagaytay', 'Lourdes', 'Tagaytay Olivarez', 'Olivarez Terminal'],
-  gentrias: ['Javalera', 'Gateway Business Park', 'Biclatan', 'Manggahan', 'Monterey', 'Sunny Brooke',
-             'Vista Mall General Trias', 'Santiago', 'SM City General Trias', 'Greengate Homes', 'Malagasang 1-G'],
-  whole: ['Crossing Mendez', 'Lourdes', 'Tagaytay Olivarez', 'Loma', 'Amadeo (Highway)', 'Tamacan', 'Javalera',
-          'Manggahan', 'Santiago', 'New Imus City Hall', 'Savemore - The Avenue', 'Veraneo', 'S&R Kawit', 'Gahak',
-          'PITX', 'City of Dreams', 'World Trade Center', 'Washington', 'Makati Medical Center', 'One Ayala Terminal']
-};
-const B98018 = 'd3m0b98018000000000000000000a001';
-
-// The four buses of the flyer's example screen.
-function flyerBuses(d) {
-  d.bus(B98018, { dir: 'north', label: '98018', road: ROADS.kawit, km0: 38.26, phase: 2 });
-  d.bus('d3m0b98104000000000000000000a002', { dir: 'north', label: '98104', road: ROADS.amadeo, km0: 11.0, km1: 12.6, secs: 300, phase: 4.5 });
-  d.bus('d3m0b00000000000000000000000a003', { dir: 'south', label: null, road: ROADS.ridge, km0: 4.9, count: 2, phase: 3 });
-  d.bus('d3m0b98077000000000000000000a004', { dir: 'south', label: '98077', road: ROADS.gentrias, km0: 33.5, km1: 31.0, secs: 300, phase: 1 });
-}
-
-// Sharing from the bus, from the tab to the welcome: the same five taps in
-// both cuts, from Mendez Crossing, so the ticket at the end is the whole
-// route.
-async function startTrip(d) {
-  d.gps({ road: ROADS.whole, km0: 0.3, km1: 1.5, secs: 300 });
-  await d.tap('#tabOnbus', { after: 0.5 });
-  await d.tap('#pickNorth', { after: 0.4 });
-  await d.tap('#busLabel', { after: 0.15 });
-  await d.type('98019', 0.1);
-  await d.wait(0.3);
-  await d.tap('#onbusStartBtn', { after: 0.3 });
-}
-// Two hours and a half later, pulling into One Ayala.
-async function laterAtAyala(d, words) {
-  await d.fastForward(words);
-  d.gps({ road: ROADS.whole, km0: 59.5, km1: 60.0, secs: 150 });
-  await d.skip(2 * 3600e3 + 26 * 60e3);
-}
-
-function boardSvg(P, id, pitch) {
-  return P.S.signboardSvg(P.words, { id, pitch, center: true });
-}
-function scenePic(P, time) {
-  return '<div class="pic">' + P.S.sceneSvg(time, 'cvs') + '</div>';
-}
-
-const CUTS = {
-  riders: {
-    lang: 'fil', file: 'demo-riders.mp4',
-    label: 'Halimbawa · example screen',
-    async play(d, P) {
-      flyerBuses(d);
-      await d.open();
-      // -- the cover: the flyer's own headline and promise. Its first frame
-      // is the preview a group chat shows, so the board, the picture and the
-      // headline are there from it, and only the small print rises in.
-      await d.card(`
-        <div class="band"><div class="board">${boardSvg(P, 'cv1', 3.6)}</div>
-          <div class="sub">WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER · UNOFFICIAL</div></div>
-        ${scenePic(P, 'dawn')}
-        <div class="mid">
-          <h1>Nasaan na<br><em>ang bus?</em></h1>
-          <p class="lede rise d3">Tingnan kung nasaan ang bus ngayon — bago ka pa lumabas ng bahay.</p>
-        </div>
-        <div class="foot rise d4"><div class="eg">Halimbawa lang ang mga bus sa video na ito</div></div>`, true);
-      await d.wait(4.4);
-
-      // -- 1: open the link
-      await d.say({ n: 1, k: 'Buksan ang link', t: 'Walang app.<br>Walang account.',
-        b: 'Walang ida-download, walang gagawing account. Bubukas agad sa browser mo.' });
-      await d.card(null);
-      await d.wait(3.8);
-
-      // -- 2: where the buses are
-      await d.say({ n: 2, k: 'Tingnan kung nasaan ang bus', t: 'Bawat bilog,<br><em>isang bus.</em>',
-        b: 'Dilaw ang papuntang Ayala, maroon ang papuntang Mendez. Galing ang posisyon sa mga nasa bus mismo.' });
-      await d.wait(0.7);
-      await d.ring('#trackStrip');
-      await d.wait(2.6);
-      await d.ring('.mapwrap');
-      await d.wait(2.6);
-      await d.ring(null);
-
-      // -- 3: your own stop
-      await d.say({ n: 3, k: 'I-save ang stop mo', t: 'Ilang stop pa<br>bago dumating?',
-        b: 'Piliin ang stop mo. Bibilangin ng app kung ilang stop at ilang km pa ang susunod na bus.' });
-      await d.scroll({ target: '#myStop', offset: 330 }, 0.8);
-      await d.wait(0.3);
-      await d.tap('#myStop .mystop-btn', { after: 0.6 });
-      await d.tap('#stopSearch', { after: 0.2 });
-      await d.type('S&R');
-      await d.wait(0.4);
-      await d.tap('#stopList button[data-name="S&R Kawit"]', { after: 0.7 });
-      await d.expect('/about\\s*5\\s*stops before yours/.test(document.querySelector("#myStop .ride-big").textContent)',
-        'the saved-stop card saying "about 5 stops before yours"');
-      await d.ring('#myStop .ride');
-      await d.wait(2.6);
-
-      // -- the bus coming: the same card, sped up, about 24 km/h
-      await d.say({ k: 'Habang papalapit ang bus', t: '<em>Malapit na!</em> …<br><em>Sakay na!</em>',
-        b: 'Dalawang stop na lang: <b>Malapit na!</b> Kapag stop mo na ang susunod: <b>Sakay na!</b>' });
-      d.bus(B98018, { dir: 'north', label: '98018', road: ROADS.kawit, km0: 38.26, km1: 41.2, secs: 7.6 * 56, phase: 2 });
-      await d.fastForward('Pinabilis');
-      d.rate = 56;
-      await d.wait(8.6);
-      d.rate = 1;
-      await d.fastForward(null);
-      await d.expect('/Next stop is yours/.test(document.querySelector("#myStop .ride-big").textContent)',
-        'the card saying "Next stop is yours" once the bus is one stop out');
-      await d.wait(1.8);
-      await d.ring(null);
-
-      // -- 4: salamat
-      await d.say({ n: 4, k: 'Mag-salamat', t: 'I-tap ang bus.<br>Sabihin: <em>salamat!</em>',
-        b: 'May nag-share ng lokasyon ng bus para sa lahat. Isang tap, at malalaman niyang may natulungan siya.' });
-      await d.scroll({ target: '.mapwrap', offset: 40 }, 0.7);
-      await d.wait(0.5);
-      await d.tap({ js: 'busMarkers["' + B98018 + '"].getElement()' }, { after: 1.3 });
-      await d.tap('.buspop .tybtn', { after: 2.6 });
-
-      // -- 5: sharing from the bus
-      await d.say({ n: 5, k: 'Nasa bus ka?', t: 'I-share ang lokasyon<br><em>ng bus.</em>',
-        b: 'I-tap ang “I\'m on the bus”, piliin ang direksyon, at makikita ka na ng iba. Puwede mong itigil anumang oras.' });
-      await d.scroll(0, 0.6);
-      await startTrip(d);
-      await d.expect('document.documentElement.classList.contains("trip-on")', 'the sharing tab in trip mode');
-      await d.wait(3.4);
-
-      // -- the ticket at the end of the trip
-      await d.say({ k: 'Pagbaba mo', t: 'I-tap ang Stop.<br>May <em>ticket</em> ka pa.',
-        b: 'Ginawa sa phone mo, hindi ipinapadala kahit saan. Salamat sa pag-share!' });
-      d.thanks = 3;
-      await laterAtAyala(d, 'Makalipas ang 2 oras');
-      await d.wait(1.8);
-      await d.fastForward(null);
-      await d.wait(0.5);
-      await d.tap('#onbusActive .btn-stop', { after: 0.4 });
-      await d.expect('!document.getElementById("tktModal").classList.contains("hidden")', 'the salamat ticket on screen');
-      await d.wait(3.6);
-
-      // -- the close: the flyer's call to action
-      await d.card(`
-        <div class="band rise"><div class="board">${boardSvg(P, 'cv2', 3.2)}</div>
-          <div class="sub">COMMUNITY LIVE TRACKER · UNOFFICIAL</div></div>
-        <div class="mid">
-          <div class="kick c rise d1">Buksan ngayon</div>
-          <div class="url rise d1">${P.url}</div>
-          <div class="qrbig rise d2">${P.qr}</div>
-          <p class="n rise d2">I-scan ang QR o i-type ang link. Gumagana sa kahit anong phone.</p>
-          <p class="pass rise d3">I-post ito sa group chat ninyo. Mas maraming nag-share, mas kapaki-pakinabang para sa lahat.</p>
-          <div class="pts rise d4"><span>Walang app</span><span>Walang account</span><span>Libre, walang ads</span><span>Walang itinatagong history ng biyahe</span></div>
-        </div>
-        <div class="foot rise d5"><p class="fine"><b>Hindi ito opisyal.</b> Not affiliated with, run by, or endorsed by Wonderful Transport.
-          Galing sa mga volunteer ang posisyon. Kapag walang nag-share, walang bus sa mapa — hindi ibig sabihin walang bus.</p></div>`);
-      await d.wait(7.5);
-    }
-  },
-
-  operators: {
-    lang: 'en', file: 'demo-operators.mp4',
-    label: 'Example screen · made-up buses',
-    async play(d, P) {
-      flyerBuses(d);
-      // The rider's side of this cut has a stop saved already, the flyer's.
-      await d.ev('localStorage.setItem("wt-mystop", ' + JSON.stringify(JSON.stringify(
-        Object.assign({ name: 'S&R Kawit' }, d.kit.place('S&R Kawit')))) + ')');
-      await d.open();
-      await d.card(`
-        <div class="band"><div class="board">${boardSvg(P, 'cv1', 3.6)}</div>
-          <div class="sub">COMMUNITY LIVE TRACKER · UNOFFICIAL</div></div>
-        ${scenePic(P, 'day')}
-        <div class="mid">
-          <h1 class="s">A community-run<br>live bus tracker<br><em>for your route</em></h1>
-          <p class="lede rise d3">Not affiliated with, run by, or endorsed by Wonderful Transport. Free, with no ads, and open source.</p>
-        </div>
-        <div class="foot rise d4"><div class="eg">The buses in this video are made up</div></div>`, true);
-      await d.wait(4.8);
-
-      // The briefing's own words. Not "crew type their position": in a video
-      // for the company, that would be telling it its drivers text at the
-      // wheel, which is nobody's business here to report.
-      await d.say({ k: 'Today', t: '“Nasaan na ang bus?”',
-        b: 'Riders find out where the bus is by asking in a group chat. This is the same question, answered on a map.' });
-      await d.card(null);
-      await d.wait(4.4);
-
-      await d.say({ n: 1, k: 'For anyone on board', t: 'One tap puts<br>the bus on the map.',
-        b: 'A rider, the conductor or the driver picks the direction, adds the bus number if they like, and starts. No account, no name.' });
-      await startTrip(d);
-      await d.wait(2.6);
-
-      await d.say({ n: 2, k: 'While sharing', t: 'Built for a phone<br>on the dashboard.',
-        b: 'The screen goes dark, with one button: <b>Stop sharing</b>. On Android, an app keeps sharing with the screen locked.' });
-      await d.wait(4.2);
-      await d.say({ n: 3, k: 'Riders can say thanks', t: '“3 riders said <em>salamat</em>”',
-        b: 'Only the person sharing sees it, and it is deleted with the trip. <b>No score, no total, no ranking.</b>' });
-      await d.scroll({ target: '#onbusStripCard', offset: 96 }, 0.7);
-      d.thanks = 3;
-      await d.poll();
-      await d.wait(0.5);
-      await d.ring('#onbusStripCard');
-      await d.wait(3.9);
-      await d.scroll(0, 0.5);
-
-      await d.say({ n: 4, k: 'What riders see', t: 'Where each bus is,<br>and how fresh.',
-        b: 'Every bus says when it last moved. Gold runs to One Ayala, maroon to Mendez. The green ring marks the bus this phone is sharing.' });
-      await d.tap('#tabTrack', { after: 0.6 });
-      await d.ring('#trackStrip');
-      await d.wait(2.4);
-      await d.ring('.mapwrap');
-      await d.wait(2.4);
-      await d.say({ k: 'What riders see', t: 'How far from<br>their own stop.',
-        b: 'In stops and km, <b>never in minutes</b>: an arrival time would need a record of past trips, and none is kept.' });
-      await d.scroll({ target: '#myStop', offset: 330 }, 0.8);
-      await d.ring('#myStop .ride');
-      await d.wait(4.2);
-      await d.ring(null);
-
-      await d.say({ n: 5, k: 'When you get off', t: 'Tap Stop. The bus<br>leaves every map.',
-        b: 'The sharer gets a souvenir ticket, made on the phone and sent nowhere. A kept copy has no times and no bus number.' });
-      await d.scroll(0, 0.5);
-      await laterAtAyala(d, '2 hours later');
-      await d.tap('#tabOnbus', { after: 1.2 });
-      await d.fastForward(null);
-      await d.tap('#onbusActive .btn-stop', { after: 0.4 });
-      await d.expect('!document.getElementById("tktModal").classList.contains("hidden")', 'the salamat ticket on screen');
-      await d.wait(3.8);
-
-      await d.card(`
-        <div class="band rise"><div class="board">${boardSvg(P, 'cv3', 2.8)}</div></div>
-        <div class="mid">
-          <div class="kick rise">What it records</div>
-          <h2 class="rise d1">There is no location history. <em>Anywhere.</em></h2>
-          <ul>
-            <li class="rise d2">One row per bus <b>sharing right now</b>, overwritten every few seconds.</li>
-            <li class="rise d3">Deleted the moment the trip ends. No trail, no archive, and no backup of one.</li>
-            <li class="rise d4">So it cannot be used to review a driver's <b>speed, breaks or route</b>. Not because we promise not to: the data is never written down.</li>
-          </ul>
-        </div>
-        <div class="foot rise d5"><p class="fine">No names, no phone numbers, no accounts. Watching never asks for anyone's location.</p></div>`);
-      await d.wait(9);
-
-      await d.card(`
-        <div class="band rise"><div class="board">${boardSvg(P, 'cv4', 2.8)}</div>
-          <div class="sub">COMMUNITY LIVE TRACKER · UNOFFICIAL</div></div>
-        <div class="pic low rise d1">${P.S.sceneSvg('day', 'cvs2')}</div>
-        <div class="mid">
-          <div class="kick rise d1">What we ask</div>
-          <h2 class="rise d1">Tell us if you want it <em>changed or gone.</em></h2>
-          <p class="note rise d2">That needs nothing but a reply. And if you are willing: let the flyer go up where riders wait, and let crew mention it.</p>
-          <div class="cta rise d3"><div class="w"><div class="kk">Write to</div><div class="u">${P.email}</div>
-            <div class="n2">The full briefing for the company:<br><b>${P.url}/for-operators.html</b></div></div>
-            <div class="qrw"><div class="qr">${P.qr}</div><div class="qc">The tracker</div></div></div>
-        </div>
-        <div class="foot rise d4"><p class="fine"><b>Not affiliated with, run by, or endorsed by Wonderful Transport.</b>
-          Free, with no ads, and open source, so every claim here can be checked.</p></div>`);
-      await d.wait(7.5);
-    }
+  // ---- what the viewer sees around the phones -----------------------------
+  bg(name) { return this.call('bg', name); }
+  scrim(on) { return this.call('scrim', !!on); }
+  label(pid, text) { return this.call('label', pid, text || null); }
+  hilite(pid) { return this.call('hilite', pid); }
+  tag(text) { return this.call('tag', text || null); }
+  ff(text, kind) { return this.call('ff', text || null, kind); }
+  title(key, o) {
+    console.log('  ' + this.T.toFixed(2).padStart(6) + 's  ' + (o.kicker || '') + ' / ' + String(o.lines[0]).replace(/<[^>]*>/g, ''));
+    return this.call('title', key, o);
   }
-};
+  untitle(key) { return this.call('untitle', key); }
+  callout(key, o) { return this.call('callout', key, o); }
+  ring(key, o) { return this.call('ring', key, o); }
+  unmark(key) { return this.call('unmark', key); }
+  // The route board's own dot matrix, for any words its font can draw.
+  led(key, lines, o) {
+    lines = [].concat(lines);
+    const svg = this.P.S.signboardSvg(lines, { id: 'led-' + key + '-' + this.n, pitch: o.pitch || 3, center: true });
+    if (!svg) throw new Error('the LED board cannot draw "' + lines.join(' / ') + '": a character has no dots in SIGN_FONT');
+    return this.call('led', key, svg, o);
+  }
+  unled(key) { return this.call('unled', key); }
+  flap(key, o) { return this.call('flap', key, o); }
+  setflap(key, value, o) { return this.call('setflap', key, value, o); }
+  unflap(key) { return this.call('unflap', key); }
+  flowers(o) { return this.call('flowers', o); }
+  burst(x, y, o) { return this.call('burst', x, y, o || {}); }
+  card(key, html, o) { return this.call('card', key, html, o || {}); }
+  uncard(key) { return this.call('uncard', key); }
+  // The livery wipe: in covers the frame (it takes 0.7 s, filmed), out
+  // uncovers it again; between the two the script rearranges what is under.
+  async wipeIn() { await this.call('wipe', 'in'); await this.wait(0.7); }
+  wipeOut() { return this.call('wipe', 'out'); }
+}
 
 // ============================================================
-// 8. Running it
+// 7. Running it
 // ============================================================
 function readConfig() {
   let text = fs.readFileSync(path.join(ROOT, 'config.txt'), 'utf8');
@@ -1187,8 +851,7 @@ const SETTINGS = {
 const EPOCH = Date.UTC(2026, 9, 11, 23, 12, 0);
 
 async function render(cdp, base, name, opt) {
-  const cut = CUTS[name];
-  const P = opt.P;
+  const cut = opt.cuts[name];
   const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank', newWindow: false });
   const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
   const send = (m, p) => cdp.send(m, p, sessionId);
@@ -1216,7 +879,7 @@ async function render(cdp, base, name, opt) {
   const cfg = { epoch: EPOCH, config: opt.config, settings: SETTINGS };
   await send('Page.addScriptToEvaluateOnNewDocument', { source: '(' + prelude.toString() + ')(' + JSON.stringify(cfg) + ');' });
   const loaded = new Promise(r => cdp.listeners.push(m => { if (m.sessionId === sessionId && m.method === 'Page.loadEventFired') r(); }));
-  await send('Page.navigate', { url: base + '/__stage/' + name + '.html' });
+  await send('Page.navigate', { url: base + '/__stage.html' });
   await loaded;
 
   let sink = null, ff = null, done = null;
@@ -1229,30 +892,10 @@ async function render(cdp, base, name, opt) {
     sink = ff.stdin;
   }
   const d = new Director({ send, pending, thrown }, { fps: opt.fps, sink, stills: opt.stills, until: opt.until,
-    out: opt.out, name, kit: opt.kit, epoch: EPOCH });
-  // Opening the tracker is not filmed: its first second is the page loading
-  // over the network, at whatever speed this machine has, so the clock is
-  // run without frames until it has booted and its map has drawn.
-  d.open = async () => {
-    // With a share key in the link, the way the group chat's link carries
-    // one: the stage's address bar shows only the host, never the key.
-    await d.ev('__stage.open("/index.html#k=demo-share-key")');
-    const t0 = Date.now();
-    while (!(await d.ev('__stage.booted()'))) {
-      if (Date.now() - t0 > 30000) throw new Error('the tracker did not boot in the stage');
-      await new Promise(r => setTimeout(r, 50));
-    }
-    await d.ev('__stage.fontsReady()');
-    const keep = d.capture;
-    d.capture = async () => {};
-    const n = d.n;
-    for (let i = 0; i < Math.round(1.5 * d.fps); i++) await d.frame();
-    d.n = n;
-    d.capture = keep;
-  };
+    out: opt.out, name, kit: opt.kit, P: opt.P, epoch: EPOCH });
   const t0 = Date.now();
   try {
-    await cut.play(d, P);
+    await cut.play(d, opt.P);
   } catch (e) {
     if (!(e instanceof Stop)) { if (ff) ff.stdin.destroy(); throw e; }
   } finally {
@@ -1266,8 +909,9 @@ async function render(cdp, base, name, opt) {
 }
 
 async function main() {
+  const cuts = require('./demo-cuts.js');
   const args = process.argv.slice(2);
-  const opt = { out: path.join(ROOT, 'assets', 'flyer'), fps: 30, stills: null, until: null };
+  const opt = { out: path.join(ROOT, 'assets', 'flyer'), fps: 30, stills: null, until: null, cuts };
   const names = [];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
@@ -1275,18 +919,16 @@ async function main() {
     else if (a === '--fps') opt.fps = +args[++i];
     else if (a === '--stills') opt.stills = args[++i].split(',').map(Number);
     else if (a === '--until') opt.until = +args[++i];
-    else if (a === 'all') names.push(...Object.keys(CUTS));
-    else if (CUTS[a]) names.push(a);
-    else { console.error('usage: node tools/render-demo.js [riders|operators|all] [--out DIR] [--fps N] [--stills S,S] [--until S]'); process.exit(2); }
+    else if (a === 'all') names.push(...Object.keys(cuts));
+    else if (cuts[a]) names.push(a);
+    else { console.error('usage: node tools/render-demo.js [' + Object.keys(cuts).join('|') + '|all] [--out DIR] [--fps N] [--stills S,S] [--until S]'); process.exit(2); }
   }
-  if (!names.length) names.push(...Object.keys(CUTS));
+  if (!names.length) names.push(...Object.keys(cuts));
   fs.mkdirSync(opt.out, { recursive: true });
   opt.config = readConfig();
   opt.kit = routeKit();
   opt.P = pieces();
-  const pages = {};
-  for (const n of Object.keys(CUTS)) pages['/__stage/' + n + '.html'] = stageHtml(CUTS[n], opt.P);
-  const server = await serve(pages);
+  const server = await serve({ '/__stage.html': opt.P.stage });
   const base = 'http://127.0.0.1:' + server.address().port;
   const cdp = launch();
   console.log('Chromium: ' + cdp.chrome);
@@ -1299,4 +941,6 @@ async function main() {
   console.log('Done.');
 }
 
-main().catch(e => { console.error((e && e.stack) || e); process.exit(1); });
+module.exports = { launch, serve, prelude, routeKit, pieces, readConfig, SETTINGS, EPOCH, W, H, SCALE };
+
+if (require.main === module) main().catch(e => { console.error((e && e.stack) || e); process.exit(1); });

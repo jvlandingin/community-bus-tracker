@@ -100,10 +100,12 @@ company's name or initials, for the same reason.
   and `assets/flyer/demo-operators.mp4`, in the briefing's English: about a
   minute each, portrait, captioned, silent, for posting in a group chat or
   sending to the company. They show the real tracker with the flyer's made-up
-  buses, labelled as an example on every frame, and are rendered rather than
-  recorded (`node tools/render-demo.js`), so they are redone whenever the app
-  changes. A fork rewrites the two scripts in that file, which name this
-  route's stops.
+  buses, on two phones at once where a rider and a sharer both matter,
+  labelled as an example on every frame. They are rendered rather than
+  recorded (`node tools/render-demo.js`, with the moving graphics in
+  `tools/demo-stage.html` and the two scripts in `tools/demo-cuts.js`), so
+  they are redone whenever the app changes. A fork rewrites the two scripts,
+  which name this route's stops.
 
 ## What it deliberately does not do
 

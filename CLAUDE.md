@@ -71,8 +71,10 @@ sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview pic
 node tools/render-demo.js    # assets/flyer: the two demo videos (needs ffmpeg too)
 ```
 
-The third plays the real `index.html` in a phone frame with the flyer's
-made-up buses and records it frame by frame. Set `CARTO_API_KEY` in the
+The third plays the real `index.html` on one or two phones with the flyer's
+made-up buses, on a stage of moving words and transitions, and films it frame
+by frame; `--stills 6,21.5` saves those seconds as PNGs instead, which is how
+to check a change in a minute rather than ten. Set `CARTO_API_KEY` in the
 environment or its map is watermarked; it never talks to the database.
 
 Two more rewrite committed text. `node tools/embed-fonts.js` copies the font
@@ -361,11 +363,13 @@ changing either means changing `how-to.html` in the same commit.
 `tools/render-demo.js` taps through the real tracker, so a layout change needs
 no hand edits there, only a re-render. A step that can no longer find what it
 taps, or a caption the screen no longer bears out, stops the render and names
-it. Every frame that shows the tracker carries an example-screen label
+it. The motion graphics around the phones are `tools/demo-stage.html`; what
+happens when, and every word, is `tools/demo-cuts.js`, where a caption is a
+promise made in public and claims nothing the flyer or the briefing does not.
+Every frame that shows the tracker carries an example-screen label
 ("Halimbawa · example screen" in the riders' cut), for the same reason the
 flyer's mock does, and nothing in the tool may ever send a request to the
-real database. `docs/ARCHITECTURE.md`, "The demo
-videos", has the rest.
+real database. `docs/ARCHITECTURE.md`, "The demo videos", has the rest.
 
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`
 each redraw the tracker's screen the same way, showing four buses live because

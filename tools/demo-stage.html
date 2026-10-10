@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Demo stage</title>
+<!-- The stage the demo videos are filmed on, by tools/render-demo.js.
+
+     It is not a page anybody visits. The renderer serves it with the
+     tracker's own fonts, colour tokens and icon sprite put in where the two
+     placeholders below are, opens index.html in one or two phone-sized
+     frames on it, and then drives everything from the script in
+     tools/demo-cuts.js: the phones' moves, the words, the marks, the
+     transitions. Nothing here moves on its own clock. Every animation is a
+     CSS animation, which the renderer freezes and places by hand on each
+     frame, or a tween stepped from that same clock in frame() below, so a
+     render is the same every time however slow the machine is.
+
+     Its ids and classes keep clear of the names content blockers hunt for,
+     like every page in this repository, though no blocker will ever see it. -->
+<style>/*TOKENS*/</style>
+<style>
+  :root{
+    --e-out:cubic-bezier(.16,1,.3,1); --e-in:cubic-bezier(.7,0,.84,0);
+    --e-inout:cubic-bezier(.83,0,.17,1); --e-back:cubic-bezier(.34,1.56,.64,1);
+    --cream:#fff6e8; --amber:#ffbe3c; --live2:#3ddc97;
+  }
+  html,body{margin:0; width:540px; height:960px; overflow:hidden; background:#140d0e;
+    font-family:var(--font-ui); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  #stage{position:absolute; inset:0; overflow:hidden;}
+  .gi{display:inline-block; width:1.2em; height:1.2em; vertical-align:-.22em; flex:0 0 auto;}
+
+  /* ---- Backgrounds: three moods, crossfaded --------------------------- */
+  .bg{position:absolute; inset:0; opacity:0; transition:opacity .7s var(--e-out); overflow:hidden;}
+  .bg.on{opacity:1;}
+  .bg.maroon{background:radial-gradient(130% 85% at 50% 18%, #8e2634 0%, #5c161f 52%, #330b11 100%);}
+  .bg.paper{background:radial-gradient(130% 90% at 50% 26%, #fffdf8 0%, #f7f4ee 52%, #ece4d6 100%);}
+  .bg.night{background:radial-gradient(130% 85% at 50% 30%, #2c151a 0%, #130a0c 58%, #060304 100%);}
+  .bg .dots{position:absolute; left:-60px; top:-60px; right:-60px; bottom:-60px;
+    background:radial-gradient(circle, rgba(255,190,60,.12) 1.15px, transparent 1.7px) 0 0/13px 13px;
+    animation:drift 26s linear infinite;}
+  .bg.night .dots{background-image:radial-gradient(circle, rgba(255,190,60,.08) 1.1px, transparent 1.6px);}
+  @keyframes drift{from{transform:translate(0,0);} to{transform:translate(-52px,-39px);}}
+  /* The paper mood carries the strip's own idea, faint and moving: the two
+     rails of a line map, gold over maroon, sliding past. */
+  .bg .rails{position:absolute; left:-200px; right:-200px; top:58%; height:120px; transform:rotate(-14deg); opacity:.12;}
+  .bg .rails i{position:absolute; left:0; right:0; height:8px; border-radius:4px;}
+  .bg .rails i.a{top:0; background:var(--gold);}
+  .bg .rails i.b{top:44px; background:var(--maroon);}
+  .bg .rails b{position:absolute; top:-7px; width:22px; height:22px; border-radius:50%; background:#fff; border:5px solid var(--gold);
+    box-sizing:border-box; animation:slide 14s linear infinite;}
+  .bg .rails b.m{top:37px; border-color:var(--maroon); animation-duration:18s; animation-direction:reverse;}
+  @keyframes slide{from{transform:translateX(0);} to{transform:translateX(940px);}}
+  .bg .vig{position:absolute; inset:0; background:radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0,0,0,.28) 100%);}
+
+  /* ---- Phones ---------------------------------------------------------- */
+  #world{position:absolute; inset:0; perspective:1500px; perspective-origin:50% 45%;}
+  .ph{position:absolute; left:0; top:0; width:428px; height:748px; transform-origin:214px 374px;}
+  .ph .shell{position:absolute; inset:0; border-radius:44px;
+    background:linear-gradient(150deg, #43373a 0%, #1d1517 38%, #120c0d 100%);
+    box-shadow:0 46px 80px -34px rgba(0,0,0,.7), 0 18px 30px -18px rgba(0,0,0,.45),
+               inset 0 0 0 1.5px rgba(255,255,255,.10), inset 0 0 0 3px rgba(0,0,0,.6);}
+  .ph .screen{position:absolute; left:8px; top:8px; width:412px; height:732px; border-radius:36px; overflow:hidden; background:var(--paper);}
+  .ph .addr{height:30px; display:flex; align-items:center; justify-content:center; gap:5px; background:#ece6dc;
+    font-family:var(--font-text); font-size:12.5px; font-weight:600; color:#51463f; position:relative;}
+  .ph .addr .gi{width:13px; height:13px;}
+  .ph .addr .hl{position:absolute; left:50%; bottom:3px; height:2.5px; width:0; background:var(--gold); border-radius:2px;
+    transform:translateX(-50%);}
+  .ph .addr .hl.go{animation:hlgo .9s var(--e-out) both;}
+  @keyframes hlgo{from{width:0;} to{width:210px;}}
+  .ph iframe{display:block; border:0; width:412px; height:702px; background:var(--paper);}
+  .ph .ov{position:absolute; left:0; top:30px; width:412px; height:702px; pointer-events:none;}
+  .ph .probe{position:absolute; left:0; top:0; width:1px; height:1px;}
+  /* A sheen across the glass, faint: it is what makes it read as a phone
+     rather than a screenshot with a border. */
+  .ph .glare{position:absolute; inset:0; border-radius:36px; pointer-events:none;
+    background:linear-gradient(115deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 28%, rgba(255,255,255,0) 72%, rgba(255,255,255,.05) 100%);}
+  .ph .lbl{position:absolute; left:0; right:0; top:-46px; text-align:center; font-size:19px; font-weight:700;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--cream);}
+  .ph .lbl span{display:inline-block; padding:7px 16px; border-radius:999px; background:rgba(0,0,0,.35); animation:fadeup .5s var(--e-out) both;}
+
+  /* ---- The top of the frame belongs to the words --------------------------
+     When the camera is in close, the phone runs up under them; this shade,
+     in the colour of the background, keeps them readable. */
+  #scrim{position:absolute; left:0; right:0; top:0; height:410px; pointer-events:none; opacity:0;
+    transition:opacity .6s var(--e-out); --sc:58,13,19;
+    background:linear-gradient(180deg, rgba(var(--sc),.97) 0%, rgba(var(--sc),.95) 68%, rgba(var(--sc),0) 100%);}
+  #scrim.on{opacity:1;}
+  #scrim.night{--sc:16,8,10;} #scrim.paper{--sc:247,244,238;}
+
+  /* ---- Words ------------------------------------------------------------ */
+  #type{position:absolute; inset:0; pointer-events:none;}
+  .ti{position:absolute;}
+  .ti.center{text-align:center;}
+  .ti.right{text-align:right;}
+  .ti .tk{display:inline-flex; align-items:center; gap:9px; font-size:13px; font-weight:700; letter-spacing:.16em;
+    text-transform:uppercase; margin-bottom:12px; animation:fadeup .6s var(--e-out) both;}
+  .ti .tk b{display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%;
+    font-size:13px; letter-spacing:0;}
+  .ti .tl{overflow:hidden; padding:.06em .04em .1em; margin:-.06em -.04em -.1em; font-weight:700; line-height:1.0; letter-spacing:-.012em;}
+  .ti .tl > span{display:inline-block; animation:maskup .8s var(--e-out) both;}
+  .ti .ts{font-family:var(--font-text); line-height:1.4; margin-top:14px; animation:fadeup .7s var(--e-out) both;}
+  .ti .ts b{font-weight:600;}
+  .ti.dark{color:var(--cream);}
+  .ti.dark .tk{color:var(--amber);}
+  .ti.dark .tk b{background:var(--amber); color:#2b1b05;}
+  .ti.dark em{font-style:normal; color:var(--amber);}
+  .ti.dark .ts{color:rgba(255,246,232,.82);}
+  .ti.dark .ts b{color:#fff;}
+  .ti.light{color:var(--ink);}
+  .ti.light .tk{color:var(--gold-deep);}
+  .ti.light .tk b{background:var(--maroon); color:#fff;}
+  .ti.light em{font-style:normal; color:var(--brand-ink);}
+  .ti.light .ts{color:var(--muted);}
+  .ti.light .ts b{color:var(--ink);}
+  .ti.night{color:var(--cream);}
+  .ti.night .tk{color:var(--live2);}
+  .ti.night .tk b{background:var(--live2); color:#04140c;}
+  .ti.night em{font-style:normal; color:var(--live2);}
+  .ti.night .ts{color:rgba(255,246,232,.78);}
+  .ti.out .tl > span{animation:maskout .5s var(--e-in) both;}
+  .ti.out .tk, .ti.out .ts{animation:fadeout .35s var(--e-in) both;}
+  @keyframes maskup{from{transform:translateY(108%);} to{transform:none;}}
+  @keyframes maskout{from{transform:none;} to{transform:translateY(-108%);}}
+  @keyframes fadeup{from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;}}
+  @keyframes fadeout{from{opacity:1;} to{opacity:0;}}
+
+  /* ---- Marks that follow something in a phone ------------------------- */
+  #marks{position:absolute; inset:0; pointer-events:none;}
+  .rg{position:absolute; left:0; top:0; border-radius:16px; border:3px solid var(--amber);
+    box-shadow:0 0 0 5px rgba(255,190,60,.18), 0 0 34px rgba(255,190,60,.55); animation:rgin .45s var(--e-out) both;}
+  .rg.mine{border-color:#8f86ff; box-shadow:0 0 0 5px rgba(143,134,255,.2), 0 0 34px rgba(143,134,255,.55);}
+  .rg.live{border-color:var(--live2); box-shadow:0 0 0 5px rgba(61,220,151,.18), 0 0 34px rgba(61,220,151,.5);}
+  .rg.out{animation:rgout .35s var(--e-in) both;}
+  @keyframes rgin{from{opacity:0; transform:scale(1.08);} to{opacity:1; transform:none;}}
+  @keyframes rgout{to{opacity:0; transform:scale(.97);}}
+  .co{position:absolute; left:0; top:0; width:0; height:0;}
+  .co .dot{position:absolute; left:-7px; top:-7px; width:14px; height:14px; border-radius:50%; background:#fff;
+    box-shadow:0 0 0 4px var(--cc), 0 0 18px var(--cc); animation:dotin .4s var(--e-back) both;}
+  /* The line is turned by its own transform and drawn by its child's, so
+     the animation that draws it never undoes the angle. */
+  .co .ln{position:absolute; left:0; top:-1.5px; height:3px; transform-origin:0 50%;}
+  .co .ln b{display:block; height:100%; border-radius:2px; background:var(--cc); transform-origin:0 50%;
+    animation:lnin .35s .1s var(--e-out) both;}
+  .co .lb{position:absolute; white-space:nowrap; font-size:19px; font-weight:700; letter-spacing:.01em; padding:9px 15px;
+    border-radius:999px; background:var(--cc); color:var(--ci); box-shadow:0 12px 26px -10px rgba(0,0,0,.55);
+    animation:lbin .5s .18s var(--e-back) both;}
+  .co.gold{--cc:var(--amber); --ci:#2b1b05;}
+  .co.maroon{--cc:#9b2738; --ci:#fff;}
+  .co.mine{--cc:#6c63e0; --ci:#fff;}
+  .co.live{--cc:#27b07a; --ci:#fff;}
+  .co.ink{--cc:#2b2320; --ci:#fff;}
+  .co.out .dot, .co.out .ln b, .co.out .lb{animation:fadeout .3s var(--e-in) both;}
+  @keyframes dotin{from{transform:scale(0);} to{transform:none;}}
+  @keyframes lnin{from{transform:scaleX(0);} to{transform:none;}}
+  @keyframes lbin{from{opacity:0; transform:scale(.6);} to{opacity:1; transform:none;}}
+
+  /* ---- The LED board, as a sign that lights up ------------------------ */
+  .led{position:absolute; padding:7px; border-radius:10px;
+    background:radial-gradient(120% 140% at 30% 0%, #1d1513 0%, #0b0807 70%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), inset 0 3px 10px rgba(0,0,0,.75), 0 24px 44px -20px rgba(0,0,0,.75);
+    animation:ledin .5s var(--e-back) both;}
+  .led svg{display:block; width:100%; height:auto;}
+  .led .scan{animation:scan .6s steps(24) .12s both;}
+  .led.slam{animation:slam .55s var(--e-back) both;}
+  .led.out{animation:ledout .35s var(--e-in) both;}
+  .led .shine, .cd .board .shine{position:absolute; inset:7px; overflow:hidden; border-radius:4px; pointer-events:none;}
+  .cd .board .shine{inset:5px;}
+  .led .shine i, .cd .board .shine i{position:absolute; top:-20%; bottom:-20%; width:30%; left:-40%;
+    background:linear-gradient(90deg, transparent, rgba(255,220,160,.16), transparent); transform:skewX(-20deg);
+    animation:shine 2.8s 1s ease-in-out infinite;}
+  @keyframes ledin{from{opacity:0; transform:translateY(10px) scale(.96);} to{opacity:1; transform:none;}}
+  @keyframes slam{0%{opacity:0; transform:scale(1.5);} 60%{opacity:1;} 100%{opacity:1; transform:none;}}
+  @keyframes ledout{to{opacity:0; transform:scale(.94);}}
+  @keyframes scan{from{clip-path:inset(0 100% 0 0);} to{clip-path:inset(0 0 0 0);}}
+  @keyframes shine{0%{left:-40%;} 60%, 100%{left:130%;}}
+
+  /* ---- The split-flap counter, like a terminal's departures board ------ */
+  .flap{position:absolute; display:flex; align-items:center; gap:14px; animation:fadeup .6s var(--e-out) both;}
+  .flap.out{animation:fadeout .35s var(--e-in) both;}
+  .flap .tiles{display:flex; gap:5px; perspective:400px;}
+  .flap .tile{position:relative; width:84px; height:112px; border-radius:10px; background:#1b1314;
+    box-shadow:0 18px 30px -16px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.06);}
+  .flap .half{position:absolute; left:0; right:0; height:50%; overflow:hidden; background:#241a1b;}
+  .flap .half.t{top:0; border-radius:10px 10px 0 0; transform-origin:50% 100%;}
+  .flap .half.b{bottom:0; border-radius:0 0 10px 10px; transform-origin:50% 0; background:#1f1617;}
+  .flap .half span{position:absolute; left:0; right:0; height:112px; line-height:112px; text-align:center;
+    font-size:92px; font-weight:700; color:var(--cream);}
+  .flap .half.b span{top:-56px;}
+  .flap .tile:after{content:""; position:absolute; left:0; right:0; top:55px; height:2px; background:rgba(0,0,0,.55);}
+  .flap .half.fall{animation:fall .26s var(--e-in) both; z-index:2;}
+  .flap .half.land{animation:land .3s .26s var(--e-out) both; z-index:2;}
+  @keyframes fall{from{transform:rotateX(0);} to{transform:rotateX(-90deg);}}
+  @keyframes land{from{transform:rotateX(90deg);} to{transform:rotateX(0);}}
+  .flap .words{display:flex; flex-direction:column; gap:6px;}
+  .flap .unit{font-size:30px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; line-height:1;}
+  .flap .sub{font-size:22px; font-weight:600; letter-spacing:.02em; line-height:1; opacity:.8;}
+  .flap.dark .unit{color:var(--cream);} .flap.dark .sub{color:var(--amber);}
+  .flap.light .unit{color:var(--ink);} .flap.light .sub{color:var(--brand-ink);}
+
+  /* ---- Effects ---------------------------------------------------------- */
+  #fx{position:absolute; inset:0; pointer-events:none;}
+  .tap{position:absolute; width:56px; height:56px; margin:-28px 0 0 -28px;}
+  .tap:before, .tap:after{content:""; position:absolute; inset:0; border-radius:50%;}
+  .tap:before{background:rgba(255,255,255,.66); border:2px solid rgba(43,35,32,.5); animation:press .75s var(--e-out) both;}
+  .tap:after{border:3px solid rgba(255,255,255,.9); box-shadow:0 0 0 1px rgba(43,35,32,.25); animation:spread .75s var(--e-out) both;}
+  @keyframes press{0%{transform:scale(.4); opacity:0;} 22%{transform:scale(.85); opacity:1;} 55%{transform:scale(.7); opacity:1;} 100%{transform:scale(.7); opacity:0;}}
+  @keyframes spread{0%, 30%{transform:scale(.7); opacity:0;} 42%{opacity:1;} 100%{transform:scale(1.9); opacity:0;}}
+  .fl{position:absolute; left:0; top:0; width:30px; height:30px; margin:-15px 0 0 -15px; color:#fff;
+    filter:drop-shadow(0 0 6px rgba(255,230,170,.9));}
+  .fl svg{width:100%; height:100%;}
+  .boom{position:absolute; width:0; height:0;}
+  .boom i{position:absolute; left:-4px; top:-60px; width:8px; height:36px; border-radius:4px; background:var(--amber);
+    transform-origin:4px 60px; animation:ray .7s var(--e-out) both;}
+  .boom b{position:absolute; left:-60px; top:-60px; width:120px; height:120px; border-radius:50%;
+    border:5px solid var(--amber); box-sizing:border-box; animation:shock .7s var(--e-out) both;}
+  @keyframes ray{0%{opacity:0; transform:rotate(var(--r)) translateY(20px) scaleY(.2);} 30%{opacity:1;}
+    100%{opacity:0; transform:rotate(var(--r)) translateY(-26px) scaleY(1);}}
+  @keyframes shock{from{opacity:1; transform:scale(.2);} to{opacity:0; transform:scale(2.2);}}
+
+  /* ---- Livery wipe: the stripes a bus in this livery carries ----------- */
+  #wipe{position:absolute; inset:0; pointer-events:none; z-index:40;}
+  #wipe i{position:absolute; top:-30%; bottom:-30%; left:-40%; width:180%; transform:skewX(-16deg) translateX(-140%);}
+  #wipe i.c{background:#f3ecdf;} #wipe i.g{background:var(--gold);} #wipe i.m{background:var(--maroon);}
+  #wipe.in i{animation:win .55s var(--e-inout) both;}
+  #wipe.in i.g{animation-delay:.07s;} #wipe.in i.m{animation-delay:.14s;}
+  #wipe.out i{animation:wout .55s var(--e-inout) both; transform:skewX(-16deg) translateX(0);}
+  #wipe.out i.g{animation-delay:.07s;} #wipe.out i.c{animation-delay:.14s;}
+  @keyframes win{from{transform:skewX(-16deg) translateX(-140%);} to{transform:skewX(-16deg) translateX(0);}}
+  @keyframes wout{from{transform:skewX(-16deg) translateX(0);} to{transform:skewX(-16deg) translateX(140%);}}
+
+  /* ---- Sped up, said out loud ----------------------------------------- */
+  #ff{position:absolute; right:22px; top:22px; height:34px; padding:0 14px 0 10px; border-radius:999px; z-index:30;
+    background:rgba(20,12,13,.78); color:#fff; display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700;
+    letter-spacing:.12em; text-transform:uppercase; opacity:0; transform:translateY(-8px); transition:opacity .3s var(--e-out), transform .3s var(--e-out);}
+  #ff.on{opacity:1; transform:none;}
+  #ff .chev{display:flex;}
+  #ff .chev svg{width:16px; height:16px; fill:var(--amber); animation:blink .5s steps(2) infinite;}
+  #ff .chev svg + svg{margin-left:-6px; animation-delay:.25s;}
+  #ff .clock{display:none; position:relative; width:18px; height:18px; border-radius:50%; border:2px solid var(--amber); box-sizing:border-box;}
+  #ff .clock i{position:absolute; left:6px; top:2px; width:2px; height:6px; background:var(--amber); transform-origin:1px 5px;
+    animation:spin .6s linear infinite;}
+  #ff .clock i + i{height:4px; top:4px; transform-origin:1px 3px; animation-duration:7.2s;}
+  #ff.time .chev{display:none;} #ff.time .clock{display:block;}
+  @keyframes blink{0%{opacity:1;} 100%{opacity:.25;}}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ---- The label every frame with the tracker on it carries ------------ */
+  #tag{position:absolute; left:50%; bottom:18px; transform:translateX(-50%); z-index:35; white-space:nowrap;
+    display:flex; align-items:center; gap:8px; padding:7px 14px; border-radius:999px; background:rgba(20,12,13,.74);
+    color:#fff; font-size:11.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; transition:opacity .4s;}
+  #tag i{width:7px; height:7px; border-radius:50%; background:var(--amber);}
+  #tag.off{opacity:0;}
+
+  /* ---- Full-frame cards: the title, the promises, the close ----------- */
+  #cards{position:absolute; inset:0; z-index:38; pointer-events:none;}
+  .cd{position:absolute; inset:0; overflow:hidden; display:flex; flex-direction:column;}
+  .cd.maroon{background:radial-gradient(130% 85% at 50% 18%, #8e2634 0%, #5c161f 52%, #330b11 100%); color:var(--cream);}
+  .cd.paper{background:radial-gradient(130% 90% at 50% 26%, #fffdf8 0%, #f7f4ee 52%, #ece4d6 100%); color:var(--ink);}
+  .cd .dots{position:absolute; left:-60px; top:-60px; right:-60px; bottom:-60px; pointer-events:none;
+    background:radial-gradient(circle, rgba(255,190,60,.12) 1.15px, transparent 1.7px) 0 0/13px 13px; animation:drift 26s linear infinite;}
+  .cd.in{animation:cdin .5s var(--e-out) both;}
+  .cd.out{animation:cdout .45s var(--e-in) both;}
+  @keyframes cdin{from{opacity:0;} to{opacity:1;}}
+  @keyframes cdout{from{opacity:1;} to{opacity:0;}}
+  .cd > *{position:relative;}
+  .cd .rise{animation:fadeup .75s var(--e-out) both;}
+  .cd .pop{animation:lbin .6s var(--e-back) both;}
+  .cd .mask{overflow:hidden; padding:.06em .04em .1em; margin:-.06em -.04em -.1em;}
+  .cd .mask > span{display:inline-block; animation:maskup .85s var(--e-out) both;}
+  .cd .d1{animation-delay:.12s !important;} .cd .d2{animation-delay:.28s !important;} .cd .d3{animation-delay:.46s !important;}
+  .cd .d4{animation-delay:.66s !important;} .cd .d5{animation-delay:.88s !important;} .cd .d6{animation-delay:1.12s !important;}
+  .cd .d7{animation-delay:1.4s !important;} .cd .d8{animation-delay:1.7s !important;} .cd .d9{animation-delay:2.0s !important;}
+  .cd .board{position:relative; display:inline-block; padding:5px; border-radius:var(--r-s);
+    background:radial-gradient(120% 140% at 30% 0%, #1d1513 0%, #0b0807 70%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), inset 0 3px 10px rgba(0,0,0,.75), 0 20px 40px -18px rgba(0,0,0,.7);}
+  .cd .board svg{display:block;}
+  .cd .board .scan{animation:scan .7s steps(28) .2s both;}
+  .cd .eyebrow{font-size:13px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;}
+  .cd.maroon .eyebrow{color:var(--amber);} .cd.paper .eyebrow{color:var(--gold-deep);}
+  .cd .big{font-size:72px; font-weight:700; line-height:.96; letter-spacing:-.015em;}
+  .cd .big em{font-style:normal;}
+  .cd.maroon .big em{color:var(--amber);} .cd.paper .big em{color:var(--brand-ink);}
+  .cd .lede{font-family:var(--font-text); font-size:21px; line-height:1.42;}
+  .cd.maroon .lede{color:rgba(255,246,232,.84);} .cd.paper .lede{color:var(--muted);}
+  .cd .fine{font-family:var(--font-text); font-size:14px; line-height:1.5;}
+  .cd.maroon .fine{color:rgba(255,246,232,.7);} .cd.paper .fine{color:var(--muted);}
+  .cd .fine b{font-weight:600;} .cd.maroon .fine b{color:#fff;} .cd.paper .fine b{color:var(--ink);}
+  .cd .pic{height:250px; position:relative; overflow:hidden;}
+  .cd .pic > svg{position:absolute; left:50%; bottom:0; width:842px; height:auto; transform:translateX(-50%);}
+  .cd .pic .drive{animation:drive 2.6s cubic-bezier(.22,.8,.28,1) both;}
+  .cd .pic .sunup{animation:sunup 3.6s var(--e-out) both;}
+  .cd .pic .beam{animation:beamon .5s 2.2s both;}
+  @keyframes drive{from{transform:translateX(-170px);} to{transform:none;}}
+  @keyframes sunup{from{transform:translateY(26px);} to{transform:none;}}
+  @keyframes beamon{0%{opacity:0;} 40%{opacity:.4;} 55%{opacity:0;} 100%{opacity:1;}}
+  .cd .row{display:flex; align-items:center; gap:16px;}
+  .cd .chk{display:flex; align-items:center; justify-content:center; flex:0 0 auto; width:52px; height:52px; border-radius:50%;
+    background:var(--amber); color:#2b1b05;}
+  .cd .chk svg{width:28px; height:28px;}
+  .cd.paper .chk{background:var(--maroon); color:#fff;}
+  .cd .say{font-size:40px; font-weight:700; line-height:1.05; letter-spacing:-.01em;}
+  .cd .qrbig{width:250px; height:250px; background:#fff; border-radius:24px; padding:14px; box-sizing:border-box;
+    box-shadow:0 26px 50px -24px rgba(0,0,0,.7);}
+  .cd .qrbig svg{display:block; width:100%; height:100%;}
+  .cd .qrbig .scanline{position:absolute; left:6px; right:6px; height:4px; top:6px; border-radius:2px; background:var(--amber);
+    box-shadow:0 0 14px var(--amber); animation:qrscan 1.3s .5s var(--e-inout) both;}
+  @keyframes qrscan{0%{opacity:0; transform:translateY(0);} 10%{opacity:1;} 90%{opacity:1;} 100%{opacity:0; transform:translateY(234px);}}
+  .cd .url{font-size:33px; font-weight:700; letter-spacing:-.005em;}
+  .cd.maroon .url{color:#fff;} .cd.paper .url{color:var(--brand-ink);}
+  .cd .url .cur{display:inline-block; width:3px; height:.9em; margin-left:3px; vertical-align:-.08em; background:var(--amber);
+    animation:blink .9s steps(2) infinite;}
+  .cd .pill{display:inline-flex; align-items:center; gap:8px; font-size:16px; font-weight:700; padding:9px 15px; border-radius:999px;}
+  .cd.maroon .pill{background:rgba(255,255,255,.1); color:var(--cream); box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);}
+  .cd.paper .pill{background:#fff; color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--line);}
+  .cd .coachbar{height:120px; position:relative; overflow:hidden;}
+  .cd .coachbar svg{position:absolute; bottom:6px; height:100px; width:auto;}
+  .cd .coachbar .go{animation:across 7s linear both;}
+  @keyframes across{from{transform:translateX(-300px);} to{transform:translateX(800px);}}
+  .cd .road{position:absolute; left:0; right:0; bottom:0; height:8px; background:rgba(0,0,0,.25);}
+  .cd .road i{position:absolute; top:3px; height:2px; width:30px; background:rgba(255,190,60,.6); border-radius:1px;}
+  /* The table the operators' video draws: what the database holds. */
+  .cd .tbl{border-radius:18px; background:#1b1314; color:var(--cream); overflow:hidden; box-shadow:0 30px 60px -28px rgba(0,0,0,.75);}
+  .cd .tbl .th{display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:#251a1c;
+    font-size:15px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--amber);}
+  .cd .tbl .th span + span{color:rgba(255,246,232,.6); letter-spacing:.04em;}
+  .cd .tbl .tr{display:grid; grid-template-columns:1.1fr .5fr 1.6fr 1fr; gap:10px; padding:14px 18px; font-size:19px; font-weight:600;
+    border-top:1px solid rgba(255,255,255,.06);}
+  .cd .tbl .tr.h{font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,246,232,.5); padding:10px 18px;}
+  .cd .tbl .v{font-variant-numeric:tabular-nums;}
+  .cd .tbl .v.flash{animation:flash .6s var(--e-out) both;}
+  @keyframes flash{from{color:var(--amber); text-shadow:0 0 12px rgba(255,190,60,.8);} to{color:inherit; text-shadow:none;}}
+  .cd .tbl .tr.go{animation:rowout .6s var(--e-in) both;}
+  @keyframes rowout{to{opacity:0; transform:translateX(60px);}}
+  /* The headline on a first frame is already there, because a group chat
+     shows the first frame as the video's picture; it only settles. */
+  .cd .settle{display:inline-block; animation:settle 1.8s var(--e-out) both;}
+  @keyframes settle{from{transform:scale(1.07);} to{transform:none;}}
+  .cd .typeit{display:inline-block; clip-path:inset(0 100% 0 0); animation:typeit 1.3s .5s both;}
+  @keyframes typeit{to{clip-path:inset(0 0 0 0);}}
+  /* A group chat, the way riders ask today. */
+  .cd .convo{display:flex; flex-direction:column; gap:14px; padding:0 30px;}
+  .cd .who{display:flex; align-items:flex-end; gap:10px;}
+  .cd .av{flex:0 0 auto; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:16px; font-weight:700; color:#fff;}
+  .cd .bub{font-family:var(--font-text); font-size:25px; line-height:1.25; padding:11px 18px 9px; border-radius:22px 22px 22px 6px;
+    background:#e9e2d7; color:var(--ink); transform-origin:0 100%; animation:lbin .55s var(--e-back) both;}
+  .cd .bub small{display:block; text-align:right; margin-top:2px; font-family:var(--font-label); font-size:13px; font-weight:600;
+    letter-spacing:.04em; color:var(--muted);}
+  .cd .lane{position:relative; height:90px;}
+  .cd .lane .rail{position:absolute; left:20px; right:20px; top:44px; height:6px; border-radius:3px; background:rgba(255,190,60,.35);}
+  .cd .lane .stn{position:absolute; top:38px; width:18px; height:18px; margin-left:-9px; border-radius:50%; background:#2b1b1d;
+    border:4px solid var(--amber); box-sizing:border-box;}
+  .cd .lane .bus{position:absolute; top:24px; width:46px; height:46px; margin-left:-23px; border-radius:50%; background:var(--amber);
+    color:#2b1b05; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 5px rgba(255,190,60,.25), 0 10px 20px -8px rgba(0,0,0,.6);}
+  .cd .lane .bus svg{width:26px; height:26px; fill:currentColor;}
+  .cd .lane .crumb{position:absolute; top:43px; width:8px; height:8px; margin-left:-4px; border-radius:50%; background:var(--cream);
+    animation:crumb 1s var(--e-out) both;}
+  @keyframes crumb{0%{opacity:.95; transform:scale(1);} 100%{opacity:0; transform:scale(.2);}}
+</style>
+</head>
+<body>
+<!--SPRITE-->
+<div id="stage">
+  <div id="bgs">
+    <div class="bg maroon"><i class="dots"></i><i class="vig"></i></div>
+    <div class="bg paper"><div class="rails"><i class="a"></i><i class="b"></i><b style="left:0"></b><b style="left:-420px"></b><b class="m" style="left:-200px"></b></div><i class="vig" style="opacity:.35"></i></div>
+    <div class="bg night"><i class="dots"></i><i class="vig"></i></div>
+  </div>
+  <div id="world"></div>
+  <div id="scrim"></div>
+  <div id="marks"></div>
+  <div id="type"></div>
+  <div id="fx"></div>
+  <div id="ff"><span class="chev"><svg viewBox="0 0 24 24"><path d="M5 5l9 7-9 7z"/></svg><svg viewBox="0 0 24 24"><path d="M5 5l9 7-9 7z"/></svg></span><span class="clock"><i></i><i></i></span><span class="tx"></span></div>
+  <div id="tag" class="off"><i></i><span></span></div>
+  <div id="cards"></div>
+  <div id="wipe"><i class="c"></i><i class="g"></i><i class="m"></i></div>
+</div>
+<script>
+(function(){
+  'use strict';
+  const C = window.__vclock;
+  const $ = id => document.getElementById(id);
+  const R = new Map();                 // everything placed by a key
+  const tweens = [];
+  const tracked = new Map();           // marks that follow something in a phone
+  const phones = new Map();
+  const W = 428, H = 748, OX = 214, OY = 374, SX = 8, SY = 38;   // a phone's box, its centre, and where its page starts
+
+  // ---- Easing ------------------------------------------------------------
+  const EASE = {
+    linear: t => t,
+    out: t => 1 - Math.pow(1 - t, 3),
+    soft: t => 1 - Math.pow(1 - t, 4),
+    in: t => t * t * t,
+    inout: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+    expo: t => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t),
+    back: t => { const c1 = 1.4, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
+  };
+  function tween(obj, to, dur, ease, done){
+    for (let i = tweens.length - 1; i >= 0; i--) if (tweens[i].obj === obj) {
+      // A new move on the same thing takes over from wherever it is now.
+      for (const k in to) if (k in tweens[i].to) { delete tweens[i].to[k]; delete tweens[i].from[k]; }
+    }
+    if (!dur) { Object.assign(obj, to); if (done) done(); return; }
+    const from = {};
+    for (const k in to) from[k] = obj[k];
+    tweens.push({ obj, from, to: Object.assign({}, to), t0: C.at, dur, ease: EASE[ease || 'inout'] || EASE.inout, done });
+  }
+  function stepTweens(){
+    for (let i = tweens.length - 1; i >= 0; i--) {
+      const tw = tweens[i];
+      const f = Math.min(1, Math.max(0, (C.at - tw.t0) / tw.dur));
+      const e = tw.ease(f);
+      for (const k in tw.to) tw.obj[k] = tw.from[k] + (tw.to[k] - tw.from[k]) * e;
+      if (f >= 1) { tweens.splice(i, 1); if (tw.done) tw.done(); }
+    }
+  }
+  const later = (ms, fn) => setTimeout(fn, ms);
+
+  // ---- Phones ------------------------------------------------------------
+  function poseCss(p){
+    const bob = p.bob ? Math.sin(C.at / 1000 * 1.25 + p.seed) * p.bob : 0;
+    const sway = p.bob ? Math.sin(C.at / 1000 * .9 + p.seed) * p.bob * .14 : 0;
+    return 'translate3d(' + (p.cx - OX).toFixed(2) + 'px,' + (p.cy - OY + bob).toFixed(2) + 'px,0) ' +
+      'rotateX(' + p.rx.toFixed(3) + 'deg) rotateY(' + p.ry.toFixed(3) + 'deg) rotateZ(' + (p.rz + sway).toFixed(3) + 'deg) ' +
+      'scale(' + p.s.toFixed(4) + ')';
+  }
+  function applyPoses(){
+    for (const ph of phones.values()) {
+      ph.el.style.transform = poseCss(ph.pose);
+      ph.el.style.opacity = ph.pose.o;
+      ph.el.style.zIndex = Math.round(ph.pose.z || 0);
+    }
+  }
+  function phoneOf(id){
+    const ph = phones.get(id);
+    if (!ph) throw new Error('no phone called ' + id);
+    return ph;
+  }
+  // Where an element in a phone's page is on the stage, through whatever
+  // the phone is doing: a probe the size of the element is put at the same
+  // place over the page, inside the phone, and measured.
+  function find(ph, t){
+    const w = ph.frame.contentWindow;
+    if (typeof t === 'string') return w.document.querySelector(t);
+    return w.eval(t.js);
+  }
+  function local(ph, t){
+    const el = find(ph, t);
+    if (!el || !el.getBoundingClientRect) return null;
+    const r = el.getBoundingClientRect();
+    if (!r.width && !r.height) return null;
+    return { x: r.left, y: r.top, w: r.width, h: r.height, vh: ph.frame.clientHeight, vw: ph.frame.clientWidth };
+  }
+  function onStage(ph, r){
+    const p = ph.probe;
+    p.style.left = r.x + 'px'; p.style.top = r.y + 'px';
+    p.style.width = Math.max(1, r.w) + 'px'; p.style.height = Math.max(1, r.h) + 'px';
+    const b = p.getBoundingClientRect();
+    return { x: b.left, y: b.top, w: b.width, h: b.height };
+  }
+
+  // ---- Marks that follow ------------------------------------------------
+  function track(){
+    for (const [key, m] of tracked) {
+      const ph = phones.get(m.phone);
+      const r = ph && local(ph, m.target);
+      if (!r) { m.el.style.visibility = 'hidden'; continue; }
+      const s = onStage(ph, r);
+      m.el.style.visibility = '';
+      if (m.kind === 'ring') {
+        // Placed by left and top, not transform: the ring's own entrance
+        // and exit animate transform, and an animation beats inline style.
+        const p = m.pad;
+        m.el.style.left = (s.x - p) + 'px'; m.el.style.top = (s.y - p) + 'px';
+        m.el.style.width = (s.w + 2 * p - 6) + 'px'; m.el.style.height = (s.h + 2 * p - 6) + 'px';
+      } else {
+        const ax = s.x + s.w * m.ax, ay = s.y + s.h * m.ay;
+        m.el.style.transform = 'translate(' + ax + 'px,' + ay + 'px)';
+        const lb = m.el.querySelector('.lb'), ln = m.el.querySelector('.ln');
+        const lw = lb.offsetWidth, lh = lb.offsetHeight;
+        // the label's near edge sits at the end of the leader line
+        const ex = m.dx, ey = m.dy, len = Math.hypot(ex, ey);
+        ln.style.width = Math.max(0, len - 4) + 'px';
+        ln.style.transform = 'rotate(' + Math.atan2(ey, ex) + 'rad)';
+        let lx = ex - lw / 2, ly = ey - lh / 2;
+        if (Math.abs(ex) > Math.abs(ey)) lx = ex >= 0 ? ex : ex - lw; else ly = ey >= 0 ? ey : ey - lh;
+        lb.style.left = lx + 'px'; lb.style.top = ly + 'px';
+      }
+    }
+  }
+
+  window.__stage = {
+    // ---- the frame ---------------------------------------------------------
+    async frame(dt, rate, state){
+      if (state) Object.assign(C.demo, state);
+      await C.advance(dt, rate);
+      stepTweens();
+      applyPoses();
+      track();
+      await C.painted();
+      return { errors: C.errors.splice(0) };
+    },
+    async skip(ms, state){
+      if (state) Object.assign(C.demo, state);
+      await C.skip(ms);
+    },
+
+    // ---- phones --------------------------------------------------------------
+    phone(id, o){
+      const el = document.createElement('div');
+      el.className = 'ph'; el.id = 'ph-' + id;
+      el.innerHTML = '<div class="shell"></div><div class="screen"><div class="addr"><svg class="gi" aria-hidden="true"><use href="#i-lock"/></svg>' +
+        o.host + '<i class="hl"></i></div><iframe title="Bus Tracker"></iframe><div class="ov"><i class="probe"></i></div><div class="glare"></div></div>' +
+        (o.label ? '<div class="lbl"><span>' + o.label + '</span></div>' : '');
+      $('world').appendChild(el);
+      const ph = { el, frame: el.querySelector('iframe'), probe: el.querySelector('.probe'),
+        pose: Object.assign({ cx: 270, cy: 1500, s: 1, rx: 0, ry: 0, rz: 0, o: 1, z: 0, bob: 0, seed: phones.size * 1.7 }, o.pose || {}) };
+      phones.set(id, ph);
+      applyPoses();
+      ph.frame.src = o.url;
+    },
+    app(id){ return phoneOf(id).frame.contentWindow; },
+    booted(id){
+      const d = phoneOf(id).frame.contentDocument;
+      const t = d && d.getElementById('ticks');
+      return !!(t && t.innerHTML.trim()) && d.readyState === 'complete';
+    },
+    fontsReady(){
+      return Promise.all([document.fonts.ready].concat(Array.from(phones.values()).map(p => p.frame.contentDocument.fonts.ready))).then(() => true);
+    },
+    pose(id, to, dur, ease){ tween(phoneOf(id).pose, to, dur, ease); },
+    // Zoom so that something in the page sits at (fx, fy) on the stage,
+    // scale s: the camera, done by moving the phone.
+    focus(id, t, o){
+      const ph = phoneOf(id), r = local(ph, t);
+      if (!r) return false;
+      const s = o.s, lx = SX + r.x + r.w * (o.ax === undefined ? .5 : o.ax), ly = SY + r.y + r.h * (o.ay === undefined ? .5 : o.ay);
+      tween(ph.pose, { cx: o.fx - s * (lx - OX), cy: o.fy - s * (ly - OY), s, rx: o.rx || 0, ry: o.ry || 0, rz: o.rz || 0 }, o.dur, o.ease || 'inout');
+      return true;
+    },
+    rect(id, t){
+      const ph = phoneOf(id), r = local(ph, t);
+      if (!r) return null;
+      const s = onStage(ph, r);
+      s.inside = r.y >= 0 && r.y + r.h <= r.vh && r.x >= 0 && r.x + r.w <= r.vw;
+      return s;
+    },
+    scrollTo(id, y){ phoneOf(id).frame.contentWindow.scrollTo(0, y); },
+    scrollY(id){ return phoneOf(id).frame.contentWindow.scrollY; },
+    hilite(id){ const h = phoneOf(id).el.querySelector('.hl'); h.classList.remove('go'); void h.offsetWidth; h.classList.add('go'); },
+    // The words over a phone, saying whose it is; null takes them away.
+    label(id, text){
+      const ph = phoneOf(id);
+      let l = ph.el.querySelector('.lbl');
+      if (!text) { if (l) l.remove(); return; }
+      if (!l) { l = document.createElement('div'); l.className = 'lbl'; ph.el.appendChild(l); }
+      l.innerHTML = '<span>' + text + '</span>';
+    },
+
+    // ---- background and transitions ----------------------------------------
+    bg(name){
+      for (const b of document.querySelectorAll('.bg')) b.classList.toggle('on', b.classList.contains(name));
+      $('scrim').classList.toggle('night', name === 'night');
+      $('scrim').classList.toggle('paper', name === 'paper');
+    },
+    scrim(on){ $('scrim').classList.toggle('on', !!on); },
+    wipe(dir){
+      const w = $('wipe');
+      w.classList.remove('in', 'out'); void w.offsetWidth;
+      w.classList.add(dir);
+    },
+
+    // ---- words ----------------------------------------------------------------
+    title(key, o){
+      // One that takes another's place comes in as the other goes out,
+      // whether it was put out here or a moment ago by the script.
+      const had = R.has('ti:' + key) || C.at - (R.get('ti-out:' + key) || -1e9) < 340;
+      this.untitle(key);
+      const el = document.createElement('div');
+      el.className = 'ti ' + (o.theme || 'light') + ' ' + (o.align || 'left');
+      el.style.left = o.x + 'px'; el.style.top = o.y + 'px'; el.style.width = o.w + 'px';
+      let html = '', d = (o.delay || 0) + (had ? .34 : 0);
+      if (o.kicker) { html += '<div class="tk" style="animation-delay:' + d + 's">' + (o.n ? '<b>' + o.n + '</b>' : '') + o.kicker + '</div>'; d += .08; }
+      for (const line of o.lines) {
+        html += '<div class="tl" style="font-size:' + (o.size || 52) + 'px"><span style="animation-delay:' + d.toFixed(2) + 's">' + line + '</span></div>';
+        d += o.stagger === undefined ? .09 : o.stagger;
+      }
+      if (o.sub) html += '<div class="ts" style="font-size:' + (o.subSize || 19) + 'px; animation-delay:' + (d + .15).toFixed(2) + 's">' + o.sub + '</div>';
+      el.innerHTML = html;
+      $('type').appendChild(el);
+      R.set('ti:' + key, el);
+    },
+    untitle(key){
+      const el = R.get('ti:' + key);
+      if (!el) return;
+      R.delete('ti:' + key);
+      R.set('ti-out:' + key, C.at);
+      el.classList.add('out');
+      later(560, () => el.remove());
+    },
+
+    // ---- marks ---------------------------------------------------------------
+    ring(key, o){
+      this.unmark(key);
+      const el = document.createElement('div');
+      el.className = 'rg ' + (o.color || '');
+      $('marks').appendChild(el);
+      tracked.set(key, { kind: 'ring', el, phone: o.phone, target: o.target, pad: o.pad === undefined ? 8 : o.pad });
+      track();
+    },
+    callout(key, o){
+      this.unmark(key);
+      const el = document.createElement('div');
+      el.className = 'co ' + (o.color || 'gold');
+      el.innerHTML = '<i class="ln"><b></b></i><i class="dot"></i><span class="lb">' + o.text + '</span>';
+      $('marks').appendChild(el);
+      tracked.set(key, { kind: 'co', el, phone: o.phone, target: o.target, ax: o.ax === undefined ? .5 : o.ax,
+        ay: o.ay === undefined ? .5 : o.ay, dx: o.dx || 0, dy: o.dy === undefined ? -70 : o.dy });
+      track();
+    },
+    unmark(key){
+      const m = tracked.get(key);
+      if (!m) return;
+      tracked.delete(key);
+      m.el.classList.add('out');
+      later(380, () => m.el.remove());
+    },
+
+    // ---- signs and counters --------------------------------------------------
+    led(key, svg, o){
+      this.unled(key);
+      const el = document.createElement('div');
+      el.className = 'led' + (o.slam ? ' slam' : '');
+      el.style.left = o.x + 'px'; el.style.top = o.y + 'px'; el.style.width = o.w + 'px';
+      el.innerHTML = '<div class="scan">' + svg + '</div><div class="shine"><i></i></div>';
+      $('type').appendChild(el);
+      R.set('led:' + key, el);
+    },
+    unled(key){
+      const el = R.get('led:' + key);
+      if (!el) return;
+      R.delete('led:' + key);
+      el.classList.remove('slam'); el.classList.add('out');
+      later(380, () => el.remove());
+    },
+    flap(key, o){
+      this.unflap(key);
+      const el = document.createElement('div');
+      el.className = 'flap ' + (o.theme || 'dark');
+      el.style.left = o.x + 'px'; el.style.top = o.y + 'px';
+      const v = String(o.value);
+      el.innerHTML = '<div class="tiles">' + v.split('').map(ch =>
+        '<div class="tile"><div class="half t"><span>' + ch + '</span></div><div class="half b"><span>' + ch + '</span></div></div>').join('') +
+        '</div><div class="words"><div class="unit">' + (o.unit || '') + '</div><div class="sub">' + (o.sub || '') + '</div></div>';
+      $('type').appendChild(el);
+      R.set('flap:' + key, { el, value: v });
+    },
+    // Each changed tile flips like a departures board: the old top half
+    // falls, the new bottom half lands.
+    setflap(key, value, o){
+      const f = R.get('flap:' + key);
+      if (!f) return;
+      const v = String(value);
+      if (o && o.unit !== undefined) f.el.querySelector('.unit').textContent = o.unit;
+      if (o && o.sub !== undefined) f.el.querySelector('.sub').textContent = o.sub;
+      if (v === f.value) return;
+      const tiles = f.el.querySelectorAll('.tile');
+      v.split('').forEach((ch, i) => {
+        const old = f.value[i];
+        const tile = tiles[i];
+        if (!tile || ch === old) return;
+        tile.querySelector('.half.t span').textContent = ch;
+        const fall = document.createElement('div');
+        fall.className = 'half t fall'; fall.innerHTML = '<span>' + old + '</span>';
+        const land = document.createElement('div');
+        land.className = 'half b land'; land.innerHTML = '<span>' + ch + '</span>';
+        tile.appendChild(fall); tile.appendChild(land);
+        later(600, () => { tile.querySelector('.half.b span').textContent = ch; fall.remove(); land.remove(); });
+      });
+      f.value = v;
+    },
+    unflap(key){
+      const f = R.get('flap:' + key);
+      if (!f) return;
+      R.delete('flap:' + key);
+      f.el.classList.add('out');
+      later(380, () => f.el.remove());
+    },
+
+    // ---- effects -------------------------------------------------------------
+    tap(x, y){
+      const t = document.createElement('div');
+      t.className = 'tap'; t.style.left = x + 'px'; t.style.top = y + 'px';
+      $('fx').appendChild(t);
+      later(800, () => t.remove());
+    },
+    // Sampaguita flowers, the app's own thank-you mark, flying from one
+    // place on the stage to another along a curve.
+    flowers(o){
+      const n = o.n || 9;
+      for (let i = 0; i < n; i++) {
+        const el = document.createElement('div');
+        el.className = 'fl';
+        const sx = o.x0 + (Math.random() - .5) * 30, sy = o.y0 + (Math.random() - .5) * 20;
+        const ex = o.x1 + (Math.random() - .5) * 60, ey = o.y1 + (Math.random() - .5) * 50;
+        const mx = (sx + ex) / 2 + (Math.random() - .5) * 160, my = Math.min(sy, ey) - 90 - Math.random() * 120;
+        el.style.offsetPath = "path('M" + sx.toFixed(1) + ' ' + sy.toFixed(1) + ' Q' + mx.toFixed(1) + ' ' + my.toFixed(1) + ' ' + ex.toFixed(1) + ' ' + ey.toFixed(1) + "')";
+        el.style.offsetRotate = '0deg';
+        el.style.color = i % 3 === 0 ? 'var(--amber)' : '#fff';
+        el.innerHTML = '<svg aria-hidden="true"><use href="#i-ty"/></svg>';
+        $('fx').appendChild(el);
+        const dur = 1300 + Math.random() * 500, delay = i * 70;
+        el.animate([
+          { offsetDistance: '0%', opacity: 0, transform: 'scale(.4) rotate(0deg)' },
+          { offsetDistance: '8%', opacity: 1, transform: 'scale(1) rotate(30deg)', offset: .08 },
+          { offsetDistance: '85%', opacity: 1, transform: 'scale(1.05) rotate(220deg)', offset: .85 },
+          { offsetDistance: '100%', opacity: 0, transform: 'scale(.6) rotate(280deg)' }
+        ], { duration: dur, delay, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'both' });
+        later(dur + delay + 50, () => el.remove());
+      }
+    },
+    burst(x, y, o){
+      const el = document.createElement('div');
+      el.className = 'boom'; el.style.left = x + 'px'; el.style.top = y + 'px';
+      let html = '<b' + (o && o.color ? ' style="border-color:' + o.color + '"' : '') + '></b>';
+      for (let i = 0; i < 12; i++) html += '<i style="--r:' + (i * 30) + 'deg' + (o && o.color ? ';background:' + o.color : '') + '"></i>';
+      el.innerHTML = html;
+      $('fx').appendChild(el);
+      later(800, () => el.remove());
+    },
+    ff(text, kind){
+      const f = $('ff');
+      if (text) { f.querySelector('.tx').textContent = text; f.classList.toggle('time', kind === 'time'); }
+      f.classList.toggle('on', !!text);
+    },
+    tag(text){
+      const t = $('tag');
+      if (text) t.querySelector('span').textContent = text;
+      t.classList.toggle('off', !text);
+    },
+
+    // ---- full-frame cards -------------------------------------------------
+    card(key, html, o){
+      this.uncard(key);
+      const el = document.createElement('div');
+      el.className = 'cd ' + ((o && o.theme) || 'maroon') + ((o && o.instant) ? '' : ' in');
+      el.innerHTML = html;
+      $('cards').appendChild(el);
+      R.set('cd:' + key, el);
+      return true;
+    },
+    uncard(key){
+      const el = R.get('cd:' + key);
+      if (!el) return;
+      R.delete('cd:' + key);
+      el.classList.remove('in'); el.classList.add('out');
+      later(480, () => el.remove());
+    },
+    // A card's own moving parts, by selector inside it.
+    inCard(key, js){
+      const el = R.get('cd:' + key);
+      return el ? (new Function('card', js))(el) : null;
+    }
+  };
+})();
+</script>
+</body>
+</html>

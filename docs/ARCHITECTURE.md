@@ -905,54 +905,81 @@ few minutes. Their captions use the flyer's and the briefing's own lines
 wherever those have one, so the videos promise nothing those two documents do
 not.
 
-**The tracker in them is the real one.** The script builds a stage page, with
-the captions, a phone and the label, and runs `index.html` in a phone-sized
-frame on it, then taps, types and scrolls it through the browser's own input
-events, the way a person would. Nothing on the phone's screen is drawn for the
-video. A step that cannot find what it is told to tap stops the render and
-says which, and a few steps check that the tracker is showing what the caption
-above it claims ("about 5 stops before yours", "Next stop is yours", trip
-mode, the ticket), so a change to the app cannot leave a caption contradicting
-the screen beneath it.
+**Three files.** `tools/render-demo.js` is the engine: the browser, the clock,
+the stand-in database, and the director the scripts are written in.
+`tools/demo-stage.html` is the stage around the phones: phones posed and
+turned in 3D, a camera that zooms into one of them, headlines that rise out of
+a mask, callouts and rings that stay on something in a phone while the phone
+moves, the route board's own dot matrix as a sign, a split-flap counter,
+sampaguita flying from one phone to the other for a salamat, and the livery
+stripes as the wipe between scenes. `tools/demo-cuts.js` holds the two scripts:
+what happens when, on which phone, and every word. The first version of the
+videos was one phone and a caption per step, which was clear and looked like a
+screen recording with subtitles; the stage exists because a video in a group
+chat is competing with everything else in the feed.
+
+**The tracker in them is the real one.** Each phone on the stage is
+`index.html` in a phone-sized frame, tapped, typed into and scrolled through
+the browser's own input events, the way a person would. Nothing on a phone's
+screen is drawn for the video; the graphics are all around and over it. A step
+that cannot find what it is told to tap stops the render and says which, and
+a few steps check that the tracker is showing what the caption above it claims
+("about 5 stops before yours", "Next stop is yours", "1 rider said salamat",
+trip mode, the ticket, a stopped bus gone from the rider's map), so a change
+to the app cannot leave a caption contradicting the screen beneath it.
+
+**Two phones are two people.** The salamat needs a rider and the person
+sharing on screen at once. Each phone has its own storage, its own session and
+its own GPS, and the stand-in database keeps a row per sharing phone by the
+rules the SQL keeps: a public id per trip, the count only on the sharer's own
+row, one salamat per rider per bus. So the salamat in the video travels the
+way a real one does: tapped on the rider's phone, stored, and read by the
+sharing phone on its next poll. The flowers between the two are the stage's;
+the line that says "1 rider said salamat" is the tracker's.
 
 **The buses are made up, and every frame says so.** They are the flyer's
 example ones: 98018 five stops before S&R Kawit, 98104 at Amadeo, two sharers
 at Tagaytay, 98077 near Gen. Trias, so the riders' video is the flyer's
 example screen set moving. The rule is the flyer's: a picture of this tool
-that could be mistaken for live data is the one thing it may not publish. The
-line above the phone says "Halimbawa · example screen" on every frame that
-shows the tracker, both covers say the buses are made up, and the two
-stretches that are sped up (a bus coming up to the saved stop, and two hours
-of a trip) carry a chip that says so.
+that could be mistaken for live data is the one thing it may not publish. A
+label at the foot of the frame says "Halimbawa · example screen" (or "Example
+screen · made-up buses") on every frame that shows the tracker, both covers
+say the buses are made up, and the stretches that are sped up or skipped (a
+bus coming up to the saved stop, two hours of a trip) carry a chip that says
+so.
 
 **Nothing reaches the database.** A script runs in the page before its own
-(`prelude()` in the tool) and answers every call the tracker makes to Supabase
-from what the script has put there; anything else addressed to Supabase is
-refused, and the browser is told to block the host besides. Rendering cannot
-put a bus on anybody's real map. The map tiles are CARTO's real ones, so the
-render reads `CARTO_API_KEY` from the environment the way the build does, and
-without it the map is watermarked: fine for a draft, not for a post.
+(`prelude()` in the engine) and answers every call the tracker makes to
+Supabase from what the script has put there; anything else addressed to
+Supabase is refused, and the browser is told to block the host besides.
+Rendering cannot put a bus on anybody's real map. The map tiles are CARTO's
+real ones, so the render reads `CARTO_API_KEY` from the environment the way
+the build does, and without it the map is watermarked: fine for a draft, not
+for a post.
 
-**The page's clock is replaced.** Date, the timers, animation frames and the
+**The pages' clock is replaced.** Date, the timers, animation frames and the
 GPS move only when the renderer advances them, one video frame at a time, and
-every CSS animation is paused when it first appears and placed by hand on each
-frame after. That is what keeps the videos smooth on a slow machine and the
-same on every run, what lets a bus cover three kilometres in eight seconds
-while its badge still takes its own second to glide, and what lets the trip
-jump two and a half hours to the ticket. A jump fires each timer that came due
-once, as a phone does when it wakes, which is why the trip's welcome line is
-gone on the far side of it, and why the script moves the GPS before jumping:
-the idle guard would otherwise wake to a bus that had not moved in two hours
-and ask whether anybody was still on it.
+every CSS animation, the stage's and the tracker's alike, is frozen when it
+first appears and placed by hand on each frame after. That is what keeps the
+videos smooth on a slow machine and the same on every run, what lets a bus
+cover three kilometres in eight seconds while its badge still takes its own
+second to glide, and what lets a trip jump two and a half hours to the ticket.
+A jump fires each timer that came due once, as a phone does when it wakes,
+which is why the script moves the GPS before jumping: the idle guard would
+otherwise wake to a bus that had not moved in two hours and ask whether
+anybody was still on it. Frozen means `playbackRate` 0, never `pause()`:
+Chromium does not cancel a CSS animation that script has paused when the class
+that started it is taken away, so a paused wipe stayed over the whole frame
+after its class came off.
 
 **No sound.** Most video in a group chat plays muted, and music or a voice is
 the one thing a person adds better than a script, so the captions carry
 everything and a sound track is left to whoever posts it.
 
 **What a fork changes.** The captions name this route's places and the scripts
-drive its stops by name (`ROADS` in the tool), so a fork rewrites those two
-scripts, or deletes the videos. The words on the boards, the link and its QR
-code come from the same places as the flyer's, so they follow it.
+drive its stops by name (`ROADS` in `tools/demo-cuts.js`), so a fork rewrites
+those two scripts, or deletes the videos. The words on the boards, the link
+and its QR code come from the same places as the flyer's, so they follow it.
 
 ## The look: one system, one typeface, one set of icons
 

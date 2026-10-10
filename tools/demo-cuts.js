@@ -167,9 +167,10 @@ module.exports = {
       await d.wait(.6);
       await d.focus('rider', '#trackStrip', { s: 1.42, fx: 270, fy: 470, sec: 1.0 });
       await d.wait(1.0);
-      await d.callout('nb', { phone: 'rider', target: '#trackStrip .track.nb', ax: .74, text: '▲ Pa-Ayala', color: 'gold', dx: -40, dy: -66 });
+      // Each arrow points at a bus going that way, not just at its line.
+      await d.callout('nb', { phone: 'rider', target: await pill(d, 'rider', '98018'), ay: 0, text: '▲ Pa-Ayala', color: 'gold', dx: -40, dy: -56 });
       await d.wait(.4);
-      await d.callout('sb', { phone: 'rider', target: '#trackStrip .track.sb', ax: .3, text: '▼ Pa-Mendez', color: 'maroon', dx: 40, dy: 66 });
+      await d.callout('sb', { phone: 'rider', target: await pill(d, 'rider', '98077'), ay: 1, text: '▼ Pa-Mendez', color: 'maroon', dx: 40, dy: 56 });
       await d.wait(1.6);
       await d.unmark('nb'); await d.unmark('sb');
       await d.focus('rider', '.mapwrap', { s: 1.12, fx: 270, fy: 520, sec: 1.0 });

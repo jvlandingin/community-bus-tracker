@@ -305,6 +305,7 @@
     background:var(--gold); box-shadow:0 0 0 3px var(--gold-line);
   }
   .ride.sb .ride-bus{background:var(--maroon); box-shadow:0 0 0 3px var(--maroon-line);}
+  .ride.aboard .ride-bus{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live);}
   .ride-bus svg{width:19px; height:19px; fill:#fff;}
   .ride-track{
     flex:1; position:relative; height:30px; margin:0 -2px;
@@ -1053,6 +1054,14 @@
           where you wait. The <svg class="gi" aria-hidden="true"><use href="#i-locate"/></svg> button on the map shows where you are, if you want
           it. <b>Your stop stays on this phone.</b> It is not sent anywhere, no other
           visitor can see it, and “Remove my stop” deletes it.</p>
+        <p><b>Already on the bus?</b> Tap the bus on the map and then <b>I'm on
+          this bus</b>, and save the stop you're getting off at. The card then
+          follows that one bus, not whichever is nearest, and counts the stops
+          left: <b>Malapit na!</b> two stops out, <b>Bababa na!</b> when yours is
+          next. Tap <b>I got off</b> when you're off. If you're the one sharing
+          from the bus, you don't need to tap anything: the card already knows
+          which bus is yours, and it shows on the sharing tab too. Which bus
+          you're on is forgotten when you close the page, and never sent.</p>
         <p class="hint">It tells you distance and stops, never minutes. Working out
           how long a bus will take needs a record of how long past trips took, and
           this tool deliberately keeps no such record — see below.</p>
@@ -1328,12 +1337,25 @@
              tapped: a trip with none shows no row at all, never a zero. -->
         <div class="demo-ty"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>3 riders said salamat</div>
       </div>
+      <!-- And the saved stop, which the sharing tab carries too while a trip
+           is live, following this phone's own bus. The bus is at Gen. Trias,
+           as the strip above has it, and the stop is New Imus City Hall:
+           aboardInfo() in index.html makes that 11 km and seven stops, with
+           Monterey next. -->
+      <div class="ride nb aboard" aria-hidden="true" style="margin-top:10px">
+        <div class="ride-top"><span class="ride-name">New Imus City Hall</span><span class="edit">Change</span></div>
+        <div class="ride-line"><span class="ride-bus"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></span><span class="ride-track"><i class="next"></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="ride-me"></span></div>
+        <div class="ride-cap"><span>Your bus · 98018</span><span class="me">Your stop</span></div>
+        <div class="ride-big"><span class="unit">about</span><span class="num">7</span><span class="unit">stops before yours</span><span class="km">· 11 km</span></div>
+        <div class="ride-sub">▲ Northbound · next stop <b>Monterey</b> · updated 6s ago</div>
+      </div>
       </div>
       <figcaption>While it is running, the tab goes dark. Green dot, one button
         to stop, and the same strip everyone watching sees. Your bus is the one
         with the green ring, so you can tell it apart when several are sharing.
         If riders thank you, that shows here too — for this trip, and only to
-        you.</figcaption>
+        you. With a stop saved, its card follows your own bus here, counting
+        the stops to where you get off.</figcaption>
     </figure>
 
     <!-- The ticket, as showTicket() fills it in for one example trip: boarded

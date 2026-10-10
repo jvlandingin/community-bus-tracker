@@ -300,6 +300,16 @@
      with. */
   .tab .ti{display:inline-block; width:17px; height:17px; margin-right:6px; vertical-align:-3.5px;}
   .tab .ti svg{display:block; width:100%; height:100%; fill:currentColor;}
+  /* A trip is live on this phone. GPS keeps going whichever tab is on
+     screen, but the sharing tab's dark screen and status line are only on
+     that tab, so without this a sharer who went to watch the map saw nothing
+     saying their bus was still on it. syncTripMode() sets .live. */
+  .tab .tablive, .tab .tablive-words{display:none;}
+  .tab.live .tablive{
+    display:inline-block; width:8px; height:8px; margin-left:7px; vertical-align:1px;
+    border-radius:50%; background:var(--live); box-shadow:0 0 0 3px rgba(29,138,95,.18);
+  }
+  .tab.live .tablive-words{display:block;}
   /* The drawn icons (the sprite at the top of the body). Sized in em, so an
      icon sits on the words beside it at any text size; a container that
      wants a fixed size says so. The coach is a filled drawing rather than a
@@ -521,6 +531,8 @@
      Both states are one full-width control at --tap, because on a phone this
      is read one-handed at a roadside. */
   .mystop{margin-top:12px;}
+  /* Its copy on the sharing tab sits between cards, not inside one. */
+  .tripstop{margin:0 0 12px;}
   .mystop-btn{
     width:100%; display:flex; align-items:center; gap:8px; padding:9px 12px;
     min-height:var(--tap); border-radius:var(--r-m); font-family:inherit;
@@ -565,6 +577,7 @@
     content:''; display:inline-block; width:8px; height:8px; margin-right:6px; vertical-align:1px;
     border-radius:50%; background:var(--mine); box-shadow:0 0 0 2px var(--mine-soft);
   }
+  .ride-acts{flex:0 0 auto; display:flex; gap:6px;}
   .ride .edit{
     flex:0 0 auto; min-height:34px; padding:0 12px; border-radius:var(--r-s);
     border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
@@ -578,6 +591,9 @@
   }
   .ride.sb .ride-bus{background:var(--maroon); box-shadow:0 0 0 3px var(--maroon-line);}
   .ride-bus svg{width:19px; height:19px; fill:#fff;}
+  /* Riding: the bus on the card is yours, so it wears the green ring yours
+     wears on the strip, where the legend already says what the ring means. */
+  .ride.aboard .ride-bus{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live);}
   .ride-track{
     flex:1; position:relative; height:30px; margin:0 -2px;
     display:flex; align-items:center; justify-content:space-around;
@@ -899,6 +915,9 @@
     border:1.5px dashed var(--line); background:transparent; color:var(--brand-ink);
     font:inherit; font-size:var(--fs-small); font-weight:800;
   }
+  /* "I'm on this bus", and once tapped "I got off": the card's own colour,
+     because it is about the reader's stop, not about the bus. */
+  .buspop .buslink.onit{border-style:solid; border-color:var(--mine); color:var(--mine-ink);}
   /* And the other end of it, on the screen of the person being thanked.
      --ok-ink because it is spelling a word, not painting a shape. */
   .tyline{
@@ -1449,7 +1468,7 @@
 
   /* The sharing tab's status dot breathes while live: "this is happening
      now" is the page's whole claim, and a static dot does not make it. */
-  .statusdot.live{animation:breathe 2.6s ease-in-out infinite;}
+  .statusdot.live, .tab.live .tablive{animation:breathe 2.6s ease-in-out infinite;}
   @keyframes breathe{0%,100%{box-shadow:0 0 0 4px rgba(29,138,95,.15);} 50%{box-shadow:0 0 0 9px rgba(29,138,95,.04);}}
 
   /* A bus arriving on the page. .arrive is added only to chips and badges
@@ -1631,7 +1650,7 @@
       <h4 class="ok">If you're just watching the map</h4>
       <p>The app never asks for your location on its own, and you can use the whole map without ever giving it. No account, no name, no phone number. We can't see who is watching.</p>
       <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the location button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the tab.</p>
-      <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it.</p>
+      <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the tab, and is never sent either.</p>
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
       <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number, and it never adds up across trips: <b>no running total is kept for any driver or any bus, anywhere.</b></p>
       <p>“Send a link to this bus”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do.</p>
@@ -1777,7 +1796,7 @@
 <div class="wrap">
   <div class="tabs">
     <button type="button" class="tab active" id="tabTrack" aria-pressed="true" onclick="switchTab('track')"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.2c-4 0-7.2 3.1-7.2 7.1 0 5.2 6.1 11.6 6.6 12.1.3.3.9.3 1.2 0 .5-.5 6.6-6.9 6.6-12.1 0-4-3.2-7.1-7.2-7.1zm0 9.9a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg></span>Track buses</button>
-    <button type="button" class="tab" id="tabOnbus" aria-pressed="false" onclick="switchTab('share')"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-coach"/></svg></span>I'm on the bus</button>
+    <button type="button" class="tab" id="tabOnbus" aria-pressed="false" onclick="switchTab('share')"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-coach"/></svg></span>I'm on the bus<span class="tablive" aria-hidden="true"></span><span class="vh tablive-words">, sharing now</span></button>
   </div>
 
   <div class="noticebar hidden" id="noticeBar">
@@ -2016,6 +2035,11 @@
            rather than only found by someone who goes looking. -->
       <div class="tyline hidden" id="tyLine" aria-live="polite"></div>
     </div>
+
+    <!-- The saved-stop card again, while a trip is live: the same card the
+         tracker shows under its map, written into both by renderMyStop(),
+         following this phone's own bus to the stop its sharer gets off at. -->
+    <div class="mystop tripstop hidden" id="tripStop"></div>
 
     <!-- The tickets this phone has kept. Drawn by syncAlbumRow() only once
          there is one, so nobody is offered an empty album or a zero. -->
@@ -3415,6 +3439,18 @@ function honkBus(id){
 // as it is in the chips and on the admin page. The server's 12 character cap
 // is not a defence, only the reason nobody has managed anything with it yet.
 const LINK_GLYPH = '<svg class="gi" aria-hidden="true"><use href="#i-link"/></svg>';
+// "I'm on this bus", for a rider who is not sharing: it turns the stop card
+// from "which bus reaches me" into "how far is my bus from where I get off".
+// Never on the bus this phone is sharing, which is already known to be
+// theirs, and never while sharing at all, when the server says which it is.
+function aboardControl(b, linkable){
+  if (b.self || sharing || !linkable) return '';
+  const on = ABOARD && (b.id === ABOARD || (b.members && b.members.indexOf(ABOARD) >= 0));
+  return on
+    ? '<button type="button" class="buslink onit" onclick="leaveBus()">'+COACH_GLYPH+'I got off this bus</button>'
+    : '<button type="button" class="buslink" onclick="boardBus(\''+b.id+'\')">'+COACH_GLYPH+'I’m on this bus</button>';
+}
+const COACH_GLYPH = '<svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg>';
 function busPopupHtml(b){
   const fresh = freshness(b.ts);
   const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
@@ -3429,6 +3465,7 @@ function busPopupHtml(b){
     ((b.count&&b.count>1) ? ' · '+(b.count|0)+' sharing' : '')+'</div>'+
     (story ? '<div class="kw">'+markSvg(story.mark)+'<span><b>'+story.lead+'</b>'+escapeHtml(story.name+', '+story.about)+'</span></div>' : '')+
     thanksControl(b.id, b.self, thanksDone(b))+
+    aboardControl(b, linkable)+
     (linkable ? '<button type="button" class="buslink" onclick="sendBusLink(\''+b.id+'\')">'+LINK_GLYPH+'Send a link to this bus</button>' : '')+
     '</div>';
 }
@@ -3766,6 +3803,62 @@ function rideState(info){
   if (info.stops <= 2) return 'near';
   return '';
 }
+
+// Riding to your stop, rather than waiting at it. The same card, asked the
+// other question: not "which bus will reach me" but "how far is MY bus from
+// where I get off". The nearest coming bus is the wrong answer on board: a
+// bus running ahead of yours on the same road is nearer the stop, and the
+// card would count down to it while yours is still three stops back.
+//
+// Which bus is yours comes from one of two places, both already on this
+// phone. A sharer's own bus is the cluster the server flagged is_self
+// (sql/04), so it needs nothing from them. Anyone else says so from the
+// bus's popup, and that choice is a public bus id kept for the visit only
+// (sessionStorage, like the buzz); it is never sent, and it means nothing
+// once the trip ends because the id dies with it.
+function aboardBus(all, aboardId){
+  if (!all || !all.length) return null;
+  for (let i=0;i<all.length;i++){ if (all[i].self) return all[i]; }
+  if (!aboardId) return null;
+  for (let i=0;i<all.length;i++){
+    const b = all[i];
+    if (b.id === aboardId || (b.members && b.members.indexOf(aboardId) >= 0)) return b;
+  }
+  return null;
+}
+// Within this much past the stop, a bus is still AT it: a phone's fix wobbles
+// by a few hundred metres and a bus pulls in a little beyond the sign, and
+// "your stop is behind you" while you are stepping off it would be wrong.
+const AT_STOP_KM = 0.3;
+// The same shape approachInfo() returns, so stopsBetween() and rideState()
+// read it unchanged, plus `passed` for a stop the bus has already left behind
+// — which is also what a sharer heading AWAY from their saved stop sees, so
+// the card asks for the stop they are getting off at rather than counting
+// backwards.
+function aboardInfo(b, myKm, stopKms){
+  if (!b || myKm === null || myKm === undefined || isNaN(myKm)) return null;
+  if (b.km === null || b.km === undefined || isNaN(b.km)) return null;
+  const toGo = b.direction === 'south' ? (b.km - myKm) : (myKm - b.km);
+  const out = { id:b.id, direction:b.direction, label:b.label, ts:b.ts, busKm:b.km, stops:0, passed:false };
+  if (toGo < -AT_STOP_KM){ out.passed = true; out.km = -toGo; return out; }
+  out.km = Math.max(0, toGo);
+  const lo = Math.min(b.km, myKm), hi = Math.max(b.km, myKm);
+  for (let i=0;i<stopKms.length;i++){ if (stopKms[i] > lo && stopKms[i] < hi) out.stops++; }
+  return out;
+}
+// The screen reader's sentence for the riding card, and the words the tests
+// read. Distance to go and stops before yours; still never minutes.
+function aboardWords(info){
+  if (!info) return null;
+  const dir = info.direction === 'south' ? '▼ Southbound' : '▲ Northbound';
+  if (info.passed) return dir + ' · your stop is behind this bus';
+  const dist = info.km < 0.5 ? 'under 500 m to go'
+             : info.km < 10  ? info.km.toFixed(1) + ' km to go'
+             :                 Math.round(info.km) + ' km to go';
+  const stops = info.stops === 0 ? 'yours is the next stop'
+                                 : 'about ' + info.stops + (info.stops === 1 ? ' stop' : ' stops') + ' before yours';
+  return dir + ' · on your bus · ' + dist + ' · ' + stops;
+}
 // ---- END MY STOP -------------------------------------------------------
 
 // ---- My stop: storage, the picker, and the marks on the map -----------
@@ -3847,33 +3940,94 @@ function setBuzz(on){
   // A buzz now, when switching it on, is the only way to know the phone can.
   if (on){ try{ if (navigator.vibrate) navigator.vibrate(60); }catch(e){} }
 }
-function renderMyStop(shown){
+// Which bus a rider who is not sharing said they are on, from its popup. A
+// public bus id, kept for this visit only and sent nowhere: see aboardBus().
+// Sharing takes over from it while it runs, because then the server says.
+let ABOARD = null;
+function loadAboard(){
+  let v = null;
+  try{ v = sessionStorage.getItem('wt-aboard'); }catch(e){}
+  ABOARD = (v && /^[A-Za-z0-9\-]+$/.test(v)) ? v : null;
+}
+function setAboard(id){
+  ABOARD = (id && /^[A-Za-z0-9\-]+$/.test(id)) ? id : null;
+  try{ if (ABOARD) sessionStorage.setItem('wt-aboard', ABOARD); else sessionStorage.removeItem('wt-aboard'); }catch(e){}
+}
+function boardBus(id){
+  setAboard(id);
+  if (map) map.closePopup();
+  renderBuses();
+  // Without a stop there is nothing to count down to, so ask for it now
+  // rather than leave a button to be found.
+  if (!MYSTOP) openStopPicker();
+  else showToast('Your stop card now follows this bus.');
+}
+function leaveBus(){
+  setAboard(null);
+  renderBuses();
+}
+// The card sits under the map on the tracker and, while a trip is live, on
+// the sharing tab as well, so a sharer never has to choose between watching
+// their stop and seeing that their bus is still on the map. It is built
+// once and written into both: the buzz is a label around its checkbox, not
+// an id, so the two copies cannot collide.
+function renderMyStop(shown, all){
   const box = document.getElementById('myStop');
   if (!box) return;
   const legend = document.getElementById('myStopLegend');
   if (legend) legend.classList.toggle('hidden', !MYSTOP);
+  const html = myStopCardHtml(shown, all || shown);
+  box.innerHTML = html;
+  const trip = document.getElementById('tripStop');
+  if (trip){
+    trip.classList.toggle('hidden', !sharing);
+    trip.innerHTML = sharing ? html : '';
+  }
+}
+function myStopCardHtml(shown, all){
+  // Riding: a sharer always is, and anyone else once they have said which
+  // bus they are on. The card then follows that bus alone, whatever the
+  // direction filter says, because it is the reader's own bus.
+  const riding = sharing || !!ABOARD;
   if (!MYSTOP){
-    box.innerHTML = '<button type="button" class="mystop-btn" onclick="openStopPicker()">' +
-      '<span class="pin">' + PIN_GLYPH + '</span><span>Set your stop — see how far the bus is from it</span></button>';
-    return;
+    RIDE_LAST = '';
+    return '<button type="button" class="mystop-btn" onclick="openStopPicker()">' +
+      '<span class="pin">' + PIN_GLYPH + '</span><span>' + (riding
+        ? 'Set the stop you’re getting off at — see how many stops are left'
+        : 'Set your stop — see how far the bus is from it') + '</span></button>';
   }
   MYSTOP_KM = routeProgressKm({lat:MYSTOP.lat, lng:MYSTOP.lng}, CHECKPOINTS, ROUTE_CHAIN);
-  const withKm = shown.map(function(b){
+  const placed = function(b){
     return { id:b.id, direction:b.direction, label:b.label, ts:b.ts,
              km: routeProgressKm({lat:b.lat, lng:b.lng}, CHECKPOINTS, ROUTE_CHAIN) };
-  });
-  const info = approachInfo(withKm, MYSTOP_KM, STOP_KMS, 'all');
-  const words = myStopWords(info);
-  if (!words){
+  };
+  if (riding){
+    const mine = aboardBus(all, sharing ? null : ABOARD);
+    const info = mine ? aboardInfo(placed(mine), MYSTOP_KM, STOP_KMS) : null;
+    if (info && !info.passed) return rideCardHtml(info, true);
     RIDE_LAST = '';
-    box.innerHTML = '<div class="mystop-live"><div class="body">' +
-      '<span class="name">' + escapeHtml(MYSTOP.name) + '</span>' +
-      '<span class="rel"><span class="quiet">' + (shown.length
-          ? 'No bus on the map is heading your way right now.'
-          : 'Nobody is sharing GPS right now.') + '</span></span></div>' +
-      '<button type="button" class="edit" onclick="openStopPicker()">Change</button></div>';
-    return;
+    return quietStopCard(
+      !mine ? (sharing ? 'Your bus shows here once it is on the map.' : 'Your bus isn’t on the map right now.')
+      : !info ? 'Your bus can’t be placed on the route right now.'
+      : 'Your stop is behind this bus. Change it to the one you’re getting off at.', !sharing);
   }
+  const info = approachInfo(shown.map(placed), MYSTOP_KM, STOP_KMS, 'all');
+  if (info) return rideCardHtml(info, false);
+  RIDE_LAST = '';
+  return quietStopCard(shown.length
+    ? 'No bus on the map is heading your way right now.'
+    : 'Nobody is sharing GPS right now.', false);
+}
+// "I got off" is offered only to a rider who chose their bus from its popup.
+// A sharer gets off by tapping Stop sharing, which is the same moment.
+function quietStopCard(text, offBtn){
+  return '<div class="mystop-live"><div class="body">' +
+    '<span class="name">' + escapeHtml(MYSTOP.name) + '</span>' +
+    '<span class="rel"><span class="quiet">' + text + '</span></span></div>' +
+    (offBtn ? '<button type="button" class="edit" onclick="leaveBus()">I got off</button>' : '') +
+    '<button type="button" class="edit" onclick="openStopPicker()">Change</button></div>';
+}
+function rideCardHtml(info, riding){
   // The stops still between the bus and you, as dots. Past eleven they no
   // longer fit a phone's width, so the line keeps the next five and the last
   // three and puts an ellipsis between them; the count beside it is exact.
@@ -3883,30 +4037,37 @@ function renderMyStop(shown){
   if (n <= 11){ for (let i=0;i<n;i++) dots += '<i' + (i===0 ? ' class="next"' : '') + '></i>'; }
   else { dots = '<i class="next"></i><i></i><i></i><i></i><i></i><span class="gap">···</span><i></i><i></i><i></i>'; }
   const state = rideState(info);
-  const key = info.id + '|' + state;
+  // Riding and waiting are separate keys, so boarding the bus the card was
+  // already watching still pops its flag and buzzes once for getting off.
+  const id = (riding ? 'on:' : '') + info.id;
+  const key = id + '|' + state;
   const fresh = state && key !== RIDE_LAST;
   RIDE_LAST = key;
-  if (state && buzzOn() && !BUZZED[info.id]){
-    BUZZED[info.id] = 1;
+  if (state && buzzOn() && !BUZZED[id]){
+    BUZZED[id] = 1;
     try{ if (navigator.vibrate) navigator.vibrate([180, 90, 180]); }catch(e){}
   }
   const km = info.km < 0.5 ? 'under 500 m' : info.km < 10 ? info.km.toFixed(1) + ' km' : Math.round(info.km) + ' km';
   const dirWords = info.direction === 'south' ? '▼ Southbound' : '▲ Northbound';
   const big = state === 'here'
-    ? '<span class="num">Next stop is yours.</span><span class="unit">Get ready to wave it down.</span>'
+    ? '<span class="num">Next stop is yours.</span><span class="unit">' +
+      (riding ? 'Get ready to get off.' : 'Get ready to wave it down.') + '</span>'
     : n === 0
     ? '<span class="num">Next</span><span class="unit">stop is yours</span><span class="km">· ' + km + '</span>'
     : '<span class="unit">about</span><span class="num">' + n + '</span><span class="unit">' + (n === 1 ? 'stop' : 'stops') +
       ' before yours</span><span class="km">· ' + km + '</span>';
+  const flag = state === 'here' ? (riding ? 'Bababa na!' : 'Sakay na!') : 'Malapit na!';
+  const words = riding ? aboardWords(info) : myStopWords(info);
   const canBuzz = !!(navigator.vibrate);
-  box.innerHTML =
-    '<div class="ride ' + (info.direction === 'south' ? 'sb' : 'nb') + (state ? ' ' + state : '') + '">' +
-      '<div class="ride-top"><span class="ride-name">' + escapeHtml(MYSTOP.name) + '</span>' +
-        '<button type="button" class="edit" onclick="openStopPicker()">Change</button></div>' +
-      (state ? '<div class="ride-flag' + (fresh ? ' fresh' : '') + '">' + (state === 'here' ? 'Sakay na!' : 'Malapit na!') + '</div>' : '') +
+  return '<div class="ride ' + (info.direction === 'south' ? 'sb' : 'nb') + (riding ? ' aboard' : '') + (state ? ' ' + state : '') + '">' +
+      '<div class="ride-top"><span class="ride-name">' + escapeHtml(MYSTOP.name) + '</span><span class="ride-acts">' +
+        (riding && !sharing ? '<button type="button" class="edit" onclick="leaveBus()">I got off</button>' : '') +
+        '<button type="button" class="edit" onclick="openStopPicker()">Change</button></span></div>' +
+      (state ? '<div class="ride-flag' + (fresh ? ' fresh' : '') + '">' + flag + '</div>' : '') +
       '<div class="ride-line" aria-hidden="true"><span class="ride-bus">' + BUS_GLYPH + '</span>' +
         '<span class="ride-track">' + dots + '</span><span class="ride-me"></span></div>' +
-      '<div class="ride-cap" aria-hidden="true"><span>' + escapeHtml(info.label ? 'Bus ' + info.label : 'Next bus') + '</span>' +
+      '<div class="ride-cap" aria-hidden="true"><span>' +
+        escapeHtml(riding ? (info.label ? 'Your bus · ' + info.label : 'Your bus') : (info.label ? 'Bus ' + info.label : 'Next bus')) + '</span>' +
         '<span class="me">Your stop</span></div>' +
       '<div class="ride-big" aria-hidden="true">' + big + '</div>' +
       '<div class="ride-sub" aria-hidden="true">' + dirWords +
@@ -3916,7 +4077,7 @@ function renderMyStop(shown){
       // says all of the above in the order a person would.
       '<span class="vh">' + escapeHtml(words) + ' · updated ' + timeAgo(info.ts) + ' ago</span>' +
       (canBuzz ? '<label class="buzz"><span>Buzz once when it’s two stops away</span>' +
-        '<input type="checkbox" id="buzzBox" onchange="setBuzz(this.checked)"' + (buzzOn() ? ' checked' : '') + '></label>' : '') +
+        '<input type="checkbox" onchange="setBuzz(this.checked)"' + (buzzOn() ? ' checked' : '') + '></label>' : '') +
     '</div>';
 }
 
@@ -4351,7 +4512,7 @@ function renderBuses() {
       (b.count>1?' · '+b.count+' sharing':'')+'</span></button>';
   }).join('');
 
-  renderMyStop(shown);
+  renderMyStop(shown, all);
   renderMyThanks();
   renderMapNote(all.length > 0);
   renderFollow(all);
@@ -5530,6 +5691,11 @@ function syncTripMode(){
   const view = document.getElementById('onbusView');
   const onTab = !!view && !view.classList.contains('hidden');
   document.documentElement.classList.toggle('trip-on', !!sharing && onTab);
+  // And the tab itself says a trip is live, so leaving the sharing tab to
+  // watch the map never looks like having stopped: GPS keeps going whichever
+  // tab is on screen, and before this nothing on the tracker said so.
+  const tab = document.getElementById('tabOnbus');
+  if (tab) tab.classList.toggle('live', !!sharing);
 }
 
 // ---- Pasko -----------------------------------------------------------
@@ -5575,6 +5741,17 @@ function setShareUI(state,msg){
   // be showing other people's buses under a heading about theirs.
   document.getElementById('onbusStripCard').classList.toggle('hidden', state!=='on');
   document.getElementById('selfLegend').classList.toggle('hidden', state!=='on');
+  // A sharer's bus is the one the server flags as theirs, so a bus picked
+  // from a popup before starting is superseded rather than kept to come back
+  // after Stop and point at a trip this phone is no longer on.
+  // Redrawn once as well, so the stop card joins the sharing tab the moment
+  // the trip starts instead of at the first poll. Once: this runs on every
+  // GPS fix, and the card's own copy being hidden is what says "not yet".
+  if (state==='on'){
+    if (ABOARD) setAboard(null);
+    const ts=document.getElementById('tripStop');
+    if (ts && ts.classList.contains('hidden')) renderBuses();
+  }
   if (state!=='on'){
     // The ring means "the bus you are sharing", and this phone is not sharing
     // any more. The rows in hand still say it is, so drop the flag and redraw
@@ -5733,6 +5910,7 @@ function start(){
   STOP_KMS = stopChainKms(STOPS, CHECKPOINTS, ROUTE_CHAIN);
   NAMED_STOPS = namedStopKms(STOPS, CHECKPOINTS, ROUTE_CHAIN);
   loadMyStop();
+  loadAboard();
   syncAlbumRow();
   readFollowLink();
   if (!mapReady){

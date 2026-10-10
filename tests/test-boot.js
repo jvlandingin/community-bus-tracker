@@ -583,6 +583,73 @@ function run(page, include, label, configText, setup) {
   check(stopLegend.className.includes('hidden'), 'and takes its legend line away again');
   check(/Set your stop/i.test(stopBar.textContent), 'leaving the offer to set one');
 
+  // Already on the bus. A rider says so from the bus's popup; a sharer never
+  // has to, because the server flags their row. Either way the card follows
+  // that one bus to the stop, and the sharing tab carries the card too.
+  {
+    const tripBox = ok.d.getElementById('tripStop');
+    check(!!tripBox && tripBox.className.includes('hidden'),
+      'the sharing tab has a copy of the stop card, hidden while nobody here is sharing');
+    const pop = b => { const div = ok.d.createElement('div'); div.innerHTML = ok.w.busPopupHtml(b); return div; };
+    const near = { id: 'aaa111', lat: cpAt(3).lat, lng: cpAt(3).lng, direction: 'north', ts: Date.now(), members: ['aaa111'] };
+    const mineBus = { id: 'bbb222', lat: busCp.lat, lng: busCp.lng, direction: 'north', ts: Date.now(), members: ['bbb222', 'ccc333'], label: '98018' };
+    const offer = [...pop(mineBus).querySelectorAll('button')].find(b => /on this bus/.test(b.textContent));
+    check(!!offer && (offer.getAttribute('onclick') || '').includes("boardBus('bbb222')"),
+      'a bus\'s popup offers "I\'m on this bus"', offer && offer.textContent);
+    check(![...pop({ ...mineBus, self: true }).querySelectorAll('button')].some(b => /on this bus/.test(b.textContent)),
+      'but not on the bus this phone is sharing, which is already known to be theirs');
+    check(![...pop({ ...mineBus, id: 'x\'); alert(1); (\'' }).querySelectorAll('button')].some(b => /on this bus/.test(b.textContent)),
+      'and not on an id that is not plain, which would otherwise reach a handler');
+
+    ok.w.setMyStop('Test Stop', myCp.lat, myCp.lng);
+    ok.w.renderMyStop([near, mineBus]);
+    check(/Bus|Next bus/.test(stopBar.textContent) && !/on your bus/.test(stopBar.textContent),
+      'waiting, the card counts down on whichever bus is nearest');
+    ok.w.boardBus('ccc333');
+    check(ok.w.sessionStorage.getItem('wt-aboard') === 'ccc333',
+      'tapping it keeps the bus\'s public id for this visit, in sessionStorage');
+    ok.w.renderMyStop([near, mineBus]);
+    const said = stopBar.textContent.replace(/\s+/g, ' ');
+    check(/on your bus · [\d.]+ km to go/.test(said) && /Your bus · 98018/.test(said),
+      'and the card now follows that bus, not the one nearer the stop', said.slice(0, 90));
+    check(/I got off this bus/.test(pop(mineBus).textContent), 'its popup now offers "I got off this bus" instead');
+    ok.w.renderMyStop([near]);
+    check(/isn.t on the map right now/.test(stopBar.textContent) && /I got off/.test(stopBar.textContent),
+      'if that bus leaves the map the card says so, rather than falling back to another bus');
+    ok.w.leaveBus();
+    check(ok.w.sessionStorage.getItem('wt-aboard') === null, '"I got off" forgets it');
+    ok.w.renderMyStop([near, mineBus]);
+    check(!/on your bus/.test(stopBar.textContent), 'and the card is back to waiting');
+
+    // Sharing. `sharing` is a top-level let, so it is reached through eval
+    // rather than as a property of window.
+    const tab = ok.d.getElementById('tabOnbus');
+    check(!tab.className.includes('live'), 'the sharing tab carries no live dot while nothing is shared');
+    ok.w.boardBus('bbb222');
+    ok.w.eval('sharing = true');
+    ok.w.switchTab('track');
+    ok.w.setShareUI('on', 'Sharing live');
+    check(tab.className.includes('live') && /sharing now/.test(tab.textContent),
+      'while sharing, the tab says so from the tracker, in a dot and in words for screen readers');
+    check(ok.w.sessionStorage.getItem('wt-aboard') === null,
+      'and a bus picked from a popup is superseded, so it cannot come back after Stop');
+    ok.w.renderMyStop([near, { ...mineBus, self: true }]);
+    check(/on your bus/.test(stopBar.textContent) && !tripBox.className.includes('hidden') && /on your bus/.test(tripBox.textContent),
+      'the sharer\'s own bus drives the card, on the tracker and on the sharing tab both');
+    check(!/I got off/.test(tripBox.textContent), 'with no "I got off": a sharer gets off by tapping Stop');
+    check(!/on this bus/.test(pop(near).textContent), 'and no "I\'m on this bus" on any popup while sharing');
+    check(ok.d.querySelectorAll('[id="buzzBox"]').length === 0,
+      'the card written twice repeats no id');
+    ok.w.renderMyStop([near, { ...mineBus, self: true, lat: cpAt(6).lat, lng: cpAt(6).lng }]);
+    check(/behind this bus/.test(tripBox.textContent),
+      'a sharer heading away from their saved stop is asked for the one they get off at');
+    ok.w.eval('sharing = false');
+    ok.w.setShareUI('off', 'Not sharing');
+    check(!tab.className.includes('live') && tripBox.className.includes('hidden'),
+      'stopping takes the dot and the sharing tab\'s card away');
+    ok.w.clearMyStop();
+  }
+
   // The panel is the promise and the code is only the implementation. This is
   // that rule made mechanical: every key the app writes to localStorage has to
   // be one the panel has told the reader about. A fifth remembered thing

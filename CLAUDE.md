@@ -139,7 +139,12 @@ between are counted by projecting them onto the chain, never by `config.txt`
 order, which is merged from two posters and is not route order. It reports
 distance and stop counts only, never minutes: an ETA needs travel-time history
 this system does not keep, and `test-mystop.js` fails if the wording drifts
-towards implying one.
+towards implying one. **On board, the card follows your own bus** to the stop
+you get off at instead of the nearest one coming: a sharer's is the row the
+server flags `is_self`, anyone else's is picked with "I'm on this bus" in the
+popup and kept in `sessionStorage` only. While sharing, the card shows on the
+sharing tab too, and that tab carries a live dot so leaving it never looks
+like stopping.
 
 **A reader can thank a sharer**, once per bus, from the bus's popup on the
 map. Deliberately narrow, and each narrowing is load-bearing: the count belongs

@@ -50,15 +50,21 @@ CARTO_API_KEY =
 
 # ============================================================
 #  CHECKPOINTS, the labels on the progress strip, in order.
-#  Format:  CHECKPOINT = Full Name | SHORT | latitude | longitude
+#  Format:  CHECKPOINT = Full Name | SHORT | latitude | longitude | about
+#
+#  "about" is optional: one short line about the place, shown in a bus's
+#  popup as it passes or heads there ("Passing Amadeo, the coffee capital
+#  of the Philippines"). Leave it off and the popup just says nothing about
+#  that stop. Write it as the end of a sentence that starts with the name,
+#  keep it to one plain fact you have checked, and do not use | or = in it.
 # ============================================================
 CHECKPOINT = Mendez Crossing | MENDEZ | 14.0997 | 120.9145
-CHECKPOINT = Tagaytay        | TGY    | 14.1187 | 120.9540
-CHECKPOINT = Amadeo          | AMADEO | 14.1701 | 120.9221
-CHECKPOINT = Gen. Trias      | GEN.T  | 14.2912 | 120.9068
-CHECKPOINT = Imus            | IMUS   | 14.3897 | 120.9196
-CHECKPOINT = PITX            | PITX   | 14.5101 | 120.9913
-CHECKPOINT = One Ayala       | AYALA  | 14.5505 | 121.0279
+CHECKPOINT = Tagaytay        | TGY    | 14.1187 | 120.9540 | on the ridge above Taal Lake
+CHECKPOINT = Amadeo          | AMADEO | 14.1701 | 120.9221 | the coffee capital of the Philippines
+CHECKPOINT = Gen. Trias      | GEN.T  | 14.2912 | 120.9068 | named after the revolutionary general Mariano Trías
+CHECKPOINT = Imus            | IMUS   | 14.3897 | 120.9196 | where the Battle of Alapan was won in 1898
+CHECKPOINT = PITX            | PITX   | 14.5101 | 120.9913 | the big bus terminal by Manila Bay
+CHECKPOINT = One Ayala       | AYALA  | 14.5505 | 121.0279 | the end of the line, in the middle of Makati
 
 # ============================================================
 #  STOPS, merged from both official posters, in route order.

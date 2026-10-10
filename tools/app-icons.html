@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<!--
+  The source for the home-screen icons and the link-preview picture.
+  tools/render-icons.sh opens this page once per image, with the image's
+  name as the #fragment, and screenshots it at that image's size. Nothing
+  here is loaded by the site: the PNGs it produces are, from assets/icons/.
+
+  Drawn from the tracker's own livery and the same bus glyph as the map's
+  badges, so the icon on a home screen and the badge on the map are one
+  picture. Change the bus in index.html (BUS_GLYPH) and it changes here too,
+  by hand, in the same commit.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bus Tracker icons</title>
+<style>
+  html, body{margin:0; height:100%; background:#000;}
+  /* Sized from the width alone. Headless Chromium's screenshot viewport can
+     come out shorter than the window it was asked for, so anything sized by
+     vh leaves a black band at the bottom of the picture. */
+  .art{display:none; width:100vw; height:100vw; position:relative; overflow:hidden;
+       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;}
+  .art:target{display:block;}
+  /* Painted across the picture when the viewport is shorter than the art,
+     which is what full Chrome's headless mode does (see render-icons.sh).
+     A warning in the image cannot be missed; a band along its foot can. */
+  .short .art:target::before{content:'Viewport too short: render with chrome-headless-shell, see tools/render-icons.sh';
+    position:absolute; inset:0; z-index:9; padding:6%; background:#ffe600; color:#000;
+    font:800 7vw/1.15 sans-serif;}
+
+  /* Icons: the bus on maroon, with the livery's gold trim along the
+     bottom. Square and full-bleed: launchers and iOS cut their own
+     corners. The maskable one keeps the bus inside the central 80% safe
+     zone, because Android may crop it to a circle. */
+  .icon{background:linear-gradient(165deg,#8a2533 0%,#5c161f 100%);}
+  .icon::after{content:''; position:absolute; left:0; right:0; bottom:0; height:9%; background:#e39a1c;}
+  .icon svg{position:absolute; left:50%; top:46%; width:64%; height:64%; transform:translate(-50%,-50%); fill:#fff;}
+  .icon.mask svg{width:46%; height:46%; top:47%;}
+  .icon.mask::after{height:11%;}
+
+  /* The picture a link preview shows in the group chat, 1200x630. */
+  #preview{height:52.5vw; background:linear-gradient(180deg,#7a1f2b,#5c161f); color:#fff;}
+  #preview::after{content:''; position:absolute; left:0; right:0; bottom:0; height:16px; background:#e39a1c;}
+  .board{position:absolute; left:72px; top:64px; padding:15.6px 20.8px; border-radius:16px;
+    background:radial-gradient(circle at 50% 50%, rgba(255,170,40,.14) 2.1px, transparent 2.7px) 20.8px 15.6px/5.2px 5.2px,
+               radial-gradient(120% 140% at 30% 0%, #1d1513 0%, #0b0807 70%);
+    box-shadow:inset 0 0 0 2px rgba(255,255,255,.08), inset 0 6px 20px rgba(0,0,0,.75);}
+  .led{display:block; color:#ffb22e; font-weight:900; font-size:48px; line-height:1.22; letter-spacing:.06em; text-transform:uppercase;
+    text-shadow:0 0 12px rgba(255,165,30,.9);
+    -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 2.1px, transparent 2.7px); -webkit-mask-size:5.2px 5.2px;
+    mask-image:radial-gradient(circle at 50% 50%, #000 2.1px, transparent 2.7px); mask-size:5.2px 5.2px;}
+  .head{position:absolute; left:76px; top:270px; font-size:70px; font-weight:850; letter-spacing:-.02em; line-height:1;}
+  .sub{position:absolute; left:78px; top:362px; width:900px; font-size:28px; font-weight:600; line-height:1.35; color:rgba(255,255,255,.88);}
+  .strip{position:absolute; left:78px; right:78px; bottom:70px; height:96px;}
+  .strip > svg{width:100%; height:100%; overflow:visible;}
+  .name{position:absolute; right:72px; top:80px; text-align:right; font-size:26px; font-weight:800; letter-spacing:.12em; color:rgba(255,255,255,.92);}
+  .name small{display:block; margin-top:6px; font-size:18px; letter-spacing:.14em; color:#ffd27a;}
+</style>
+</head>
+<body>
+
+<!-- The bus below is BUS_GLYPH from index.html, unchanged, drawn inline in each
+     picture with its windows in the colour of whatever is behind it. -->
+<div class="art icon" id="icon"><svg viewBox="0 0 24 24"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7" fill="#fff"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7" fill="#fff"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2" fill="#fff"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1" fill="#fff"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1" fill="#fff"/><rect x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3" fill="#6d1a27"/><circle cx="8.3" cy="14.5" r="1.3" fill="#6d1a27"/><circle cx="15.7" cy="14.5" r="1.3" fill="#6d1a27"/></svg></div>
+<div class="art icon mask" id="maskable"><svg viewBox="0 0 24 24"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7" fill="#fff"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7" fill="#fff"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2" fill="#fff"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1" fill="#fff"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1" fill="#fff"/><rect x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3" fill="#6d1a27"/><circle cx="8.3" cy="14.5" r="1.3" fill="#6d1a27"/><circle cx="15.7" cy="14.5" r="1.3" fill="#6d1a27"/></svg></div>
+
+<div class="art" id="preview">
+  <div class="board"><span class="led">Mendez / Tagaytay<br>⇄ One Ayala</span></div>
+  <div class="name">BUS TRACKER<small>UNOFFICIAL</small></div>
+  <div class="head">Nasaan na ang bus?</div>
+  <div class="sub">Live bus positions, shared by the people on board. No app, no account. Community-run, not affiliated with the bus company.</div>
+  <div class="strip">
+    <svg viewBox="0 0 1044 96" aria-hidden="true">
+      <line x1="8" y1="24" x2="1036" y2="24" stroke="#e39a1c" stroke-width="10" stroke-linecap="round"/>
+      <line x1="8" y1="72" x2="1036" y2="72" stroke="#d24a5c" stroke-width="10" stroke-linecap="round"/>
+      <g fill="#5c161f" stroke="#e39a1c" stroke-width="5">
+        <circle cx="8" cy="24" r="11"/><circle cx="154.9" cy="24" r="8"/><circle cx="301.7" cy="24" r="8"/><circle cx="448.6" cy="24" r="8"/>
+        <circle cx="595.4" cy="24" r="8"/><circle cx="742.3" cy="24" r="8"/><circle cx="889.1" cy="24" r="8"/><circle cx="1036" cy="24" r="11"/>
+      </g>
+      <g fill="#5c161f" stroke="#d24a5c" stroke-width="5">
+        <circle cx="8" cy="72" r="11"/><circle cx="154.9" cy="72" r="8"/><circle cx="301.7" cy="72" r="8"/><circle cx="448.6" cy="72" r="8"/>
+        <circle cx="595.4" cy="72" r="8"/><circle cx="742.3" cy="72" r="8"/><circle cx="889.1" cy="72" r="8"/><circle cx="1036" cy="72" r="11"/>
+      </g>
+      <g stroke="#fff" stroke-width="4">
+        <circle cx="372" cy="24" r="21" fill="#e39a1c"/><circle cx="520" cy="24" r="21" fill="#e39a1c"/>
+        <circle cx="236" cy="72" r="21" fill="#7a1f2b"/><circle cx="820" cy="72" r="21" fill="#7a1f2b"/>
+      </g>
+      <svg x="358" y="10" width="28" height="28" viewBox="0 0 24 24"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7" fill="#fff"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7" fill="#fff"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2" fill="#fff"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1" fill="#fff"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1" fill="#fff"/><rect x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3" fill="#e39a1c"/><circle cx="8.3" cy="14.5" r="1.3" fill="#e39a1c"/><circle cx="15.7" cy="14.5" r="1.3" fill="#e39a1c"/></svg>
+      <svg x="506" y="10" width="28" height="28" viewBox="0 0 24 24"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7" fill="#fff"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7" fill="#fff"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2" fill="#fff"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1" fill="#fff"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1" fill="#fff"/><rect x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3" fill="#e39a1c"/><circle cx="8.3" cy="14.5" r="1.3" fill="#e39a1c"/><circle cx="15.7" cy="14.5" r="1.3" fill="#e39a1c"/></svg>
+      <svg x="222" y="58" width="28" height="28" viewBox="0 0 24 24"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7" fill="#fff"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7" fill="#fff"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2" fill="#fff"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1" fill="#fff"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1" fill="#fff"/><rect x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3" fill="#7a1f2b"/><circle cx="8.3" cy="14.5" r="1.3" fill="#7a1f2b"/><circle cx="15.7" cy="14.5" r="1.3" fill="#7a1f2b"/></svg>
+      <svg x="806" y="58" width="28" height="28" viewBox="0 0 24 24"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7" fill="#fff"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7" fill="#fff"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2" fill="#fff"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1" fill="#fff"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1" fill="#fff"/><rect x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3" fill="#7a1f2b"/><circle cx="8.3" cy="14.5" r="1.3" fill="#7a1f2b"/><circle cx="15.7" cy="14.5" r="1.3" fill="#7a1f2b"/></svg>
+    </svg>
+  </div>
+</div>
+
+<script>
+  addEventListener('load', function(){
+    var art = document.querySelector('.art:target');
+    if (art && innerHeight + 1 < art.getBoundingClientRect().height) document.documentElement.className = 'short';
+  });
+</script>
+</body>
+</html>

@@ -9,7 +9,7 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Community bus tracker — a briefing for the operator">
 <meta property="og:description" content="What it records, what it cannot do, and what we are asking. An unofficial, volunteer-run tool.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚌%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3CclipPath id='c'%3E%3Crect width='32' height='32' rx='7'/%3E%3C/clipPath%3E%3Cg clip-path='url(%23c)'%3E%3Crect width='32' height='32' fill='%237a1f2b'/%3E%3Crect y='27.5' width='32' height='4.5' fill='%23e39a1c'/%3E%3C/g%3E%3Cg transform='translate(4 3.4)' fill='%23fff'%3E%3Crect x='1.8' y='7.6' width='2.4' height='3.4' rx='.7'/%3E%3Crect x='19.8' y='7.6' width='2.4' height='3.4' rx='.7'/%3E%3Crect x='4.5' y='2.8' width='15' height='15.6' rx='3.2'/%3E%3Crect x='6.4' y='16.8' width='3.8' height='3.6' rx='1.1'/%3E%3Crect x='13.8' y='16.8' width='3.8' height='3.6' rx='1.1'/%3E%3Crect fill='%237a1f2b' x='6.6' y='5.2' width='10.8' height='6.1' rx='1.3'/%3E%3Ccircle fill='%237a1f2b' cx='8.3' cy='14.5' r='1.3'/%3E%3Ccircle fill='%237a1f2b' cx='15.7' cy='14.5' r='1.3'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   /* Loads nothing, for the same reasons as how-to.html and flyer.html: a
      figure that 404s off a deploy fails silently, and a screenshot ties the
@@ -26,7 +26,7 @@
     --gold-line:#eeddb4; --maroon-line:#e6cdc9;
     /* The reader's own saved stop. Mirrored from index.html, like every
        other token here; test-boot.js fails if the two copies drift. */
-    --mine:#4f46b8; --mine-ink:#443aa6;
+    --mine:#4f46b8; --mine-ink:#443aa6; --mine-soft:#e8e6f8;
     --ok-ink:#166534; --warn-ink:#92400e;
     --shadow:0 1px 2px rgba(43,35,32,.05), 0 10px 28px -18px rgba(43,35,32,.28);
     --radius:16px;
@@ -42,7 +42,7 @@
       --line:#372e26; --live:#4ac694; --lost:#c4432e;
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
-      --mine:#4f46b8; --mine-ink:#b3aaf5;
+      --mine:#4f46b8; --mine-ink:#b3aaf5; --mine-soft:#2b2846;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
@@ -57,7 +57,7 @@
       --line:#372e26; --live:#4ac694; --lost:#c4432e;
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
-      --mine:#4f46b8; --mine-ink:#b3aaf5;
+      --mine:#4f46b8; --mine-ink:#b3aaf5; --mine-soft:#2b2846;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
@@ -217,25 +217,80 @@
   .demo-chip.nb{border-color:var(--gold-line);}
   .demo-chip.sb{border-color:var(--maroon-line);}
   .demo-chip .ag{color:var(--muted); font-weight:600;}
-  /* The reader's own saved stop, as index.html draws it between the chips
-     and the map. Worth a briefing's space because it is the part of the tool
-     a bus company is most often asked about: it answers "how far is my bus
-     from me" without the app knowing, or being able to say, where anybody
+  /* The reader's saved stop, as renderMyStop() in index.html draws it with a
+     bus coming: the bus at one end of a line, the stop at the other, one dot
+     for every stop still between them, then the count in words. Copied, not
+     imported, like everything else here, so it moves when the app's does.
+     Worth a briefing's space because it is the part of the tool a bus
+     company is most often asked about: it answers "how far is my bus from
+     me" without the app knowing, or being able to say, where anybody
      waiting for it is. */
-  .demo-mystop{
-    display:flex; align-items:center; gap:8px; margin-top:9px;
-    padding:7px 9px; border-radius:10px; background:var(--paper);
-    border:1px solid var(--line); border-left:3px solid var(--mine);
+  .ride{
+    margin-top:9px; padding:12px 14px; border-radius:14px; background:var(--paper);
+    border:1.5px solid var(--line); border-left:4px solid var(--mine);
   }
-  /* index.html's own row gives this wrapper flex:1; without it the box
-     shrink-wraps to less than the width available and the sentence takes a
-     second line it does not need. */
-  .demo-mystop > div{flex:1; min-width:0;}
-  .demo-mystop .who{
-    display:block; font-size:8px; font-weight:800; color:var(--mine-ink);
-    text-transform:uppercase; letter-spacing:.04em;
+  .ride-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .ride-name{
+    min-width:0; font-size:10.5px; font-weight:800; color:var(--mine-ink);
+    text-transform:uppercase; letter-spacing:.05em;
   }
-  .demo-mystop .rel{display:block; font-size:10px; font-weight:700; margin-top:1px;}
+  .ride-name::before{
+    content:''; display:inline-block; width:8px; height:8px; margin-right:6px; vertical-align:1px;
+    border-radius:50%; background:var(--mine); box-shadow:0 0 0 2px var(--mine-soft);
+  }
+  .ride .edit{
+    flex:0 0 auto; display:flex; align-items:center; min-height:34px; padding:0 12px; border-radius:9px;
+    border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
+    font-size:11px; font-weight:700;
+  }
+  .ride-line{display:flex; align-items:center; margin:12px 0 4px;}
+  .ride-bus{
+    flex:0 0 auto; width:30px; height:30px; border-radius:50%; z-index:1;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--gold); box-shadow:0 0 0 3px var(--gold-line);
+  }
+  .ride.sb .ride-bus{background:var(--maroon); box-shadow:0 0 0 3px var(--maroon-line);}
+  .ride-bus svg{width:19px; height:19px; fill:#fff;}
+  .ride-bus .win{fill:var(--gold);}
+  .ride.sb .ride-bus .win{fill:var(--maroon);}
+  .ride-track{
+    flex:1; position:relative; height:30px; margin:0 -2px;
+    display:flex; align-items:center; justify-content:space-around;
+  }
+  .ride-track::before{
+    content:''; position:absolute; left:0; right:0; top:50%; height:3px; margin-top:-1.5px; border-radius:2px;
+    background:linear-gradient(90deg, var(--gold), var(--mine));
+  }
+  .ride.sb .ride-track::before{background:linear-gradient(90deg, var(--maroon), var(--mine));}
+  .ride-track i{
+    position:relative; width:9px; height:9px; border-radius:50%;
+    background:var(--surface); border:2px solid var(--gold);
+  }
+  .ride.sb .ride-track i{border-color:var(--maroon);}
+  .ride-track i.next{width:11px; height:11px; border-width:3px;}
+  .ride-me{
+    flex:0 0 auto; width:22px; height:22px; border-radius:50%; z-index:1;
+    background:var(--mine); border:4px solid var(--surface);
+    box-shadow:0 0 0 2px var(--mine), 0 0 0 7px var(--mine-soft);
+  }
+  .ride-cap{
+    display:flex; justify-content:space-between; gap:10px; font-size:10px; font-weight:800;
+    letter-spacing:.04em; text-transform:uppercase; color:var(--muted);
+  }
+  .ride-cap .me{color:var(--mine-ink);}
+  .ride-big{display:flex; align-items:baseline; flex-wrap:wrap; gap:0 6px; margin-top:8px; line-height:1.2;}
+  .ride-big .num{font-size:30px; font-weight:800; letter-spacing:-.02em;}
+  .ride-big .unit, .ride-big .km{font-size:14px; font-weight:700;}
+  .ride-sub{margin-top:3px; font-size:11.5px; font-weight:600; color:var(--muted); line-height:1.45;}
+  .ride-sub b{color:var(--ink); font-weight:700;}
+  .ride-flag{
+    display:inline-block; margin-top:10px; padding:4px 10px; border-radius:999px;
+    font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    background:var(--gold); color:#2b2320;
+  }
+  .ride.here .ride-flag{background:var(--mine); color:#fff; font-size:13.5px;}
+  .ride.near{border-left-color:var(--gold); box-shadow:0 0 0 2px var(--gold-line);}
+  .ride.here{box-shadow:0 0 0 3px var(--mine-soft);}
   .figcap{font-size:11px; color:var(--muted); text-align:center; margin:0 0 4px;}
 
   .demo-map{
@@ -294,35 +349,62 @@
   }
   .demo-zoom b + b{border-top:1px solid #ccc;}
 
+  /* ---- Progress strip, copied from index.html ---------------------- */
   .strip{margin:8px 0 2px; padding:0 14px;}
   .demo > .strip{margin-top:0;}
-  .dirlabel{font-size:8.5px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
+  /* A line map, as the app draws it: a solid line per direction in its
+     livery colour, a station at every checkpoint, terminals a size bigger,
+     the reader's saved stop as a station in their own colour, and the map's
+     own drawn bus as the pill. The emoji pills and pale rails this used to
+     copy are gone from the app, so they are gone from here. */
+  .dirlabel{font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
   .dirlabel.nb{text-align:right; margin-bottom:3px;}
-  .track{position:relative; height:21px;}
-  .track .rail{position:absolute; left:0; right:0; top:9px; height:4px; border-radius:2px;}
-  .track.nb .rail{background:var(--gold-soft); border:1px solid var(--gold-line);}
-  .track.sb .rail{background:var(--maroon-soft); border:1px solid var(--maroon-line);}
   .dirlabel.sb{margin-top:3px;}
+  .track{position:relative; height:26px;}
+  .track .rail{position:absolute; left:0; right:0; top:10.5px; height:5px; border-radius:3px;}
+  .track.nb .rail{background:var(--gold);}
+  .track.sb .rail{background:var(--maroon);}
+  .track .stn{
+    position:absolute; top:8px; width:10px; height:10px; margin-left:-5px; border-radius:50%;
+    background:var(--surface); border:2.5px solid var(--gold);
+  }
+  .track.sb .stn{border-color:var(--maroon);}
+  .track .stn.end{top:6px; width:14px; height:14px; border-width:3px;}
+  .track .stn.first{margin-left:-1px;}
+  .track .stn.last{margin-left:-13px;}
+  /* The app lifts the southbound line in dark, where maroon on the near-black
+     card all but disappears. Stated twice, like the palette. */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .track.sb .rail{background:#a33a49;}
+    :root:not([data-theme="light"]) .track.sb .stn{border-color:#a33a49;}
+  }
+  :root[data-theme="dark"] .track.sb .rail{background:#a33a49;}
+  :root[data-theme="dark"] .track.sb .stn{border-color:#a33a49;}
+  .track .minestn{
+    position:absolute; top:6.5px; width:13px; height:13px; margin-left:-6.5px; border-radius:50%;
+    background:var(--mine); border:3px solid var(--surface); box-shadow:0 0 0 1.5px var(--mine);
+  }
   .buspill{
-    position:absolute; top:0; transform:translateX(-50%);
-    font-size:13px; line-height:1; padding:3px 5px; border-radius:20px;
-    background:var(--gold); border:1.5px solid var(--surface);
-    box-shadow:0 1px 4px rgba(43,35,32,.25); white-space:nowrap;
+    position:absolute; top:-0.5px; transform:translateX(-50%);
+    width:27px; height:27px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--gold); border:2px solid var(--surface);
+    box-shadow:0 2px 6px rgba(43,35,32,.28); z-index:1;
   }
   .buspill.sb{background:var(--maroon);}
-  /* Taller than a .tick's content, matching index.html: otherwise the
-     checkpoint names overflow into the southbound track and the bus pills
-     render on top of them. */
-  .ticks{position:relative; height:32px; margin-top:2px;}
+  .buspill svg{display:block; width:17px; height:17px; fill:#fff;}
+  .buspill .win{fill:var(--gold);}
+  .buspill.sb .win{fill:var(--maroon);}
+  /* The checkpoint names between the two lines. A tick is only its name now:
+     the stations on the lines are the marks. */
+  .ticks{position:relative; height:22px;}
   .tick{position:absolute; transform:translateX(-50%); text-align:center;}
-  .tick::before{content:''; display:block; width:2px; height:7px; background:var(--line); margin:0 auto 3px;}
-  .tick span{font-size:var(--tick-fs,7.5px); font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
+  .tick span{line-height:20px; font-size:var(--tick-fs,8px); font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
+  .tick.first{transform:none; text-align:left;}
+  .tick.last{transform:translateX(-100%); text-align:right;}
+  .tick.near span{color:var(--brand-ink);}
   .ticks.many{--tick-fs:7.5px;}
   @media (max-width:430px){ .ticks.many{--tick-fs:6.5px;} }
-  .tick.first{transform:none; text-align:left;}
-  .tick.first::before{margin:0 0 3px;}
-  .tick.last{transform:translateX(-100%); text-align:right;}
-  .tick.last::before{margin:0 0 3px auto;}
 
   /* ---- Print: an attachable few-page document ---------------------- */
   @page{size:A4 portrait; margin:16mm 15mm;}
@@ -354,6 +436,12 @@
     /* Same as flyer.html: the map fills the card the way it does in the app.
        The stretching this once tried to fix came from .doc being full-A4
        wide, not from the figure itself. */
+    /* At the full column width the example screen was taller than an A4
+       page, so it always printed split, the headline and chips stranded at
+       the top of the next sheet. Phone width is the honest size for a
+       picture of a phone screen anyway, and at it the whole screen fits on
+       one page with every row at the size the app draws it. */
+    .demo{max-width:390px; margin-left:auto; margin-right:auto;}
   }
 </style>
 <script>
@@ -409,25 +497,23 @@
          move together when the tracker does. -->
     <div class="strip">
       <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
-      <div class="track nb">
-        <div class="rail"></div>
-        <div class="buspill" style="left:28.6%">🚌</div>
-        <div class="buspill" style="left:63%">🚌</div>
+      <div class="track nb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:14.29%"></i><i class="stn" style="left:28.57%"></i><i class="stn" style="left:42.86%"></i><i class="stn" style="left:57.14%"></i><i class="stn" style="left:71.43%"></i><i class="stn" style="left:85.71%"></i><i class="stn end last" style="left:100%"></i><i class="minestn" style="left:71.43%"></i>
+        <div class="buspill" style="left:28.57%"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div>
+        <div class="buspill" style="left:63.23%"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div>
       </div>
       <div class="ticks many">
         <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
-        <div class="tick" style="left:14.3%"><span>TGY</span></div>
-        <div class="tick" style="left:28.6%"><span>AMADEO</span></div>
-        <div class="tick" style="left:42.9%"><span>GEN.T</span></div>
-        <div class="tick" style="left:57.1%"><span>IMUS</span></div>
-        <div class="tick" style="left:71.4%"><span>KAWIT</span></div>
-        <div class="tick" style="left:85.7%"><span>PITX</span></div>
+        <div class="tick near" style="left:14.29%"><span>TGY</span></div>
+        <div class="tick near" style="left:28.57%"><span>AMADEO</span></div>
+        <div class="tick" style="left:42.86%"><span>GEN.T</span></div>
+        <div class="tick near" style="left:57.14%"><span>IMUS</span></div>
+        <div class="tick near" style="left:71.43%"><span>KAWIT</span></div>
+        <div class="tick near" style="left:85.71%"><span>PITX</span></div>
         <div class="tick last" style="left:100%"><span>AYALA</span></div>
       </div>
-      <div class="track sb">
-        <div class="rail"></div>
-        <div class="buspill sb" style="left:15%">🚌</div>
-        <div class="buspill sb" style="left:79%">🚌</div>
+      <div class="track sb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:14.29%"></i><i class="stn" style="left:28.57%"></i><i class="stn" style="left:42.86%"></i><i class="stn" style="left:57.14%"></i><i class="stn" style="left:71.43%"></i><i class="stn" style="left:85.71%"></i><i class="stn end last" style="left:100%"></i><i class="minestn" style="left:71.43%"></i>
+        <div class="buspill sb" style="left:15%"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div>
+        <div class="buspill sb" style="left:79%"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div>
       </div>
       <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
     </div>
@@ -462,11 +548,12 @@
          reader's own phone from positions already on the page — the stop is
          never sent anywhere and no part of the system can see it, which is
          the distinction this document exists to make. -->
-    <div class="demo-mystop">
-      <div>
-        <span class="who">📍 S&amp;R Kawit</span>
-        <span class="rel">▲ Northbound · 3.0 km away · about 5 stops before yours</span>
-      </div>
+    <div class="ride nb">
+      <div class="ride-top"><span class="ride-name">S&amp;R Kawit</span><span class="edit">Change</span></div>
+      <div class="ride-line"><span class="ride-bus"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></span><span class="ride-track"><i class="next"></i><i></i><i></i><i></i><i></i></span><span class="ride-me"></span></div>
+      <div class="ride-cap"><span>Bus 98018</span><span class="me">Your stop</span></div>
+      <div class="ride-big"><span class="unit">about</span><span class="num">5</span><span class="unit">stops before yours</span><span class="km">· 3.0 km</span></div>
+      <div class="ride-sub">▲ Northbound · next stop <b>Battle of Alapan Monument</b> · updated 8s ago</div>
     </div>
 
     <div class="demo-title">4 buses live</div>

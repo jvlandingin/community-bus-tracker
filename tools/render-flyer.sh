@@ -29,9 +29,18 @@ set -eu
 OUT="${1:-$(cd "$(dirname "$0")/.." && pwd)/assets/flyer}"
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 
+# chrome-headless-shell first. Full Chrome's headless mode (the only one it
+# has since version 132) lays the page out in a viewport about 87px shorter
+# than --window-size and still returns a picture the full size, so the bottom
+# of every screenshot is either unpainted or the page background. On the
+# flyer image that is a strip of plain paper colour across the foot, which
+# is how it went unnoticed; on an icon it is a black band. The shell's
+# viewport is the size it is given. The PDFs are unaffected either way.
 CHROME="${CHROME:-}"
 if [ -z "$CHROME" ]; then
   for c in \
+    /opt/pw-browsers/chromium_headless_shell-*/chrome-linux/headless_shell \
+    "$(command -v chrome-headless-shell 2>/dev/null || true)" \
     /opt/pw-browsers/chromium-*/chrome-linux/chrome \
     "$(command -v chromium 2>/dev/null || true)" \
     "$(command -v chromium-browser 2>/dev/null || true)" \

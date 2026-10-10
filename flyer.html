@@ -13,7 +13,7 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Nasaan na ang bus? — Mendez / Tagaytay ⇄ One Ayala">
 <meta property="og:description" content="Tingnan kung nasaan ang bus bago ka pa lumabas ng bahay. Walang app, walang sign-up. Community-run, hindi opisyal.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚌%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3CclipPath id='c'%3E%3Crect width='32' height='32' rx='7'/%3E%3C/clipPath%3E%3Cg clip-path='url(%23c)'%3E%3Crect width='32' height='32' fill='%237a1f2b'/%3E%3Crect y='27.5' width='32' height='4.5' fill='%23e39a1c'/%3E%3C/g%3E%3Cg transform='translate(4 3.4)' fill='%23fff'%3E%3Crect x='1.8' y='7.6' width='2.4' height='3.4' rx='.7'/%3E%3Crect x='19.8' y='7.6' width='2.4' height='3.4' rx='.7'/%3E%3Crect x='4.5' y='2.8' width='15' height='15.6' rx='3.2'/%3E%3Crect x='6.4' y='16.8' width='3.8' height='3.6' rx='1.1'/%3E%3Crect x='13.8' y='16.8' width='3.8' height='3.6' rx='1.1'/%3E%3Crect fill='%237a1f2b' x='6.6' y='5.2' width='10.8' height='6.1' rx='1.3'/%3E%3Ccircle fill='%237a1f2b' cx='8.3' cy='14.5' r='1.3'/%3E%3Ccircle fill='%237a1f2b' cx='15.7' cy='14.5' r='1.3'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   /* This page loads nothing — no font, no image, no script file, no map.
      The screen of the tracker below is DRAWN in HTML and CSS from the same
@@ -34,7 +34,7 @@
     --gold-line:#eeddb4; --maroon-line:#e6cdc9;
     /* The reader's own saved stop. Mirrored from index.html, like every
        other token here; test-boot.js fails if the two copies drift. */
-    --mine:#4f46b8; --mine-ink:#443aa6;
+    --mine:#4f46b8; --mine-ink:#443aa6; --mine-soft:#e8e6f8;
     --ok-ink:#166534; --warn-ink:#92400e;
     --shadow:0 1px 2px rgba(43,35,32,.05), 0 10px 28px -18px rgba(43,35,32,.28);
     --radius:16px;
@@ -59,7 +59,7 @@
       --line:#372e26; --live:#4ac694; --lost:#c4432e;
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
-      --mine:#4f46b8; --mine-ink:#b3aaf5;
+      --mine:#4f46b8; --mine-ink:#b3aaf5; --mine-soft:#2b2846;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
@@ -74,7 +74,7 @@
       --line:#372e26; --live:#4ac694; --lost:#c4432e;
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
-      --mine:#4f46b8; --mine-ink:#b3aaf5;
+      --mine:#4f46b8; --mine-ink:#b3aaf5; --mine-soft:#2b2846;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
@@ -173,25 +173,78 @@
   .demo-chip.nb{border-color:var(--gold-line);}
   .demo-chip.sb{border-color:var(--maroon-line);}
   .demo-chip .ag{color:var(--muted); font-weight:600;}
-  /* The reader's own saved stop, as index.html draws it between the chips
-     and the map. It is on the poster because it is the answer a commuter
-     actually wants — not "where is the bus" but "how far is it from me" —
-     and because a drawing of the app that omits a row the app now has is a
-     drawing that has drifted. */
-  .demo-mystop{
-    display:flex; align-items:center; gap:8px; margin-top:9px;
-    padding:7px 9px; border-radius:10px; background:var(--paper);
-    border:1px solid var(--line); border-left:3px solid var(--mine);
+  /* The reader's saved stop, as renderMyStop() in index.html draws it with a
+     bus coming: the bus at one end of a line, the stop at the other, one dot
+     for every stop still between them, then the count in words. Copied, not
+     imported, like everything else here, so it moves when the app's does.
+     It is on the poster because it is the answer a commuter actually wants:
+     not "where is the bus" but "how far is it from me". */
+  .ride{
+    margin-top:9px; padding:12px 14px; border-radius:14px; background:var(--paper);
+    border:1.5px solid var(--line); border-left:4px solid var(--mine);
   }
-  /* index.html's own row gives this wrapper flex:1; without it the box
-     shrink-wraps to less than the width available and the sentence takes a
-     second line it does not need. */
-  .demo-mystop > div{flex:1; min-width:0;}
-  .demo-mystop .who{
-    display:block; font-size:8px; font-weight:800; color:var(--mine-ink);
-    text-transform:uppercase; letter-spacing:.04em;
+  .ride-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .ride-name{
+    min-width:0; font-size:10.5px; font-weight:800; color:var(--mine-ink);
+    text-transform:uppercase; letter-spacing:.05em;
   }
-  .demo-mystop .rel{display:block; font-size:10px; font-weight:700; margin-top:1px;}
+  .ride-name::before{
+    content:''; display:inline-block; width:8px; height:8px; margin-right:6px; vertical-align:1px;
+    border-radius:50%; background:var(--mine); box-shadow:0 0 0 2px var(--mine-soft);
+  }
+  .ride .edit{
+    flex:0 0 auto; display:flex; align-items:center; min-height:34px; padding:0 12px; border-radius:9px;
+    border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
+    font-size:11px; font-weight:700;
+  }
+  .ride-line{display:flex; align-items:center; margin:12px 0 4px;}
+  .ride-bus{
+    flex:0 0 auto; width:30px; height:30px; border-radius:50%; z-index:1;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--gold); box-shadow:0 0 0 3px var(--gold-line);
+  }
+  .ride.sb .ride-bus{background:var(--maroon); box-shadow:0 0 0 3px var(--maroon-line);}
+  .ride-bus svg{width:19px; height:19px; fill:#fff;}
+  .ride-bus .win{fill:var(--gold);}
+  .ride.sb .ride-bus .win{fill:var(--maroon);}
+  .ride-track{
+    flex:1; position:relative; height:30px; margin:0 -2px;
+    display:flex; align-items:center; justify-content:space-around;
+  }
+  .ride-track::before{
+    content:''; position:absolute; left:0; right:0; top:50%; height:3px; margin-top:-1.5px; border-radius:2px;
+    background:linear-gradient(90deg, var(--gold), var(--mine));
+  }
+  .ride.sb .ride-track::before{background:linear-gradient(90deg, var(--maroon), var(--mine));}
+  .ride-track i{
+    position:relative; width:9px; height:9px; border-radius:50%;
+    background:var(--surface); border:2px solid var(--gold);
+  }
+  .ride.sb .ride-track i{border-color:var(--maroon);}
+  .ride-track i.next{width:11px; height:11px; border-width:3px;}
+  .ride-me{
+    flex:0 0 auto; width:22px; height:22px; border-radius:50%; z-index:1;
+    background:var(--mine); border:4px solid var(--surface);
+    box-shadow:0 0 0 2px var(--mine), 0 0 0 7px var(--mine-soft);
+  }
+  .ride-cap{
+    display:flex; justify-content:space-between; gap:10px; font-size:10px; font-weight:800;
+    letter-spacing:.04em; text-transform:uppercase; color:var(--muted);
+  }
+  .ride-cap .me{color:var(--mine-ink);}
+  .ride-big{display:flex; align-items:baseline; flex-wrap:wrap; gap:0 6px; margin-top:8px; line-height:1.2;}
+  .ride-big .num{font-size:30px; font-weight:800; letter-spacing:-.02em;}
+  .ride-big .unit, .ride-big .km{font-size:14px; font-weight:700;}
+  .ride-sub{margin-top:3px; font-size:11.5px; font-weight:600; color:var(--muted); line-height:1.45;}
+  .ride-sub b{color:var(--ink); font-weight:700;}
+  .ride-flag{
+    display:inline-block; margin-top:10px; padding:4px 10px; border-radius:999px;
+    font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    background:var(--gold); color:#2b2320;
+  }
+  .ride.here .ride-flag{background:var(--mine); color:#fff; font-size:13.5px;}
+  .ride.near{border-left-color:var(--gold); box-shadow:0 0 0 2px var(--gold-line);}
+  .ride.here{box-shadow:0 0 0 3px var(--mine-soft);}
 
   .demo-map{
     margin-top:8px; position:relative; overflow:hidden;
@@ -264,42 +317,67 @@
   .strip{margin:8px 0 2px; padding:0 16px;}
   /* It opens the drawing now, so the card's padding is the whole gap. */
   .demo > .strip{margin-top:0;}
+  /* A line map, as the app draws it: a solid line per direction in its
+     livery colour, a station at every checkpoint, terminals a size bigger,
+     the reader's saved stop as a station in their own colour, and the map's
+     own drawn bus as the pill. The emoji pills and pale rails this used to
+     copy are gone from the app, so they are gone from here. */
   .dirlabel{font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
   .dirlabel.nb{text-align:right; margin-bottom:3px;}
-  .track{position:relative; height:22px;}
-  .track .rail{position:absolute; left:0; right:0; top:9px; height:4px; border-radius:2px;}
-  .track.nb .rail{background:var(--gold-soft); border:1px solid var(--gold-line);}
-  .track.sb .rail{background:var(--maroon-soft); border:1px solid var(--maroon-line);}
   .dirlabel.sb{margin-top:3px;}
+  .track{position:relative; height:26px;}
+  .track .rail{position:absolute; left:0; right:0; top:10.5px; height:5px; border-radius:3px;}
+  .track.nb .rail{background:var(--gold);}
+  .track.sb .rail{background:var(--maroon);}
+  .track .stn{
+    position:absolute; top:8px; width:10px; height:10px; margin-left:-5px; border-radius:50%;
+    background:var(--surface); border:2.5px solid var(--gold);
+  }
+  .track.sb .stn{border-color:var(--maroon);}
+  .track .stn.end{top:6px; width:14px; height:14px; border-width:3px;}
+  .track .stn.first{margin-left:-1px;}
+  .track .stn.last{margin-left:-13px;}
+  /* The app lifts the southbound line in dark, where maroon on the near-black
+     card all but disappears. Stated twice, like the palette. */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .track.sb .rail{background:#a33a49;}
+    :root:not([data-theme="light"]) .track.sb .stn{border-color:#a33a49;}
+  }
+  :root[data-theme="dark"] .track.sb .rail{background:#a33a49;}
+  :root[data-theme="dark"] .track.sb .stn{border-color:#a33a49;}
+  .track .minestn{
+    position:absolute; top:6.5px; width:13px; height:13px; margin-left:-6.5px; border-radius:50%;
+    background:var(--mine); border:3px solid var(--surface); box-shadow:0 0 0 1.5px var(--mine);
+  }
   .buspill{
-    position:absolute; top:0; transform:translateX(-50%);
-    font-size:14px; line-height:1; padding:3px 5px; border-radius:20px;
-    background:var(--gold); border:1.5px solid var(--surface);
-    box-shadow:0 1px 4px rgba(43,35,32,.25); white-space:nowrap;
+    position:absolute; top:-0.5px; transform:translateX(-50%);
+    width:27px; height:27px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--gold); border:2px solid var(--surface);
+    box-shadow:0 2px 6px rgba(43,35,32,.28); z-index:1;
   }
   .buspill.sb{background:var(--maroon);}
-  /* 32px, matching index.html, not the 26px how-to.html still carries. The
-     box has to stay taller than a .tick's content or every checkpoint name
-     overflows into the southbound track and the southbound bus pills render
-     on top of the words. That bug shipped once already. */
-  .ticks{position:relative; height:32px; margin-top:2px;}
+  .buspill svg{display:block; width:17px; height:17px; fill:#fff;}
+  .buspill .win{fill:var(--gold);}
+  .buspill.sb .win{fill:var(--maroon);}
+  /* The checkpoint names between the two lines. A tick is only its name now:
+     the stations on the lines are the marks. */
+  .ticks{position:relative; height:22px;}
   .tick{position:absolute; transform:translateX(-50%); text-align:center;}
-  .tick::before{content:''; display:block; width:2px; height:8px; background:var(--line); margin:0 auto 3px;}
+  .tick span{line-height:20px; font-size:var(--tick-fs,8px); font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
+  .tick.first{transform:none; text-align:left;}
+  .tick.last{transform:translateX(-100%); text-align:right;}
+  .tick.near span{color:var(--brand-ink);}
   /* Kept in step with index.html: sized to leave a gap between the two
      longest neighbouring checkpoint names, not for comfort. The app measures
      the rendered strip (fitTicks); this page has no script for it, so the
      same outcome is written out as breakpoints for the eight names shipped. */
-  .tick span{font-size:var(--tick-fs,8px); font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
   .ticks.many{--tick-fs:8px;}
   @media (max-width:430px){ .ticks.many{--tick-fs:7px;} }
   @media (max-width:360px){
     .ticks.many{--tick-fs:6px;}
     .ticks.many .tick:nth-child(even):not(.last) span{display:none;}
   }
-  .tick.first{transform:none; text-align:left;}
-  .tick.first::before{margin:0 0 3px;}
-  .tick.last{transform:translateX(-100%); text-align:right;}
-  .tick.last::before{margin:0 0 3px auto;}
 
   /* ---- Steps ------------------------------------------------------- */
   h2{
@@ -482,20 +560,46 @@
     .demo-seg span{padding:2px 2px; font-size:6.5pt;}
     .strip{margin:3px 0 1px;}
     .dirlabel{font-size:5.5pt;}
+    /* The line map at poster scale: every mark keeps the app's proportions,
+       about half size, so the stations still read as stations from a metre
+       away and the strip costs less height than the old rails did. */
     .track{height:13px;}
-    .tick span{font-size:6pt;}
-    .buspill{font-size:10px; padding:1px 4px;}
+    .track .rail{top:5px; height:3px;}
+    .track .stn{top:3.5px; width:6px; height:6px; margin-left:-3px; border-width:1.5px;}
+    .track .stn.end{top:2.5px; width:8px; height:8px; border-width:2px;}
+    .track .stn.last{margin-left:-7px;}
+    .track .minestn{top:2.5px; width:8px; height:8px; margin-left:-4px; border-width:2px; box-shadow:0 0 0 1px var(--mine);}
+    .buspill{top:-1px; width:15px; height:15px; border-width:1.5px; box-shadow:0 1px 3px rgba(43,35,32,.28);}
+    .buspill svg{width:9px; height:9px;}
+    .ticks{height:11px;}
+    .tick{line-height:11px;}
+    .tick span{font-size:6pt; line-height:11px;}
     .demo-chips{gap:2px; margin-top:2px;}
     .demo-chip{padding:1px 5px; font-size:6pt;}
-    /* The saved-stop row is the newest thing in this column, and adding it
-       is what pushed the poster onto a second sheet the first time round.
-       It keeps the app's own two-line shape rather than being folded into
-       one — the drawing is supposed to look like the screen — so the height
-       it costs was taken out of the furniture above it instead, which is
-       what the note at the top of this block is about. */
-    .demo-mystop{margin-top:3px; padding:2px 5px; gap:4px;}
-    .demo-mystop .who{font-size:5.5pt;}
-    .demo-mystop .rel{font-size:6pt;}
+    /* The saved-stop card is the tallest thing in this column after the
+       map, and the first version of it is what pushed the poster onto a
+       second sheet. On paper it keeps what makes it that card — the stop's
+       name, the bus at one end of a line of stops and the reader's at the
+       other, the count, the line under it — and drops the Change button and
+       the two captions under the line, which a poster has no use for. Even
+       so it is about twenty pixels taller than the one-line row it replaced,
+       paid for by the line map being shorter than the old rails. */
+    .ride{margin-top:3px; padding:3px 7px 3px; border-radius:8px; border-width:1px; border-left-width:3px;}
+    .ride .edit, .ride-cap{display:none;}
+    .ride-name{font-size:5.5pt; line-height:1.2;}
+    .ride-name::before{width:5px; height:5px; margin-right:4px; box-shadow:0 0 0 1.5px var(--mine-soft);}
+    .ride-line{margin:2px 0 0;}
+    .ride-bus{width:13px; height:13px; box-shadow:0 0 0 1.5px var(--gold-line);}
+    .ride-bus svg{width:8px; height:8px;}
+    .ride-track{height:13px;}
+    .ride-track::before{height:2px; margin-top:-1px;}
+    .ride-track i{width:5px; height:5px; border-width:1.2px;}
+    .ride-track i.next{width:6px; height:6px; border-width:1.6px;}
+    .ride-me{width:10px; height:10px; border-width:2px; box-shadow:0 0 0 1px var(--mine), 0 0 0 3px var(--mine-soft);}
+    .ride-big{margin-top:0; gap:0 3px; line-height:1.1;}
+    .ride-big .num{font-size:11pt;}
+    .ride-big .unit, .ride-big .km{font-size:6.5pt;}
+    .ride-sub{margin-top:0; font-size:5.5pt; line-height:1.3;}
 
     /* One sheet of A4, or it is a leaflet rather than a poster. What gets
        dropped is the reassurance grid — "walang app", "walang account" and
@@ -580,25 +684,23 @@
            app no longer draws. -->
       <div class="strip">
         <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
-        <div class="track nb">
-          <div class="rail"></div>
-          <div class="buspill" style="left:28.6%">🚌</div>
-          <div class="buspill" style="left:63%">🚌</div>
+        <div class="track nb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:14.29%"></i><i class="stn" style="left:28.57%"></i><i class="stn" style="left:42.86%"></i><i class="stn" style="left:57.14%"></i><i class="stn" style="left:71.43%"></i><i class="stn" style="left:85.71%"></i><i class="stn end last" style="left:100%"></i><i class="minestn" style="left:71.43%"></i>
+          <div class="buspill" style="left:28.57%"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div>
+          <div class="buspill" style="left:63.23%"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div>
         </div>
         <div class="ticks many">
           <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
-          <div class="tick" style="left:14.3%"><span>TGY</span></div>
-          <div class="tick" style="left:28.6%"><span>AMADEO</span></div>
-          <div class="tick" style="left:42.9%"><span>GEN.T</span></div>
-          <div class="tick" style="left:57.1%"><span>IMUS</span></div>
-          <div class="tick" style="left:71.4%"><span>KAWIT</span></div>
-          <div class="tick" style="left:85.7%"><span>PITX</span></div>
+          <div class="tick near" style="left:14.29%"><span>TGY</span></div>
+          <div class="tick near" style="left:28.57%"><span>AMADEO</span></div>
+          <div class="tick" style="left:42.86%"><span>GEN.T</span></div>
+          <div class="tick near" style="left:57.14%"><span>IMUS</span></div>
+          <div class="tick near" style="left:71.43%"><span>KAWIT</span></div>
+          <div class="tick near" style="left:85.71%"><span>PITX</span></div>
           <div class="tick last" style="left:100%"><span>AYALA</span></div>
         </div>
-        <div class="track sb">
-          <div class="rail"></div>
-          <div class="buspill sb" style="left:15%">🚌</div>
-          <div class="buspill sb" style="left:79%">🚌</div>
+        <div class="track sb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:14.29%"></i><i class="stn" style="left:28.57%"></i><i class="stn" style="left:42.86%"></i><i class="stn" style="left:57.14%"></i><i class="stn" style="left:71.43%"></i><i class="stn" style="left:85.71%"></i><i class="stn end last" style="left:100%"></i><i class="minestn" style="left:71.43%"></i>
+          <div class="buspill sb" style="left:15%"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div>
+          <div class="buspill sb" style="left:79%"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div>
         </div>
         <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
       </div>
@@ -663,11 +765,12 @@
            drawn above is 3 km short of it — so 3.0 km and 5 stops are the
            numbers the real app computes for this exact screen. Move that
            bus and these change with it. -->
-      <div class="demo-mystop">
-        <div>
-          <span class="who">📍 S&amp;R Kawit</span>
-          <span class="rel">▲ Northbound · 3.0 km away · about 5 stops before yours</span>
-        </div>
+      <div class="ride nb">
+        <div class="ride-top"><span class="ride-name">S&amp;R Kawit</span><span class="edit">Change</span></div>
+        <div class="ride-line"><span class="ride-bus"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></span><span class="ride-track"><i class="next"></i><i></i><i></i><i></i><i></i></span><span class="ride-me"></span></div>
+        <div class="ride-cap"><span>Bus 98018</span><span class="me">Your stop</span></div>
+        <div class="ride-big"><span class="unit">about</span><span class="num">5</span><span class="unit">stops before yours</span><span class="km">· 3.0 km</span></div>
+        <div class="ride-sub">▲ Northbound · next stop <b>Battle of Alapan Monument</b> · updated 8s ago</div>
       </div>
 
       <div class="demo-title">4 buses live</div>

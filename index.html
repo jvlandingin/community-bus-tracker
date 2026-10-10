@@ -3,19 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WT Live: Mendez/Tagaytay ⇄ One Ayala</title>
+<title>Bus Tracker: Mendez/Tagaytay ⇄ One Ayala</title>
 <!-- The link to this page gets posted into a Messenger group chat, so what
      the preview card says is the first thing most people ever see of it.
-     No og:url or og:image on purpose: both would have to hardcode one
-     deployment's domain into a file the whole point of which is that a
-     different route needs no code changes. A crawler falls back to the URL
-     it fetched, which is the right answer anyway. -->
+     The name is the tracker's own, never the bus company's initials: a
+     preview is read before anyone opens the page and its disclaimers.
+
+     og:image has to be a full address, and this file cannot know one: the
+     whole point of it is that a different route deploys it unchanged. So the
+     committed value is relative, and tools/write-preview-url.js rewrites it
+     at build time from the address Netlify hands every build. A host that
+     does not run it is left with the relative path, which some crawlers
+     resolve and the rest ignore, and the preview simply has no picture.
+     There is still no og:url: a crawler falls back to the URL it fetched,
+     which is the right answer anyway. -->
 <meta name="description" content="Live bus positions for the Mendez / Tagaytay to One Ayala route, shared by the people on board. No app, no account, no sign-up. Community-run and unofficial.">
 <meta name="theme-color" content="#7a1f2b">
 <meta property="og:type" content="website">
-<meta property="og:title" content="WT Live: Mendez / Tagaytay ⇄ One Ayala">
+<meta property="og:title" content="Bus Tracker: Mendez / Tagaytay ⇄ One Ayala">
 <meta property="og:description" content="See where the bus is right now, shared by whoever is on board. No app, no account. Community-run, not affiliated with the bus company.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚌%3C/text%3E%3C/svg%3E">
+<meta property="og:image" content="assets/icons/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The route on an amber bus signboard over a line map with buses on it. Live, shared by people on board. Unofficial.">
+<!-- Drawn, like the bus badges on the map: the 🚌 that used to be here is a
+     different picture on every phone. The same bus is in the home-screen
+     icons, which the manifest lists for "Add to Home screen". -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3CclipPath id='c'%3E%3Crect width='32' height='32' rx='7'/%3E%3C/clipPath%3E%3Cg clip-path='url(%23c)'%3E%3Crect width='32' height='32' fill='%237a1f2b'/%3E%3Crect y='27.5' width='32' height='4.5' fill='%23e39a1c'/%3E%3C/g%3E%3Cg transform='translate(4 3.4)' fill='%23fff'%3E%3Crect x='1.8' y='7.6' width='2.4' height='3.4' rx='.7'/%3E%3Crect x='19.8' y='7.6' width='2.4' height='3.4' rx='.7'/%3E%3Crect x='4.5' y='2.8' width='15' height='15.6' rx='3.2'/%3E%3Crect x='6.4' y='16.8' width='3.8' height='3.6' rx='1.1'/%3E%3Crect x='13.8' y='16.8' width='3.8' height='3.6' rx='1.1'/%3E%3Crect fill='%237a1f2b' x='6.6' y='5.2' width='10.8' height='6.1' rx='1.3'/%3E%3Ccircle fill='%237a1f2b' cx='8.3' cy='14.5' r='1.3'/%3E%3Ccircle fill='%237a1f2b' cx='15.7' cy='14.5' r='1.3'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/vendor/leaflet.css" />
 <script src="assets/vendor/leaflet.js"></script>
 <script src="assets/vendor/supabase.js"></script>
@@ -46,7 +62,7 @@
        and --lost is spelling "stale". A stop belongs to the person reading,
        which is a fourth thing to say, so it gets a fourth colour rather than
        borrowing one that already means something else. */
-    --mine:#4f46b8; --mine-ink:#443aa6;
+    --mine:#4f46b8; --mine-ink:#443aa6; --mine-soft:#e8e6f8;
     /* Two layers: a hairline of contact and a wide, soft falloff. The old
        single 2px line read as flat next to any modern app; the falloff is
        what makes a card sit on the page instead of being drawn on it. The
@@ -85,7 +101,7 @@
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* The fill keeps its light value, like the other three; only the ink
          partner inverts, because indigo on a near-black card is 2.1:1. */
-      --mine:#4f46b8; --mine-ink:#b3aaf5;
+      --mine:#4f46b8; --mine-ink:#b3aaf5; --mine-soft:#2b2846;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
       --shadow:none;
@@ -101,7 +117,7 @@
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* The fill keeps its light value, like the other three; only the ink
          partner inverts, because indigo on a near-black card is 2.1:1. */
-      --mine:#4f46b8; --mine-ink:#b3aaf5;
+      --mine:#4f46b8; --mine-ink:#b3aaf5; --mine-soft:#2b2846;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
       --shadow:none;
@@ -169,11 +185,36 @@
     border-radius:50%; background:var(--gold); border:1.5px solid var(--maroon-deep);
   }
   #guideLink.seen .newdot{display:none;}
+  /* The route name sits on the amber LED board a bus carries above its
+     windscreen. An earlier pass reached for a signboard look with
+     font-stretch:condensed and dropped it, because no phone font has a
+     condensed cut and the effect never rendered anywhere. This one is drawn,
+     not a font: ordinary bold text seen through a mask of 2.6px dots, over a
+     board whose own background is the same grid of unlit dots. The words are
+     still plain text, so screen readers, copy and search are untouched, and
+     there is nothing to download. The board and the amber are the same in
+     both themes, like the livery fills: a signboard does not change at
+     night. The size follows the viewport so the longer line still fits
+     beside the two header buttons on a 360px phone; past that it wraps. */
   header .route{
-    font-weight:700; font-size:22px;
-    letter-spacing:.04em; text-transform:uppercase; line-height:1.1;
+    position:relative; display:inline-block; margin:0 0 7px -2px;
+    padding:7.8px 10.4px; border-radius:9px;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,170,40,.13) 1.05px, transparent 1.35px) 10.4px 7.8px/2.6px 2.6px,
+      radial-gradient(120% 140% at 30% 0%, #1d1513 0%, #0b0807 70%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), inset 0 3px 10px rgba(0,0,0,.75), 0 1px 0 rgba(255,255,255,.08);
+    font-weight:900; font-size:min(20.8px, 5.2vw); line-height:1.25;
+    letter-spacing:.05em; text-transform:uppercase;
   }
-  header .route .amp{color:var(--gold);}
+  header .route .led{
+    display:block; color:#ffb22e; text-shadow:0 0 6px rgba(255,165,30,.9);
+    -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 1.05px, transparent 1.35px);
+    -webkit-mask-size:2.6px 2.6px;
+    mask-image:radial-gradient(circle at 50% 50%, #000 1.05px, transparent 1.35px);
+    mask-size:2.6px 2.6px;
+  }
+  header .route .ln{display:block;}
+  header .route .amp{color:#ffb22e;}
   header .sub{font-size:11.5px; opacity:.85; margin-top:2px; font-weight:600; letter-spacing:.03em;}
 
   /* The bottom padding grows by the gesture-bar inset on phones that have
@@ -199,6 +240,17 @@
   /* The same gradient as the header band, so the active tab reads as part
      of the signboard rather than a maroon rectangle that nearly matches. */
   .tab.active{background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); color:#fff; border-color:var(--maroon-deep);}
+  /* Drawn icons, not 📍 and 🚌: an emoji is a different picture on every
+     phone, which is why the map's badges stopped using one. The bus is the
+     same glyph as the badges, its windows cut in whatever the tab is filled
+     with. */
+  .tab .ti{display:inline-block; width:17px; height:17px; margin-right:6px; vertical-align:-3.5px;}
+  .tab .ti svg{display:block; width:100%; height:100%; fill:currentColor;}
+  .tab .ti .win{fill:var(--surface);}
+  .tab.active .ti .win{fill:var(--maroon-deep);}
+  /* Read by screen readers, invisible on screen. */
+  .vh{position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+      clip:rect(0 0 0 0); white-space:nowrap; border:0;}
 
   .card{
     background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
@@ -273,15 +325,49 @@
   .dirlabel{font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
   .dirlabel.nb{text-align:right; margin-bottom:3px;}
   .dirlabel.sb{margin-top:3px;}
-  .track{position:relative; height:22px;}
-  .track .rail{position:absolute; left:0; right:0; top:9px; height:4px; border-radius:2px;}
-  .track.nb .rail{background:var(--gold-soft); border:1px solid var(--gold-line);}
-  .track.sb .rail{background:var(--maroon-soft); border:1px solid var(--maroon-line);}
+  /* The strip is drawn as a line map: each direction a solid line in its own
+     livery colour, a station at every checkpoint, terminals a size bigger.
+     It used to be two pale rails with emoji pills on them, which read as a
+     progress bar rather than as a route. The stations sit at the same evenly
+     spaced positions as the names between the lines (see the note on
+     spacing in docs/ARCHITECTURE.md), and the pills are the map's own
+     drawn bus, so the strip and the map read as one picture. */
+  .track{position:relative; height:26px;}
+  .track .rail{position:absolute; left:0; right:0; top:10.5px; height:5px; border-radius:3px;}
+  .track.nb .rail{background:var(--gold);}
+  .track.sb .rail{background:var(--maroon);}
+  .track .stn{
+    position:absolute; top:8px; width:10px; height:10px; margin-left:-5px; border-radius:50%;
+    background:var(--surface); border:2.5px solid var(--gold); box-sizing:border-box;
+  }
+  .track.sb .stn{border-color:var(--maroon);}
+  .track .stn.end{top:6px; width:14px; height:14px; border-width:3px;}
+  .track .stn.first{margin-left:-1px;}
+  .track .stn.last{margin-left:-13px;}
+  /* Maroon on the near-black dark card is the 1.7:1 the fill/ink note warns
+     about. A line is not text, but at 5px it still disappears, so dark lifts
+     the southbound line and its stations to a brighter maroon. Stated twice
+     for the same reason the token block is. */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .track.sb .rail{background:#a33a49;}
+    :root:not([data-theme="light"]) .track.sb .stn{border-color:#a33a49;}
+  }
+  :root[data-theme="dark"] .track.sb .rail{background:#a33a49;}
+  :root[data-theme="dark"] .track.sb .stn{border-color:#a33a49;}
+  /* The reader's saved stop, as a station of its own in their colour, on the
+     tracker's strip only. Placed by busPlace() exactly as a bus would be, so
+     a bus coming down the line visibly closes on it. */
+  .track .minestn{
+    position:absolute; top:6.5px; width:13px; height:13px; margin-left:-6.5px; border-radius:50%;
+    background:var(--mine); border:3px solid var(--surface); box-sizing:border-box;
+    box-shadow:0 0 0 1.5px var(--mine);
+  }
   .buspill{
-    position:absolute; top:0; transform:translateX(-50%);
-    font-size:14px; line-height:1; padding:3px 5px; border-radius:20px;
-    background:var(--gold); border:1.5px solid var(--surface);
-    box-shadow:0 1px 4px rgba(43,35,32,.25);
+    position:absolute; top:-0.5px; transform:translateX(-50%);
+    width:27px; height:27px; padding:0; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+    background:var(--gold); border:2px solid var(--surface);
+    box-shadow:0 2px 6px rgba(43,35,32,.28);
     /* The left transition only means something because renderStrip() keeps
        each bus's pill element alive between polls (keyed by data-bus) — a
        rebuilt element starts at its new position with nothing to glide
@@ -295,6 +381,9 @@
     z-index:1;
   }
   .buspill.sb{background:var(--maroon); color:#fff;}
+  .buspill svg{display:block; width:17px; height:17px; fill:#fff;}
+  .buspill .win{fill:var(--gold);}
+  .buspill.sb .win{fill:var(--maroon);}
   .buspill.stale{opacity:.45;}
   /* The bus this phone is sharing. A ring rather than a different fill: gold
      and maroon are carrying the direction, and the strip is too narrow to
@@ -302,33 +391,34 @@
      green is the live dot's, so the ring reads as "the live one that is
      yours" — and because that is colour doing the talking, the line under
      the strip names it in words. */
-  .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 3.5px var(--live), 0 1px 4px rgba(43,35,32,.25); z-index:2;}
+  .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), 0 2px 6px rgba(43,35,32,.28); z-index:2;}
   /* On the tracker's strip a pill is a real button: tapping it flies the map
      to that bus and opens its popup, which is where the salamat button and
      everything else about the bus already live. Same look either way — the
      three pages that redraw this strip stay accurate. The pseudo-element is
      the tap target: the pill itself is far under --tap and cannot grow
      without landing on its neighbours, so the padding is invisible instead. */
-  button.buspill{cursor:pointer; font:inherit; font-size:14px; line-height:1;}
+  button.buspill{cursor:pointer; font:inherit; line-height:1;}
   button.buspill::after{content:''; position:absolute; inset:-10px;}
   /* A reported sighting, not a GPS position. Hollow and dashed so it cannot
      be mistaken for a live bus at a glance — that would be worse than showing
      nothing, because a sighting is one person's word, already minutes old,
      with no update coming after it. */
   .sightmk{
-    position:absolute; top:3px; transform:translateX(-50%);
+    position:absolute; top:5px; transform:translateX(-50%);
     width:16px; height:16px; border-radius:50%;
     border:2px dashed var(--gold-deep); background:var(--surface);
   }
   .sightmk.sb{border-color:var(--brand-ink);}
-  /* 32px, not 26px: a .tick is 29px tall (an 8px mark, 3px of margin, then an
-     18px line box for the label) and the box used to be fixed at 26px, so
-     every label overflowed 3px into the southbound track below and the
-     southbound bus badges rendered on top of the words. Keep this taller
-     than the tallest .tick. */
-  .ticks{position:relative; height:32px; margin-top:2px;}
+  /* Keep .ticks taller than a .tick. It was once pinned at 26px against 29px
+     of mark and label, and every label overflowed into the southbound track
+     below, so the southbound bus badges rendered on top of the words. The
+     marks are stations on the lines now, so a tick is only its name: a 20px
+     line box inside 22px. */
+  .ticks{position:relative; height:22px; margin-top:0;}
   .tick{position:absolute; transform:translateX(-50%); text-align:center;}
-  .tick::before{content:''; display:block; width:2px; height:8px; background:var(--line); margin:0 auto 3px;}
+  .tick::before{content:none;}
+  .tick span{line-height:20px;}
   /* The checkpoint names share the strip's width, so their type is sized to
      leave a gap rather than to be comfortable. --tick-fs is set by fitTicks()
      from the real measured layout: how many names there are and how long they
@@ -339,11 +429,8 @@
      stays, every other name goes. The end points always keep theirs. */
   .ticks.thin .tick:nth-child(even):not(.last) span{display:none;}
   .tick.first{transform:none; text-align:left;}
-  .tick.first::before{margin:0 0 3px;}
   .tick.last{transform:translateX(-100%); text-align:right;}
-  .tick.last::before{margin:0 0 3px auto;}
   .tick.near span{color:var(--brand-ink);}
-  .tick.near::before{background:var(--brand-ink);}
 
   /* Live bus list. Also the text alternative to the strip and the map: it is
      the only one of the three a screen reader can read out, so it stays. */
@@ -381,6 +468,7 @@
     border:1.5px dashed var(--line); background:transparent; color:var(--muted);
   }
   .mystop-btn .pin{color:var(--mine-ink); font-size:13px; flex:0 0 auto;}
+  .mystop-btn .pin svg{display:block; width:15px; height:15px; fill:currentColor;}
   .mystop-live{
     display:flex; align-items:center; gap:10px; padding:10px 12px;
     min-height:var(--tap); border-radius:12px; background:var(--paper);
@@ -398,6 +486,103 @@
     border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
     font-family:inherit; font-size:11px; font-weight:700; cursor:pointer;
   }
+  /* With a bus coming, the card draws the stops between it and you as dots
+     on a line: the bus at one end, your stop at the other, one dot for every
+     stop it still has to pass. They drop off from the bus's end as it passes
+     them, which says "about 8 stops" without asking anyone to count. The
+     sentence the card used to print is still there, for screen readers, in
+     a .vh span; everything drawn is aria-hidden beside it. */
+  .ride{
+    padding:12px 14px; border-radius:14px; background:var(--paper);
+    border:1.5px solid var(--line); border-left:4px solid var(--mine);
+  }
+  .ride-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .ride-name{
+    min-width:0; font-size:10.5px; font-weight:800; color:var(--mine-ink);
+    text-transform:uppercase; letter-spacing:.05em;
+  }
+  .ride-name::before{
+    content:''; display:inline-block; width:8px; height:8px; margin-right:6px; vertical-align:1px;
+    border-radius:50%; background:var(--mine); box-shadow:0 0 0 2px var(--mine-soft);
+  }
+  .ride .edit{
+    flex:0 0 auto; min-height:34px; padding:0 12px; border-radius:9px;
+    border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
+    font-family:inherit; font-size:11px; font-weight:700; cursor:pointer;
+  }
+  .ride-line{display:flex; align-items:center; margin:12px 0 4px;}
+  .ride-bus{
+    flex:0 0 auto; width:30px; height:30px; border-radius:50%; z-index:1;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--gold); box-shadow:0 0 0 3px var(--gold-line);
+  }
+  .ride.sb .ride-bus{background:var(--maroon); box-shadow:0 0 0 3px var(--maroon-line);}
+  .ride-bus svg{width:19px; height:19px; fill:#fff;}
+  .ride-bus .win{fill:var(--gold);}
+  .ride.sb .ride-bus .win{fill:var(--maroon);}
+  .ride-track{
+    flex:1; position:relative; height:30px; margin:0 -2px;
+    display:flex; align-items:center; justify-content:space-around;
+  }
+  .ride-track::before{
+    content:''; position:absolute; left:0; right:0; top:50%; height:3px; margin-top:-1.5px; border-radius:2px;
+    background:linear-gradient(90deg, var(--gold), var(--mine));
+  }
+  .ride.sb .ride-track::before{background:linear-gradient(90deg, var(--maroon), var(--mine));}
+  .ride-track i{
+    position:relative; width:9px; height:9px; border-radius:50%; box-sizing:border-box;
+    background:var(--surface); border:2px solid var(--gold);
+  }
+  .ride.sb .ride-track i{border-color:var(--maroon);}
+  .ride-track i.next{width:11px; height:11px; border-width:3px;}
+  .ride-track .gap{position:relative; padding:0 3px; background:var(--paper); color:var(--muted); font-size:13px; letter-spacing:2px; line-height:1;}
+  .ride-me{
+    flex:0 0 auto; width:22px; height:22px; border-radius:50%; z-index:1; box-sizing:border-box;
+    background:var(--mine); border:4px solid var(--surface);
+    box-shadow:0 0 0 2px var(--mine), 0 0 0 7px var(--mine-soft);
+  }
+  .ride-cap{
+    display:flex; justify-content:space-between; gap:10px; font-size:10px; font-weight:800;
+    letter-spacing:.04em; text-transform:uppercase; color:var(--muted);
+  }
+  .ride-cap .me{color:var(--mine-ink);}
+  .ride-big{display:flex; align-items:baseline; flex-wrap:wrap; gap:0 6px; margin-top:8px; line-height:1.2;}
+  .ride-big .num{font-size:30px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums;}
+  .ride-big .unit, .ride-big .km{font-size:14px; font-weight:700;}
+  .ride-sub{margin-top:3px; font-size:11.5px; font-weight:600; color:var(--muted); line-height:1.45; font-variant-numeric:tabular-nums;}
+  .ride-sub b{color:var(--ink); font-weight:700;}
+  /* Malapit na and Sakay na: the same card, saying it louder at the two
+     moments that matter at a roadside. Gold for "two stops out", your own
+     colour for "next stop is yours". Still distance and stops, never
+     minutes — see myStopWords. */
+  .ride-flag{
+    display:inline-block; margin-top:10px; padding:4px 10px; border-radius:999px;
+    font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    background:var(--gold); color:#2b2320;
+  }
+  .ride.here .ride-flag{background:var(--mine); color:#fff; font-size:13.5px;}
+  .ride.near{border-left-color:var(--gold); box-shadow:0 0 0 2px var(--gold-line);}
+  .ride.here{box-shadow:0 0 0 3px var(--mine-soft);}
+  .ride.here .ride-big .num{font-size:22px;}
+  /* The optional buzz. A per-visit choice, kept in sessionStorage like the
+     blue dot's switch, so it never becomes a fourth remembered thing. Only
+     drawn where the browser can vibrate at all, which leaves out iPhones. */
+  .buzz{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-top:10px; padding-top:9px; border-top:1px dashed var(--line);
+    font-size:12px; font-weight:700; color:var(--muted); cursor:pointer;
+  }
+  .buzz input{
+    -webkit-appearance:none; appearance:none; flex:0 0 auto; position:relative; margin:0;
+    width:40px; height:24px; border-radius:12px; background:var(--line); cursor:pointer;
+    transition:background-color .2s ease;
+  }
+  .buzz input::after{
+    content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%;
+    background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:left .2s ease;
+  }
+  .buzz input:checked{background:var(--live);}
+  .buzz input:checked::after{left:19px;}
 
   /* The picker. A list of the route's own stops, searchable, because typing
      three letters beats scrolling seventy-one names on a moving bus. */
@@ -435,6 +620,57 @@
     font-size:11px; font-weight:700; cursor:pointer;
   }
   .mapwrap{position:relative;}
+  /* The empty map explains itself where the reader is already looking. Most
+     of the day nobody is sharing, so this is the screen most people get, and
+     the headline that says why sits below the fold since the strip and the
+     map moved to the top (docs/ARCHITECTURE.md calls that the cost of the
+     reorder). It floats over the bottom of the map: above the tiles and the
+     marks, below a bus popup and Leaflet's controls, and it lets taps
+     through to the map everywhere except its own button. */
+  .mapnote{
+    position:absolute; left:10px; right:10px; bottom:24px; z-index:650; pointer-events:none;
+    display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:14px;
+    background:var(--surface); border:1px solid var(--line); box-shadow:0 12px 30px -14px rgba(0,0,0,.45);
+  }
+  @supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+    .mapnote{background:transparent; -webkit-backdrop-filter:blur(10px) saturate(1.2); backdrop-filter:blur(10px) saturate(1.2);}
+    .mapnote::before{content:''; position:absolute; inset:0; border-radius:inherit; background:var(--surface); opacity:.86; z-index:-1;}
+  }
+  .mapnote .ic{
+    flex:0 0 auto; width:44px; height:44px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--gold-soft); color:var(--gold-deep);
+  }
+  .mapnote .ic svg{width:24px; height:24px;}
+  .mapnote .ic .win{fill:var(--gold-soft);}
+  .mapnote .ic.night{width:52px; height:52px; border-radius:14px; background:linear-gradient(160deg,#2b2347,#120f22); color:#ffd36b;}
+  .mapnote .ic.night svg{width:40px; height:40px;}
+  .mapnote .t{font-size:16px; font-weight:800; letter-spacing:-.01em; line-height:1.2;}
+  .mapnote .s{margin-top:3px; font-size:12px; font-weight:600; color:var(--muted); line-height:1.4;}
+  .mapnote .s b{color:var(--ink);}
+  .mapnote .go{
+    pointer-events:auto; display:inline-flex; align-items:center; gap:6px; margin-top:8px;
+    min-height:36px; padding:0 12px; border:0; border-radius:10px; cursor:pointer;
+    background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); color:#fff;
+    font-family:inherit; font-size:12px; font-weight:800;
+  }
+  .mapnote .go svg{width:15px; height:15px; fill:#fff;}
+  .mapnote .go .win{fill:var(--maroon);}
+  /* Following one bus, from a link someone sent. Top right, clear of the
+     zoom buttons, and it says which bus and how to stop. */
+  .followchip{
+    position:absolute; top:24px; right:10px; z-index:800;
+    display:flex; align-items:center; gap:8px; max-width:calc(100% - 84px);
+    padding:5px 5px 5px 12px; border-radius:999px; background:var(--surface); color:var(--ink);
+    border:1px solid var(--line); box-shadow:0 6px 18px -8px rgba(0,0,0,.5);
+    font-size:12px; font-weight:800;
+  }
+  .followchip .dot{flex:0 0 auto; width:9px; height:9px; border-radius:50%; background:var(--live);}
+  .followchip .txt{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .followchip button{
+    flex:0 0 auto; min-height:32px; padding:0 11px; border:0; border-radius:999px; cursor:pointer;
+    background:var(--paper); color:var(--ink); font-family:inherit; font-size:11.5px; font-weight:800;
+  }
   /* The saved stop on the map. A pin rather than another circle: the map
      already carries circles for stops, checkpoints and sightings, and this
      one is the reader's own. */
@@ -570,6 +806,20 @@
   .buspop .tybtn:hover{border-color:var(--muted);}
   .buspop .tybtn:active{background:var(--line);}
   .buspop .tydone{padding:2px 0; text-align:center; font-weight:800; color:var(--ok-ink);}
+  /* Kwento ng ruta: one line about the town the bus is passing, from
+     config.txt. Something to read while you wait, and the one place in the
+     app that says anything about the road itself. */
+  .buspop .kw{margin-top:6px; padding:7px 9px; border-radius:9px; background:var(--gold-soft); font-size:11.5px; line-height:1.35; font-weight:600;}
+  .buspop .kw b{display:block; margin-bottom:1px; font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-deep);}
+  /* A link that opens the map following this bus, for whoever is fetching
+     you. Dashed and quieter than the salamat button: it is the second thing
+     in the popup, not the first. Named for what it does, never "share". */
+  .buspop .buslink{
+    display:flex; align-items:center; justify-content:center; gap:6px; width:100%; margin-top:6px;
+    min-height:34px; padding:6px 10px; border-radius:9px; cursor:pointer;
+    border:1.5px dashed var(--line); background:transparent; color:var(--brand-ink);
+    font:inherit; font-size:12px; font-weight:800;
+  }
   /* And the other end of it, on the screen of the person being thanked.
      --ok-ink because it is spelling a word, not painting a shape. */
   .tyline{
@@ -608,6 +858,44 @@
   .hourbox.nb .dirname{color:var(--gold-deep);}
   .hourbox.sb .dirname{color:var(--brand-ink);}
   .headway{font-size:11.5px; color:var(--muted); margin-top:8px; font-weight:600;}
+  /* The folded hours card answers before it is opened: a status line, then
+     the day drawn as a bar per direction, the departure windows solid, a
+     dotted tail for the three and a half hours the last buses are still on
+     the road, and a marker for now. Drawn from the hours set in the admin
+     page; the exact times stay one tap away in the boxes above. */
+  .dayband{display:block; position:relative; margin-top:9px; padding-top:13px;}
+  .dayband .row{display:flex; align-items:center; gap:7px; margin-bottom:5px;}
+  .dayband .d{flex:0 0 10px; font-size:10px; font-weight:800; text-align:center;}
+  .dayband .row.nb .d{color:var(--gold-deep);}
+  .dayband .row.sb .d{color:var(--brand-ink);}
+  .dayband .bar{position:relative; flex:1; height:16px; border-radius:5px; background:var(--line); overflow:hidden;}
+  .dayband .w{
+    position:absolute; top:0; bottom:0; border-radius:5px; background:var(--gold); color:#2b2320;
+    display:flex; align-items:center; justify-content:center; overflow:hidden; white-space:nowrap;
+    font-size:9px; font-weight:800;
+  }
+  .dayband .row.sb .w{background:var(--maroon); color:#fff;}
+  .dayband .tail{
+    position:absolute; top:5px; bottom:5px; border-radius:0 4px 4px 0; opacity:.6;
+    background:repeating-linear-gradient(90deg, var(--gold) 0 3px, transparent 3px 6px);
+  }
+  .dayband .row.sb .tail{background:repeating-linear-gradient(90deg, var(--maroon) 0 3px, transparent 3px 6px);}
+  .dayband .axis{display:block; position:relative; height:13px; margin-left:17px; font-size:9px; font-weight:700; color:var(--muted);}
+  .dayband .axis span{position:absolute; transform:translateX(-50%); white-space:nowrap;}
+  .dayband .axis span:first-child{transform:none;}
+  .dayband .axis span:last-child{transform:translateX(-100%);}
+  .dayband .now{position:absolute; top:0; bottom:13px; width:2px; margin-left:-1px; border-radius:1px; background:var(--ink);}
+  .dayband .now::before{
+    content:''; position:absolute; bottom:-3px; left:50%; width:6px; height:6px; margin-left:-3px;
+    border-radius:50%; background:var(--ink);
+  }
+  .dayband .now span{
+    position:absolute; top:-7px; left:50%; transform:translateX(-50%); white-space:nowrap;
+    padding:1px 5px; border-radius:6px; background:var(--ink); color:var(--surface);
+    font-size:9px; font-weight:800; font-variant-numeric:tabular-nums;
+  }
+  .hoursstate{display:block; font-size:15px; font-weight:800; letter-spacing:-.01em; color:var(--ink);}
+  .hoursstate .q{font-size:12px; font-weight:600; letter-spacing:0; color:var(--muted);}
 
   /* Base is .big, not button.big, on purpose: an element+class selector
      outranks the .btn-* modifiers below it, so qualifying it here silently
@@ -724,6 +1012,157 @@
     font-size:20px; line-height:1; color:var(--muted);
   }
 
+  /* ---- Trip mode ------------------------------------------------------
+     While a trip is live and the sharing tab is the one on screen, the page
+     goes black and the strip glows. A phone stuck to a dashboard is read in
+     glances, and in a browser its screen has to stay on for the whole trip:
+     on the OLED screens most mid-range Androids have, black pixels are dark
+     pixels, so this is easier on the battery as well as the eye. It is the
+     token block again, redefined under .trip-on, so every card and word on
+     the tab follows without a rule each; root.trip-on is set and cleared by
+     syncTripMode(). Placed after both dark blocks so it wins over either. */
+  :root.trip-on{
+    --paper:#060505; --surface:#100d0c; --ink:#f1ebe2; --muted:#9b9088; --line:#2a231f;
+    --maroon-soft:#2a1418; --gold-soft:#2a2210; --gold-line:#4a3d20; --maroon-line:#4a2b30;
+    --gold-deep:#e8b45c; --brand-ink:#f0a8b0; --lost-ink:#ff8a76; --ok-ink:#7fe0b0; --live:#3ddc97;
+    --shadow:none; color-scheme:dark;
+  }
+  .trip-on header{background:linear-gradient(180deg,#4a141b,#2a0b10);}
+  .trip-on .status-row{align-items:center;}
+  .trip-on #onbusDot{width:14px; height:14px; margin-top:0;}
+  .trip-on #onbusStatusText{font-size:19px !important; letter-spacing:-.01em;}
+  .trip-on .btn-stop{background:#2a0f0c; color:#ff8a76; border:1.5px solid #6b231b;}
+  .trip-on #onbusStrip .rail{box-shadow:0 0 10px 1px rgba(227,154,28,.5);}
+  .trip-on #onbusStrip .track.sb .rail{background:#b23a4b; box-shadow:0 0 10px 1px rgba(178,58,75,.5);}
+  .trip-on #onbusStrip .track.sb .stn{border-color:#b23a4b;}
+  .trip-on #onbusStrip .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), 0 0 18px 4px rgba(61,220,151,.45);}
+  .trip-on #onbusStrip .tick.near span{color:#ffd27a;}
+  .trip-on .tyline{color:#ffd27a;}
+
+  /* ---- The salamat ticket ---------------------------------------------
+     What a sharer gets for tapping Stop: a thank-you shaped like the punched
+     paper ticket a conductor hands out on a provincial bus. Cream paper and
+     maroon print in both themes, because it is a piece of paper. The edges
+     are scalloped by a mask, the stops it was punched for have a hole, and
+     the rubber stamps carry a speckle so they read as inked rather than
+     printed. Made on the phone from what the phone saw, kept nowhere. */
+  .tktwrap{display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; max-width:340px;}
+  .tkt{
+    --tp:#fbf4e4; --ti:#6d1a25;
+    position:relative; width:100%; padding:24px 20px 20px; border-radius:6px;
+    color:var(--ti); background:var(--tp); box-shadow:0 30px 60px -20px rgba(0,0,0,.6);
+    font-variant-numeric:tabular-nums; transform:rotate(-1.2deg); text-align:left;
+    -webkit-mask:radial-gradient(circle 6px at 50% 0, transparent 98%, #000) 0 0/16px 51% repeat-x,
+                 radial-gradient(circle 6px at 50% 100%, transparent 98%, #000) 0 100%/16px 51% repeat-x;
+    mask:radial-gradient(circle 6px at 50% 0, transparent 98%, #000) 0 0/16px 51% repeat-x,
+         radial-gradient(circle 6px at 50% 100%, transparent 98%, #000) 0 100%/16px 51% repeat-x;
+  }
+  .tkt::before{content:''; position:absolute; left:0; right:0; top:0; height:6px; background:var(--gold);}
+  .tkt-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-top:4px;}
+  .tkt-kick{font-size:10px; font-weight:900; letter-spacing:.16em;}
+  .tkt-date{font-size:10px; font-weight:800; letter-spacing:.06em; opacity:.75; font-family:ui-monospace,Menlo,Consolas,monospace;}
+  .tkt-org{margin-top:2px; font-size:10.5px; font-weight:700; opacity:.75;}
+  .tkt hr{border:0; border-top:1.5px dashed rgba(109,26,37,.35); margin:13px -4px;}
+  .tkt-route{display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; font-size:11px; font-weight:800; letter-spacing:.06em;}
+  .tkt-times{font-size:10.5px; opacity:.8; font-family:ui-monospace,Menlo,Consolas,monospace; letter-spacing:.02em;}
+  .tkt-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:5px;}
+  .tkt-grid span{
+    position:relative; padding:7px 0 6px; border-radius:4px; text-align:center;
+    border:1.3px solid rgba(109,26,37,.4); font-size:9.5px; font-weight:800; letter-spacing:.04em;
+  }
+  .tkt-grid span.on{background:rgba(227,154,28,.22); border-color:var(--ti);}
+  .tkt-grid span.on::after{
+    content:''; position:absolute; top:-6px; right:-6px; width:14px; height:14px; border-radius:50%;
+    background:#3a2a26; box-shadow:inset 0 2px 3px rgba(0,0,0,.6), 0 0 0 1.5px var(--tp);
+  }
+  .tkt-big{font-size:13px; font-weight:700; line-height:1.3;}
+  .tkt-dur{margin-top:2px; font-size:34px; font-weight:900; letter-spacing:-.02em; line-height:1.05;}
+  .tkt-dur small{font-size:16px; font-weight:800; letter-spacing:0;}
+  .tkt-ty{display:flex; align-items:center; gap:9px; margin-top:12px; font-size:14px; font-weight:800; color:#1d5e3c;}
+  .tkt-greet{margin-bottom:4px; font-size:20px; font-weight:900; letter-spacing:-.01em;}
+  .tkt-fine{font-size:10.5px; line-height:1.45; font-weight:600; opacity:.8;}
+  .tkt-stamps{position:absolute; right:10px; top:196px; width:150px; height:150px; pointer-events:none;}
+  .stamp{
+    position:absolute; display:inline-grid; justify-items:center; gap:1px; padding:5px 9px 4px;
+    border:2.6px solid currentColor; border-radius:7px; box-shadow:inset 0 0 0 1.2px var(--tp), inset 0 0 0 2.4px currentColor;
+    font-size:13px; font-weight:900; letter-spacing:.12em; line-height:1.05; text-transform:uppercase;
+    opacity:.88; mix-blend-mode:multiply;
+    -webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -4 0 0 0 3.1'/></filter><rect width='90' height='60' filter='url(%23f)'/></svg>");
+    -webkit-mask-size:90px 60px;
+    mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -4 0 0 0 3.1'/></filter><rect width='90' height='60' filter='url(%23f)'/></svg>");
+    mask-size:90px 60px;
+  }
+  .stamp small{font-size:8.5px; font-weight:800; letter-spacing:.14em;}
+  .stamp.red{color:#b0281c;} .stamp.blue{color:#2a3a9e;} .stamp.green{color:#1d6a43;}
+  .stamp.s1{right:0; top:0; transform:rotate(-10deg);}
+  .stamp.s2{right:20px; top:92px; transform:rotate(6deg);}
+  .tkt-close{
+    min-height:var(--tap); padding:0 26px; border-radius:12px; cursor:pointer;
+    border:1.5px solid rgba(255,255,255,.45); background:rgba(255,255,255,.14); color:#fff;
+    font-family:inherit; font-size:14px; font-weight:800;
+  }
+
+  /* ---- Pasko: a parol and a string of lights --------------------------
+     September to early January, the season the whole country decorates for
+     — buses included. A small parol hangs off the header at the right, over
+     the page margin and clear of the tab labels, and the gold trim becomes a
+     string of lights. root.parol is set by applySeason(), and an organizer
+     can switch the whole thing off from the admin page. */
+  header{position:relative;}
+  #parol{display:none;}
+  .parol #parol{
+    display:block; position:absolute; right:6px; bottom:-44px; width:27px; height:47px; z-index:20;
+    pointer-events:none; transform-origin:50% 0; filter:drop-shadow(0 3px 4px rgba(60,10,10,.35));
+    animation:sway 5s ease-in-out infinite;
+  }
+  .parol #parol svg{display:block; width:100%; height:100%; overflow:visible;}
+  .parol header::after{
+    content:''; position:absolute; left:0; right:0; bottom:-3px; height:7px; z-index:3; pointer-events:none;
+    background:radial-gradient(circle 2.3px at 50% 50%, #fff6c8 0 60%, transparent 100%) 0 0/22px 7px repeat-x,
+               radial-gradient(circle 2.3px at 50% 50%, #ff8d7a 0 60%, transparent 100%) 11px 0/22px 7px repeat-x;
+    filter:drop-shadow(0 0 3px rgba(255,220,140,.9));
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]).parol #parol{filter:drop-shadow(0 0 7px rgba(255,200,90,.75)) drop-shadow(0 0 16px rgba(255,170,60,.35));}
+  }
+  :root[data-theme="dark"].parol #parol{filter:drop-shadow(0 0 7px rgba(255,200,90,.75)) drop-shadow(0 0 16px rgba(255,170,60,.35));}
+
+  /* ---- Small celebrations ---------------------------------------------
+     Say salamat and the bus answers: its glyph hops, a gold ring goes out
+     and "beep beep!" pops beside it. On the sharer's own strip, each new
+     salamat floats up from their bus. Both are the same tap, seen from the
+     two ends. Decorative, so the reduced-motion blanket flattens them, and
+     the words that matter are already in the popup and the count line. The
+     badge itself only gets a ring: Leaflet positions it with its own
+     transform, so anything that scales the badge would move it. */
+  .busmk.honk{animation:honkring .9s ease-out 2 both !important;}
+  .busmk.honk svg{animation:hop .9s cubic-bezier(.3,.6,.4,1) both;}
+  .busmk .beep{
+    position:absolute; left:calc(100% + 9px); top:50%; z-index:5; white-space:nowrap; pointer-events:none;
+    padding:6px 9px; border-radius:11px; background:#ffd36b; color:#2b2320;
+    font:800 12px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; letter-spacing:.02em;
+    box-shadow:0 4px 12px -4px rgba(0,0,0,.45); transform-origin:0 50%;
+    animation:beep 1.8s cubic-bezier(.2,.9,.3,1.3) both;
+  }
+  .busmk .beep::before{content:''; position:absolute; left:-5px; top:50%; margin-top:-5px; border:5px solid transparent; border-left:0; border-right-color:#ffd36b;}
+  .tyfloat{
+    position:absolute; z-index:60; pointer-events:none; white-space:nowrap; transform:translate(-50%,-100%);
+    padding:5px 10px 5px 8px; border-radius:14px; background:linear-gradient(180deg,#ffe08a,#ffc94a); color:#2b2320;
+    font-size:12.5px; font-weight:800; box-shadow:0 6px 16px -6px rgba(120,70,0,.6);
+    animation:tyfloat 2.2s cubic-bezier(.2,.8,.3,1) both;
+  }
+  .tyspark{
+    position:absolute; z-index:61; width:8px; height:8px; border-radius:50%; background:#ffd36b; pointer-events:none;
+    animation:tyspark .9s ease-out both;
+  }
+  /* A short message at the foot of the screen: "Link copied". */
+  .toast{
+    position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:6000;
+    max-width:calc(100% - 32px); padding:10px 14px; border-radius:12px;
+    background:var(--ink); color:var(--surface); font-size:13px; font-weight:700; text-align:center;
+    box-shadow:0 10px 26px -10px rgba(0,0,0,.6); animation:rise .25s ease;
+  }
+
   /* ---- Motion ----------------------------------------------------------
      Everything in this section is decorative. Nothing here says anything
      that is not also said in words next to it, which is the property that
@@ -742,6 +1181,22 @@
   @keyframes cardin{from{opacity:0; transform:scale(.96) translateY(6px);} to{opacity:1; transform:none;}}
   @keyframes veil{from{opacity:0;} to{opacity:1;}}
   @keyframes fadein{from{opacity:0;} to{opacity:1;}}
+  @keyframes honkring{0%{box-shadow:0 1px 6px rgba(0,0,0,.35), 0 0 0 0 rgba(255,200,70,.85);} 100%{box-shadow:0 1px 6px rgba(0,0,0,.35), 0 0 0 15px rgba(255,200,70,0);}}
+  @keyframes hop{0%{transform:none;} 16%{transform:translateY(-5px) scale(1.18);} 32%{transform:translateY(0) scale(.94);} 48%{transform:translateY(-2px) scale(1.06);} 64%,100%{transform:none;}}
+  @keyframes beep{
+    0%{opacity:0; transform:translateY(-50%) scale(.4);} 12%{opacity:1; transform:translateY(-50%) scale(1.08);}
+    22%{transform:translateY(-50%) scale(1);} 80%{opacity:1; transform:translateY(-50%) scale(1);}
+    100%{opacity:0; transform:translateY(-62%) scale(.96);}
+  }
+  @keyframes tyfloat{
+    0%{opacity:0; transform:translate(-50%,-60%) scale(.5);} 14%{opacity:1; transform:translate(-50%,-100%) scale(1.06);}
+    24%{transform:translate(-50%,-105%) scale(1);} 75%{opacity:1;} 100%{opacity:0; transform:translate(-50%,-210%) scale(.96);}
+  }
+  @keyframes tyspark{0%{opacity:1; transform:translate(-50%,-50%) scale(1);} 100%{opacity:0; transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.3);}}
+  @keyframes sway{0%,100%{transform:rotate(-3deg);} 50%{transform:rotate(3deg);}}
+  /* The card is rebuilt on every poll, so the flag pops only when the state
+     has just changed: renderMyStop() adds .fresh on that draw alone. */
+  .ride-flag.fresh{animation:popin .3s ease;}
 
   /* Tab switches and reopening folds. Short enough that switching back and
      forth never feels like waiting. The curve is a hard-decelerate: motion
@@ -833,7 +1288,6 @@
   /* The checkpoint a bus is near is highlighted by class; crossfade the
      handover as a bus moves from one tick's neighbourhood to the next. */
   .tick span{transition:color .3s ease;}
-  .tick::before{transition:background-color .3s ease;}
 
   /* The headline going from "1 bus live" to "2 buses live" is the page's
      most watched sentence changing; it rises in like everything else new.
@@ -870,8 +1324,8 @@
   .tyhello.bye{opacity:0; transition:opacity .7s ease;}
   #onbusStripCard.hello .buspill.me{animation:mepulse 1.3s ease-in-out infinite;}
   @keyframes mepulse{
-    0%,100%{box-shadow:0 0 0 2px var(--surface), 0 0 0 3.5px var(--live), 0 1px 4px rgba(43,35,32,.25);}
-    50%{box-shadow:0 0 0 2px var(--surface), 0 0 0 7px var(--live), 0 1px 4px rgba(43,35,32,.25);}
+    0%,100%{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), 0 2px 6px rgba(43,35,32,.28);}
+    50%{box-shadow:0 0 0 2px var(--surface), 0 0 0 8px var(--live), 0 2px 6px rgba(43,35,32,.28);}
   }
 
   /* The bus popup scales in like the modals. On the wrapper and a fade on
@@ -953,11 +1407,13 @@
       <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it.</p>
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
       <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number, and it never adds up across trips: <b>no running total is kept for any driver or any bus, anywhere.</b></p>
+      <p>“Send a link to this bus”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do.</p>
 
       <h4 class="ok">If you share from the bus</h4>
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID for your session. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
       <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop.</p>
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and it goes when the trip does. Nothing keeps a total for you, so there is no score to go up or down.</p>
+      <p>When you tap Stop, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way. <b>It is not sent anywhere and not kept</b>: it is gone when you close it, so a screenshot is the only copy there will ever be.</p>
 
       <div id="privSightings">
         <h4 class="ok">Sightings</h4>
@@ -1011,6 +1467,17 @@
   </div>
 </div>
 
+<!-- What a sharer gets for tapping Stop: a thank-you shaped like a
+     conductor's punched ticket. Written by showTicket() from what this phone
+     saw on that trip; nothing on it is sent or kept, and it is gone when it
+     is closed. -->
+<div class="modal hidden" id="tktModal" role="dialog" aria-modal="true" aria-labelledby="tktKick">
+  <div class="tktwrap">
+    <div class="tkt" id="tktCard"></div>
+    <button type="button" class="tkt-close" onclick="closeModal('tktModal')">Close</button>
+  </div>
+</div>
+
 <div class="modal hidden" id="stopModal" role="dialog" aria-modal="true" aria-labelledby="stopTitle">
   <div class="modal-card tall">
     <h3 id="stopTitle">📍 Where do you wait?
@@ -1032,7 +1499,7 @@
 
 <div class="gate hidden" id="gate">
   <form class="card gate-card" onsubmit="event.preventDefault(); submitKey();">
-    <h2>🚌 WT Live Tracker</h2>
+    <h2>🚌 Bus Tracker</h2>
     <p id="gateMsg">Watching the map needs no key. Sharing from the bus needs the access key from the group chat, or the full link posted there.</p>
     <div style="height:6px"></div>
     <input type="text" id="gateKey" placeholder="Access key" autocomplete="off" autofocus>
@@ -1046,18 +1513,19 @@
 
 <header>
   <div class="headbar">
-    <div class="route">Mendez / Tagaytay <span class="amp">⇄</span> One Ayala</div>
+    <div class="route"><span class="led"><span class="ln">Mendez / Tagaytay</span> <span class="ln"><span class="amp">⇄</span> One Ayala</span></span></div>
     <div class="sub">WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER · UNOFFICIAL</div>
     <button type="button" id="themeBtn" onclick="cycleTheme()"><span class="ico"></span></button>
     <a id="guideLink" href="how-to.html" aria-label="How to use this tracker" title="How to use this tracker"
        onclick="try{localStorage.setItem('wt-guide-seen','1');}catch(e){}"><span class="ico">i<span class="newdot"></span></span></a>
   </div>
+  <div id="parol" aria-hidden="true"><svg viewBox="0 0 60 104"><line x1="30" y1="-30" x2="30" y2="10" stroke="#f3c460" stroke-width="1.6"/><circle cx="30" cy="33" r="23" fill="rgba(255,240,200,.14)" stroke="#f3c460" stroke-width="2.6"/><polygon points="30.0,13.5 34.8,26.4 48.5,27.0 37.8,35.5 41.5,48.8 30.0,41.2 18.5,48.8 22.2,35.5 11.5,27.0 25.2,26.4" fill="#ffcf5c" stroke="#fff4cf" stroke-width="1.4" stroke-linejoin="round"/><polygon points="30.0,13.5 34.8,26.4 48.5,27.0 37.8,35.5 41.5,48.8 30.0,41.2 18.5,48.8 22.2,35.5 11.5,27.0 25.2,26.4" fill="none" stroke="#c4432e" stroke-width=".9" transform="translate(30 33) scale(.55) translate(-30 -33)"/><circle cx="30" cy="33" r="3.6" fill="#fff"/><path d="M21 52 C 19 64, 25 72, 19 84 S 23 98, 18 104" fill="none" stroke="#ffcf5c" stroke-width="2.4" stroke-linecap="round"/><path d="M39 52 C 41 64, 35 72, 41 84 S 37 98, 42 104" fill="none" stroke="#c4432e" stroke-width="2.4" stroke-linecap="round"/><path d="M30 56 C 30 68, 33 76, 30 88" fill="none" stroke="#fff4cf" stroke-width="2" stroke-linecap="round"/></svg></div>
 </header>
 
 <div class="wrap">
   <div class="tabs">
-    <button type="button" class="tab active" id="tabTrack" aria-pressed="true" onclick="switchTab('track')">📍 Track buses</button>
-    <button type="button" class="tab" id="tabOnbus" aria-pressed="false" onclick="switchTab('share')">🚌 I'm on the bus</button>
+    <button type="button" class="tab active" id="tabTrack" aria-pressed="true" onclick="switchTab('track')"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.2c-4 0-7.2 3.1-7.2 7.1 0 5.2 6.1 11.6 6.6 12.1.3.3.9.3 1.2 0 .5-.5 6.6-6.9 6.6-12.1 0-4-3.2-7.1-7.2-7.1zm0 9.9a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg></span>Track buses</button>
+    <button type="button" class="tab" id="tabOnbus" aria-pressed="false" onclick="switchTab('share')"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></span>I'm on the bus</button>
   </div>
 
   <div class="noticebar hidden" id="noticeBar">
@@ -1095,6 +1563,10 @@
           <button type="button" onclick="cancelPinMode()">Cancel</button>
         </div>
         <div id="map"></div>
+        <!-- Both written by renderBuses(): the empty map's own explanation,
+             and the chip that says which bus a followed link is tracking. -->
+        <div class="mapnote hidden" id="mapNote"></div>
+        <div class="followchip hidden" id="followChip"><span class="dot"></span><span class="txt" id="followText"></span><button type="button" onclick="stopFollowing()">Stop</button></div>
       </div>
       <div class="hint hidden" id="myLocNote"></div>
 
@@ -1127,7 +1599,7 @@
            on an empty map it is not drawn at all, and nobody is invited to
            thank themselves. The popup is where the button lives; this only
            says the popup exists. -->
-      <div class="hint hidden" id="chipNote">Tap any 🚌 to see it up close and say salamat.</div>
+      <div class="hint hidden" id="chipNote">Tap any bus to see it up close and say salamat.</div>
 
       <details class="note">
         <summary>ⓘ What the colours mean</summary>
@@ -1158,6 +1630,7 @@
         <span class="lbl">
           <span class="cap">Operating hours</span>
           <span class="val" id="hoursSummary">–</span>
+          <span class="dayband" id="dayBand" aria-hidden="true"></span>
         </span>
         <span class="chev" aria-hidden="true">▶</span>
       </summary>
@@ -1309,7 +1782,10 @@ let SET = { hours:{ north:[], south:[] }, headway_min:30,
             // Absent means on. A route whose stored settings predate this
             // switch keeps the board it already has; nobody loses a feature
             // by upgrading. Turning it off is a deliberate act in admin.html.
-            sightings_enabled:true };
+            sightings_enabled:true,
+            // Absent means on, for the same reason: the parol and the lights
+            // appear in season unless an organizer has switched them off.
+            parol_enabled:true };
 let NOTICE = null;
 let CHECKPOINTS = [];
 let STOPS = [];
@@ -1326,8 +1802,11 @@ async function loadConfig() {
     const key = line.slice(0, eq).trim();
     const val = line.slice(eq + 1).trim();
     if (key === 'CHECKPOINT') {
+      // An optional fifth field is one line about the place, shown in a bus's
+      // popup as it passes (Kwento ng ruta). A line without one is exactly
+      // what it always was.
       const p = val.split('|').map(function(s){ return s.trim(); });
-      if (p.length === 4) CHECKPOINTS.push({ name:p[0], short:p[1], lat:parseFloat(p[2]), lng:parseFloat(p[3]) });
+      if (p.length === 4 || p.length === 5) CHECKPOINTS.push({ name:p[0], short:p[1], lat:parseFloat(p[2]), lng:parseFloat(p[3]), about:p[4]||'' });
     } else if (key === 'STOP') {
       const p = val.split('|').map(function(s){ return s.trim(); });
       if (p.length >= 3) STOPS.push({ name:p[0], lat:parseFloat(p[1]), lng:parseFloat(p[2]), conf:(p[3]||'M').toUpperCase() });
@@ -1389,9 +1868,56 @@ function hoursLabel(dir){
   if (!w.length) return 'see schedule';
   return w.map(function(x){ return fmtHM(x[0])+' - '+fmtHM(x[1]); }).join('\n');
 }
-function firstTrip(dir){
-  const w = SET.hours[dir]||[];
-  return w.length ? fmtHM(w[0][0]) : '';
+// The next departure from one end, looking forward from nowMins. This used
+// to be the day's first window whatever the time, which is right before dawn
+// and wrong every afternoon between the windows: at 2 PM the page told riders
+// the next trip was tomorrow's 6:00 AM when the 3:40 PM one was next. Past
+// the last window of the day it wraps to tomorrow's first.
+function nextTripMins(dir, nowMins){
+  const w = (SET.hours[dir]||[]).map(function(x){ return parseHM(x[0]); })
+    .filter(function(x){ return x !== null; })
+    .sort(function(a,b){ return a-b; });
+  if (!w.length) return null;
+  for (let i=0;i<w.length;i++){ if (w[i] > nowMins) return w[i]; }
+  return w[0];
+}
+function nextTrip(dir, nowMins){
+  const t = nextTripMins(dir, nowMins);
+  if (t === null) return '';
+  const h = Math.floor(t/60), m = t%60;
+  return fmtHM((h<10?'0':'')+h+':'+(m<10?'0':'')+m);
+}
+function nowMins(){
+  const now = new Date();
+  return now.getHours()*60 + now.getMinutes();
+}
+// What one direction's service is doing at nowMins, for the hours card:
+// 'departing' inside a departure window, 'enroute' in the three and a half
+// hours after one closes while its last buses are still on the road, and
+// 'closed' otherwise. Hours that are missing or unreadable are 'unknown',
+// never 'closed', for the same reason withinWindows will not claim closed.
+function serviceState(windows, nowMins){
+  if (!windows || !windows.length) return 'unknown';
+  let enroute = false;
+  for (let i=0;i<windows.length;i++){
+    const a = parseHM(windows[i][0]), b = parseHM(windows[i][1]);
+    if (a===null || b===null) return 'unknown';
+    if (nowMins >= a && nowMins <= b) return 'departing';
+    if (nowMins > b && nowMins <= b + 210) enroute = true;
+  }
+  return enroute ? 'enroute' : 'closed';
+}
+// Both directions at once: the busier of the two wins.
+function routeState(nowMins){
+  const n = serviceState(SET.hours.north, nowMins), s = serviceState(SET.hours.south, nowMins);
+  const order = ['departing','unknown','enroute','closed'];
+  return order[Math.min(order.indexOf(n), order.indexOf(s))];
+}
+// Pasko. From the first of September, when the "ber" months start and the
+// country starts decorating, to Three Kings on the sixth of January.
+function inParolSeason(d){
+  const m = d.getMonth();
+  return m >= 8 || (m === 0 && d.getDate() <= 6);
 }
 // ---- END operating hours ----------------------------------------------
 
@@ -1409,6 +1935,8 @@ async function pollSettings(){
   });
   // Its own line: the loop above only takes numbers.
   if (typeof st.sightings_enabled === 'boolean') SET.sightings_enabled = st.sightings_enabled;
+  if (typeof st.parol_enabled === 'boolean') SET.parol_enabled = st.parol_enabled;
+  applySeason();
   NOTICE = res.data.notice || null;
   renderNotice();
   renderHours();
@@ -1493,7 +2021,7 @@ function closeModal(id){
 document.addEventListener('keydown', function(e){
   const m = topLayer();
   if (!m) return;
-  if (e.key === 'Escape' && m.id === 'privModal'){ closeModal('privModal'); return; }
+  if (e.key === 'Escape' && (m.id === 'privModal' || m.id === 'tktModal')){ closeModal(m.id); return; }
   if (e.key !== 'Tab') return;
   const f = focusables(m);
   if (!f.length) return;
@@ -1503,8 +2031,12 @@ document.addEventListener('keydown', function(e){
   else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
 });
 (function(){
-  const m = document.getElementById('privModal');
-  if (m) m.addEventListener('click', function(e){ if (e.target === m) closeModal('privModal'); });
+  ['privModal','tktModal'].forEach(function(id){
+    const m = document.getElementById(id);
+    if (m) m.addEventListener('click', function(e){
+      if (e.target === m || e.target.classList.contains('tktwrap')) closeModal(id);
+    });
+  });
 })();
 
 // ============================================================
@@ -1524,6 +2056,7 @@ function switchTab(which) {
   }
   if (which==='share') refreshOnbusStrip();
   checkControlsVisible();   // self-guarding: clears itself on the track tab
+  syncTripMode();
 }
 let dirFilter = 'all';
 function setFilter(f) {
@@ -1727,7 +2260,11 @@ function initMap() {
     glideTimer = setTimeout(function(){ mapEl.classList.add('glide'); }, 80);
   });
   mapEl.classList.add('glide');
+  // Following a bus from a link stops the moment the person moves the map
+  // themselves, the way every map app does it: the bus is still drawn.
+  map.on('dragstart', function(){ if (FOLLOW) stopFollowing(); });
 }
+window.addEventListener('hashchange', function(){ readFollowLink(); if (running) renderBuses(); });
 
 function resetView(){
   if (!map) return;
@@ -1853,6 +2390,35 @@ function thanksControl(id, isSelf, done){
   return '<div class="tyrow"><button type="button" class="tybtn" ' +
          'onclick="sayThanks(\'' + id + '\')">🙏 Say salamat</button></div>';
 }
+// The salamat ticket, at the end of a trip. Everything it prints comes from
+// what this phone saw while sharing, and none of it is sent or kept: the
+// ticket is drawn once and gone when it is closed. Three rules, held by
+// test-thanks.js the same way as the four above:
+//
+//  5. No stamp is about how the bus was driven. Not speed, not how long the
+//     trip took, not how it compares with anything. Those are exactly the
+//     driver numbers for-operators.html promises this tool cannot produce.
+//     Stamps are about the trip's shape and the time of day, nothing else.
+//  6. A trip too short to have helped anyone gets no ticket: under five
+//     minutes on the map, or never on the map at all.
+//  7. The salamat line follows rule 1. No zero, ever.
+function ticketStamps(t){
+  const out = [];
+  const last = t.lastIdx;
+  if ((t.fromIdx === 0 && t.toIdx === last) || (t.fromIdx === last && t.toIdx === 0))
+    out.push({ t:'Buong ruta', s:(t.fromShort||'') + ' → ' + (t.toShort||''), c:'red' });
+  if (t.startMins < 300) out.push({ t:'Madaling araw', s:'before 5 AM', c:'blue' });
+  else if (t.endMins >= 1110 || t.endMins < t.startMins) out.push({ t:'Gabi na', s:'after dark', c:'blue' });
+  if (t.othersAtStart === 0) out.push({ t:'Unang bus', s:'first on the map', c:'green' });
+  return out.slice(0, 2);
+}
+function ticketWorthShowing(t){
+  return !!t && t.writes > 0 && t.mins >= 5;
+}
+// Ingat pauwi, take care going home, for a trip that ends in the evening.
+function ticketGreeting(endMins){
+  return (endMins >= 1110 || endMins < 240) ? 'Ingat pauwi!' : 'Ingat sa biyahe!';
+}
 // ---- END SALAMAT
 
 // Which buses this tab has already thanked. sessionStorage, not local: it
@@ -1899,7 +2465,35 @@ function renderMyThanks(){
   if (words && TY_SHOWN > 0 && MY_THANKS > TY_SHOWN){
     row.classList.remove('bump'); void row.offsetWidth; row.classList.add('bump');
   }
+  // Each new one also floats up from this phone's own bus on the strip.
+  // Not the first draw of a trip: a count that was already there when the
+  // page loaded is not somebody tapping now.
+  if (words && MY_THANKS > TY_SHOWN && TRIP && TRIP.polled) floatThanks();
   TY_SHOWN = words ? MY_THANKS : 0;
+}
+function floatThanks(){
+  if (reducedMotion()) return;
+  const view = document.getElementById('onbusView');
+  const me = document.querySelector('#onbusStrip .buspill.me');
+  if (!me || !view || view.classList.contains('hidden')) return;
+  const r = me.getBoundingClientRect();
+  if (!r.width) return;
+  const x = r.left + r.width/2 + window.scrollX, y = r.top + window.scrollY;
+  const made = [];
+  const b = document.createElement('div');
+  b.className = 'tyfloat'; b.textContent = '🙏 salamat!';
+  b.style.left = x + 'px'; b.style.top = (y - 4) + 'px';
+  made.push(b);
+  for (let i=0;i<8;i++){
+    const sp = document.createElement('i'), a = i/8*Math.PI*2;
+    sp.className = 'tyspark';
+    sp.style.setProperty('--dx', (Math.cos(a)*26).toFixed(1) + 'px');
+    sp.style.setProperty('--dy', (Math.sin(a)*22).toFixed(1) + 'px');
+    sp.style.left = x + 'px'; sp.style.top = (y + r.height/2) + 'px';
+    made.push(sp);
+  }
+  made.forEach(function(e){ document.body.appendChild(e); });
+  setTimeout(function(){ made.forEach(function(e){ if (e.parentNode) e.parentNode.removeChild(e); }); }, 2400);
 }
 // Bounded, because a long visit on a busy route would otherwise grow this
 // without end. The oldest entries falling off only re-offers a button.
@@ -1927,6 +2521,13 @@ function thanksTrouble(err){
   }catch(e){}
 }
 async function sayThanks(id){
+  // Let the tap finish before anything is redrawn. This runs inside the
+  // button's own click, and the redraw below replaces the popup's contents,
+  // which takes the button out of the page while the click is still on its
+  // way up to the map. Leaflet then cannot see that the tap was inside a
+  // popup, treats it as a tap on the map, and closes the popup: the rider
+  // never saw "Salamat sent" at all. One tick is enough.
+  await new Promise(function(r){ setTimeout(r, 0); });
   const cl = clusterBuses(BUSES).find(function(x){ return x.id === id; });
   const members = (cl && cl.members) || [id];
   const t = thankedSet();
@@ -1942,6 +2543,7 @@ async function sayThanks(id){
   // landed" and starts meaning nothing.
   const ack = document.querySelector('.buspop .tydone');
   if (ack) ack.classList.add('pop');
+  honkBus(id);
   let failed = false;
   for (const m of members){
     let res = null;
@@ -1964,20 +2566,49 @@ async function sayThanks(id){
   }
 }
 
+// The bus answers a salamat: its glyph hops, a gold ring goes out, and
+// "beep beep!" pops beside it. Nothing is sent for this and nothing waits on
+// it; it is the tap being seen. The next redraw of the badge (setIcon
+// rewrites it) takes the bubble away if the timer has not already.
+function honkBus(id){
+  if (reducedMotion()) return;
+  const m = busMarkers[id];
+  const el = m && m.getElement && m.getElement();
+  if (!el) return;
+  el.classList.remove('honk'); void el.offsetWidth; el.classList.add('honk');
+  const old = el.querySelector('.beep');
+  if (old) old.parentNode.removeChild(old);
+  el.insertAdjacentHTML('beforeend', '<span class="beep">beep beep! 🙏</span>');
+  setTimeout(function(){
+    el.classList.remove('honk');
+    const b = el.querySelector('.beep');
+    if (b) b.parentNode.removeChild(b);
+  }, 1900);
+}
+
 // Everything the badge no longer says, one tap away. The bus number is typed
 // by a sharer and goes straight into innerHTML here, so it is escaped exactly
 // as it is in the chips and on the admin page. The server's 12 character cap
 // is not a defence, only the reason nobody has managed anything with it yet.
+const LINK_GLYPH =
+  '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">' +
+  '<path d="M10 13.5a4 4 0 0 0 5.7.3l3-3a4 4 0 0 0-5.7-5.7l-1.1 1.1"/><path d="M14 10.5a4 4 0 0 0-5.7-.3l-3 3a4 4 0 0 0 5.7 5.7l1.1-1.1"/></svg>';
 function busPopupHtml(b){
   const fresh = freshness(b.ts);
   const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
+  const story = storyFor(pl, b.direction, CHECKPOINTS);
+  // Same strict check as the strip's pills before an id goes into a handler.
+  const linkable = b.id && /^[A-Za-z0-9\-]+$/.test(b.id);
   return '<div class="'+(b.direction==='north'?'nb':'sb')+'">'+
     '<div class="pdir">'+(b.direction==='north'?'▲ NORTHBOUND':'▼ SOUTHBOUND')+'</div>'+
     (b.label ? '<div class="pname">'+escapeHtml(b.label)+'</div>' : '')+
     '<div>'+escapeHtml(pl ? pl.label : 'position unclear')+'</div>'+
     '<div class="page">'+(fresh==='live' ? 'live' : timeAgo(b.ts)+' ago')+
     ((b.count&&b.count>1) ? ' · '+(b.count|0)+' sharing' : '')+'</div>'+
-    thanksControl(b.id, b.self, thanksDone(b))+'</div>';
+    (story ? '<div class="kw"><b>'+story.lead+'</b>'+escapeHtml(story.name+', '+story.about)+'</div>' : '')+
+    thanksControl(b.id, b.self, thanksDone(b))+
+    (linkable ? '<button type="button" class="buslink" onclick="sendBusLink(\''+b.id+'\')">'+LINK_GLYPH+'Send a link to this bus</button>' : '')+
+    '</div>';
 }
 
 // ============================================================
@@ -1996,6 +2627,18 @@ function buildTicks() {
     return '<div class="tick'+edge+'" data-i="'+i+'" style="left:'+pct+'%"><span>'+c.short+'</span></div>';
   }).join('');
   tickBoxes().forEach(function(box){ box.innerHTML = html; });
+  // A station on each line at every checkpoint, at the tick's own position,
+  // laid between the rail and the pills so a bus always sits on top of one.
+  const last = CHECKPOINTS.length-1;
+  const stn = CHECKPOINTS.map(function(c,i){
+    const pct = (i/last)*100;
+    return '<i class="stn'+(i===0 ? ' end first' : i===last ? ' end last' : '')+'" style="left:'+pct+'%"></i>';
+  }).join('');
+  [].slice.call(document.querySelectorAll('.strip .track')).forEach(function(tr){
+    [].slice.call(tr.querySelectorAll('.stn')).forEach(function(x){ tr.removeChild(x); });
+    const pills = tr.querySelector('.pills');
+    if (pills) pills.insertAdjacentHTML('beforebegin', stn);
+  });
   fitTicks();
 }
 // How many checkpoint labels have to share the strip is a config.txt
@@ -2128,6 +2771,18 @@ function busPlace(b, pts, cum){
                       : 'between '+from.name+' and '+to.name
   };
 }
+// Kwento ng ruta: which checkpoint's line a bus's popup tells. The one it is
+// at, when busPlace() has settled it on a name; otherwise the next one it
+// will reach, which is the end of its leg in the direction it is going.
+// Only checkpoints that have a line in config.txt have anything to say.
+function storyFor(pl, direction, pts){
+  if (!pl || !pts || !pts.length) return null;
+  const now = pl.ticks.length === 1;
+  const i = now ? pl.ticks[0] : (direction === 'south' ? pl.ticks[0] : pl.ticks[1]);
+  const cp = pts[i];
+  if (!cp || !cp.about) return null;
+  return { lead: now ? 'Passing' : 'Next up', name: cp.name, about: cp.about };
+}
 
 const DIRGUARD = {
   MAX_WINDOW_MS: 25*60*1000,  // how far back the comparison point can sit
@@ -2252,6 +2907,37 @@ function myStopWords(info){
                                  : 'about ' + info.stops + (info.stops === 1 ? ' stop' : ' stops') + ' before yours';
   return dir + ' · ' + dist + ' · ' + stops;
 }
+// Every listed stop with its name, projected and sorted exactly as
+// stopChainKms() does it, so the dots the card draws are the very stops it
+// counted. Projected once, at boot, like STOP_KMS.
+function namedStopKms(stops, pts, cum){
+  const out = [];
+  for (let i=0;i<stops.length;i++){
+    const s = stops[i];
+    if (!s || isNaN(s.lat) || isNaN(s.lng)) continue;
+    const c = chainPosition({ lat:s.lat, lng:s.lng }, pts, cum);
+    if (c) out.push({ name:s.name, km:c.km });
+  }
+  return out.sort(function(a,b){ return a.km-b.km; });
+}
+// The stops a coming bus still has to pass before yours, in the order it
+// will reach them: up the chain northbound, down it southbound. The first
+// is the "next stop" the card names.
+function stopsBetween(info, myKm, named){
+  if (!info || myKm === null || myKm === undefined || isNaN(myKm)) return [];
+  const lo = Math.min(info.busKm, myKm), hi = Math.max(info.busKm, myKm);
+  const list = named.filter(function(s){ return s.km > lo && s.km < hi; });
+  return info.direction === 'south' ? list.reverse() : list;
+}
+// How loudly the card speaks. 'here' is yours being the next stop with the
+// bus under 2 km away, which is when it says Sakay na; 'near' is two stops
+// or fewer, Malapit na. Nothing louder than that, and still never minutes.
+function rideState(info){
+  if (!info) return '';
+  if (info.stops === 0 && info.km < 2) return 'here';
+  if (info.stops <= 2) return 'near';
+  return '';
+}
 // ---- END MY STOP -------------------------------------------------------
 
 // ---- My stop: storage, the picker, and the marks on the map -----------
@@ -2267,6 +2953,7 @@ function myStopWords(info){
 let MYSTOP = null;        // {name, lat, lng}, in this browser and nowhere else
 let MYSTOP_KM = null;     // where that sits on the checkpoint chain
 let STOP_KMS = [];        // every listed stop, projected onto the chain once
+let NAMED_STOPS = [];     // the same, with their names, for the dots on the card
 let myStopMarker = null, myLocMarker = null, myLocRing = null;
 let myLocWatch = null, pinModeOn = false;
 
@@ -2314,6 +3001,23 @@ function syncMyStopMarker(){
 // Rewritten on every poll, from the same filtered list the chips use: a
 // reader who filtered to Northbound should not be told about a southbound
 // bus here and nowhere else on the page.
+// The drawn pin, shared by the "Set your stop" button and the tab icon.
+const PIN_GLYPH =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2c-4 0-7.2 3.1-7.2 7.1 0 5.2 6.1 11.6 6.6 12.1.3.3.9.3 1.2 0 ' +
+  '.5-.5 6.6-6.9 6.6-12.1 0-4-3.2-7.1-7.2-7.1zm0 9.9a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg>';
+// Which state the card was last drawn in, per bus, so the Malapit na / Sakay
+// na flag pops on the draw where it changes and on no other: the card is
+// rebuilt on every poll. And the buses this visit has already buzzed for,
+// so the phone buzzes once per bus and never again on the next poll.
+let RIDE_LAST = '', BUZZED = {};
+function buzzOn(){
+  try{ return sessionStorage.getItem('wt-buzz') === '1'; }catch(e){ return false; }
+}
+function setBuzz(on){
+  try{ if (on) sessionStorage.setItem('wt-buzz', '1'); else sessionStorage.removeItem('wt-buzz'); }catch(e){}
+  // A buzz now, when switching it on, is the only way to know the phone can.
+  if (on){ try{ if (navigator.vibrate) navigator.vibrate(60); }catch(e){} }
+}
 function renderMyStop(shown){
   const box = document.getElementById('myStop');
   if (!box) return;
@@ -2321,7 +3025,7 @@ function renderMyStop(shown){
   if (legend) legend.classList.toggle('hidden', !MYSTOP);
   if (!MYSTOP){
     box.innerHTML = '<button type="button" class="mystop-btn" onclick="openStopPicker()">' +
-      '<span class="pin">📍</span><span>Set your stop — see how far the bus is from it</span></button>';
+      '<span class="pin">' + PIN_GLYPH + '</span><span>Set your stop — see how far the bus is from it</span></button>';
     return;
   }
   MYSTOP_KM = routeProgressKm({lat:MYSTOP.lat, lng:MYSTOP.lng}, CHECKPOINTS, ROUTE_CHAIN);
@@ -2331,15 +3035,60 @@ function renderMyStop(shown){
   });
   const info = approachInfo(withKm, MYSTOP_KM, STOP_KMS, 'all');
   const words = myStopWords(info);
-  box.innerHTML = '<div class="mystop-live"><div class="body">' +
-    '<span class="name">' + escapeHtml(MYSTOP.name) + '</span>' +
-    '<span class="rel">' + (words
-      ? escapeHtml(words) + ' <span class="quiet">· updated ' + timeAgo(info.ts) + ' ago</span>'
-      : '<span class="quiet">' + (shown.length
+  if (!words){
+    RIDE_LAST = '';
+    box.innerHTML = '<div class="mystop-live"><div class="body">' +
+      '<span class="name">' + escapeHtml(MYSTOP.name) + '</span>' +
+      '<span class="rel"><span class="quiet">' + (shown.length
           ? 'No bus on the map is heading your way right now.'
-          : 'Nobody is sharing GPS right now.') + '</span>') +
-    '</span></div>' +
-    '<button type="button" class="edit" onclick="openStopPicker()">Change</button></div>';
+          : 'Nobody is sharing GPS right now.') + '</span></span></div>' +
+      '<button type="button" class="edit" onclick="openStopPicker()">Change</button></div>';
+    return;
+  }
+  // The stops still between the bus and you, as dots. Past eleven they no
+  // longer fit a phone's width, so the line keeps the next five and the last
+  // three and puts an ellipsis between them; the count beside it is exact.
+  const between = stopsBetween(info, MYSTOP_KM, NAMED_STOPS);
+  const n = info.stops;
+  let dots = '';
+  if (n <= 11){ for (let i=0;i<n;i++) dots += '<i' + (i===0 ? ' class="next"' : '') + '></i>'; }
+  else { dots = '<i class="next"></i><i></i><i></i><i></i><i></i><span class="gap">···</span><i></i><i></i><i></i>'; }
+  const state = rideState(info);
+  const key = info.id + '|' + state;
+  const fresh = state && key !== RIDE_LAST;
+  RIDE_LAST = key;
+  if (state && buzzOn() && !BUZZED[info.id]){
+    BUZZED[info.id] = 1;
+    try{ if (navigator.vibrate) navigator.vibrate([180, 90, 180]); }catch(e){}
+  }
+  const km = info.km < 0.5 ? 'under 500 m' : info.km < 10 ? info.km.toFixed(1) + ' km' : Math.round(info.km) + ' km';
+  const dirWords = info.direction === 'south' ? '▼ Southbound' : '▲ Northbound';
+  const big = state === 'here'
+    ? '<span class="num">Next stop is yours.</span><span class="unit">Get ready to wave it down.</span>'
+    : n === 0
+    ? '<span class="num">Next</span><span class="unit">stop is yours</span><span class="km">· ' + km + '</span>'
+    : '<span class="unit">about</span><span class="num">' + n + '</span><span class="unit">' + (n === 1 ? 'stop' : 'stops') +
+      ' before yours</span><span class="km">· ' + km + '</span>';
+  const canBuzz = !!(navigator.vibrate);
+  box.innerHTML =
+    '<div class="ride ' + (info.direction === 'south' ? 'sb' : 'nb') + (state ? ' ' + state : '') + '">' +
+      '<div class="ride-top"><span class="ride-name">' + escapeHtml(MYSTOP.name) + '</span>' +
+        '<button type="button" class="edit" onclick="openStopPicker()">Change</button></div>' +
+      (state ? '<div class="ride-flag' + (fresh ? ' fresh' : '') + '">' + (state === 'here' ? 'Sakay na!' : 'Malapit na!') + '</div>' : '') +
+      '<div class="ride-line" aria-hidden="true"><span class="ride-bus">' + BUS_GLYPH + '</span>' +
+        '<span class="ride-track">' + dots + '</span><span class="ride-me"></span></div>' +
+      '<div class="ride-cap" aria-hidden="true"><span>' + escapeHtml(info.label ? 'Bus ' + info.label : 'Next bus') + '</span>' +
+        '<span class="me">Your stop</span></div>' +
+      '<div class="ride-big" aria-hidden="true">' + big + '</div>' +
+      '<div class="ride-sub" aria-hidden="true">' + dirWords +
+        (between.length ? ' · next stop <b>' + escapeHtml(between[0].name) + '</b>' : '') +
+        ' · updated ' + timeAgo(info.ts) + ' ago</div>' +
+      // The sentence the card has always printed, now for screen readers: it
+      // says all of the above in the order a person would.
+      '<span class="vh">' + escapeHtml(words) + ' · updated ' + timeAgo(info.ts) + ' ago</span>' +
+      (canBuzz ? '<label class="buzz"><span>Buzz once when it’s two stops away</span>' +
+        '<input type="checkbox" id="buzzBox" onchange="setBuzz(this.checked)"' + (buzzOn() ? ' checked' : '') + '></label>' : '') +
+    '</div>';
 }
 
 function openStopPicker(){
@@ -2559,8 +3308,14 @@ function syncBusMarkers(all) {
       else if (!map.hasLayer(m)) m.addTo(map);
     } else if (show) {
       m = L.marker([b.lat,b.lng],{icon:icon, title:'Show bus details'});
+      // The popup can carry a line about the place and a second button now,
+      // so it is as wide as the map's free width allows. The extra padding
+      // on the left keeps it clear of the zoom and locate buttons, which sit
+      // above popups: without it, a bus near the middle of the map opened a
+      // popup whose first words were under the controls.
       m.bindPopup(busPopupHtml(b),
-        { closeButton:false, className:'buspop', maxWidth:230, autoPanPadding:[18,18] });
+        { closeButton:false, className:'buspop', maxWidth:220,
+          autoPanPaddingTopLeft:[66,18], autoPanPaddingBottomRight:[18,18] });
       busMarkers[b.id] = m.addTo(map);
       // Fade a genuinely new badge in. Added here, at creation, because the
       // next setIcon() rebuilds the element's className without it, which is
@@ -2629,8 +3384,27 @@ function renderStrip(box, buses, sightings, tappable) {
   });
   syncPills(nbBox, nbGhosts, nbPills);
   syncPills(sbBox, sbGhosts, sbPills);
+  syncMineStation(box, !!tappable);
   [].slice.call(box.querySelectorAll('.tick')).forEach(function(t){
     t.classList.toggle('near', !!nearSet[t.getAttribute('data-i')]);
+  });
+}
+
+// The reader's saved stop, drawn as a station of its own on both lines of
+// the tracker's strip, placed by busPlace() the way a bus at that spot would
+// be. Not on the sharing tab's copy: the person there is on a bus, not
+// waiting for one.
+function syncMineStation(box, show){
+  const pl = (show && MYSTOP) ? busPlace({ lat:MYSTOP.lat, lng:MYSTOP.lng, direction:'north' }, CHECKPOINTS, ROUTE_CHAIN) : null;
+  [].slice.call(box.querySelectorAll('.track')).forEach(function(tr){
+    let m = tr.querySelector('.minestn');
+    if (!pl){ if (m) tr.removeChild(m); return; }
+    if (!m){
+      m = document.createElement('i');
+      m.className = 'minestn';
+      tr.insertBefore(m, tr.querySelector('.pills'));
+    }
+    m.setAttribute('style', 'left:'+pl.pct+'%');
   });
 }
 
@@ -2672,7 +3446,7 @@ function syncPills(container, ghosts, pills){
         el.setAttribute('aria-label', 'Show this bus on the map');
       }
       el.setAttribute('data-bus', p.key);
-      el.textContent = '🚌';
+      el.innerHTML = BUS_GLYPH;
     }
     // .arrive only on a genuinely new pill, so the fade-in cannot replay on
     // every poll; the next sync writes the class list without it.
@@ -2750,6 +3524,8 @@ function renderBuses() {
 
   renderMyStop(shown);
   renderMyThanks();
+  renderMapNote(all.length > 0);
+  renderFollow(all);
   // Someone else's bus is the only thing the hint's advice applies to.
   const note = document.getElementById('chipNote');
   if (note) note.classList.toggle('hidden', !shown.some(function(b){ return !b.self; }));
@@ -2767,7 +3543,7 @@ function renderBuses() {
     const dirsOpen = withinHours('north')||withinHours('south');
     setHeadline(text, 'No buses live');
     sub.textContent = !dirsOpen
-      ? 'Outside operating hours. Next departures: '+(firstTrip('north')||'see schedule')+' from Mendez, '+(firstTrip('south')||'see schedule')+' from One Ayala.'
+      ? 'Outside operating hours. Next departures: '+(nextTrip('north', nowMins())||'see schedule')+' from Mendez, '+(nextTrip('south', nowMins())||'see schedule')+' from One Ayala.'
       : !sightingsOn()
       ? 'Nobody is sharing GPS right now. Ask in the group chat, or check the operating hours below.'
       : trackGhosts.length
@@ -2821,6 +3597,133 @@ function focusBus(id){
   if (m && map.hasLayer(m)) m.openPopup();
 }
 
+// ---- The empty map says when ----------------------------------------
+// Nobody sharing is what most people see, and the sentence that explains it
+// sits below the fold. So the map says it too, in one of four ways:
+//  - closed in the middle of the day: when the next trips leave;
+//  - closed at night: the bus is asleep (tulog pa), with the first trips;
+//  - closed within the hour before the first trip: the bus is waking up;
+//  - inside operating hours: nobody is sharing, and a way to be the first.
+// It is not drawn until the first positions answer has landed, so a page
+// that is still loading never claims the map is empty.
+const CLOCK_GLYPH =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">' +
+  '<circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.4 2"/></svg>';
+function napBusSvg(awake){
+  const body = '#efe6d6', ink = '#1b1530';
+  return '<svg viewBox="0 0 48 48" aria-hidden="true">' +
+    (awake ? '<circle cx="39" cy="11" r="8" fill="#ffb347"/><g stroke="#ffb347" stroke-width="2" stroke-linecap="round">' +
+      '<path d="M39 0.5v-3M47.5 3.5l2-2M49.5 11h3"/></g>' : '') +
+    '<rect x="3" y="16" width="4.6" height="7" rx="1.4" fill="'+body+'"/><rect x="40.4" y="16" width="4.6" height="7" rx="1.4" fill="'+body+'"/>' +
+    '<rect x="9" y="7" width="30" height="31" rx="6.5" fill="'+body+'"/>' +
+    '<rect x="12.5" y="35" width="7.5" height="7" rx="2" fill="'+body+'"/><rect x="28" y="35" width="7.5" height="7" rx="2" fill="'+body+'"/>' +
+    '<rect x="12.8" y="11.2" width="22.4" height="11.6" rx="2.6" fill="'+ink+'"/>' +
+    (awake
+      ? '<circle cx="17.3" cy="29.6" r="2.6" fill="'+ink+'"/><circle cx="30.7" cy="29.6" r="2.6" fill="'+ink+'"/>' +
+        '<circle cx="18.2" cy="28.8" r=".9" fill="#fff"/><circle cx="31.6" cy="28.8" r=".9" fill="#fff"/>'
+      : '<path d="M14.6 29.6 q2.7 2.6 5.4 0" stroke="'+ink+'" stroke-width="2.1" fill="none" stroke-linecap="round"/>' +
+        '<path d="M28 29.6 q2.7 2.6 5.4 0" stroke="'+ink+'" stroke-width="2.1" fill="none" stroke-linecap="round"/>' +
+        '<g fill="#ffd36b" font-family="Arial,sans-serif" font-weight="900"><text x="34.5" y="8.5" font-size="9">z</text>' +
+        '<text x="40.5" y="4" font-size="6.5">z</text></g>') +
+    '</svg>';
+}
+function renderMapNote(anyBus){
+  const el = document.getElementById('mapNote');
+  if (!el) return;
+  if (anyBus || !positionsLoaded){ el.classList.add('hidden'); el.innerHTML = ''; return; }
+  const m = nowMins(), st = routeState(m);
+  const nn = nextTrip('north', m), ss = nextTrip('south', m);
+  const times = '<b>' + escapeHtml(nn || '–') + '</b> from Mendez · <b>' + escapeHtml(ss || '–') + '</b> from One Ayala';
+  let html;
+  if (st === 'closed'){
+    const soon = [nextTripMins('north', m), nextTripMins('south', m)]
+      .filter(function(x){ return x !== null; })
+      .map(function(x){ return (x - m + 1440) % 1440; });
+    const wait = soon.length ? Math.min.apply(null, soon) : 9999;
+    const h = Math.floor(m/60);
+    if (wait <= 60 && h < 12){
+      html = '<div class="ic night">' + napBusSvg(true) + '</div><div><div class="t">Gising na ang bus</div>' +
+             '<div class="s">The first trips are coming up: ' + times + '</div></div>';
+    } else if (h >= 18 || h < 12){
+      html = '<div class="ic night">' + napBusSvg(false) + '</div><div><div class="t">Tulog pa ang bus</div>' +
+             '<div class="s">The buses are asleep. First trips ' + times + '</div></div>';
+    } else {
+      html = '<div class="ic">' + CLOCK_GLYPH + '</div><div><div class="t">No buses until ' + escapeHtml(nn || ss || 'the next trip') + '</div>' +
+             '<div class="s">Next trips ' + times + '</div></div>';
+    }
+  } else {
+    html = '<div class="ic">' + BUS_GLYPH.replace('<svg ', '<svg fill="currentColor" ') + '</div><div><div class="t">Nobody is sharing right now</div>' +
+           '<div class="s">' + (st === 'enroute' ? 'The last trips may still be on the road.' : 'It’s within operating hours.') +
+           ' On a bus now? Put it on the map for everyone at your stop.</div>' +
+           '<button type="button" class="go" onclick="switchTab(\'share\')">' + BUS_GLYPH + ' I’m on the bus</button></div>';
+  }
+  el.innerHTML = html;
+  el.classList.remove('hidden');
+}
+
+// ---- Follow my bus ---------------------------------------------------
+// "Send a link to this bus" in a popup hands over a link that opens the map
+// following that bus: #b= and the bus's public id, the same id every map
+// already has (sql/04: it is not the session id and cannot be turned back
+// into one). Nothing about the sender is in it. It is for "nasa bus na ako"
+// to whoever is fetching you, and it stops meaning anything when the trip
+// ends, because the id dies with the trip.
+let FOLLOW = null;
+function readFollowLink(){
+  const m = location.hash.match(/(?:^#|&)b=([0-9a-f]{32})(?:&|$)/i);
+  FOLLOW = m ? { id:m[1].toLowerCase(), seen:false, centred:false } : null;
+}
+function renderFollow(all){
+  const chip = document.getElementById('followChip');
+  if (!chip) return;
+  if (!FOLLOW || !positionsLoaded){ chip.classList.add('hidden'); return; }
+  const b = all.find(function(x){ return x.id === FOLLOW.id || x.members.indexOf(FOLLOW.id) >= 0; });
+  const txt = document.getElementById('followText');
+  if (b){
+    FOLLOW.seen = true;
+    txt.textContent = 'Following ' + (b.label ? 'bus ' + b.label : 'this bus');
+    if (map){
+      if (!FOLLOW.centred){ map.setView([b.lat, b.lng], Math.max(map.getZoom(), 14), { animate:!reducedMotion() }); FOLLOW.centred = true; }
+      else map.panTo([b.lat, b.lng], { animate:!reducedMotion() });
+    }
+  } else {
+    txt.textContent = FOLLOW.seen ? 'That bus has finished its trip' : 'That bus is not on the map right now';
+  }
+  chip.classList.remove('hidden');
+}
+function stopFollowing(){
+  FOLLOW = null;
+  const chip = document.getElementById('followChip');
+  if (chip) chip.classList.add('hidden');
+  try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+}
+function busLinkFor(id){
+  return location.origin + location.pathname + '#b=' + id;
+}
+// The phone's own sheet where there is one, so the link goes straight into
+// Messenger; the clipboard everywhere else. The function and the button are
+// named for what they do and never "share": filter lists hide anything that
+// looks like a share widget, and this one would fail without a word.
+async function sendBusLink(id){
+  const url = busLinkFor(id);
+  if (navigator.share){
+    try{ await navigator.share({ title:'Follow my bus', text:'Nasa bus na ako. Sundan mo dito:', url:url }); return; }
+    catch(e){ if (e && e.name === 'AbortError') return; }
+  }
+  let copied = false;
+  try{ await navigator.clipboard.writeText(url); copied = true; }catch(e){}
+  showToast(copied ? 'Link copied. Whoever opens it follows this bus.' : 'Copy this link: ' + url);
+}
+let toastTimer = null;
+function showToast(msg){
+  let t = document.getElementById('toast');
+  if (!t){ t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.add('hidden'); }, 3200);
+}
+
 // Don't spend requests when nobody's looking:
 //  - hidden tab (phone in pocket, app switched away)
 //  - a sharer sitting on the share tab used to skip the tracker feed
@@ -2872,9 +3775,11 @@ async function pollPositions() {
   // trip nobody has thanked yet, and is worth saying once.
   if (mine && !('thanks' in mine)) thanksTrouble('get_positions returned no thanks column');
   MY_THANKS = mine ? (mine.thanks|0) : 0;
+  if (TRIP && sharing){ TRIP.maxThanks = Math.max(TRIP.maxThanks, MY_THANKS); }
   // markers are one per clustered bus rather than per sharing session, which
   // is why renderBuses owns them: it is the one place that clusters.
   renderBuses();
+  if (TRIP && sharing) TRIP.polled = true;
 }
 
 // ============================================================
@@ -3205,13 +4110,14 @@ async function writePosition(coords){
     p_direction:shareDir,
     p_label: document.getElementById('busLabel').value.trim() || null
   });
+  if (TRIP && !res.error) TRIP.writes++;
   if (res.error){
     const raw = ((res.error.message||'')+'').toLowerCase();
     const msg = writeErrorMessage(res.error);
     // A blocked session will never succeed by retrying, so stop rather than
     // hammer the server and leave the person staring at a live-looking dot.
     if (raw.indexOf('session blocked')>=0){
-      await stopSharing();
+      await stopSharing({ quiet:true });
       setShareUI('error', msg);
       return;
     }
@@ -3449,6 +4355,7 @@ function endTripHello(){
 function beginWatch(firstCoords){
   sharing=true;
   guardPaused=false; endAsked=false; dirGuard=makeDirGuard();
+  tripBegin(firstCoords);
   const label=shareLabel();
   setShareUI('on', label);
   showTripHello();
@@ -3500,7 +4407,9 @@ function registerUnloadCleanup(){
   window.addEventListener('pagehide', fire);
   window.addEventListener('beforeunload', fire);
 }
-async function stopSharing(){
+async function stopSharing(opts){
+  const trip = TRIP, endCoords = lastCoords;
+  TRIP = null;
   sharing=false;
   guardPaused=false; dirGuard=null; idleRef=null;
   if (askOpen) hideAsk();
@@ -3509,7 +4418,97 @@ async function stopSharing(){
   releaseWakeLock();
   await rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:getSessionId() });
   setShareUI('off','Not sharing');
+  if (!(opts && opts.quiet)) showTicket(trip, endCoords);
 }
+// ---- The salamat ticket ---------------------------------------------
+// What this phone remembers about the trip it is sharing, for the ticket it
+// shows at Stop: when it started, roughly where (on the chain, not a
+// position), how many other buses were on the map at that moment, whether a
+// write ever landed, and the highest salamat count it saw. It lives in this
+// variable and nowhere else, and stopSharing() drops it as it draws the
+// ticket. No position history: the start is one number and the end is
+// read off the last fix at Stop.
+let TRIP = null;
+function tripBegin(first){
+  TRIP = {
+    start: Date.now(),
+    startKm: first ? routeProgressKm({ lat:first.latitude, lng:first.longitude }, CHECKPOINTS, ROUTE_CHAIN) : null,
+    others: BUSES.filter(function(b){ return !b.self; }).length,
+    writes: 0, maxThanks: 0, polled: false
+  };
+}
+function nearestCheckpoint(km){
+  if (km === null || km === undefined || isNaN(km) || !ROUTE_CHAIN.length) return -1;
+  let best = 0;
+  for (let i=1;i<ROUTE_CHAIN.length;i++){
+    if (Math.abs(ROUTE_CHAIN[i]-km) < Math.abs(ROUTE_CHAIN[best]-km)) best = i;
+  }
+  return best;
+}
+function hhmm(d){ return d.getHours()*60 + d.getMinutes(); }
+function clockText(d){
+  const h = d.getHours(), m = d.getMinutes();
+  return fmtHM((h<10?'0':'')+h+':'+(m<10?'0':'')+m);
+}
+function showTicket(trip, end){
+  if (!trip) return;
+  const now = new Date(), began = new Date(trip.start);
+  const mins = Math.round((now - began) / 60000);
+  if (!ticketWorthShowing({ mins:mins, writes:trip.writes })) return;
+  const endKm = end ? routeProgressKm({ lat:end.latitude, lng:end.longitude }, CHECKPOINTS, ROUTE_CHAIN) : null;
+  const fromIdx = nearestCheckpoint(trip.startKm), toIdx = nearestCheckpoint(endKm);
+  const short = function(i){ return (CHECKPOINTS[i] && CHECKPOINTS[i].short) || ''; };
+  const startMins = hhmm(began), endMins = hhmm(now);
+  const stamps = ticketStamps({ fromIdx:fromIdx, toIdx:toIdx, lastIdx:CHECKPOINTS.length-1,
+    fromShort:short(fromIdx), toShort:short(toIdx), startMins:startMins, endMins:endMins, othersAtStart:trip.others });
+  // "4:12–7:03 AM", or both halves in full when the trip crosses noon.
+  const a = clockText(began), b = clockText(now);
+  const times = a.slice(-2) === b.slice(-2) ? a.slice(0, -3) + '–' + b : a + '–' + b;
+  const DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const label = document.getElementById('busLabel').value.trim();
+  const ty = thanksWords(trip.maxThanks);
+  const grid = CHECKPOINTS.map(function(c, i){
+    return '<span' + (i === fromIdx || i === toIdx ? ' class="on"' : '') + '>' + escapeHtml(c.short || c.name) + '</span>';
+  }).join('');
+  const hrs = Math.floor(mins/60), rem = mins % 60;
+  document.getElementById('tktCard').innerHTML =
+    '<div class="tkt-head"><span class="tkt-kick" id="tktKick">SALAMAT TICKET</span>' +
+      '<span class="tkt-date">' + DAYS[now.getDay()] + ' ' + now.getDate() + ' ' + MONTHS[now.getMonth()] + '</span></div>' +
+    '<div class="tkt-org">Community bus tracker · unofficial</div>' +
+    '<hr>' +
+    '<div class="tkt-route"><span>' + (shareDir === 'south' ? '▼ SOUTHBOUND' : '▲ NORTHBOUND') +
+      (label ? ' · BUS ' + escapeHtml(label.toUpperCase()) : '') + '</span><span class="tkt-times">' + times + '</span></div>' +
+    '<div class="tkt-grid">' + grid + '</div>' +
+    '<hr>' +
+    '<div class="tkt-big">You kept the bus on everyone’s map for</div>' +
+    '<div class="tkt-dur">' + (hrs ? hrs + '<small> h </small>' : '') + rem + '<small> min</small></div>' +
+    (ty ? '<div class="tkt-ty"><span aria-hidden="true">🙏</span><span>' + ty + '</span></div>' : '') +
+    '<hr>' +
+    '<div class="tkt-greet">' + ticketGreeting(endMins) + '</div>' +
+    '<div class="tkt-fine">Made on this phone from what it saw. Nothing about this trip was kept, and this ticket is gone when you close it.</div>' +
+    '<div class="tkt-stamps" aria-hidden="true">' + stamps.map(function(st, i){
+      return '<span class="stamp ' + st.c + ' s' + (i+1) + '">' + escapeHtml(st.t) + '<small>' + escapeHtml(st.s) + '</small></span>';
+    }).join('') + '</div>';
+  openModal('tktModal');
+}
+
+// ---- Trip mode -------------------------------------------------------
+// The sharing tab goes dark while a trip is live and that tab is on screen
+// (see :root.trip-on in the CSS). Tied to `sharing` rather than to the
+// status line, so a passing "couldn't send" message mid-trip does not flash
+// the page back to daylight.
+function syncTripMode(){
+  const view = document.getElementById('onbusView');
+  const onTab = !!view && !view.classList.contains('hidden');
+  document.documentElement.classList.toggle('trip-on', !!sharing && onTab);
+}
+
+// ---- Pasko -----------------------------------------------------------
+function applySeason(){
+  document.documentElement.classList.toggle('parol', SET.parol_enabled !== false && inParolSeason(new Date()));
+}
+
 // ---- Is the control actually on screen? -------------------------------
 // Content blockers hide elements whose id or class looks like a social
 // share widget, by injecting display:none. Brave Shields did exactly that
@@ -3562,6 +4561,7 @@ function setShareUI(state,msg){
   }
   refreshOnbusStrip();
   checkControlsVisible();
+  syncTripMode();
 }
 // The strip is only worth anything if it is current, and the feed behind it
 // is paused or slowed whenever this tab is not the one on screen. So refetch
@@ -3633,20 +4633,57 @@ function renderContactLine(){
   p.innerHTML = 'Questions or concerns about this tool: '+parts.join(' · ')+'.';
   p.classList.remove('hidden');
 }
-// The one line that shows on the folded hours card. Most days both
-// directions run the same windows, so say them once; when they differ, show
-// both rather than making the reader open the card to find out that they do.
+// The folded hours card answers before it is opened: what the service is
+// doing now, in words, then the day drawn as a bar per direction. The exact
+// windows are still spelled out for screen readers, and in the boxes inside.
+function hoursStateLine(){
+  const m = nowMins(), st = routeState(m);
+  const next = nextTrip('north', m) || nextTrip('south', m);
+  if (st === 'departing') return ['Trips leaving now', 'every ' + SET.headway_min + ' min'];
+  if (st === 'enroute') return ['Last trips still on the road', next ? 'next trips ' + next : ''];
+  if (st === 'closed') return ['Closed now', next ? 'next trips ' + next : ''];
+  return ['Operating hours', 'see the schedule'];
+}
 function hoursSummaryLine(){
   const n = hoursLabel('north').replace(/\n/g, ', ');
   const s = hoursLabel('south').replace(/\n/g, ', ');
   if (n === s) return n + ' · every ' + SET.headway_min + ' min';
   return '▲ ' + n + '  ▼ ' + s;
 }
+// "6a–10a", short enough to sit inside a two-hour slice of a phone-width bar.
+function shortHM(s){
+  return fmtHM(s).replace(':00', '').replace(' AM', 'a').replace(' PM', 'p');
+}
+function dayBandHtml(){
+  const row = function(dir, arrow){
+    let out = '';
+    (SET.hours[dir]||[]).forEach(function(w){
+      const a = parseHM(w[0]), b = parseHM(w[1]);
+      if (a === null || b === null || b <= a) return;
+      const L = a/1440*100, W = (b-a)/1440*100, T = Math.min(210, 1440-b)/1440*100;
+      out += '<span class="tail" style="left:'+(L+W)+'%;width:'+T+'%"></span>' +
+             '<span class="w" style="left:'+L+'%;width:'+W+'%">'+(W > 7 ? shortHM(w[0])+'–'+shortHM(w[1]) : '')+'</span>';
+    });
+    return '<span class="row '+(dir==='north'?'nb':'sb')+'"><span class="d">'+arrow+'</span><span class="bar">'+out+'</span></span>';
+  };
+  const m = nowMins();
+  const hh = Math.floor(m/60), mm = m%60;
+  const t = fmtHM((hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm);
+  return row('north','▲') + row('south','▼') +
+    '<span class="axis"><span style="left:0">12a</span><span style="left:25%">6a</span><span style="left:50%">12p</span>' +
+    '<span style="left:75%">6p</span><span style="left:100%">12a</span></span>' +
+    '<span class="now" style="left:calc(17px + (100% - 17px) * '+(m/1440).toFixed(4)+')"><span>now '+t+'</span></span>';
+}
 function renderHours(){
   // multiple windows stack as lines inside the hour boxes
   document.getElementById('nbHours').textContent = hoursLabel('north');
   document.getElementById('sbHours').textContent = hoursLabel('south');
-  document.getElementById('hoursSummary').textContent = hoursSummaryLine();
+  const st = hoursStateLine();
+  document.getElementById('hoursSummary').innerHTML =
+    '<span class="hoursstate">' + escapeHtml(st[0]) + (st[1] ? ' <span class="q">· ' + escapeHtml(st[1]) + '</span>' : '') + '</span>' +
+    '<span class="vh">' + escapeHtml(hoursSummaryLine()) + '</span>';
+  const band = document.getElementById('dayBand');
+  if (band) band.innerHTML = dayBandHtml();
   document.getElementById('headwayNote').textContent =
     'Trips roughly every '+SET.headway_min+' minutes. Times above are departure windows from each end.';
   function humanMins(m){ m=parseInt(m,10)||0; return m>=60 ? (m/60)+(m===60?' hour':' hours') : m+' min'; }
@@ -3666,7 +4703,9 @@ function start(){
   // chain are both fixed for the life of the page, so the answer cannot
   // change and the work is 71 projections against an 8 point chain.
   STOP_KMS = stopChainKms(STOPS, CHECKPOINTS, ROUTE_CHAIN);
+  NAMED_STOPS = namedStopKms(STOPS, CHECKPOINTS, ROUTE_CHAIN);
   loadMyStop();
+  readFollowLink();
   if (!mapReady){
     initMap(); buildTicks(); buildSightingPlaces(); renderHours();
     renderSourceLink(); renderContactLine(); showAppHints(); mapReady=true;

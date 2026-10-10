@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>How to use WT Live Tracker</title>
+<title>How to use the Bus Tracker</title>
 <!-- Same reasoning as index.html: no og:url and no og:image, because both
      would hardcode one deployment's domain into a file whose whole point is
      that a different route needs no code changes. -->
 <meta name="description" content="How to watch the bus and how to share your position from on board. No app, no account, no sign-up.">
 <meta name="theme-color" content="#7a1f2b">
 <meta property="og:type" content="website">
-<meta property="og:title" content="How to use WT Live Tracker">
+<meta property="og:title" content="How to use the Bus Tracker">
 <meta property="og:description" content="A short guide to watching the bus and to sharing your position from on board.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚌%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3CclipPath id='c'%3E%3Crect width='32' height='32' rx='7'/%3E%3C/clipPath%3E%3Cg clip-path='url(%23c)'%3E%3Crect width='32' height='32' fill='%237a1f2b'/%3E%3Crect y='27.5' width='32' height='4.5' fill='%23e39a1c'/%3E%3C/g%3E%3Cg transform='translate(4 3.4)' fill='%23fff'%3E%3Crect x='1.8' y='7.6' width='2.4' height='3.4' rx='.7'/%3E%3Crect x='19.8' y='7.6' width='2.4' height='3.4' rx='.7'/%3E%3Crect x='4.5' y='2.8' width='15' height='15.6' rx='3.2'/%3E%3Crect x='6.4' y='16.8' width='3.8' height='3.6' rx='1.1'/%3E%3Crect x='13.8' y='16.8' width='3.8' height='3.6' rx='1.1'/%3E%3Crect fill='%237a1f2b' x='6.6' y='5.2' width='10.8' height='6.1' rx='1.3'/%3E%3Ccircle fill='%237a1f2b' cx='8.3' cy='14.5' r='1.3'/%3E%3Ccircle fill='%237a1f2b' cx='15.7' cy='14.5' r='1.3'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   /* Tokens copied from index.html deliberately, not imported. This page has
      to keep working if it is opened on its own, and a shared stylesheet
@@ -31,7 +31,7 @@
     --gold-line:#eeddb4; --maroon-line:#e6cdc9;
     /* The reader's own saved stop. Mirrored from index.html, like every
        other token here; test-boot.js fails if the two copies drift. */
-    --mine:#4f46b8; --mine-ink:#443aa6;
+    --mine:#4f46b8; --mine-ink:#443aa6; --mine-soft:#e8e6f8;
     --ok-ink:#166534; --warn-ink:#92400e;
     --shadow:0 1px 2px rgba(43,35,32,.05), 0 10px 28px -18px rgba(43,35,32,.28);
     --radius:16px;
@@ -49,7 +49,7 @@
       --line:#372e26; --live:#4ac694; --lost:#c4432e;
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
-      --mine:#4f46b8; --mine-ink:#b3aaf5;
+      --mine:#4f46b8; --mine-ink:#b3aaf5; --mine-soft:#2b2846;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
@@ -63,7 +63,7 @@
       --line:#372e26; --live:#4ac694; --lost:#c4432e;
       --brand-ink:#f0a8b0; --lost-ink:#e8836e;
       --gold-line:#4a3d20; --maroon-line:#4a2b30;
-      --mine:#4f46b8; --mine-ink:#b3aaf5;
+      --mine:#4f46b8; --mine-ink:#b3aaf5; --mine-soft:#2b2846;
       --ok-ink:#6ed39b; --warn-ink:#e8b45c;
       /* Cards are lifted by their own surface colour in dark, not by a
          shadow that nothing can be cast onto. */
@@ -84,11 +84,29 @@
     color:#fff; padding:14px 16px 12px; position:relative;
     box-shadow:inset 0 -3px 0 var(--gold);
   }
+  /* The route name on the amber LED board, exactly as index.html draws it
+     (see the note there): bold text seen through a mask of dots, over a
+     board of unlit ones. The guide is one tap from the map, and the two
+     should read as one product the moment it opens. */
   header .route{
-    font-weight:700; font-size:22px;
-    letter-spacing:.04em; text-transform:uppercase; line-height:1.1;
+    position:relative; display:inline-block; margin:0 0 7px -2px;
+    padding:7.8px 10.4px; border-radius:9px;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,170,40,.13) 1.05px, transparent 1.35px) 10.4px 7.8px/2.6px 2.6px,
+      radial-gradient(120% 140% at 30% 0%, #1d1513 0%, #0b0807 70%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), inset 0 3px 10px rgba(0,0,0,.75), 0 1px 0 rgba(255,255,255,.08);
+    font-weight:900; font-size:min(20.8px, 5.2vw); line-height:1.25;
+    letter-spacing:.05em; text-transform:uppercase;
   }
-  header .route .amp{color:var(--gold);}
+  header .route .led{
+    display:block; color:#ffb22e; text-shadow:0 0 6px rgba(255,165,30,.9);
+    -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 1.05px, transparent 1.35px);
+    -webkit-mask-size:2.6px 2.6px;
+    mask-image:radial-gradient(circle at 50% 50%, #000 1.05px, transparent 1.35px);
+    mask-size:2.6px 2.6px;
+  }
+  header .route .ln{display:block;}
+  header .route .amp{color:#ffb22e;}
   header .sub{font-size:11.5px; opacity:.85; margin-top:2px; font-weight:600; letter-spacing:.03em;}
   header .backlink{
     position:absolute; top:14px; right:14px; display:inline-flex; align-items:center; gap:5px;
@@ -210,23 +228,76 @@
   .demo-chip.nb{border-color:var(--gold-line);}
   .demo-chip.sb{border-color:var(--maroon-line);}
   .demo-chip .ag{color:var(--muted); font-weight:600;}
-  /* The reader's own saved stop, as index.html draws it between the chips
-     and the map. Drawn from the same tokens as the app, like everything
-     else on this page. */
-  .demo-mystop{
-    display:flex; align-items:center; gap:8px; margin-top:9px;
-    padding:7px 9px; border-radius:10px; background:var(--paper);
-    border:1px solid var(--line); border-left:3px solid var(--mine);
+  /* The reader's saved stop, as renderMyStop() in index.html draws it with a
+     bus coming: the bus at one end of a line, the stop at the other, one dot
+     for every stop still between them, then the count in words. Copied, not
+     imported, like everything else here, so it moves when the app's does. */
+  .ride{
+    margin-top:9px; padding:12px 14px; border-radius:14px; background:var(--paper);
+    border:1.5px solid var(--line); border-left:4px solid var(--mine);
   }
-  /* index.html's own row gives this wrapper flex:1; without it the box
-     shrink-wraps to less than the width available and the sentence takes a
-     second line it does not need. */
-  .demo-mystop > div{flex:1; min-width:0;}
-  .demo-mystop .who{
-    display:block; font-size:8px; font-weight:800; color:var(--mine-ink);
-    text-transform:uppercase; letter-spacing:.04em;
+  .ride-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .ride-name{
+    min-width:0; font-size:10.5px; font-weight:800; color:var(--mine-ink);
+    text-transform:uppercase; letter-spacing:.05em;
   }
-  .demo-mystop .rel{display:block; font-size:10px; font-weight:700; margin-top:1px;}
+  .ride-name::before{
+    content:''; display:inline-block; width:8px; height:8px; margin-right:6px; vertical-align:1px;
+    border-radius:50%; background:var(--mine); box-shadow:0 0 0 2px var(--mine-soft);
+  }
+  .ride .edit{
+    flex:0 0 auto; display:flex; align-items:center; min-height:34px; padding:0 12px; border-radius:9px;
+    border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
+    font-size:11px; font-weight:700;
+  }
+  .ride-line{display:flex; align-items:center; margin:12px 0 4px;}
+  .ride-bus{
+    flex:0 0 auto; width:30px; height:30px; border-radius:50%; z-index:1;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--gold); box-shadow:0 0 0 3px var(--gold-line);
+  }
+  .ride.sb .ride-bus{background:var(--maroon); box-shadow:0 0 0 3px var(--maroon-line);}
+  .ride-bus svg{width:19px; height:19px; fill:#fff;}
+  .ride-bus .win{fill:var(--gold);}
+  .ride.sb .ride-bus .win{fill:var(--maroon);}
+  .ride-track{
+    flex:1; position:relative; height:30px; margin:0 -2px;
+    display:flex; align-items:center; justify-content:space-around;
+  }
+  .ride-track::before{
+    content:''; position:absolute; left:0; right:0; top:50%; height:3px; margin-top:-1.5px; border-radius:2px;
+    background:linear-gradient(90deg, var(--gold), var(--mine));
+  }
+  .ride.sb .ride-track::before{background:linear-gradient(90deg, var(--maroon), var(--mine));}
+  .ride-track i{
+    position:relative; width:9px; height:9px; border-radius:50%;
+    background:var(--surface); border:2px solid var(--gold);
+  }
+  .ride.sb .ride-track i{border-color:var(--maroon);}
+  .ride-track i.next{width:11px; height:11px; border-width:3px;}
+  .ride-me{
+    flex:0 0 auto; width:22px; height:22px; border-radius:50%; z-index:1;
+    background:var(--mine); border:4px solid var(--surface);
+    box-shadow:0 0 0 2px var(--mine), 0 0 0 7px var(--mine-soft);
+  }
+  .ride-cap{
+    display:flex; justify-content:space-between; gap:10px; font-size:10px; font-weight:800;
+    letter-spacing:.04em; text-transform:uppercase; color:var(--muted);
+  }
+  .ride-cap .me{color:var(--mine-ink);}
+  .ride-big{display:flex; align-items:baseline; flex-wrap:wrap; gap:0 6px; margin-top:8px; line-height:1.2;}
+  .ride-big .num{font-size:30px; font-weight:800; letter-spacing:-.02em;}
+  .ride-big .unit, .ride-big .km{font-size:14px; font-weight:700;}
+  .ride-sub{margin-top:3px; font-size:11.5px; font-weight:600; color:var(--muted); line-height:1.45;}
+  .ride-sub b{color:var(--ink); font-weight:700;}
+  .ride-flag{
+    display:inline-block; margin-top:10px; padding:4px 10px; border-radius:999px;
+    font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    background:var(--gold); color:#2b2320;
+  }
+  .ride.here .ride-flag{background:var(--mine); color:#fff; font-size:13.5px;}
+  .ride.near{border-left-color:var(--gold); box-shadow:0 0 0 2px var(--gold-line);}
+  .ride.here{box-shadow:0 0 0 3px var(--mine-soft);}
 
   /* This one figure is a real cropped screenshot of this route's own map
      (Leaflet + CARTO), not a drawing. It used to be a stylised SVG route on a
@@ -412,35 +483,55 @@
     background:var(--paper); border:1px solid var(--line);
     font-weight:800; font-size:13px; color:var(--ok-ink);
   }
+  /* A line map, as the app draws it: a solid line per direction in its
+     livery colour, a station at every checkpoint, terminals a size bigger,
+     the reader's saved stop as a station in their own colour, and the map's
+     own drawn bus as the pill. The emoji pills and pale rails this used to
+     copy are gone from the app, so they are gone from here. */
   .dirlabel{font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
   .dirlabel.nb{text-align:right; margin-bottom:3px;}
-  .track{position:relative; height:22px;}
-  .track .rail{position:absolute; left:0; right:0; top:9px; height:4px; border-radius:2px;}
-  .track.nb .rail{background:var(--gold-soft); border:1px solid var(--gold-line);}
-  .track.sb .rail{background:var(--maroon-soft); border:1px solid var(--maroon-line);}
   .dirlabel.sb{margin-top:3px;}
+  .track{position:relative; height:26px;}
+  .track .rail{position:absolute; left:0; right:0; top:10.5px; height:5px; border-radius:3px;}
+  .track.nb .rail{background:var(--gold);}
+  .track.sb .rail{background:var(--maroon);}
+  .track .stn{
+    position:absolute; top:8px; width:10px; height:10px; margin-left:-5px; border-radius:50%;
+    background:var(--surface); border:2.5px solid var(--gold);
+  }
+  .track.sb .stn{border-color:var(--maroon);}
+  .track .stn.end{top:6px; width:14px; height:14px; border-width:3px;}
+  .track .stn.first{margin-left:-1px;}
+  .track .stn.last{margin-left:-13px;}
+  /* The app lifts the southbound line in dark, where maroon on the near-black
+     card all but disappears. Stated twice, like the palette. */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .track.sb .rail{background:#a33a49;}
+    :root:not([data-theme="light"]) .track.sb .stn{border-color:#a33a49;}
+  }
+  :root[data-theme="dark"] .track.sb .rail{background:#a33a49;}
+  :root[data-theme="dark"] .track.sb .stn{border-color:#a33a49;}
+  .track .minestn{
+    position:absolute; top:6.5px; width:13px; height:13px; margin-left:-6.5px; border-radius:50%;
+    background:var(--mine); border:3px solid var(--surface); box-shadow:0 0 0 1.5px var(--mine);
+  }
   .buspill{
-    position:absolute; top:0; transform:translateX(-50%);
-    font-size:14px; line-height:1; padding:3px 5px; border-radius:20px;
-    background:var(--gold); border:1.5px solid var(--surface);
-    box-shadow:0 1px 4px rgba(43,35,32,.25); white-space:nowrap;
-    animation:ride 16s linear infinite;
+    position:absolute; top:-0.5px; transform:translateX(-50%);
+    width:27px; height:27px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--gold); border:2px solid var(--surface);
+    box-shadow:0 2px 6px rgba(43,35,32,.28); z-index:1;
   }
-  .buspill.sb{background:var(--maroon); animation-name:ride-back; animation-delay:-8s;}
-  /* Copied from index.html: the bus this phone is sharing, ringed in the
-     live dot's green. Gold and maroon are carrying the direction, so the
-     mark had to be something other than a fill. */
-  .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 3.5px var(--live), 0 1px 4px rgba(43,35,32,.25);}
-  /* Copied from index.html: a reported sighting, hollow and dashed so it can
-     never be read as a live bus. */
-  .sightmk{
-    position:absolute; top:3px; transform:translateX(-50%);
-    width:16px; height:16px; border-radius:50%;
-    border:2px dashed var(--gold-deep); background:var(--surface);
-  }
-  .sightmk.sb{border-color:var(--brand-ink);}
-  /* Uneven steps on purpose: a real bus crawls through Imus and runs the
-     open stretch. A constant glide reads as a progress bar, not a bus. */
+  .buspill.sb{background:var(--maroon);}
+  .buspill svg{display:block; width:17px; height:17px; fill:#fff;}
+  .buspill .win{fill:var(--gold);}
+  .buspill.sb .win{fill:var(--maroon);}
+  /* The strip demo's buses drive. Uneven steps on purpose: a real bus crawls
+     through Imus and runs the open stretch, and a constant glide reads as a
+     progress bar, not a bus. The figures that show one moment set
+     animation:none on their pills. */
+  .buspill{animation:ride 16s linear infinite;}
+  .buspill.sb{animation-name:ride-back; animation-delay:-8s;}
   @keyframes ride{
     0%{left:2%;} 8%{left:6%;} 30%{left:34%;} 55%{left:58%;}
     80%{left:82%;} 96%{left:98%;} 100%{left:98%;}
@@ -449,12 +540,26 @@
     0%{left:98%;} 8%{left:94%;} 30%{left:66%;} 55%{left:42%;}
     80%{left:18%;} 96%{left:2%;} 100%{left:2%;}
   }
-  .ticks{position:relative; height:26px; margin-top:2px;}
+  /* Copied from index.html: the bus this phone is sharing, ringed in the
+     live dot's green. Gold and maroon are carrying the direction, so the
+     mark had to be something other than a fill. */
+  .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), 0 2px 6px rgba(43,35,32,.28); z-index:2;}
+  /* Copied from index.html: a reported sighting, hollow and dashed so it can
+     never be read as a live bus. */
+  .sightmk{
+    position:absolute; top:5px; transform:translateX(-50%);
+    width:16px; height:16px; border-radius:50%;
+    border:2px dashed var(--gold-deep); background:var(--surface);
+  }
+  .sightmk.sb{border-color:var(--brand-ink);}
+  /* The checkpoint names between the two lines. A tick is only its name now:
+     the stations on the lines are the marks. */
+  .ticks{position:relative; height:22px;}
   .tick{position:absolute; transform:translateX(-50%); text-align:center;}
-  .tick::before{content:''; display:block; width:2px; height:8px; background:var(--line); margin:0 auto 3px;}
-  /* Kept in step with index.html: sized to leave a gap between the two
-     longest neighbouring checkpoint names, not for comfort. */
-  .tick span{font-size:var(--tick-fs,8px); font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
+  .tick span{line-height:20px; font-size:var(--tick-fs,8px); font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
+  .tick.first{transform:none; text-align:left;}
+  .tick.last{transform:translateX(-100%); text-align:right;}
+  .tick.near span{color:var(--brand-ink);}
   /* index.html sizes these from the measured layout (see fitTicks). This page
      has no script for it, so the same outcome is written out as breakpoints,
      tuned to the eight checkpoint names the app ships. .many marks the strips
@@ -465,10 +570,92 @@
     .ticks.many{--tick-fs:6px;}
     .ticks.many .tick:nth-child(even):not(.last) span{display:none;}
   }
-  .tick.first{transform:none; text-align:left;}
-  .tick.first::before{margin:0 0 3px;}
-  .tick.last{transform:translateX(-100%); text-align:right;}
-  .tick.last::before{margin:0 0 3px auto;}
+
+  /* ---- The sharing tab during a trip -------------------------------- */
+  /* index.html turns the whole tab dark while a trip is live, by redefining
+     its tokens under :root.trip-on. The same values, scoped to the figure,
+     so every card and word inside it follows exactly as they do in the app.
+     After the strip rules on purpose: the glow below has to win over the
+     dark theme's own southbound line, at the same specificity. */
+  .tripdemo{
+    --paper:#060505; --surface:#100d0c; --ink:#f1ebe2; --muted:#9b9088; --line:#2a231f;
+    --maroon-soft:#2a1418; --gold-soft:#2a2210; --gold-line:#4a3d20; --maroon-line:#4a2b30;
+    --gold-deep:#e8b45c; --brand-ink:#f0a8b0; --lost-ink:#ff8a76; --ok-ink:#7fe0b0; --live:#3ddc97;
+    background:var(--paper); color:var(--ink); border-radius:16px; padding:10px;
+  }
+  .tripdemo .demo-status{align-items:center;}
+  .tripdemo .demo-status .sd{width:14px; height:14px; margin-top:0;}
+  .tripdemo .demo-status .txt{font-size:16px; letter-spacing:-.01em;}
+  .tripdemo .fakebtn.stop{background:#2a0f0c; color:#ff8a76; border:1.5px solid #6b231b;}
+  .tripdemo .strip .track .rail{box-shadow:0 0 10px 1px rgba(227,154,28,.5);}
+  .tripdemo .strip .track.sb .rail{background:#b23a4b; box-shadow:0 0 10px 1px rgba(178,58,75,.5);}
+  .tripdemo .strip .track.sb .stn{border-color:#b23a4b;}
+  .tripdemo .strip .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), 0 0 18px 4px rgba(61,220,151,.45);}
+  .tripdemo .demo-ty{color:#ffd27a;}
+
+  /* ---- The salamat ticket ------------------------------------------- */
+  /* Copied from index.html, the paper ticket a sharer gets at Stop. On a
+     dark panel standing in for the modal's dimmed page. */
+  .tktdemo{
+    display:flex; justify-content:center; padding:26px 18px 20px; border-radius:14px;
+    background:radial-gradient(120% 90% at 50% 30%, #4a4f58, #2a2e35);
+  }
+  .tktdemo .tkt-close{display:inline-flex; align-items:center;}
+  .tktwrap{display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; max-width:340px;}
+  .tkt{
+    --tp:#fbf4e4; --ti:#6d1a25;
+    position:relative; width:100%; padding:24px 20px 20px; border-radius:6px;
+    color:var(--ti); background:var(--tp); box-shadow:0 30px 60px -20px rgba(0,0,0,.6);
+    font-variant-numeric:tabular-nums; transform:rotate(-1.2deg); text-align:left;
+    -webkit-mask:radial-gradient(circle 6px at 50% 0, transparent 98%, #000) 0 0/16px 51% repeat-x,
+                 radial-gradient(circle 6px at 50% 100%, transparent 98%, #000) 0 100%/16px 51% repeat-x;
+    mask:radial-gradient(circle 6px at 50% 0, transparent 98%, #000) 0 0/16px 51% repeat-x,
+         radial-gradient(circle 6px at 50% 100%, transparent 98%, #000) 0 100%/16px 51% repeat-x;
+  }
+  .tkt::before{content:''; position:absolute; left:0; right:0; top:0; height:6px; background:var(--gold);}
+  .tkt-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-top:4px;}
+  .tkt-kick{font-size:10px; font-weight:900; letter-spacing:.16em;}
+  .tkt-date{font-size:10px; font-weight:800; letter-spacing:.06em; opacity:.75; font-family:ui-monospace,Menlo,Consolas,monospace;}
+  .tkt-org{margin-top:2px; font-size:10.5px; font-weight:700; opacity:.75;}
+  .tkt hr{border:0; border-top:1.5px dashed rgba(109,26,37,.35); margin:13px -4px;}
+  .tkt-route{display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; font-size:11px; font-weight:800; letter-spacing:.06em;}
+  .tkt-times{font-size:10.5px; opacity:.8; font-family:ui-monospace,Menlo,Consolas,monospace; letter-spacing:.02em;}
+  .tkt-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:5px;}
+  .tkt-grid span{
+    position:relative; padding:7px 0 6px; border-radius:4px; text-align:center;
+    border:1.3px solid rgba(109,26,37,.4); font-size:9.5px; font-weight:800; letter-spacing:.04em;
+  }
+  .tkt-grid span.on{background:rgba(227,154,28,.22); border-color:var(--ti);}
+  .tkt-grid span.on::after{
+    content:''; position:absolute; top:-6px; right:-6px; width:14px; height:14px; border-radius:50%;
+    background:#3a2a26; box-shadow:inset 0 2px 3px rgba(0,0,0,.6), 0 0 0 1.5px var(--tp);
+  }
+  .tkt-big{font-size:13px; font-weight:700; line-height:1.3;}
+  .tkt-dur{margin-top:2px; font-size:34px; font-weight:900; letter-spacing:-.02em; line-height:1.05;}
+  .tkt-dur small{font-size:16px; font-weight:800; letter-spacing:0;}
+  .tkt-ty{display:flex; align-items:center; gap:9px; margin-top:12px; font-size:14px; font-weight:800; color:#1d5e3c;}
+  .tkt-greet{margin-bottom:4px; font-size:20px; font-weight:900; letter-spacing:-.01em;}
+  .tkt-fine{font-size:10.5px; line-height:1.45; font-weight:600; opacity:.8;}
+  .tkt-stamps{position:absolute; right:10px; top:196px; width:150px; height:150px; pointer-events:none;}
+  .stamp{
+    position:absolute; display:inline-grid; justify-items:center; gap:1px; padding:5px 9px 4px;
+    border:2.6px solid currentColor; border-radius:7px; box-shadow:inset 0 0 0 1.2px var(--tp), inset 0 0 0 2.4px currentColor;
+    font-size:13px; font-weight:900; letter-spacing:.12em; line-height:1.05; text-transform:uppercase;
+    opacity:.88; mix-blend-mode:multiply;
+    -webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -4 0 0 0 3.1'/></filter><rect width='90' height='60' filter='url(%23f)'/></svg>");
+    -webkit-mask-size:90px 60px;
+    mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -4 0 0 0 3.1'/></filter><rect width='90' height='60' filter='url(%23f)'/></svg>");
+    mask-size:90px 60px;
+  }
+  .stamp small{font-size:8.5px; font-weight:800; letter-spacing:.14em;}
+  .stamp.red{color:#b0281c;} .stamp.blue{color:#2a3a9e;} .stamp.green{color:#1d6a43;}
+  .stamp.s1{right:0; top:0; transform:rotate(-10deg);}
+  .stamp.s2{right:20px; top:92px; transform:rotate(6deg);}
+  .tkt-close{
+    min-height:var(--tap); padding:0 26px; border-radius:12px; cursor:pointer;
+    border:1.5px solid rgba(255,255,255,.45); background:rgba(255,255,255,.14); color:#fff;
+    font-family:inherit; font-size:14px; font-weight:800;
+  }
 
   /* ---- Recreated prompt cards -------------------------------------- */
   /* These are the real modals from index.html, rebuilt here. They were the
@@ -561,7 +748,7 @@
 <body>
 
 <header>
-  <div class="route">Mendez / Tagaytay <span class="amp">⇄</span> One Ayala</div>
+  <div class="route"><span class="led"><span class="ln">Mendez / Tagaytay</span> <span class="ln"><span class="amp">⇄</span> One Ayala</span></span></div>
   <div class="sub">HOW TO USE THIS TRACKER</div>
   <a class="backlink" href="index.html">← Map</a>
 </header>
@@ -583,23 +770,26 @@
              that screen does — and so do the callout dots below it. -->
         <div class="strip" style="padding:0">
           <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
-          <div class="track nb"><div class="rail"></div><div class="buspill" style="left:28%; animation:none">🚌</div></div>
+          <div class="track nb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:14.29%"></i><i class="stn" style="left:28.57%"></i><i class="stn" style="left:42.86%"></i><i class="stn" style="left:57.14%"></i><i class="stn" style="left:71.43%"></i><i class="stn" style="left:85.71%"></i><i class="stn end last" style="left:100%"></i><i class="minestn" style="left:28.57%"></i>
+            <div class="buspill" style="left:23.43%; animation:none"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div>
+          </div>
           <div class="ticks many">
             <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
-            <div class="tick" style="left:14.3%"><span>TGY</span></div>
-            <div class="tick" style="left:28.6%"><span>AMADEO</span></div>
-            <div class="tick" style="left:42.9%"><span>GEN.T</span></div>
-            <div class="tick" style="left:57.1%"><span>IMUS</span></div>
-            <div class="tick" style="left:71.4%"><span>KAWIT</span></div>
-            <div class="tick" style="left:85.7%"><span>PITX</span></div>
+            <div class="tick near" style="left:14.29%"><span>TGY</span></div>
+            <div class="tick near" style="left:28.57%"><span>AMADEO</span></div>
+            <div class="tick" style="left:42.86%"><span>GEN.T</span></div>
+            <div class="tick" style="left:57.14%"><span>IMUS</span></div>
+            <div class="tick" style="left:71.43%"><span>KAWIT</span></div>
+            <div class="tick" style="left:85.71%"><span>PITX</span></div>
             <div class="tick last" style="left:100%"><span>AYALA</span></div>
           </div>
-          <div class="track sb"><div class="rail"></div></div>
+          <div class="track sb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:14.29%"></i><i class="stn" style="left:28.57%"></i><i class="stn" style="left:42.86%"></i><i class="stn" style="left:57.14%"></i><i class="stn" style="left:71.43%"></i><i class="stn" style="left:85.71%"></i><i class="stn end last" style="left:100%"></i><i class="minestn" style="left:28.57%"></i>
+          </div>
           <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
         </div>
         <!-- A real crop of this route's own map, around Amadeo — the same
              screenshot flyer.html uses, cut to this figure's shape. The badge
-             sits where a bus 2 km short of Amadeo really is: interpolated
+             sits where a bus 2.4 km short of Amadeo really is: interpolated
              along the Tagaytay-Amadeo leg from config.txt, then converted to
              a percentage of the crop. Recrop for a fork; see the CSS above. -->
         <div class="demo-map">
@@ -607,20 +797,26 @@
             <img src="data:image/jpeg;base64,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" alt="" width="666" height="180">
             <!-- The AMADEO mark, as the app draws it. This crop is x:[155,821]
                  y:[749,929] of the 916x1100 screenshot flyer.html describes, which
-                 is where the badge's 40.3%/69.5% comes from too. -->
+                 is where the badge's 40.8%/72.8% comes from too: 64% of the
+                 way from TGY's pixel to AMADEO's, as 4.27 of the leg's 6.67 km. -->
             <i class="demo-cp l" style="left:37.54%; top:52.78%"><b>AMADEO</b></i>
-            <span class="demo-badge nb" style="left:40.3%; top:69.5%"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></span>
+            <span class="demo-badge nb" style="left:40.8%; top:72.8%"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></span>
           </div>
         </div>
-        <!-- The saved stop. The sentence is myStopWords()'s: this reader
-             waits at Amadeo (Highway), which sits on the AMADEO checkpoint,
-             and the one bus drawn above is 2 km short of it — so 2.0 km and
-             "yours is the next stop" are what the real app computes here. -->
-        <div class="demo-mystop">
-          <div>
-            <span class="who">📍 Amadeo (Highway)</span>
-            <span class="rel">▲ Northbound · 2.0 km away · yours is the next stop</span>
-          </div>
+        <!-- The saved stop, as renderMyStop() draws it. This reader waits at
+             Amadeo (Highway), which sits on the AMADEO checkpoint, and the one
+             bus drawn above is 2.4 km short of it with no stop in between —
+             so the real app draws no dots, says "Next stop is yours · 2.4 km",
+             and, two stops or fewer away, flies the Malapit na flag
+             (rideState() is 'near': it only says Sakay na inside 2 km).
+             Move the bus and every one of those changes with it. -->
+        <div class="ride nb near">
+          <div class="ride-top"><span class="ride-name">Amadeo (Highway)</span><span class="edit">Change</span></div>
+          <div class="ride-flag">Malapit na!</div>
+          <div class="ride-line"><span class="ride-bus"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></span><span class="ride-track"></span><span class="ride-me"></span></div>
+          <div class="ride-cap"><span>Bus 98018</span><span class="me">Your stop</span></div>
+          <div class="ride-big"><span class="num">Next</span><span class="unit">stop is yours</span><span class="km">· 2.4 km</span></div>
+          <div class="ride-sub">▲ Northbound · updated 12s ago</div>
         </div>
         <div class="demo-title">1 bus live</div>
         <div class="demo-sub">Northbound between Tagaytay and Amadeo · updated 12s ago · trips every 30 mins</div>
@@ -637,12 +833,15 @@
              percentages of this figure, so moving or adding any row means
              re-measuring every dot below it rather than nudging it. Measured
              in a real browser at 430 px wide, which is where these were
-             set. -->
-        <span class="dot" style="top:8.5%">1</span>
-        <span class="dot" style="top:39.8%">2</span>
-        <span class="dot" style="top:59.6%">3</span>
-        <span class="dot" style="top:85.6%">4</span>
-        <span class="dot" style="top:94%">5</span>
+             set, against the centre of each row: the strip's northbound
+             bus, the map badge, the saved-stop card's line of stops, the
+             filter and the chip. The figure came out the same height at
+             375 and 520 px. -->
+        <span class="dot" style="top:6.5%">1</span>
+        <span class="dot" style="top:33.9%">2</span>
+        <span class="dot" style="top:57.1%">3</span>
+        <span class="dot" style="top:89.4%">4</span>
+        <span class="dot" style="top:95.7%">5</span>
       </div>
       <figcaption>
         <b>1</b> the bus on the route strip · <b>2</b> the same bus on the map ·
@@ -673,31 +872,34 @@
       <div class="n">2</div>
       <div class="body">
         <h3>Read the strip</h3>
-        <p>The strip is the whole route flattened into a line, Mendez on the left
-          and One Ayala on the right. Each 🚌 is a bus. <b>Gold rides the top rail
-          northbound, maroon rides the bottom rail southbound.</b></p>
+        <p>The strip is the whole route drawn as a line map, Mendez on the left
+          and One Ayala on the right, with a station at every checkpoint. Each
+          round badge is a bus. <b>Gold runs along the top line northbound,
+          maroon along the bottom line southbound.</b> Once you have saved a
+          stop (step 5), it is the purple station on both lines, so you can
+          watch a bus close in on it.</p>
       </div>
     </div>
 
     <div class="strip" aria-hidden="true">
       <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
-      <div class="track nb"><div class="rail"></div><div class="buspill">🚌</div></div>
+      <div class="track nb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:14.29%"></i><i class="stn" style="left:28.57%"></i><i class="stn" style="left:42.86%"></i><i class="stn" style="left:57.14%"></i><i class="stn" style="left:71.43%"></i><i class="stn" style="left:85.71%"></i><i class="stn end last" style="left:100%"></i><div class="buspill"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div></div>
       <!-- Evenly spaced, like the real strip: the app gives every leg the
            same width rather than scaling by distance. See tests/test-strip.js -->
       <div class="ticks many">
         <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
-        <div class="tick" style="left:14.3%"><span>TGY</span></div>
-        <div class="tick" style="left:28.6%"><span>AMADEO</span></div>
-        <div class="tick" style="left:42.9%"><span>GEN.T</span></div>
-        <div class="tick" style="left:57.1%"><span>IMUS</span></div>
-        <div class="tick" style="left:71.4%"><span>KAWIT</span></div>
-        <div class="tick" style="left:85.7%"><span>PITX</span></div>
+        <div class="tick" style="left:14.29%"><span>TGY</span></div>
+        <div class="tick" style="left:28.57%"><span>AMADEO</span></div>
+        <div class="tick" style="left:42.86%"><span>GEN.T</span></div>
+        <div class="tick" style="left:57.14%"><span>IMUS</span></div>
+        <div class="tick" style="left:71.43%"><span>KAWIT</span></div>
+        <div class="tick" style="left:85.71%"><span>PITX</span></div>
         <div class="tick last" style="left:100%"><span>AYALA</span></div>
       </div>
-      <div class="track sb"><div class="rail"></div><div class="sightmk sb" id="stripRing" style="left:28.6%"></div><div class="buspill sb">🚌</div></div>
+      <div class="track sb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:14.29%"></i><i class="stn" style="left:28.57%"></i><i class="stn" style="left:42.86%"></i><i class="stn" style="left:57.14%"></i><i class="stn" style="left:71.43%"></i><i class="stn" style="left:85.71%"></i><i class="stn end last" style="left:100%"></i><div class="sightmk sb" id="stripRing" style="left:28.57%"></div><div class="buspill sb"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div></div>
       <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
     </div>
-    <p class="hint" id="stripRingNote" style="margin:8px 0 0; text-align:center;">The solid 🚌 are live GPS. The dashed ring is a
+    <p class="hint" id="stripRingNote" style="margin:8px 0 0; text-align:center;">The solid badges are live GPS. The dashed ring is a
       <b>reported sighting</b> — somebody saw a bus there and said so.</p>
 
     <div class="step">
@@ -738,11 +940,18 @@
       <div class="body">
         <h3>Tell it where you wait</h3>
         <p>Tap <b>Set your stop</b> and pick your usual one from the list. From then
-          on the page does the arithmetic for you: <b>▲ Northbound · 2.0 km away ·
-          yours is the next stop</b>, counted along the road rather than across
-          country, so a bus on the far side of a bend is not reported as nearly
-          here. It only ever counts buses still coming towards you — one that has
-          already gone past is not an answer.</p>
+          on the card under the map does the arithmetic for you. It draws the
+          next bus coming your way at one end of a line and your stop at the
+          other, a dot for every stop still between them, and says it in words:
+          <b>about 5 stops before yours · 3.0 km</b>. That is counted along the
+          road rather than across country, so a bus on the far side of a bend is
+          not reported as nearly here, and it only ever counts buses still coming
+          towards you — one that has already gone past is not an answer.</p>
+        <p>Two stops out, the card says <b>Malapit na!</b> When yours is the next
+          stop and the bus is close, it says <b>Sakay na!</b> Phones that can
+          vibrate (most Androids, not iPhones) also get a switch to <b>buzz once</b>
+          when it gets that close, so the phone can go in your pocket. The switch
+          is forgotten when you close the page.</p>
         <p>If your stop is not on the list, <b>Drop a pin instead</b> and tap the map
           where you wait. The ➤ button on the map shows where you are, if you want
           it. <b>Your stop stays on this phone.</b> It is not sent anywhere, no other
@@ -757,15 +966,32 @@
       <div class="n">6</div>
       <div class="body">
         <h3>Say salamat</h3>
-        <p>Tap a bus — its 🚌 on the strip, its card in the list, or its badge on
-          the map — and its details open, with <b>🙏 Say salamat</b> at the
+        <p>Tap a bus — its badge on the strip, its card in the list, or its badge
+          on the map — and its details open, with <b>🙏 Say salamat</b> near the
           bottom. One tap tells whoever is carrying the phone on that bus that
-          somebody was glad it was there. They are giving up their battery and
-          data for the rest of us, and until you tap, nothing at all comes back
-          the other way.</p>
+          somebody was glad it was there, and the bus on your map hops and says
+          <b>beep beep!</b> so you know it landed. They are giving up their
+          battery and data for the rest of us, and until you tap, nothing at all
+          comes back the other way.</p>
         <p class="hint">Only that one person sees it, only while the trip is
           running, and it disappears with the trip. There is no score and no
           total — not for a bus, not for a driver, not anywhere.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="n">7</div>
+      <div class="body">
+        <h3>Send someone the bus</h3>
+        <p>In the same popup, <b>Send a link to this bus</b> opens your phone's own
+          sending sheet with a link that opens the map following that one bus —
+          for whoever is fetching you, or waiting at the other end. On the bus
+          yourself and sharing? Tap your own bus and send it. The link carries
+          nothing about you, only the bus's public ID, which every map already
+          has, and it stops working when the trip ends.</p>
+        <p class="hint">The popup also has a line about the town the bus is
+          passing or heading for. Amadeo, for one, is the coffee capital of the
+          Philippines.</p>
       </div>
     </div>
   </div>
@@ -851,7 +1077,7 @@
           <div class="flowstep">Step 3 · the bus is on the map</div>
           <div class="demo-status"><span class="sd live"></span><span class="txt">Sharing live: ▲ northbound</span></div>
           <div class="strip" style="padding:0 8px; margin:10px 0 0">
-            <div class="track nb"><div class="rail"></div><div class="buspill" style="left:34%; animation:none">🚌</div></div>
+            <div class="track nb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:28.6%"></i><i class="stn" style="left:66.7%"></i><i class="stn end last" style="left:100%"></i><div class="buspill me" style="left:34%; animation:none"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div></div>
             <div class="ticks">
               <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
               <div class="tick" style="left:28.6%"><span>AMADEO</span></div>
@@ -875,7 +1101,7 @@
     <div class="step">
       <div class="n">1</div>
       <div class="body">
-        <h3>Tap “🚌 I'm on the bus”</h3>
+        <h3>Tap “I'm on the bus”</h3>
         <p>The second tab, next to the map.</p>
       </div>
     </div>
@@ -930,6 +1156,10 @@
         <p><b>Sharing only runs while this page is open and the screen is on.</b>
           Lock the phone or switch apps and the position stops updating. Mounted
           on the dashboard and plugged in is the way to do it.</p>
+        <p>While you share, that tab goes dark and the strip glows: easier to
+          read at a glance from a dashboard mount, and on most phones' screens
+          black costs less battery than white. It goes back to normal the moment
+          you stop, or as soon as you switch to the map.</p>
         <p>On Android there is also an app, which loads this same page but keeps
           sharing with the screen locked or while you use another app, with a
           notification showing for as long as it does. Ask the organizer for it.
@@ -943,10 +1173,17 @@
         <h3>Stop when you get off</h3>
         <p><span class="statusdot"></span>Tap <b>Stop sharing</b> and the bus
           leaves everyone's map immediately. Nothing about the trip is kept.</p>
+        <p>What you get instead is a <b>ticket</b> for the trip: where you got on
+          and off, how long your bus was on everyone's map, how many riders said
+          salamat, and a stamp or two for the shape of the trip — the whole
+          route, before 5 AM or after dark, the first bus on the map. Your phone makes it from
+          what it saw on the way. It is not sent anywhere and not kept: close it
+          and it is gone, so take a screenshot if you want it.</p>
       </div>
     </div>
 
     <figure>
+      <div class="tripdemo">
       <div class="demo" aria-hidden="true">
         <div class="demo-status">
           <span class="sd live"></span>
@@ -965,9 +1202,9 @@
         <div class="striplabel">EVERYONE CAN SEE THIS</div>
         <div class="strip" style="padding:0 8px;">
           <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
-          <div class="track nb"><div class="rail"></div>
-            <div class="buspill me" style="left:46%; animation:none">🚌</div>
-            <div class="buspill" style="left:78%; animation:none">🚌</div>
+          <div class="track nb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:28.6%"></i><i class="stn" style="left:66.7%"></i><i class="stn end last" style="left:100%"></i>
+            <div class="buspill me" style="left:46%; animation:none"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div>
+            <div class="buspill" style="left:78%; animation:none"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div>
           </div>
           <div class="ticks">
             <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
@@ -975,8 +1212,8 @@
             <div class="tick" style="left:66.7%"><span>IMUS</span></div>
             <div class="tick last" style="left:100%"><span>AYALA</span></div>
           </div>
-          <div class="track sb"><div class="rail"></div>
-            <div class="buspill sb" style="left:24%; animation:none">🚌</div>
+          <div class="track sb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:28.6%"></i><i class="stn" style="left:66.7%"></i><i class="stn end last" style="left:100%"></i>
+            <div class="buspill sb" style="left:24%; animation:none"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></div>
           </div>
           <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
         </div>
@@ -984,10 +1221,46 @@
              tapped: a trip with none shows no row at all, never a zero. -->
         <div class="demo-ty">🙏 3 riders said salamat</div>
       </div>
-      <figcaption>While it is running. Green dot, one button to stop, and the
-        same strip everyone watching sees. Your bus is the one with the green
-        ring, so you can tell it apart when several are sharing. If riders
-        thank you, that shows here too — for this trip, and only to you.</figcaption>
+      </div>
+      <figcaption>While it is running, the tab goes dark. Green dot, one button
+        to stop, and the same strip everyone watching sees. Your bus is the one
+        with the green ring, so you can tell it apart when several are sharing.
+        If riders thank you, that shows here too — for this trip, and only to
+        you.</figcaption>
+    </figure>
+
+    <!-- The ticket, as showTicket() fills it in for one example trip: boarded
+         at Mendez at 4:40 AM, off at One Ayala at 7:31, nobody else on the map
+         at the start. Every string is one the function prints for that trip —
+         the date and times in its format, the punched stops, "2 h 51 min",
+         thanksWords(3), ticketGreeting() for a morning trip and the two stamps
+         ticketStamps() returns first (Buong ruta, Madaling araw; Unang bus
+         would be a third, and it keeps two). Change the function and this is
+         wrong. -->
+    <figure>
+      <div class="tktdemo" aria-hidden="true">
+        <div class="tktwrap">
+          <div class="tkt">
+            <div class="tkt-head"><span class="tkt-kick">SALAMAT TICKET</span><span class="tkt-date">FRI 9 OCT</span></div>
+            <div class="tkt-org">Community bus tracker · unofficial</div>
+            <hr>
+            <div class="tkt-route"><span>▲ NORTHBOUND · BUS 98019</span><span class="tkt-times">4:40–7:31 AM</span></div>
+            <div class="tkt-grid"><span class="on">MENDEZ</span><span>TGY</span><span>AMADEO</span><span>GEN.T</span><span>IMUS</span><span>KAWIT</span><span>PITX</span><span class="on">AYALA</span></div>
+            <hr>
+            <div class="tkt-big">You kept the bus on everyone’s map for</div>
+            <div class="tkt-dur">2<small> h </small>51<small> min</small></div>
+            <div class="tkt-ty"><span>🙏</span><span>3 riders said salamat</span></div>
+            <hr>
+            <div class="tkt-greet">Ingat sa biyahe!</div>
+            <div class="tkt-fine">Made on this phone from what it saw. Nothing about this trip was kept, and this ticket is gone when you close it.</div>
+            <div class="tkt-stamps"><span class="stamp red s1">Buong ruta<small>MENDEZ → AYALA</small></span><span class="stamp blue s2">Madaling araw<small>before 5 AM</small></span></div>
+          </div>
+          <span class="tkt-close">Close</span>
+        </div>
+      </div>
+      <figcaption>What you get when you tap Stop: a ticket for the trip, made on
+        your phone from what it saw. <b>It is not sent anywhere and not kept</b> —
+        a screenshot is the only copy there will ever be.</figcaption>
     </figure>
   </div>
 

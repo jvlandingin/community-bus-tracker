@@ -9,12 +9,13 @@ const shipped = html.slice(html.indexOf('// ---- ROUTE PROGRESS + WRONG-DIRECTIO
 const hav = html.slice(html.indexOf('function haversineKm(a,b){'), html.indexOf('function timeAgo(ts){'));
 const S = {};
 new Function('S', hav + shipped +
-  'S.buildRouteChain=buildRouteChain;S.chainPosition=chainPosition;S.busPlace=busPlace;S.haversineKm=haversineKm;')(S);
+  'S.buildRouteChain=buildRouteChain;S.chainPosition=chainPosition;S.busPlace=busPlace;S.haversineKm=haversineKm;' +
+  'S.storyFor=storyFor;')(S);
 
 const txt = fs.readFileSync(path.join(ROOT, 'config-template.txt'), 'utf8').split(/\r?\n/);
 const CP = txt.filter(l => l.trim().startsWith('CHECKPOINT =')).map(l => {
   const p = l.split('=')[1].split('|').map(x => x.trim());
-  return { name: p[0], short: p[1], lat: +p[2], lng: +p[3] };
+  return { name: p[0], short: p[1], lat: +p[2], lng: +p[3], about: p[4] || '' };
 });
 const CHAIN = S.buildRouteChain(CP);
 const N = CP.length;
@@ -125,6 +126,45 @@ function alongLeg(i, km) {
   check(ok, 'a position far off the route still produces a valid pill');
   check(S.busPlace({ lat: 14.5, lng: 121 }, [], []) === null, 'no checkpoints yet: returns null instead of throwing');
   check(S.busPlace({ lat: 14.5, lng: 121 }, CP, [0, 1]) === null, 'mismatched chain: returns null instead of throwing');
+}
+
+// 8. Kwento ng ruta: the line a bus's popup tells about the place it is at,
+//    or the one it is heading for. The place has to be the one the pill
+//    names, or the popup and the strip above it would disagree.
+{
+  const at = n => CP.find(c => c.short === n);
+  const placed = (p, dir) => S.busPlace({ lat: p.lat, lng: p.lng, direction: dir }, CP, CHAIN);
+  const amadeo = S.storyFor(placed(at('AMADEO'), 'north'), 'north', CP);
+  check(amadeo && amadeo.lead === 'Passing' && amadeo.name === 'Amadeo' && /coffee/.test(amadeo.about),
+    'at a checkpoint: the popup tells that place', amadeo && `${amadeo.lead} ${amadeo.name}, ${amadeo.about}`);
+  check(S.storyFor(placed(at('MENDEZ'), 'north'), 'north', CP) === null,
+    'a checkpoint with no line in config says nothing, rather than an empty "Passing"');
+
+  const iA = CP.findIndex(c => c.short === 'AMADEO');
+  const mid = alongLeg(iA, (CHAIN[iA + 1] - CHAIN[iA]) / 2);
+  const up = S.storyFor(placed(mid, 'north'), 'north', CP);
+  const down = S.storyFor(placed(mid, 'south'), 'south', CP);
+  check(up && up.lead === 'Next up' && up.name === CP[iA + 1].name,
+    'between two checkpoints, northbound: the one it will reach next', up && up.name);
+  check(down && down.lead === 'Next up' && down.name === CP[iA].name,
+    'and southbound, the other end of the same leg', down && down.name);
+  const plUp = placed(mid, 'north'), plDown = placed(mid, 'south');
+  check(plUp.label.endsWith(' to ' + CP[iA + 1].short) && plDown.label.endsWith(' to ' + CP[iA].short),
+    'each the same place its pill points at', plUp.label + ' / ' + plDown.label);
+
+  check(S.storyFor(null, 'north', CP) === null && S.storyFor(placed(mid, 'north'), 'north', []) === null,
+    'nothing placed, or no checkpoints: no story, and no throw');
+
+  // The lines are read in a popup as "Passing Amadeo, <line>", so each must
+  // read as the end of that sentence, and be short enough for a phone popup.
+  for (const file of ['config.txt', 'config-template.txt']) {
+    const lines = fs.readFileSync(path.join(ROOT, file), 'utf8').split(/\r?\n/)
+      .filter(l => l.trim().startsWith('CHECKPOINT ='))
+      .map(l => (l.split('=')[1].split('|')[4] || '').trim()).filter(Boolean);
+    const bad = lines.filter(t => !/^[a-z]/.test(t) || /[.!]$/.test(t) || t.length > 60);
+    check(lines.length > 0 && bad.length === 0, `${file}: every line continues the sentence and fits a popup`,
+      bad.length ? 'BAD: ' + bad.join(' / ') : lines.length + ' lines');
+  }
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

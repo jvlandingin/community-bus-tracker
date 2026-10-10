@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>WT Live: Admin</title>
+<title>Bus Tracker: Admin</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔧%3C/text%3E%3C/svg%3E">
 <script src="assets/vendor/supabase.js"></script>
 <style>
@@ -182,7 +182,7 @@
 
 <div class="gate" id="loginGate">
   <form class="card gate-card" onsubmit="event.preventDefault(); doLogin();">
-    <h2>🔧 WT Live: Admin</h2>
+    <h2>🔧 Bus Tracker: Admin</h2>
     <p>This page manages the community tracker. It needs the ADMIN key, which is different from the share key. Nothing here works without it.</p>
     <input type="password" id="adminKeyInput" placeholder="Admin key" autocomplete="off" autofocus>
     <div style="height:10px"></div>
@@ -195,7 +195,7 @@
 <header>
   <a class="backlink" href="index.html">← Map</a>
   <div class="headbar">
-    <div class="route">WT Live · Admin</div>
+    <div class="route">Bus Tracker · Admin</div>
     <div class="sub" id="slugLine">MENDEZ / TAGAYTAY ⇄ ONE AYALA</div>
   </div>
 </header>
@@ -289,6 +289,23 @@
     <div class="hint warn" style="margin-top:10px;">Honest limit: this hides the board, it does not lock it. Posting needs no key, so somebody who worked out the call could still add one while it is switched off. Riders would never see it and it expires on its own, but it would still turn up in this list.</div>
 
     <div id="sightingList" style="margin-top:6px;"></div>
+  </div>
+
+  <div class="card">
+    <span class="badge">PASKO</span>
+    <!-- Absent means on, like the sightings switch: a route whose settings
+         predate this shows the parol in season until someone turns it off. -->
+    <label class="check" for="parolOn" style="margin-top:10px;">
+      <input type="checkbox" id="parolOn">
+      <span>
+        <b>Hang a parol on the tracker from September to 6 January</b>
+        <span class="sub">A small lantern on the header and a string of lights along its trim, in season only. Purely decoration: nothing about the buses changes. The app picks up a change within a minute.</span>
+      </span>
+    </label>
+    <div class="row" style="margin-top:10px;">
+      <button class="big btn-primary" onclick="saveSettings()">Save</button>
+    </div>
+    <div id="parolStatus"></div>
   </div>
 
   <details class="card fold">
@@ -406,7 +423,7 @@ function note(id, msg, kind){
 // One Save writes the whole settings object, and it can be pressed from any
 // of three cards, so the result has to show up wherever it was pressed.
 function noteSettings(msg, kind){
-  ['hoursStatus','limitsStatus','sightStatus'].forEach(function(id){ note(id, msg, kind); });
+  ['hoursStatus','limitsStatus','sightStatus','parolStatus'].forEach(function(id){ note(id, msg, kind); });
 }
 // turn server errors into plain words
 function friendly(err){
@@ -528,6 +545,7 @@ function fillSettingsForm(st){
   document.getElementById('sightingExpiry').value = st.sighting_expiry_min ?? 120;
   document.getElementById('maxSessions').value = st.max_sessions ?? 25;
   document.getElementById('sightingsOn').checked = st.sightings_enabled !== false;
+  document.getElementById('parolOn').checked = st.parol_enabled !== false;
 }
 async function refreshSettings(){
   const res = await rpc('get_settings', { p_slug:CFG.ROUTE_SLUG });
@@ -552,7 +570,8 @@ async function saveSettings(){
     bus_expiry_min: parseInt(document.getElementById('busExpiry').value,10),
     sighting_expiry_min: parseInt(document.getElementById('sightingExpiry').value,10),
     max_sessions: parseInt(document.getElementById('maxSessions').value,10),
-    sightings_enabled: document.getElementById('sightingsOn').checked
+    sightings_enabled: document.getElementById('sightingsOn').checked,
+    parol_enabled: document.getElementById('parolOn').checked
   };
   const res = await rpc('admin_set_settings', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_settings:st });
   if (res.error){

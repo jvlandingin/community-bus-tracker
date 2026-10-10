@@ -48,7 +48,7 @@ community-bus-tracker/
 ```
 
 Deploys come from git: Netlify builds the repository on a push to `main`, and
-`netlify.toml` runs the seven dependency-free JavaScript suites as the build
+`netlify.toml` runs the eight dependency-free JavaScript suites as the build
 command, so a failing one cancels the deploy. Nothing is compiled and nothing is
 installed. There is deliberately no `package.json` at the root, because it
 would make Netlify run `npm install` and publish `node_modules` alongside the
@@ -696,12 +696,39 @@ October 2026. The tracker had been called by the bus company's initials,
 which is the one name a community tool should not carry: a link preview is
 read before anyone opens the page and its disclaimers. Every title a reader
 sees now says **Bus Tracker**, and the route says the rest. The header carries
-the route name on the amber LED board a bus has above its windscreen — drawn,
-not a font: bold text seen through a mask of dots over a board of unlit ones,
-so it stays plain text for screen readers and costs no download.
+the route name on the amber LED board a bus has above its windscreen.
+
+**The board is a real dot matrix.** The first version was bold text seen
+through a mask of dots, and the curves of the letters gave it away. Now every
+letter is built from lit dots on a fixed grid, five across and seven down, the
+way the boards on provincial buses do it, beside the dark dots that are not
+lit. The SIGNBOARD block in `index.html` draws it at load as one small SVG:
+the unlit dots are a pattern, and every lit one is a zero-length stroke with
+round ends, drawn twice, blurred under sharp, for the glow, which keeps a
+two-line board under 3 KB of markup. The words it shows are the words in
+`header .route .ln`, and they stay in the page, hidden from sight only, so a
+screen reader, a search engine and someone copying the route still read text.
+An accented letter is drawn as its plain letter, as real boards do, and Ñ has
+a letter of its own, because Parañaque is not Paranaque. A character the board
+has no dots for does not leave a hole: the whole board falls back to the
+lettered version, which is also what shows if the script never runs.
+
+The guide, the flyer and the briefing run no drawing code, so
+`tools/make-signboard.js` draws their boards into the files, with the same
+block taken out of `index.html` by its markers, from the words beside each
+board. The flyer carries two: two lines on a screen, one on the printed poster,
+whose header has no height to spare. `tests/test-signboard.js` fails if a
+board stops matching its words, if the words stop being text, or if the
+renderer starts drawing anything for a character it has no dots for.
+
+**The mark** is the coach every bus on the map is drawn as, front on, white on
+the livery's maroon with the gold trim along the foot and its signboard lit.
+It is the favicon on every public page and the home-screen icon; the admin
+page's favicon is the same coach on ink, so an organizer can tell its tab from
+the tracker's. The test fails if a copy of it stops matching the drawing.
 
 **Home screen.** `manifest.webmanifest` and the icons in `assets/icons/` make
-"Add to Home screen" give the bus on maroon rather than a screenshot or a
+"Add to Home screen" give the coach on maroon rather than a screenshot or a
 letter. There is deliberately no service worker: an offline copy of a live map
 would be a map of where the buses were, which is worse than no map.
 
@@ -714,8 +741,11 @@ full size, so the bottom of every screenshot comes out unpainted. On the
 flyer's chat image that had been a strip of plain paper colour, unnoticed; on
 an icon it is a black band. `app-icons.html` paints a warning across the
 picture if it finds itself in a short viewport, so the failure cannot ship
-quietly. The preview picture names this route, so a fork edits that page and
-re-runs the script.
+quietly. It is set in the site's own Barlow, which a file can only load from a
+neighbouring file when Chromium is told to allow it, so the script passes
+`--allow-file-access-from-files`. The preview picture names this route on its
+board, so a fork edits the words there, runs `make-signboard.js`, and re-runs
+the script.
 
 **The link preview's picture needs a full address**, because the crawlers that
 build preview cards will not resolve a relative one, and `index.html` cannot
@@ -969,7 +999,7 @@ Nothing here is claimed without being checked. The suites live outside the
 deploy folder:
 
 - `test-guard.js`, `test-strip.js`, `test-prompts.js`, `test-hours.js`,
-  `test-mystop.js` and `test-thanks.js` extract the shipped code out of
+  `test-mystop.js`, `test-thanks.js` and `test-signboard.js` extract the shipped code out of
   index.html by comment markers and run it, so a passing
   test cannot drift from the app. Since October 2026 they also hold the hours
   card and the parol season (`test-hours`), the stop-by-stop card and its two

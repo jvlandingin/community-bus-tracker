@@ -25,11 +25,14 @@
 <meta property="og:image" content="assets/icons/preview.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="The route on an amber bus signboard over a line map with buses on it. Live, shared by people on board. Unofficial.">
-<!-- Drawn, like the bus badges on the map: the 🚌 that used to be here is a
-     different picture on every phone. The same bus is in the home-screen
-     icons, which the manifest lists for "Add to Home screen". -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3CclipPath id='c'%3E%3Crect width='32' height='32' rx='7'/%3E%3C/clipPath%3E%3Cg clip-path='url(%23c)'%3E%3Crect width='32' height='32' fill='%237a1f2b'/%3E%3Crect y='27.5' width='32' height='4.5' fill='%23e39a1c'/%3E%3C/g%3E%3Cg transform='translate(4 3.4)' fill='%23fff'%3E%3Crect x='1.8' y='7.6' width='2.4' height='3.4' rx='.7'/%3E%3Crect x='19.8' y='7.6' width='2.4' height='3.4' rx='.7'/%3E%3Crect x='4.5' y='2.8' width='15' height='15.6' rx='3.2'/%3E%3Crect x='6.4' y='16.8' width='3.8' height='3.6' rx='1.1'/%3E%3Crect x='13.8' y='16.8' width='3.8' height='3.6' rx='1.1'/%3E%3Crect fill='%237a1f2b' x='6.6' y='5.2' width='10.8' height='6.1' rx='1.3'/%3E%3Ccircle fill='%237a1f2b' cx='8.3' cy='14.5' r='1.3'/%3E%3Ccircle fill='%237a1f2b' cx='15.7' cy='14.5' r='1.3'/%3E%3C/g%3E%3C/svg%3E">
+<meta property="og:image:alt" content="The route on an amber dot-matrix bus signboard, the Bus Tracker coach, and a line map with buses on it. Live, shared by people on board. Unofficial.">
+<!-- The mark: the coach every bus on the map is drawn as, front on, white on
+     the livery's maroon with the gold trim and its signboard lit. Drawn, not
+     🚌, which is a different picture on every phone. The home-screen icons the
+     manifest lists are the same mark (tools/app-icons.html), every public page
+     carries this same favicon, and the admin page the same coach on ink, so its
+     tab is told apart; tests/test-tokens.js checks all of it. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3CclipPath id='c'%3E%3Crect width='32' height='32' rx='7'/%3E%3C/clipPath%3E%3Cg clip-path='url(%23c)'%3E%3Crect width='32' height='32' fill='%237a1f2b'/%3E%3Crect y='27.5' width='32' height='4.5' fill='%23e39a1c'/%3E%3C/g%3E%3Cg transform='translate(4 3.4)' fill='%23fff'%3E%3Cpath d='M5.4 4.75C3.1 3.7 1.55 5.25 1.65 8.2H2.95C2.9 6.35 3.65 5.55 4.85 6.05Z'/%3E%3Cpath d='M18.6 4.75C20.9 3.7 22.45 5.25 22.35 8.2H21.05C21.1 6.35 20.35 5.55 19.15 6.05Z'/%3E%3Crect x='1.3' y='7.9' width='2' height='3.3' rx='.8'/%3E%3Crect x='20.7' y='7.9' width='2' height='3.3' rx='.8'/%3E%3Crect x='6.4' y='17' width='3.6' height='3.8' rx='1.1'/%3E%3Crect x='14' y='17' width='3.6' height='3.8' rx='1.1'/%3E%3Cpath fill-rule='evenodd' d='M7.6 2.6h8.8q3 0 3 3v10q0 3 -3 3h-8.8q-3 0 -3 -3v-10q0 -3 3 -3zM7.3 4.1h9.4q0.7 0 0.7 0.7v0.5q0 0.7 -0.7 0.7h-9.4q-0.7 0 -0.7 -0.7v-0.5q0 -0.7 0.7 -0.7zM7.6 7.1h8.8q1.3 0 1.3 1.3v3q0 1.3 -1.3 1.3h-8.8q-1.3 0 -1.3 -1.3v-3q0 -1.3 1.3 -1.3zM7.3 14.1h1.4q0.7 0 0.7 0.7v0.1q0 0.7 -0.7 0.7h-1.4q-0.7 0 -0.7 -0.7v-0.1q0 -0.7 0.7 -0.7zM15.3 14.1h1.4q0.7 0 0.7 0.7v0.1q0 0.7 -0.7 0.7h-1.4q-0.7 0 -0.7 -0.7v-0.1q0 -0.7 0.7 -0.7z'/%3E%3Crect fill='%23ffb22e' x='6.6' y='4.1' width='10.8' height='1.9' rx='.7'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 <link rel="stylesheet" href="assets/vendor/leaflet.css" />
@@ -227,16 +230,15 @@
   }
   #guideLink.seen .newdot{display:none;}
   /* The route name sits on the amber LED board a bus carries above its
-     windscreen. An earlier pass reached for a signboard look with
-     font-stretch:condensed and dropped it, because no phone font has a
-     condensed cut and the effect never rendered anywhere. This one is drawn,
-     not a font: ordinary bold text seen through a mask of 2.6px dots, over a
-     board whose own background is the same grid of unlit dots. The words are
-     still plain text, so screen readers, copy and search are untouched, and
-     there is nothing to download. The board and the amber are the same in
-     both themes, like the livery fills: a signboard does not change at
-     night. The size follows the viewport so the longer line still fits
-     beside the two header buttons on a 360px phone; past that it wraps. */
+     windscreen. The script draws it as a real dot matrix (.dm, below); this
+     is the board before it does, and instead of it for any character the
+     matrix cannot draw: ordinary bold text seen through a mask of 2.6px
+     dots, over a board whose own background is the same grid of unlit dots.
+     Either way the words are plain text, so screen readers, copy and search
+     are untouched. The board and the amber are the same in both themes,
+     like the livery fills: a signboard does not change at night. The size
+     follows the viewport so the longer line still fits beside the two
+     header buttons on a 360px phone; past that it wraps. */
   header .route{
     position:relative; display:inline-block; margin:0 0 7px -2px;
     padding:7.8px 10.4px; border-radius:var(--r-s);
@@ -256,6 +258,17 @@
   }
   header .route .ln{display:block;}
   header .route .amp{color:#ffb22e;}
+  /* The same board as a real dot matrix (see drawSignboard): the script
+     adds the picture and the class, and the words above stay in the page,
+     out of sight, for screen readers, copy and search. Without the script,
+     or with a character the board has no dots for, the lettered board above
+     is what shows. The board's own dark is kept; its dots are the picture's. */
+  header .route.dm{
+    display:block; width:fit-content; max-width:100%; padding:3px;
+    background:radial-gradient(120% 140% at 30% 0%, #1d1513 0%, #0b0807 70%);
+  }
+  header .route.dm .led{position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap;}
+  header .route .dmsvg{display:block; max-width:100%; height:auto;}
   header .sub{font-size:var(--fs-label); opacity:.85; margin-top:2px; font-weight:600; letter-spacing:.03em;}
 
   /* The bottom padding grows by the gesture-bar inset on phones that have
@@ -1867,6 +1880,143 @@
 </div>
 
 <script>
+// ---- THE SIGNBOARD (unit tested) ----------------------------------------
+// The route name in the header is drawn the way the board above a
+// provincial bus's windscreen draws it: every letter built from lit dots on
+// a fixed grid, five across and seven down, beside the dark dots that are
+// not lit. The words are still in the page underneath, in .led, so screen
+// readers, copy and search read them as text; the picture is aria-hidden.
+// A character the board has no dots for leaves the lettered board in place
+// rather than drawing a gap, and so does a script that never runs.
+//
+// One renderer. tools/make-signboard.js runs this same code to draw the
+// boards on the guide, the flyer, the briefing and the link-preview picture,
+// and tests/test-signboard.js holds both. Keep the markers.
+//
+// Rows top to bottom, '1' lit. Letters are five wide, a few narrow marks
+// less; the gap between letters is one dot and between lines two.
+const SIGN_FONT = {
+  'A':'01110 10001 10001 11111 10001 10001 10001', 'B':'11110 10001 10001 11110 10001 10001 11110',
+  'C':'01110 10001 10000 10000 10000 10001 01110', 'D':'11100 10010 10001 10001 10001 10010 11100',
+  'E':'11111 10000 10000 11110 10000 10000 11111', 'F':'11111 10000 10000 11110 10000 10000 10000',
+  'G':'01110 10001 10000 10111 10001 10001 01111', 'H':'10001 10001 10001 11111 10001 10001 10001',
+  'I':'111 010 010 010 010 010 111',             'J':'00111 00010 00010 00010 00010 10010 01100',
+  'K':'10001 10010 10100 11000 10100 10010 10001', 'L':'10000 10000 10000 10000 10000 10000 11111',
+  'M':'10001 11011 10101 10101 10001 10001 10001', 'N':'10001 10001 11001 10101 10011 10001 10001',
+  // Its own letter, never a plain N: Parañaque is not Paranaque.
+  'Ñ':'01101 10010 00000 10001 11001 10101 10011',
+  'O':'01110 10001 10001 10001 10001 10001 01110', 'P':'11110 10001 10001 11110 10000 10000 10000',
+  'Q':'01110 10001 10001 10001 10101 10010 01101', 'R':'11110 10001 10001 11110 10100 10010 10001',
+  'S':'01111 10000 10000 01110 00001 00001 11110', 'T':'11111 00100 00100 00100 00100 00100 00100',
+  'U':'10001 10001 10001 10001 10001 10001 01110', 'V':'10001 10001 10001 10001 10001 01010 00100',
+  'W':'10001 10001 10001 10101 10101 10101 01010', 'X':'10001 10001 01010 00100 01010 10001 10001',
+  'Y':'10001 10001 10001 01010 00100 00100 00100', 'Z':'11111 00001 00010 00100 01000 10000 11111',
+  '0':'01110 10001 10011 10101 11001 10001 01110', '1':'010 110 010 010 010 010 111',
+  '2':'01110 10001 00001 00010 00100 01000 11111', '3':'11111 00010 00100 00010 00001 10001 01110',
+  '4':'00010 00110 01010 10010 11111 00010 00010', '5':'11111 10000 11110 00001 00001 10001 01110',
+  '6':'00110 01000 10000 11110 10001 10001 01110', '7':'11111 00001 00010 00100 01000 01000 01000',
+  '8':'01110 10001 10001 01110 10001 10001 01110', '9':'01110 10001 10001 01111 00001 00010 01100',
+  ' ':'00 00 00 00 00 00 00',  '.':'0 0 0 0 0 0 1',  ',':'00 00 00 00 00 01 10',
+  ':':'0 0 1 0 0 1 0',         ';':'00 00 01 00 00 01 10', '!':'1 1 1 1 1 0 1',
+  '?':'01110 10001 00001 00010 00100 00000 00100',  "'":'1 1 0 0 0 0 0',
+  '-':'0000 0000 0000 1111 0000 0000 0000',  '–':'00000 00000 00000 11111 00000 00000 00000',
+  '/':'00001 00010 00010 00100 01000 01000 10000',  '&':'01100 10010 10100 01000 10101 10010 01101',
+  '(':'001 010 100 100 100 010 001',  ')':'100 010 001 001 001 010 100',
+  '+':'00000 00100 00100 11111 00100 00100 00000',  '·':'0 0 0 1 0 0 0',
+  '#':'01010 01010 11111 01010 11111 01010 01010',
+  '⇄':'0000100 1111110 0000100 0000000 0010000 0111111 0010000',
+  '→':'000000 000100 000010 111111 000010 000100 000000',
+  '←':'000000 001000 010000 111111 010000 001000 000000',
+  '▲':'00000 00000 00100 01110 11111 00000 00000',  '▼':'00000 00000 11111 01110 00100 00000 00000'
+};
+// The dots for one character, or null for one the board cannot draw.
+// Accented letters are drawn as their plain letter, as real boards do;
+// Ñ has its own, above.
+function signGlyph(ch){
+  const own = SIGN_FONT[ch];
+  if (own) return own.split(' ');
+  const base = String(ch).normalize('NFD').replace(/[̀-ͯ]/g, '');
+  return (base.length === 1 && SIGN_FONT[base]) ? SIGN_FONT[base].split(' ') : null;
+}
+// Where the lit dots go for some lines of text, on a grid with a margin of
+// unlit dots around it. Null if any character cannot be drawn, so the
+// caller keeps the words as they are rather than a board with holes in it.
+function signLayout(lines, opts){
+  opts = opts || {};
+  const pad = opts.pad == null ? 2 : opts.pad;
+  const glyphs = [];
+  for (const line of lines) {
+    const row = [];
+    for (const ch of String(line).toUpperCase().replace(/\s+/g, ' ').trim()) {
+      const g = signGlyph(ch);
+      if (!g) return null;
+      row.push(g);
+    }
+    glyphs.push(row);
+  }
+  const widths = glyphs.map(function(row){
+    return row.reduce(function(w, g, i){ return w + g[0].length + (i ? 1 : 0); }, 0);
+  });
+  const inner = Math.max.apply(null, widths.concat([0]));
+  const dots = [];
+  glyphs.forEach(function(row, li){
+    let x = pad + (opts.center ? Math.floor((inner - widths[li]) / 2) : 0);
+    const y = pad + li * 9;
+    row.forEach(function(g, gi){
+      if (gi) x += 1;
+      g.forEach(function(bits, ry){
+        for (let rx = 0; rx < bits.length; rx++) if (bits[rx] === '1') dots.push([x + rx, y + ry]);
+      });
+      x += g[0].length;
+    });
+  });
+  dots.sort(function(a, b){ return a[1] - b[1] || a[0] - b[0]; });
+  return { cols: inner + pad * 2, rows: glyphs.length * 9 - 2 + pad * 2, dots: dots };
+}
+// The board as an SVG string, one dot per grid square: a pattern for the
+// unlit ones, and every lit one as a zero-length stroke with round ends,
+// drawn twice, blurred under sharp, for the glow. That keeps a two-line
+// board to a few kilobytes. '' when the text cannot be drawn. The id keeps
+// two boards on one page from sharing a pattern; pitch is the size of a
+// dot square in CSS pixels.
+function signboardSvg(lines, opts){
+  opts = opts || {};
+  const lay = signLayout(lines, opts);
+  if (!lay || !lay.dots.length) return '';
+  const id = opts.id || 'sign', pitch = opts.pitch || 2.4;
+  let d = '', prev = null;
+  lay.dots.forEach(function(p){
+    d += (prev && prev[1] === p[1] ? 'm' + (p[0] - prev[0]) + ' 0' : 'M' + (p[0] + .5) + ' ' + (p[1] + .5)) + 'h0';
+    prev = p;
+  });
+  const r = function(n){ return Math.round(n * 100) / 100; };
+  return '<svg class="dmsvg' + (opts.cls ? ' ' + opts.cls : '') + '" viewBox="0 0 ' + lay.cols + ' ' + lay.rows +
+    '" width="' + r(lay.cols * pitch) + '" height="' + r(lay.rows * pitch) + '" aria-hidden="true" focusable="false">' +
+    '<defs><pattern id="' + id + '-off" width="1" height="1" patternUnits="userSpaceOnUse">' +
+    '<circle cx=".5" cy=".5" r=".34" fill="#3b2a14"/></pattern>' +
+    '<filter id="' + id + '-glow" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation=".55"/></filter>' +
+    '<path id="' + id + '-on" d="' + d + '" fill="none" stroke-linecap="round"/></defs>' +
+    '<rect width="' + lay.cols + '" height="' + lay.rows + '" fill="url(#' + id + '-off)"/>' +
+    '<use href="#' + id + '-on" stroke="#ff8a00" stroke-width="1.15" opacity=".7" filter="url(#' + id + '-glow)"/>' +
+    '<use href="#' + id + '-on" stroke="#ffbe3c" stroke-width=".76"/></svg>';
+}
+// ---- END SIGNBOARD -------------------------------------------------------
+
+// The header's board. Drawn once: the picture scales with its box, and the
+// box is never wider than the space beside the header's two buttons.
+function drawSignboard(){
+  try{
+    const route = document.querySelector('header .route');
+    if (!route || route.classList.contains('dm')) return;
+    const lines = Array.prototype.map.call(route.querySelectorAll('.ln'), function(e){ return e.textContent; });
+    const svg = signboardSvg(lines, { id: 'hdrsign' });
+    if (!svg) return;
+    route.insertAdjacentHTML('beforeend', svg);
+    route.classList.add('dm');
+  }catch(e){ /* the lettered board stays, which reads the same */ }
+}
+drawSignboard();
+
 // ============================================================
 // Settings load from config.txt. Edit that file, not this one.
 // ============================================================

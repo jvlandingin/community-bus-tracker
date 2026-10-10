@@ -1,9 +1,9 @@
 # Deploys come from git now, not drag-and-drop, so a bad commit becomes the
-# live site by itself. These seven suites run as the build command and a
+# live site by itself. These eight suites run as the build command and a
 # failure cancels the deploy.
 #
-# They are the seven that need nothing installed. Each one reads the
-# shipped files themselves: six extract functions out of index.html by
+# They are the eight that need nothing installed. Each one reads the
+# shipped files themselves: seven extract functions out of index.html by
 # their comment markers and run them, and test-tokens.js reads every page's
 # styles. So a failure here means the HTML that is about to be published is
 # broken, not that some copy of it is.
@@ -41,6 +41,7 @@
     node tests/test-prompts.js && \
     node tests/test-mystop.js && \
     node tests/test-thanks.js && \
+    node tests/test-signboard.js && \
     node tests/test-tokens.js"""
 
 # The font files can be kept by a phone for a year, because their names

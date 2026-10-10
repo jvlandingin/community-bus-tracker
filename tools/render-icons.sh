@@ -47,7 +47,10 @@ if [ -z "$CHROME" ] || [ ! -x "$CHROME" ]; then
 fi
 
 mkdir -p "$OUT"
-FLAGS="--headless --disable-gpu --no-sandbox --hide-scrollbars --force-color-profile=srgb --force-device-scale-factor=1"
+# --allow-file-access-from-files lets app-icons.html load the site's own font
+# files from ../assets/fonts; without it Chromium refuses a font from another
+# file, and the picture comes out in a fallback face.
+FLAGS="--headless --disable-gpu --no-sandbox --hide-scrollbars --force-color-profile=srgb --force-device-scale-factor=1 --allow-file-access-from-files"
 echo "Chromium: $CHROME"
 
 shot(){ # name width height fragment

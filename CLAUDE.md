@@ -14,7 +14,7 @@ made in response to bugs that had already shipped.
 
 ## Commands
 
-The seven dependency-free JavaScript suites, run from the repository root:
+The eight dependency-free JavaScript suites, run from the repository root:
 
 ```
 node tests/test-hours.js      # split operating hours, the en-route allowance, the hours card, the parol season
@@ -23,6 +23,7 @@ node tests/test-strip.js      # progress strip position and wording, the town li
 node tests/test-prompts.js    # idle, end-of-trip and direction prompts
 node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
 node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket
+node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the mark
 node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
 ```
 
@@ -68,9 +69,12 @@ sh tools/render-flyer.sh     # assets/flyer: poster PDF, briefing PDF, chat imag
 sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview picture
 ```
 
-A third rewrites committed text: `node tools/embed-fonts.js` copies the font
-files in `assets/fonts/` into the three static pages as data URIs. Run it after
-replacing a font file; `test-tokens.js` fails until you do.
+Two more rewrite committed text. `node tools/embed-fonts.js` copies the font
+files in `assets/fonts/` into the three static pages as data URIs; run it after
+replacing a font file. `node tools/make-signboard.js` draws the dot-matrix route
+board into the guide, the flyer, the briefing and `tools/app-icons.html`, from
+the words beside each board, with `index.html`'s own renderer; run it after
+changing those words. `test-tokens.js` and `test-signboard.js` fail until you do.
 
 ## Architecture
 
@@ -96,7 +100,16 @@ worker: an offline map of where the buses were is worse than none). The icons
 and the preview picture are rendered from `tools/app-icons.html`, and
 `tools/write-preview-url.js` rewrites `og:image` to a full address at build
 time — the second line of the published site that differs from the commit,
-after the CARTO key.
+after the CARTO key. The mark is the coach every bus on the map is drawn as,
+white on maroon with the gold trim and its signboard lit; every public page's
+favicon is that mark, and the admin page's is the same coach on ink.
+
+**The header's route board is a real dot matrix** (October 2026), drawn at load
+by the SIGNBOARD block in `index.html` from the words in `header .route .ln`.
+The words stay in the page, hidden from sight only, for screen readers, copy
+and search, and a character the board has no dots for leaves the lettered CSS
+board in place. The pages that run no drawing code carry boards drawn by
+`tools/make-signboard.js` with the same block.
 
 **Three credentials, not interchangeable.** The route slug is public and unlocks
 reading. The share key lives only in the link posted to the community, and
@@ -278,9 +291,10 @@ drift from the app; the seventh, `test-tokens.js`, reads the shipped styles. Kee
 
 Everything adapts from `config.txt`, including the optional one-line story on
 each `CHECKPOINT` — facts about Cavite, so a fork writes its own or leaves them
-off. One file outside it does not adapt: `tools/app-icons.html` draws this
-route's name into the link-preview picture, so a fork edits it and re-runs
-`tools/render-icons.sh`. `how-to.html` used to be the exception —
+off. The route's name on the boards does not come from config: it is the words
+in each page's `header .route` (and in `tools/app-icons.html`, for the
+link-preview picture), so a fork edits those, runs `tools/make-signboard.js`
+and re-runs `tools/render-icons.sh`. `how-to.html` used to be the exception —
 its screenshots and screen recordings showed this deployment, so a fork had to
 recapture them or delete the page. Every figure on it is now drawn in HTML and
 CSS from the same tokens as the app, and the page loads nothing over the

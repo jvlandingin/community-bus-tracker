@@ -9,7 +9,7 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Community bus tracker — a briefing for the operator">
 <meta property="og:description" content="What it records, what it cannot do, and what we are asking. An unofficial, volunteer-run tool.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3CclipPath id='c'%3E%3Crect width='32' height='32' rx='7'/%3E%3C/clipPath%3E%3Cg clip-path='url(%23c)'%3E%3Crect width='32' height='32' fill='%237a1f2b'/%3E%3Crect y='27.5' width='32' height='4.5' fill='%23e39a1c'/%3E%3C/g%3E%3Cg transform='translate(4 3.4)' fill='%23fff'%3E%3Crect x='1.8' y='7.6' width='2.4' height='3.4' rx='.7'/%3E%3Crect x='19.8' y='7.6' width='2.4' height='3.4' rx='.7'/%3E%3Crect x='4.5' y='2.8' width='15' height='15.6' rx='3.2'/%3E%3Crect x='6.4' y='16.8' width='3.8' height='3.6' rx='1.1'/%3E%3Crect x='13.8' y='16.8' width='3.8' height='3.6' rx='1.1'/%3E%3Crect fill='%237a1f2b' x='6.6' y='5.2' width='10.8' height='6.1' rx='1.3'/%3E%3Ccircle fill='%237a1f2b' cx='8.3' cy='14.5' r='1.3'/%3E%3Ccircle fill='%237a1f2b' cx='15.7' cy='14.5' r='1.3'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3CclipPath id='c'%3E%3Crect width='32' height='32' rx='7'/%3E%3C/clipPath%3E%3Cg clip-path='url(%23c)'%3E%3Crect width='32' height='32' fill='%237a1f2b'/%3E%3Crect y='27.5' width='32' height='4.5' fill='%23e39a1c'/%3E%3C/g%3E%3Cg transform='translate(4 3.4)' fill='%23fff'%3E%3Cpath d='M5.4 4.75C3.1 3.7 1.55 5.25 1.65 8.2H2.95C2.9 6.35 3.65 5.55 4.85 6.05Z'/%3E%3Cpath d='M18.6 4.75C20.9 3.7 22.45 5.25 22.35 8.2H21.05C21.1 6.35 20.35 5.55 19.15 6.05Z'/%3E%3Crect x='1.3' y='7.9' width='2' height='3.3' rx='.8'/%3E%3Crect x='20.7' y='7.9' width='2' height='3.3' rx='.8'/%3E%3Crect x='6.4' y='17' width='3.6' height='3.8' rx='1.1'/%3E%3Crect x='14' y='17' width='3.6' height='3.8' rx='1.1'/%3E%3Cpath fill-rule='evenodd' d='M7.6 2.6h8.8q3 0 3 3v10q0 3 -3 3h-8.8q-3 0 -3 -3v-10q0 -3 3 -3zM7.3 4.1h9.4q0.7 0 0.7 0.7v0.5q0 0.7 -0.7 0.7h-9.4q-0.7 0 -0.7 -0.7v-0.5q0 -0.7 0.7 -0.7zM7.6 7.1h8.8q1.3 0 1.3 1.3v3q0 1.3 -1.3 1.3h-8.8q-1.3 0 -1.3 -1.3v-3q0 -1.3 1.3 -1.3zM7.3 14.1h1.4q0.7 0 0.7 0.7v0.1q0 0.7 -0.7 0.7h-1.4q-0.7 0 -0.7 -0.7v-0.1q0 -0.7 0.7 -0.7zM15.3 14.1h1.4q0.7 0 0.7 0.7v0.1q0 0.7 -0.7 0.7h-1.4q-0.7 0 -0.7 -0.7v-0.1q0 -0.7 0.7 -0.7z'/%3E%3Crect fill='%23ffb22e' x='6.6' y='4.1' width='10.8' height='1.9' rx='.7'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   /* The tracker's typeface, carried inline so this page still loads nothing.
      tools/embed-fonts.js writes the block; tests/test-tokens.js checks it is
@@ -117,8 +117,16 @@
     box-shadow:inset 0 -3px 0 var(--gold);
   }
   .headinner{max-width:660px; margin:0 auto;}
-  header .route{font-size:15px; font-weight:800;}
-  header .route .amp{color:var(--gold);}
+  /* The route on the tracker's dot-matrix board, drawn into this file by
+     tools/make-signboard.js with the tracker's own renderer. The words stay
+     in the page, out of sight, for screen readers and search. */
+  header .route.dm{
+    position:relative; width:fit-content; max-width:100%; margin:0 0 6px -2px; padding:3px; border-radius:var(--r-s);
+    background:radial-gradient(120% 140% at 30% 0%, #1d1513 0%, #0b0807 70%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), inset 0 3px 10px rgba(0,0,0,.75), 0 1px 0 rgba(255,255,255,.08);
+  }
+  header .route.dm .led{position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap;}
+  header .route .dmsvg{display:block; max-width:100%; height:auto;}
   header .sub{font-size:8.5px; font-weight:700; letter-spacing:.13em; opacity:.85; margin-top:3px;}
 
   .title{padding:26px 0 0;}
@@ -521,7 +529,7 @@
 
 <header>
   <div class="headinner">
-    <div class="route">Mendez / Tagaytay <span class="amp">⇄</span> One Ayala</div>
+    <div class="route dm"><span class="led"><span class="ln">Mendez / Tagaytay</span> <span class="ln"><span class="amp">⇄</span> One Ayala</span></span><!-- signboard id=hdrsign pitch=2.4 --><svg class="dmsvg" viewBox="0 0 99 20" width="237.6" height="48" aria-hidden="true" focusable="false"><defs><pattern id="hdrsign-off" width="1" height="1" patternUnits="userSpaceOnUse"><circle cx=".5" cy=".5" r=".34" fill="#3b2a14"/></pattern><filter id="hdrsign-glow" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation=".55"/></filter><path id="hdrsign-on" d="M2.5 2.5h0m4 0h0m2 0h0m1 0h0m1 0h0m1 0h0m1 0h0m2 0h0m4 0h0m2 0h0m1 0h0m1 0h0m4 0h0m1 0h0m1 0h0m1 0h0m1 0h0m2 0h0m1 0h0m1 0h0m1 0h0m1 0h0m9 0h0m5 0h0m1 0h0m1 0h0m1 0h0m1 0h0m3 0h0m1 0h0m1 0h0m4 0h0m1 0h0m1 0h0m4 0h0m1 0h0m1 0h0m3 0h0m4 0h0m2 0h0m1 0h0m1 0h0m1 0h0m1 0h0m3 0h0m1 0h0m1 0h0m3 0h0m4 0h0M2.5 3.5h0m1 0h0m2 0h0m1 0h0m2 0h0m6 0h0m4 0h0m2 0h0m3 0h0m3 0h0m10 0h0m8 0h0m8 0h0m4 0h0m4 0h0m2 0h0m4 0h0m2 0h0m4 0h0m2 0h0m4 0h0m4 0h0m4 0h0m4 0h0m2 0h0m4 0h0M2.5 4.5h0m2 0h0m2 0h0m2 0h0m6 0h0m1 0h0m3 0h0m2 0h0m4 0h0m2 0h0m9 0h0m9 0h0m8 0h0m4 0h0m4 0h0m2 0h0m6 0h0m4 0h0m2 0h0m4 0h0m4 0h0m4 0h0m4 0h0m2 0h0m4 0h0M2.5 5.5h0m2 0h0m2 0h0m2 0h0m1 0h0m1 0h0m1 0h0m3 0h0m2 0h0m2 0h0m2 0h0m4 0h0m2 0h0m1 0h0m1 0h0m1 0h0m5 0h0m9 0h0m9 0h0m4 0h0m1 0h0m1 0h0m1 0h0m1 0h0m2 0h0m2 0h0m1 0h0m1 0h0m2 0h0m1 0h0m1 0h0m1 0h0m1 0h0m3 0h0m2 0h0m5 0h0m4 0h0m1 0h0m1 0h0m1 0h0m1 0h0m3 0h0m2 0h0M2.5 6.5h0m4 0h0m2 0h0m6 0h0m3 0h0m1 0h0m2 0h0m4 0h0m2 0h0m7 0h0m9 0h0m10 0h0m4 0h0m4 0h0m2 0h0m4 0h0m2 0h0m4 0h0m4 0h0m6 0h0m4 0h0m4 0h0m4 0h0M2.5 7.5h0m4 0h0m2 0h0m6 0h0m4 0h0m2 0h0m3 0h0m3 0h0m6 0h0m10 0h0m10 0h0m4 0h0m4 0h0m2 0h0m4 0h0m2 0h0m4 0h0m4 0h0m6 0h0m4 0h0m4 0h0m4 0h0M2.5 8.5h0m4 0h0m2 0h0m1 0h0m1 0h0m1 0h0m1 0h0m2 0h0m4 0h0m2 0h0m1 0h0m1 0h0m4 0h0m1 0h0m1 0h0m1 0h0m1 0h0m2 0h0m1 0h0m1 0h0m1 0h0m1 0h0m5 0h0m11 0h0m4 0h0m4 0h0m3 0h0m1 0h0m1 0h0m1 0h0m2 0h0m4 0h0m4 0h0m6 0h0m4 0h0m4 0h0m4 0h0M6.5 11.5h0m8 0h0m1 0h0m1 0h0m3 0h0m4 0h0m2 0h0m1 0h0m1 0h0m1 0h0m1 0h0m6 0h0m1 0h0m1 0h0m3 0h0m4 0h0m3 0h0m1 0h0m1 0h0m3 0h0m7 0h0m1 0h0m1 0h0M2.5 12.5h0m1 0h0m1 0h0m1 0h0m1 0h0m1 0h0m6 0h0m4 0h0m2 0h0m4 0h0m2 0h0m9 0h0m4 0h0m2 0h0m4 0h0m2 0h0m4 0h0m2 0h0m6 0h0m4 0h0M6.5 13.5h0m7 0h0m4 0h0m2 0h0m1 0h0m3 0h0m2 0h0m9 0h0m4 0h0m2 0h0m4 0h0m2 0h0m4 0h0m2 0h0m6 0h0m4 0h0M13.5 14.5h0m4 0h0m2 0h0m2 0h0m2 0h0m2 0h0m1 0h0m1 0h0m1 0h0m6 0h0m1 0h0m1 0h0m1 0h0m1 0h0m3 0h0m2 0h0m3 0h0m1 0h0m1 0h0m1 0h0m1 0h0m2 0h0m6 0h0m1 0h0m1 0h0m1 0h0m1 0h0M4.5 15.5h0m9 0h0m4 0h0m2 0h0m3 0h0m1 0h0m2 0h0m9 0h0m4 0h0m4 0h0m4 0h0m4 0h0m2 0h0m6 0h0m4 0h0M3.5 16.5h0m1 0h0m1 0h0m1 0h0m1 0h0m1 0h0m5 0h0m4 0h0m2 0h0m4 0h0m2 0h0m9 0h0m4 0h0m4 0h0m4 0h0m4 0h0m2 0h0m6 0h0m4 0h0M4.5 17.5h0m10 0h0m1 0h0m1 0h0m3 0h0m4 0h0m2 0h0m1 0h0m1 0h0m1 0h0m1 0h0m5 0h0m4 0h0m4 0h0m4 0h0m4 0h0m2 0h0m1 0h0m1 0h0m1 0h0m1 0h0m2 0h0m4 0h0" fill="none" stroke-linecap="round"/></defs><rect width="99" height="20" fill="url(#hdrsign-off)"/><use href="#hdrsign-on" stroke="#ff8a00" stroke-width="1.15" opacity=".7" filter="url(#hdrsign-glow)"/><use href="#hdrsign-on" stroke="#ffbe3c" stroke-width=".76"/></svg><!-- /signboard --></div>
     <div class="sub">COMMUNITY LIVE TRACKER · UNOFFICIAL · BRIEFING FOR THE OPERATOR</div>
   </div>
 </header>

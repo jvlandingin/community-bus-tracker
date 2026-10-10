@@ -64,9 +64,18 @@ emoji left in the interface. Doing it turned up one bug that had shipped: the
 first tap on a bus in the list could open its popup with the top cut off for a
 few seconds.
 
+The third step is in too: the header's route board is a real dot matrix,
+built from lit dots five across and seven down like the boards on the buses,
+and the coach is the mark, on the home screen, in every tab and on the link
+preview. The board kept the rule the old one had: the route name is still
+text in the page, and any character it cannot draw leaves the lettered board
+instead.
+
 **Not yet checked:** how Barlow renders on a real iPhone and a real low-end
-Android, and whether riders read the sampaguita on the salamat button as a
-thank-you without the words beside it. They always have the words beside it.
+Android, how the board's glow looks on a cheap screen in sunlight, and whether
+riders read the sampaguita on the salamat button as a thank-you without the
+words beside it. They always have the words beside it. The link preview with
+the new picture has not been seen in an actual Messenger chat.
 
 ## 2026-10-10 — A redesign, and some fun
 

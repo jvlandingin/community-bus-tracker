@@ -88,6 +88,15 @@
   .sg-part > .sg-name{display:block; margin-bottom:10px;}
   .sg-badges{display:flex; gap:26px; align-items:center; padding:18px 8px;}
   .sg-badges .busmk{position:relative;}
+
+  /* The signboard and the mark */
+  .sg-boards{display:flex; flex-wrap:wrap; gap:14px; align-items:flex-start;}
+  .sg-board{display:inline-block; padding:3px; border-radius:var(--r-s);
+    background:radial-gradient(120% 140% at 30% 0%, #1d1513 0%, #0b0807 70%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), inset 0 3px 10px rgba(0,0,0,.75);}
+  .sg-board .dmsvg{display:block; max-width:100%; height:auto;}
+  .sg-mark img{display:block; border-radius:var(--r-s);}
+  .sg-preview{max-width:100%; border-radius:var(--r-m); box-shadow:var(--sh-2);}
 </style>
 </head>
 <body>
@@ -177,6 +186,19 @@
     thank-you is <code>i-ty</code>, a sampaguita.</p>
   <div class="sg-icons" id="sgIcons"></div>
 
+  <h2>The signboard and the mark</h2>
+  <p class="sg-note">The route board is a real dot matrix, five dots across and seven down per letter, drawn
+    by the SIGNBOARD block in <code>index.html</code>, which these are drawn with too. An accented letter is
+    drawn as its plain letter and Ñ has its own; a character the board has no dots for leaves the lettered
+    board in place rather than a board with a hole in it. The guide, the flyer and the briefing carry boards
+    drawn by <code>tools/make-signboard.js</code> from the same block.</p>
+  <div class="sg-boards" id="sgBoards"></div>
+  <h3>The mark</h3>
+  <p class="sg-note">The coach the map draws, white on the livery's maroon with the gold trim and its signboard
+    lit. The favicon below is read from <code>index.html</code>; the home-screen icons and the link-preview
+    picture are rendered from <code>tools/app-icons.html</code>.</p>
+  <div class="sg-row" id="sgMark"></div>
+
   <h2>Parts</h2>
   <p class="sg-note">The app's own classes, unchanged. A part that only exists inside the map or a script
     is drawn here with the same markup the script writes.</p>
@@ -261,6 +283,14 @@
   if (sprite) document.body.prepend(document.importNode(sprite, true));
   // The bus badge's glyph is a script string in index.html, not markup.
   const glyph = (html.match(/const BUS_GLYPH =\s*'([^']*)'\s*\+\s*'([^']*)';/) || []).slice(1).join('');
+  // The signboard renderer, taken out by its markers and run, the way
+  // tools/make-signboard.js and the tests do.
+  let sign = null;
+  try{
+    const a = html.indexOf('// ---- THE SIGNBOARD (unit tested)'), b = html.indexOf('// ---- END SIGNBOARD');
+    if (a >= 0 && b > a) sign = new Function(html.slice(a, b) + '; return { signboardSvg: signboardSvg };')();
+  }catch(e){ sign = null; }
+  const favicon = (doc.querySelector('link[rel="icon"]') || {}).href || '';
 
   // ---- What the stylesheet defines, and who uses it ---------------------
   const plain = css.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -414,7 +444,43 @@
     mk('nb fresh live'); mk('sb fresh'); mk('nb fresh', '<span class="cnt">2</span>'); mk('sb delayed');
   }
 
-  function drawAll(){ drawColour(); drawType(); drawShapes(); drawMotion(); drawIcons(); drawBadges(); }
+  // ---- The signboard and the mark ---------------------------------------
+  function drawBoards(){
+    const box = document.getElementById('sgBoards'); box.innerHTML = '';
+    if (!sign) { box.appendChild(el('div', 'sg-note', 'The renderer could not be read from index.html.')); return; }
+    const routeWords = [...doc.querySelectorAll('header .route .ln')].map(e => e.textContent);
+    const boards = [[routeWords, 'the header'], [['Sakay na!'], 'a flag'], [['Malapit na!'], ''], [['Tulog pa'], ''],
+                    [['Bus Tracker'], ''], [['Parañaque · Pérez'], 'Ñ, and é as e'], [['中山'], 'no dots: stays lettered']];
+    boards.forEach(function(bd, i){
+      const wrap = el('div');
+      const svg = sign.signboardSvg(bd[0], { id: 'sgb' + i });
+      if (svg) { const b = el('div', 'sg-board'); b.innerHTML = svg; wrap.appendChild(b); }
+      else wrap.appendChild(el('div', 'sg-name', '“' + bd[0].join(' ') + '”'));
+      if (bd[1]) wrap.appendChild(el('div', 'sg-uses', bd[1]));
+      box.appendChild(wrap);
+    });
+    // This page's own header, the way the tracker draws its own.
+    const route = document.querySelector('header .route');
+    if (route && !route.classList.contains('dm')) {
+      const svg = sign.signboardSvg([...route.querySelectorAll('.ln')].map(e => e.textContent), { id: 'sghead' });
+      if (svg) { route.insertAdjacentHTML('beforeend', svg); route.classList.add('dm'); }
+    }
+  }
+  function drawMark(){
+    const box = document.getElementById('sgMark'); box.innerHTML = '';
+    const add = (src, size, label) => {
+      const w = el('div', 'sg-mark');
+      const i = document.createElement('img'); i.src = src; i.width = size; i.height = size; i.alt = '';
+      w.append(i, el('div', 'sg-uses', label)); box.appendChild(w);
+    };
+    if (favicon) [16, 32, 64].forEach(s => add(favicon, s, s + ' px'));
+    add('../assets/icons/icon-192.png', 96, 'home screen');
+    const p = document.createElement('img'); p.src = '../assets/icons/preview.png'; p.alt = 'The link-preview picture';
+    p.className = 'sg-preview'; p.width = 600; p.height = 315;
+    const pw = el('div'); pw.append(p, el('div', 'sg-uses', 'link preview, 1200 × 630')); box.appendChild(pw);
+  }
+
+  function drawAll(){ drawColour(); drawType(); drawShapes(); drawMotion(); drawIcons(); drawBadges(); drawBoards(); drawMark(); }
   drawAll();
 
   // ---- Theme --------------------------------------------------------------

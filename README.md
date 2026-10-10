@@ -15,8 +15,9 @@ leaving that to whoever posts the link is how a community tool starts getting
 mistaken for an official one. If you deploy it for a route, edit those two
 places, plus the `<title>` and the `og:` tags at the top of `index.html` that
 name the route in link previews, the name in `manifest.webmanifest`, and the
-route on the link-preview picture (`tools/app-icons.html`, then
-`sh tools/render-icons.sh`). It calls itself Bus Tracker, never by the bus
+route on the dot-matrix boards: the words in each page's header and in
+`tools/app-icons.html`, then `node tools/make-signboard.js` and
+`sh tools/render-icons.sh`. It calls itself Bus Tracker, never by the bus
 company's name or initials, for the same reason.
 
 ## What it does

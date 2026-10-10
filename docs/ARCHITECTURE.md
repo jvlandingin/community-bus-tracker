@@ -649,6 +649,47 @@ rest by being shorter than the old rails. The briefing's example screen was
 already taller than an A4 page and had always printed split across two; it
 now prints at phone width, whole, on one.
 
+**Riding to your stop, not only waiting for it** (October 2026). The card
+was built for the roadside: the nearest bus still coming. On board that is
+the wrong bus whenever another one runs ahead of yours on the same road —
+the card counted down on it while yours was still stops behind — and its
+words were wrong too ("wave it down"). So the card has a second mode that
+follows one bus, yours, to the stop you get off at: `aboardBus()` picks it,
+`aboardInfo()` measures it in the same shape `approachInfo()` returns, so
+`stopsBetween()` and `rideState()` read it unchanged. Its flags are
+**Malapit na!** and **Bababa na!**, its bus wears the green ring that means
+"yours" on the strip, and it ignores the direction filter, because it is the
+reader's own bus.
+
+Which bus is yours comes from one of two places, both already on the phone.
+A sharer's is the cluster the server flags `is_self`, so a sharer taps
+nothing. Anyone else taps **I'm on this bus** in the bus's popup, which keeps
+the bus's public id in `sessionStorage` (`wt-aboard`) until the tab closes;
+it is never sent, and it means nothing after the trip because the id dies
+with it, so it is not a fifth remembered thing. Starting to share clears it,
+since the server's answer supersedes it and it would otherwise come back
+after Stop pointing at a trip the phone is not on. A fix up to 300 m past
+the stop still counts as at it (`AT_STOP_KM`), because phones wobble and
+buses pull in beyond the sign; further than that the card says the stop is
+behind the bus and asks for the one being got off at, which is also what a
+sharer riding away from their home stop sees.
+
+**A sharer can watch, and the page now says so.** GPS never stopped when a
+sharer switched to the map — the watch is not tied to the tab, and the
+tracker's feed is the faster one — but the dark trip screen and the status
+line live only on the sharing tab, so leaving it looked like stopping.
+`syncTripMode()` now puts a breathing green dot (and the words "sharing now"
+for screen readers) on the **I'm on the bus** tab for as long as a trip is
+live, and the stop card is written into `#tripStop` on the sharing tab as
+well, so a sharer never has to choose between watching their stop and seeing
+their bus on the map. `setShareUI()` runs on every GPS fix, so it redraws the
+card only on the transition, when that copy is still hidden.
+
+The buzz still needs the page on screen: `navigator.vibrate` does nothing in
+a pocket with the screen locked. That is the honest limit of the website; a
+lock-screen alert would belong to the Android app's notification code, and
+has not been built.
+
 ## Following one bus, and the town lines
 
 October 2026. **Send a link to this bus**, in a bus's popup, hands over a
@@ -1117,7 +1158,10 @@ list: it is a substring of `start`, and a scan that cries wolf on
 
 The October controls were named the same way: the follow link is
 `sendBusLink` and `.buslink`, its chip `followchip`, the ticket `tkt*`, the
-album `album*` and `.tktmini`, and the buzz switch `buzzBox`. None of them is the kind of thing a filter list
+album `album*` and `.tktmini`, and the buzz switch `.buzz` (it lost its
+`buzzBox` id when the card began to be written twice, onto both tabs).
+Riding to your stop added `boardBus`/`leaveBus`, `aboard*`, `.ride-acts`,
+`#tripStop` and the tab's `.tablive` dot. None of them is the kind of thing a filter list
 hunts for, and the scan agrees.
 
 ## Known limitations

@@ -42,7 +42,6 @@ const OFF_LEFT = { cx: -330, cy: 620, s: .57, rx: 0, ry: 24, rz: 0, o: 1 };
 const DASH = { cx: 280, cy: 650, s: .8, rx: 7, ry: 13, rz: -1.5, o: 1 };
 const BELOW = { cx: 300, cy: 1460, s: .82, rx: 30, ry: -22, rz: 9, o: 1 };
 
-const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const SETTINGS_TAG = { tl: 'Halimbawa · example screen', en: 'Example screen · made-up buses' };
 
 // What the saved-stop card is saying, read off the rider's phone.
@@ -80,28 +79,14 @@ function road() {
 function titleCard(P, o) {
   return '<i class="dots"></i>' +
     '<div style="text-align:center; padding-top:70px">' + board(P, 'tcb', 4.1) + '</div>' +
-    '<div class="eyebrow rise d3" style="text-align:center; margin-top:16px">' + o.eyebrow + '</div>' +
+    (o.eyebrow ? '<div class="eyebrow rise d3" style="text-align:center; margin-top:16px">' + o.eyebrow + '</div>' : '') +
     '<div style="flex:1"></div>' +
     '<div class="big" style="text-align:center; font-size:' + o.size + 'px">' +
       o.lines.map(l => '<div><span class="settle">' + l + '</span></div>').join('') + '</div>' +
-    '<p class="lede rise d5" style="text-align:center; margin:22px 40px 0">' + o.lede + '</p>' +
+    (o.lede ? '<p class="lede rise d5" style="text-align:center; margin:22px 40px 0">' + o.lede + '</p>' : '') +
     '<div style="flex:1"></div>' + scene(P, o.time, 'tcs') +
     '<div class="eg rise d6" style="position:absolute; left:0; right:0; bottom:20px; text-align:center; font-size:12px; font-weight:700;' +
       ' letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.85)">' + o.note + '</div>';
-}
-function listCard(P, o) {
-  return '<i class="dots"></i>' +
-    '<div style="flex:1"></div>' +
-    '<div style="padding:0 34px">' +
-      '<div class="eyebrow rise">' + o.eyebrow + '</div>' +
-      '<div class="big mask" style="font-size:' + (o.size || 58) + 'px; margin-top:14px"><span class="d1">' + o.title + '</span></div>' +
-      '<div style="margin-top:34px; display:flex; flex-direction:column; gap:24px">' +
-        o.rows.map((r, i) => '<div class="row pop d' + (i + 3) + '"><span class="chk">' + CHECK + '</span>' +
-          '<div><div class="say">' + r[0] + '</div>' + (r[1] ? '<div class="fine" style="font-size:16px; margin-top:4px">' + r[1] + '</div>' : '') + '</div></div>').join('') +
-      '</div>' +
-    '</div>' +
-    '<div style="flex:1"></div>' +
-    (o.fine ? '<p class="fine rise d8" style="margin:0 34px 30px">' + o.fine + '</p>' : '');
 }
 
 // The four buses of the flyer's example screen, less any a phone is playing.
@@ -149,8 +134,11 @@ module.exports = {
   // ==========================================================================
   riders: {
     file: 'demo-riders.mp4',
+    // tools/demo-riders-script.md is this cut written out scene by scene.
+    // The motion does the explaining: four captions in the whole video, and
+    // the salamat, the buses and the ticket are shown without words.
     async play(d, P) {
-      const T = (o) => Object.assign({ x: 30, y: 52, w: 480, size: 56 }, o);
+      const T = (o) => Object.assign({ x: 30, y: 52, w: 480, size: 60 }, o);
       // Off camera: a rider's phone, and a phone on bus 98018 that has been
       // sharing since before the video starts, parked five stops short of
       // the rider's stop.
@@ -162,49 +150,36 @@ module.exports = {
       d.gps('crew', { road: ROADS.kawit, km0: 38.26 });
       await startTripOffCamera(d, 'crew', '98018');
       await d.offCamera(7);
-      await d.call('scrollTo', 'crew', 150);
 
-      // -- 0. The title: the flyer's headline over the view from the ridge
-      await d.card('title', titleCard(P, { time: 'dawn', size: 78, eyebrow: 'WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER · UNOFFICIAL',
-        lines: ['Nasaan na', '<em>ang bus?</em>'], lede: 'Tingnan kung nasaan ang bus ngayon — bago ka pa lumabas ng bahay.',
-        note: 'Halimbawa lang ang mga bus sa video na ito' }), { theme: 'maroon', instant: true });
-      await d.wait(4.3);
+      // -- 0. The cover: the flyer's question over the view from the ridge
+      await d.card('title', titleCard(P, { time: 'dawn', size: 84,
+        lines: ['Nasaan na', '<em>ang bus?</em>'], note: 'Halimbawa lang ang mga bus' }), { theme: 'maroon', instant: true });
+      await d.wait(3.3);
 
-      // -- 1. Open the link
+      // -- 1. The buses, without words: the two lines, then one bus live
       await d.wipeIn();
       await d.uncard('title');
       await d.tag(SETTINGS_TAG.tl);
-      await d.title('t', T({ theme: 'dark', n: 1, kicker: 'Buksan ang link', lines: ['Walang app.', 'Walang <em>account.</em>'],
-        sub: 'Walang ida-download. Bubukas agad sa browser mo, sa kahit anong phone.' }));
-      await d.pose('rider', { cx: 270, cy: 668, s: .84, rx: 6, ry: -8, rz: 1.5 }, 1.3, 'back');
+      await d.pose('rider', { cx: 270, cy: 560, s: .9, rx: 6, ry: -8, rz: 1.5 }, 1.3, 'back');
       await d.wipeOut();
-      await d.wait(1.3);
+      await d.wait(1.0);
       await d.hilite('rider');
-      await d.wait(2.2);
-
-      // -- 2. Where the buses are
-      await d.untitle('t');
-      await d.title('t', T({ theme: 'dark', n: 2, kicker: 'Tingnan kung nasaan ang bus', lines: ['Bawat bilog,', '<em>isang bus.</em>'],
-        sub: 'Live ang posisyon, galing sa mga nasa bus mismo.' }));
-      await d.scrim(true);
-      await d.focus('rider', '#trackStrip', { s: 1.42, fx: 270, fy: 600, sec: 1.1 });
-      await d.wait(1.1);
-      await d.callout('nb', { phone: 'rider', target: '#trackStrip .track.nb', ax: .74, text: '▲ Papuntang Ayala', color: 'gold', dx: -40, dy: -66 });
-      await d.wait(.5);
-      await d.callout('sb', { phone: 'rider', target: '#trackStrip .track.sb', ax: .3, text: '▼ Papuntang Mendez', color: 'maroon', dx: 40, dy: 66 });
-      await d.wait(2.2);
-      await d.unmark('nb'); await d.unmark('sb');
-      await d.focus('rider', '.mapwrap', { s: 1.12, fx: 270, fy: 650, sec: 1.0 });
-      await d.app('rider', 'map.flyTo([14.395, 120.915], 12, { duration: 1.3 }); 1');
+      await d.wait(.6);
+      await d.focus('rider', '#trackStrip', { s: 1.42, fx: 270, fy: 470, sec: 1.0 });
+      await d.wait(1.0);
+      await d.callout('nb', { phone: 'rider', target: '#trackStrip .track.nb', ax: .74, text: '▲ Pa-Ayala', color: 'gold', dx: -40, dy: -66 });
+      await d.wait(.4);
+      await d.callout('sb', { phone: 'rider', target: '#trackStrip .track.sb', ax: .3, text: '▼ Pa-Mendez', color: 'maroon', dx: 40, dy: 66 });
       await d.wait(1.6);
+      await d.unmark('nb'); await d.unmark('sb');
+      await d.focus('rider', '.mapwrap', { s: 1.12, fx: 270, fy: 520, sec: 1.0 });
+      await d.app('rider', 'map.flyTo([14.395, 120.915], 12, { duration: 1.3 }); 1');
+      await d.wait(1.5);
       await d.callout('live', { phone: 'rider', target: await marker(d, 'rider', '98018'), text: 'Live · 98018', color: 'gold', dx: 70, dy: -54 });
-      await d.wait(2.0);
+      await d.wait(1.6);
       await d.unmark('live');
 
-      // -- 3. Your own stop
-      await d.untitle('t');
-      await d.title('t', T({ theme: 'dark', n: 3, kicker: 'I-save ang stop mo', lines: ['Ilang stop pa', 'bago <em>dumating?</em>'] }));
-      await d.scrim(false);
+      // -- 2. How far: save the stop, then the bus counts down to it
       await d.pose('rider', HERO, .9);
       await d.wait(.95);
       await d.scroll('rider', { target: '#myStop', offset: 420 }, .7);
@@ -216,15 +191,13 @@ module.exports = {
       await d.expect('rider', '/about\\s*5\\s*stops before yours/.test(document.querySelector("#myStop .ride-big").textContent)',
         'the saved-stop card saying "about 5 stops before yours"');
       await d.scrim(true);
-      await d.untitle('t');
       await d.focus('rider', '#myStop .ride', { s: 1.3, fx: 270, fy: 690, sec: 1.0 });
-      await d.wait(.45);
-      await d.title('t', T({ theme: 'dark', kicker: 'Malapit na ba?', lines: ['Bibilangin ng app.'], size: 40 }));
-      await d.flap('f', { value: '5', unit: 'stops pa', sub: '3.0 km', x: 40, y: 178, theme: 'dark' });
-      await d.wait(1.9);
-
-      // -- the bus coming: the crew phone drives the last three kilometres,
-      //    sped up, and the board above counts what the card counts
+      await d.title('t', T({ theme: 'dark', lines: ['Gaano <em>kalayo pa?</em>'], size: 50 }));
+      await d.wait(.5);
+      await d.flap('f', { value: '5', unit: 'stops pa', sub: '3.0 km', x: 40, y: 132, theme: 'dark' });
+      await d.wait(1.5);
+      // the crew phone drives the last three kilometres, sped up, and the
+      // board above counts what the card counts
       await d.ff('Pinabilis');
       d.gps('crew', { road: ROADS.kawit, km0: 38.26, km1: 41.2, secs: 7.4 * 56 });
       d.rate = 56;
@@ -246,60 +219,43 @@ module.exports = {
       await d.ff(null);
       await d.expect('rider', '/Next stop is yours/.test(document.querySelector("#myStop .ride-big").textContent)',
         'the card saying "Next stop is yours" once the bus is one stop out');
-      await d.wait(1.4);
+      await d.wait(1.2);
 
-      // -- 4. Salamat: one tap on this phone, felt on the other
+      // -- 3. Salamat, without words: one tap on the bus that came
       await d.unled('sign');
       await d.unflap('f');
-      await d.title('t', T({ theme: 'dark', n: 4, kicker: 'Mag-salamat', lines: ['Isang tap mo,', '<em>ramdam ng nag-share.</em>'], size: 50 }));
       await d.scrim(false);
       await d.pose('rider', HERO, .8);
       await d.wait(.85);
       await d.scroll('rider', { target: '.mapwrap', offset: 30 }, .6);
-      await d.tap('rider', await marker(d, 'rider', '98018'), { after: .9 });
-      await d.tap('rider', '.buspop .tybtn', { after: .25 });
-      await d.label('rider', 'Ikaw');
-      await d.label('crew', 'Nasa bus 98018');
-      await d.pose('rider', LEFT, 1.0);
-      await d.pose('crew', RIGHT, 1.0);
-      await d.wait(1.05);
-      await flowersBetween(d, { phone: 'rider', target: '.buspop .tydone' }, { phone: 'crew', target: '#onbusStrip .buspill.me' }, 11);
-      await d.wait(1.1);
-      await d.poll('crew');
-      await d.wait(.3);
-      await d.expect('crew', '/1 rider said salamat/.test(document.getElementById("tyLine").textContent)', 'the crew phone saying "1 rider said salamat"');
-      await d.ring('ty', { phone: 'crew', target: '#tyLine', color: 'live', pad: 6 });
-      await d.wait(2.6);
-      await d.unmark('ty');
+      await d.tap('rider', await marker(d, 'rider', '98018'), { after: .8 });
+      await d.tap('rider', '.buspop .tybtn', { after: 1.4 });
+      await d.expect('rider', '!!document.querySelector(".buspop .tydone")', 'the popup saying the salamat was sent');
 
-      // -- 5. On a bus yourself
+      // -- 4. On a bus yourself
       await d.wipeIn();
-      await d.label('rider', null);
-      await d.label('crew', null);
       await d.pose('crew', OFF_RIGHT, 0);
       await d.app('crew', 'stopSharing({ quiet: true }); 1');
+      await d.app('rider', 'map.closePopup(); 1');
       await d.pose('rider', HERO, 0);
       await d.call('scrollTo', 'rider', 0);
       await d.bg('night');
       d.gps('rider', { road: ROADS.whole, km0: 0.3, km1: 1.6, secs: 300 });
-      await d.untitle('t');
-      await d.title('t', T({ theme: 'night', n: 5, kicker: 'Nasa bus ka?', lines: ['I-share ang lokasyon', '<em>ng bus.</em>'], size: 50,
-        sub: 'I-tap ang “I\'m on the bus”, piliin ang direksyon. Puwede mong itigil anumang oras.' }));
+      await d.title('t', T({ theme: 'night', lines: ['Share kung', '<em>nasaan ang bus</em>'], size: 54 }));
       await d.wipeOut();
       await d.wait(.6);
       await startTrip(d, 'rider', '98019');
       await d.expect('rider', 'document.documentElement.classList.contains("trip-on")', 'the sharing tab in trip mode');
-      await d.wait(1.0);
+      await d.wait(.8);
       await d.scrim(true);
-      await d.focus('rider', '#onbusStripCard', { s: 1.25, fx: 270, fy: 680, sec: 1.0 });
+      await d.focus('rider', '#onbusStripCard', { s: 1.25, fx: 270, fy: 660, sec: 1.0 });
       await d.wait(1.1);
       await d.callout('you', { phone: 'rider', target: '#onbusStrip .buspill.me', text: 'Ito ang bus mo', color: 'live', dx: 64, dy: -62 });
-      await d.wait(2.4);
+      await d.wait(2.0);
       await d.unmark('you');
 
-      // -- 6. The ticket at the end
+      // -- 5. The ticket, without words: two hours on, Stop
       await d.untitle('t');
-      await d.title('t', T({ theme: 'night', kicker: 'Pagbaba mo', lines: ['I-tap ang Stop.', 'May <em>ticket</em> ka pa.'] }));
       await d.scrim(false);
       await d.pose('rider', HERO, .8);
       await d.ff('Makalipas ang 2 oras', 'time');
@@ -307,37 +263,27 @@ module.exports = {
       await d.skip(2 * 3600e3 + 26 * 60e3);
       await d.thanks('rider', 3);
       await d.poll('rider');
-      await d.wait(1.5);
+      await d.wait(1.3);
       await d.ff(null);
       await d.tap('rider', '#onbusActive .btn-stop', { after: .3 });
       await d.expect('rider', '!document.getElementById("tktModal").classList.contains("hidden")', 'the salamat ticket on screen');
-      await d.scrim(true);
-      await d.focus('rider', '#tktCard', { s: 1.08, fx: 270, fy: 680, sec: 1.0 });
-      await d.wait(3.4);
+      await d.focus('rider', '#tktCard', { s: 1.1, fx: 270, fy: 500, sec: 1.0 });
+      await d.wait(3.0);
 
-      // -- 7. Why it is safe to use: the flyer's own four
-      await d.card('safe', listCard(P, { eyebrow: 'Bakit ito ligtas gamitin', title: 'Libre, <em>walang ads.</em>', rows: [
-        ['Walang app.', 'Browser lang. Walang i-i-install.'],
-        ['Walang account.', 'Walang pangalan, walang number, walang email.'],
-        ['Hindi ka nito sinusundan.', 'Kung nanonood ka lang, hindi hinihingi ang location mo.'],
-        ['Walang itinatagong history ng biyahe.', 'Ang huling posisyon lang ang naka-imbak, at nabubura pagtapos.']] }), { theme: 'maroon' });
-      await d.tag(null);
-      await d.wait(4.6);
-
-      // -- 8. The close: the flyer's call to action
+      // -- 6. The close: the link, the QR, and the disclaimer
       await d.card('end', '<i class="dots"></i>' +
         '<div style="text-align:center; padding-top:58px">' + board(P, 'ecb', 3.4, true) + '</div>' +
         '<div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 30px">' +
-          '<div class="eyebrow rise d1">Buksan ngayon</div>' +
-          '<div class="url" style="margin-top:10px"><span class="typeit" style="animation-timing-function:steps(' + P.url.length + ')">' + P.url + '</span></div>' +
+          '<div class="big rise d1" style="font-size:52px; text-align:center">Buksan <em>ngayon</em></div>' +
+          '<div class="url" style="margin-top:16px"><span class="typeit" style="animation-timing-function:steps(' + P.url.length + ')">' + P.url + '</span></div>' +
           '<div class="qrbig pop d5" style="margin-top:26px; position:relative">' + P.qr + '<i class="scanline"></i></div>' +
-          '<p class="lede rise d6" style="text-align:center; margin:22px 10px 0">I-scan ang QR o i-type ang link. Gumagana sa kahit anong phone.</p>' +
-          '<p class="say rise d7" style="text-align:center; margin:22px 0 0; font-size:30px">I-post sa group chat ninyo!</p>' +
+          '<p class="say rise d7" style="text-align:center; margin:26px 0 0; font-size:30px">I-post sa group chat!</p>' +
         '</div>' +
         '<p class="fine rise d8" style="text-align:center; margin:0 30px 14px"><b>Hindi ito opisyal.</b> Not affiliated with, run by, or endorsed by Wonderful Transport. ' +
-          'Galing sa mga volunteer ang posisyon. Kapag walang nag-share, walang bus sa mapa — hindi ibig sabihin walang bus.</p>' +
+          'Kapag walang nag-share, walang bus sa mapa.</p>' +
         '<div class="coachbar">' + road() + coach(P, 'dawn') + '</div>', { theme: 'maroon' });
-      await d.wait(7.5);
+      await d.tag(null);
+      await d.wait(6.5);
     }
   },
 

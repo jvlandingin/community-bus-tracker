@@ -4,7 +4,7 @@ The scene-by-scene script for `assets/flyer/demo-riders.mp4`, to agree on
 before anything is rendered. Once it is settled, `tools/demo-cuts.js` is
 changed to match and the video is re-rendered.
 
-**Draft 3.** The motion does the explaining; the words only name the scene.
+**Rendered.** The motion does the explaining; the words only name the scene.
 There are four short captions in the whole video, in English and Tagalog
 mixed, and three scenes have no caption at all.
 
@@ -15,7 +15,7 @@ How to read it:
   renderer.
 - **Graphics** are the moving parts drawn around the phone. Any words in
   them are labels of one to three words, never sentences.
-- Times are estimates for the shorter cut, about 41 seconds in all.
+- Times are from the render, about 51 seconds in all.
 - Every frame that shows the tracker carries **"Halimbawa · example
   screen"** at the foot. The buses are the flyer's made-up ones.
 
@@ -23,13 +23,13 @@ How to read it:
 
 | # | Time | Scene | Caption |
 |---|------|-------|---------|
-| 0 | 0:00–0:03.5 | Cover | Nasaan na ang bus? |
-| 1 | 0:03.5–0:10 | Where the buses are | *(no caption)* |
-| 2 | 0:10–0:21 | How far is it | Gaano kalayo pa? |
-| 3 | 0:21–0:24 | Salamat | *(no caption)* |
-| 4 | 0:24–0:30 | On a bus yourself | Share kung nasaan ang bus |
-| 5 | 0:30–0:35 | The ticket | *(no caption)* |
-| 6 | 0:35–0:41 | Close | Buksan ngayon |
+| 0 | 0:00–0:04 | Cover | Nasaan na ang bus? |
+| 1 | 0:04–0:13 | Where the buses are | *(no caption)* |
+| 2 | 0:13–0:27.5 | How far is it | Gaano kalayo pa? |
+| 3 | 0:27.5–0:31.5 | Salamat | *(no caption)* |
+| 4 | 0:31.5–0:39.5 | On a bus yourself | Share kung nasaan ang bus |
+| 5 | 0:39.5–0:44.5 | The ticket | *(no caption)* |
+| 6 | 0:44.5–0:50.6 | Close | Buksan ngayon |
 
 Removed since draft 1:
 - "Live ang bawat bus". The buses scene now has no caption.
@@ -42,7 +42,7 @@ Removed since draft 1:
 
 ---
 
-## 0 · Cover (0:00–0:03.5)
+## 0 · Cover (0:00–0:04)
 
 A full-frame card in maroon, with no phone.
 
@@ -56,7 +56,7 @@ The longer lede line ("Tingnan kung nasaan ang bus ngayon…") is dropped.
 Frame 0 is the group chat's thumbnail, so the board and the caption are on
 screen from the first frame.
 
-## 1 · Where the buses are (0:03.5–0:10), shown without words
+## 1 · Where the buses are (0:04–0:13), shown without words
 
 - **Caption:** none.
 - **On the phone:**
@@ -71,7 +71,7 @@ screen from the first frame.
   - The camera moves down to the map, and a callout reads **Live · 98018**
     on the bus.
 
-## 2 · How far is it (0:10–0:21)
+## 2 · How far is it (0:13–0:27.5)
 
 - **Caption:** Gaano **kalayo pa?**
 - **On the phone:**
@@ -90,7 +90,7 @@ screen from the first frame.
     says "Next stop is yours."
 
 
-## 3 · Salamat (0:21–0:24), shown without words
+## 3 · Salamat (0:27.5–0:31.5), shown without words
 
 A quick beat on the same phone; no second phone.
 
@@ -100,7 +100,7 @@ A quick beat on the same phone; no second phone.
   The bus's own little "beep beep!" pops up on its badge *(app)*.
 - **Graphics:** the tap ripple, and nothing else.
 
-## 4 · On a bus yourself (0:24–0:30)
+## 4 · On a bus yourself (0:31.5–0:39.5)
 
 The background turns to night.
 
@@ -110,7 +110,7 @@ The background turns to night.
 - **Graphics:** the camera closes in on the line map, and a callout reads
   **Ito ang bus mo** on the green-ringed bus.
 
-## 5 · The ticket (0:30–0:35), shown without words
+## 5 · The ticket (0:39.5–0:44.5), shown without words
 
 - **Caption:** none.
 - **Graphics:** a clock chip reads **Makalipas ang 2 oras**, and the trip
@@ -120,7 +120,7 @@ The background turns to night.
   salamat ticket: Mendez → Ayala, "3 riders said salamat", and the BUONG
   RUTA stamp.
 
-## 6 · Close (0:35–0:41)
+## 6 · Close (0:44.5–0:50.6)
 
 - **Board:** the route board, with a scanline passing over it.
 - **Caption:** Buksan ngayon

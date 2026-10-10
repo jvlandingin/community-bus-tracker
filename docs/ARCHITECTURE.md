@@ -969,12 +969,13 @@ a few steps check that the tracker is showing what the caption above it claims
 trip mode, the ticket, a stopped bus gone from the rider's map), so a change
 to the app cannot leave a caption contradicting the screen beneath it.
 
-**Two phones are two people.** The salamat needs a rider and the person
-sharing on screen at once. Each phone has its own storage, its own session and
-its own GPS, and the stand-in database keeps a row per sharing phone by the
-rules the SQL keeps: a public id per trip, the count only on the sharer's own
-row, one salamat per rider per bus. So the salamat in the video travels the
-way a real one does: tapped on the rider's phone, stored, and read by the
+**Two phones are two people.** The operators' salamat needs a rider and the
+person sharing on screen at once; the riders' cut keeps the sharing phone off
+camera and shows only the tap. Each phone has its own storage, its own session
+and its own GPS, and the stand-in database keeps a row per sharing phone by
+the rules the SQL keeps: a public id per trip, the count only on the sharer's
+own row, one salamat per rider per bus. So the salamat in the video travels
+the way a real one does: tapped on the rider's phone, stored, and read by the
 sharing phone on its next poll. The flowers between the two are the stage's;
 the line that says "1 rider said salamat" is the tracker's.
 

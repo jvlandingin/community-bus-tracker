@@ -61,14 +61,19 @@ cd mobile && npm ci && npx cap sync android
 cd android && ./gradlew assembleDebug
 ```
 
-Two scripts regenerate committed images from HTML sources. Neither runs at
-deploy time and both need only a Chromium; they prefer `chrome-headless-shell`,
+Three scripts regenerate committed media from HTML sources. None runs at
+deploy time and all need a Chromium; they prefer `chrome-headless-shell`,
 because full Chrome's headless screenshots leave the bottom 87 px unpainted:
 
 ```
 sh tools/render-flyer.sh     # assets/flyer: poster PDF, briefing PDF, chat image
 sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview picture
+node tools/render-demo.js    # assets/flyer: the two demo videos (needs ffmpeg too)
 ```
+
+The third plays the real `index.html` in a phone frame with the flyer's
+made-up buses and records it frame by frame. Set `CARTO_API_KEY` in the
+environment or its map is watermarked; it never talks to the database.
 
 Two more rewrite committed text. `node tools/embed-fonts.js` copies the font
 files in `assets/fonts/` into the three static pages as data URIs; run it after
@@ -351,6 +356,16 @@ page still loads nothing, and that its copied `:root` tokens still match
 
 The guide also redraws the sharing tab in trip mode and the salamat ticket, so
 changing either means changing `how-to.html` in the same commit.
+
+**The demo videos are rendered, never recorded** (October 2026):
+`tools/render-demo.js` taps through the real tracker, so a layout change needs
+no hand edits there, only a re-render. A step that can no longer find what it
+taps, or a caption the screen no longer bears out, stops the render and names
+it. Every frame that shows the tracker carries an example-screen label
+("Halimbawa · example screen" in the riders' cut), for the same reason the
+flyer's mock does, and nothing in the tool may ever send a request to the
+real database. `docs/ARCHITECTURE.md`, "The demo
+videos", has the rest.
 
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`
 each redraw the tracker's screen the same way, showing four buses live because

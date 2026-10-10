@@ -893,6 +893,67 @@ Netlify gives every build — the second line of the published site that is not
 the committed one, after the CARTO key. A host that does not set it gets a
 preview with no picture and nothing else changes.
 
+## The demo videos
+
+October 2026. Two portrait videos of about a minute, for posting where
+riders and crews already are: `assets/flyer/demo-riders.mp4`, in the flyer's
+mix of Tagalog and English, and `assets/flyer/demo-operators.mp4`, in the
+briefing's English. They are rendered by `tools/render-demo.js`, not recorded,
+for the reason the icons are: a screen recording goes stale the day the layout
+changes and looks exactly like one that has not, and a render is redone in a
+few minutes. Their captions use the flyer's and the briefing's own lines
+wherever those have one, so the videos promise nothing those two documents do
+not.
+
+**The tracker in them is the real one.** The script builds a stage page, with
+the captions, a phone and the label, and runs `index.html` in a phone-sized
+frame on it, then taps, types and scrolls it through the browser's own input
+events, the way a person would. Nothing on the phone's screen is drawn for the
+video. A step that cannot find what it is told to tap stops the render and
+says which, and a few steps check that the tracker is showing what the caption
+above it claims ("about 5 stops before yours", "Next stop is yours", trip
+mode, the ticket), so a change to the app cannot leave a caption contradicting
+the screen beneath it.
+
+**The buses are made up, and every frame says so.** They are the flyer's
+example ones: 98018 five stops before S&R Kawit, 98104 at Amadeo, two sharers
+at Tagaytay, 98077 near Gen. Trias, so the riders' video is the flyer's
+example screen set moving. The rule is the flyer's: a picture of this tool
+that could be mistaken for live data is the one thing it may not publish. The
+line above the phone says "Halimbawa · example screen" on every frame that
+shows the tracker, both covers say the buses are made up, and the two
+stretches that are sped up (a bus coming up to the saved stop, and two hours
+of a trip) carry a chip that says so.
+
+**Nothing reaches the database.** A script runs in the page before its own
+(`prelude()` in the tool) and answers every call the tracker makes to Supabase
+from what the script has put there; anything else addressed to Supabase is
+refused, and the browser is told to block the host besides. Rendering cannot
+put a bus on anybody's real map. The map tiles are CARTO's real ones, so the
+render reads `CARTO_API_KEY` from the environment the way the build does, and
+without it the map is watermarked: fine for a draft, not for a post.
+
+**The page's clock is replaced.** Date, the timers, animation frames and the
+GPS move only when the renderer advances them, one video frame at a time, and
+every CSS animation is paused when it first appears and placed by hand on each
+frame after. That is what keeps the videos smooth on a slow machine and the
+same on every run, what lets a bus cover three kilometres in eight seconds
+while its badge still takes its own second to glide, and what lets the trip
+jump two and a half hours to the ticket. A jump fires each timer that came due
+once, as a phone does when it wakes, which is why the trip's welcome line is
+gone on the far side of it, and why the script moves the GPS before jumping:
+the idle guard would otherwise wake to a bus that had not moved in two hours
+and ask whether anybody was still on it.
+
+**No sound.** Most video in a group chat plays muted, and music or a voice is
+the one thing a person adds better than a script, so the captions carry
+everything and a sound track is left to whoever posts it.
+
+**What a fork changes.** The captions name this route's places and the scripts
+drive its stops by name (`ROADS` in the tool), so a fork rewrites those two
+scripts, or deletes the videos. The words on the boards, the link and its QR
+code come from the same places as the flyer's, so they follow it.
+
 ## The look: one system, one typeface, one set of icons
 
 October 2026. The app worked and looked assembled: twenty-one text sizes,

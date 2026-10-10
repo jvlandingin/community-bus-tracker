@@ -96,6 +96,14 @@ company's name or initials, for the same reason.
   "are you watching our drivers?" is the first question, then asks — in order —
   to be told if it should stop, for permission to post the flyer, and for
   whatever cooperation suits them, up to handing the whole thing over.
+- **Demo videos:** `assets/flyer/demo-riders.mp4`, in the flyer's Taglish,
+  and `assets/flyer/demo-operators.mp4`, in the briefing's English: about a
+  minute each, portrait, captioned, silent, for posting in a group chat or
+  sending to the company. They show the real tracker with the flyer's made-up
+  buses, labelled as an example on every frame, and are rendered rather than
+  recorded (`node tools/render-demo.js`), so they are redone whenever the app
+  changes. A fork rewrites the two scripts in that file, which name this
+  route's stops.
 
 ## What it deliberately does not do
 

@@ -12,6 +12,9 @@
   API key; the key is free, lives in `config.txt` as `CARTO_API_KEY`, and is
   deliberately optional — no key means watermarked tiles, not a broken map.
 - **Supabase client:** supabase-js 2.110.8, UMD build, vendored locally.
+- **Typeface:** Barlow and Barlow Semi Condensed (SIL Open Font License),
+  served from `assets/fonts/` and carried inline by the three static pages.
+  See "The look" below.
 - **App:** five HTML files, no build step, no framework. `index.html` is the
   tracker, `admin.html` the operator page, `how-to.html` a static guide reached
   from the ⓘ in the header, `flyer.html` the adoption flyer for riders and
@@ -41,10 +44,11 @@ community-bus-tracker/
   for-operators.html  <- the briefing for the bus company
   config.txt          <- your route's own, holds no secrets, safe to commit
   assets/vendor/      <- leaflet.js, leaflet.css, supabase.js, images/
+  assets/fonts/       <- Barlow, five cut-down woff2 files and their licence
 ```
 
 Deploys come from git: Netlify builds the repository on a push to `main`, and
-`netlify.toml` runs the six dependency-free JavaScript suites as the build
+`netlify.toml` runs the seven dependency-free JavaScript suites as the build
 command, so a failing one cancels the deploy. Nothing is compiled and nothing is
 installed. There is deliberately no `package.json` at the root, because it
 would make Netlify run `npm install` and publish `node_modules` alongside the
@@ -721,6 +725,84 @@ Netlify gives every build — the second line of the published site that is not
 the committed one, after the CARTO key. A host that does not set it gets a
 preview with no picture and nothing else changes.
 
+## The look: one system, one typeface, one set of icons
+
+October 2026. The app worked and looked assembled: twenty-one text sizes,
+nineteen corner radii and forty shadows, each one a reasonable choice in the
+commit that made it, and emoji standing in for icons, which are a different
+picture on every phone. The art direction that replaced them was planned
+first and agreed before any of it was built; this is what it left behind.
+
+**Tokens.** Seven text sizes (`--fs-cap` 11 to `--fs-number` 34), three
+corners (`--r-s/m/l`; a circle is 50% and a pill 999px), three heights
+(`--sh-1` a card resting on the page, `--sh-2` something floating over it,
+`--sh-3` an overlay) and three speeds with three curves (`--dur-1/2/3`,
+`--ease`, `--ease-pop`, `--ease-move`). Anything longer than a beat — a beep,
+a breathing badge, the parol's sway — states its own length, because it is a
+moment rather than a transition. They are defined once, in `index.html`'s
+`:root`, and copied into the other four pages like the colours always were.
+
+**`tests/test-tokens.js` holds them.** It reads every declaration of a size,
+corner, shadow, timing or typeface in `index.html` and `admin.html`, wherever
+it is written, including the strings scripts build markup from, and fails on
+a literal. The point is mechanical rather than aesthetic: values that are
+close but not the same read as careless even when nobody can say why, and
+this is how the old count of twenty-one sizes accumulated. One literal is
+allowed, in an exceptions list that carries its reason, and an exception that
+stops matching anything fails too. The guide, the flyer and the briefing are
+not held strictly, because their drawings of the app are the app at a smaller
+scale; their own text and cards use the tokens, and the test checks they carry
+every one with the app's values.
+
+**`tools/styleguide.html` draws all of it**, and keeps no copy of any of it:
+at load it reads `index.html`, takes its stylesheet and icon sprite, and draws
+the colours, the type scale, the corners, heights and speeds, every icon and
+a set of real parts with them. The tables, including which rules use each
+token, are computed from that stylesheet, so the page cannot drift. Browsers
+will not let a file opened from disk read another file, so it is opened
+through a server: the deployed site, or `python3 -m http.server` at the root.
+
+**Barlow, in two widths.** Barlow Semi Condensed (500, 600, 700) for anything
+that is a label, a button, a name or a number; Barlow (400, 600) for
+sentences. It was chosen for the strip: eight checkpoint names have to fit
+across a phone, and a condensed face fits them at a size that can be read.
+It also has the plain, engineered look of road and transport signage without
+copying any one operator's lettering. Each file is cut down to the characters
+these pages use and has its hinting removed, about 9 KB a weight, 46 KB for
+all five. They are served from this site, so the privacy panel's "everything
+else is served from this site itself" stays true, and the `.v1` in each name
+lets `netlify.toml` tell phones to keep them for a year: change a file, change
+its name. `font-display:swap` shows the phone's own font while they load, and
+`fitTicks()` measures the strip again once they arrive, because the names fit
+differently in the two. Leaflet's stylesheet sets its own font on the map, so
+`.leaflet-container` sets it back, or the popups stay in Helvetica.
+
+**The three pages that load nothing carry the fonts inline**, as data URIs
+written by `tools/embed-fonts.js` between two marker comments. That costs
+about 62 KB a page, on pages read once rather than every morning, and keeps
+the property that they cannot 404 off a deploy. `test-tokens.js` decodes each
+inline copy and fails if it is not byte for byte the file.
+
+**Icons.** One family, drawn for the app on a 24-point grid with a 2-point
+stroke and round ends, kept as `<symbol>`s in a sprite at the top of
+`index.html`'s body and used by reference. Every emoji the interface used to
+draw is one of these now: the lock, the info mark, the theme, the map's
+buttons, the prompt titles, the chevrons, the close buttons, and the salamat
+button, which is a sampaguita (`i-ty`) because the flower strung into
+garlands to honour someone says thank you here, and because nothing about it
+can be named like a social widget (see "Content blockers"). The coach is the
+one filled drawing: front-on, with rabbit-ear mirrors, its windscreen, lamps
+and signboard cut through so they show the colour behind, and the signboard
+lit pale on gold and amber on maroon wherever a bus is drawn. Pages that need
+an icon copy its `<symbol>` from `index.html`, and `test-tokens.js` fails if a
+copy differs or a page draws one it does not carry.
+
+**Found while doing it.** Tapping a bus in the list opened its popup while
+the map was still flying to it, so Leaflet worked out how far to pan from
+the wrong place and the popup's top sat under the edge of the map for a few
+seconds. It now opens on `moveend`, with a timer as a backstop for a view
+that does not move.
+
 ## Duplicate sharer handling
 
 Two people sharing from one bus would show as two buses, which is worse than
@@ -895,7 +977,9 @@ deploy folder:
   ticket's rules (`test-thanks`); every one of those checks was watched
   failing against a deliberately broken copy of the page before it was
   trusted. They need Node, plus config-template.txt one
-  level up. `test-boot.js` additionally loads both pages in a real DOM (jsdom)
+  level up. `test-tokens.js` runs no app code: it reads every page's styles
+  and holds them to the design tokens (see "The look"). `test-boot.js`
+  additionally loads both pages in a real DOM (jsdom)
   over a local HTTP server, including a deploy with `assets/` missing and a
   config.txt that was never filled in.
 - `tests/db/00-legacy-baseline.sql` reconstructs the pre-migration database.

@@ -14,7 +14,7 @@ made in response to bugs that had already shipped.
 
 ## Commands
 
-The six dependency-free JavaScript suites, run from the repository root:
+The seven dependency-free JavaScript suites, run from the repository root:
 
 ```
 node tests/test-hours.js      # split operating hours, the en-route allowance, the hours card, the parol season
@@ -23,6 +23,7 @@ node tests/test-strip.js      # progress strip position and wording, the town li
 node tests/test-prompts.js    # idle, end-of-trip and direction prompts
 node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
 node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket
+node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
 ```
 
 These are also Netlify's build command, so a failure cancels the deploy.
@@ -66,6 +67,10 @@ because full Chrome's headless screenshots leave the bottom 87 px unpainted:
 sh tools/render-flyer.sh     # assets/flyer: poster PDF, briefing PDF, chat image
 sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview picture
 ```
+
+A third rewrites committed text: `node tools/embed-fonts.js` copies the font
+files in `assets/fonts/` into the three static pages as data URIs. Run it after
+replacing a font file; `test-tokens.js` fails until you do.
 
 ## Architecture
 
@@ -203,6 +208,20 @@ different in dark, so pick by what the colour is doing — painting a shape, or
 spelling a word. All five pages carry their own copy of the token block and
 `test-boot.js` fails if they drift.
 
+**Everything else is a token too** (October 2026): seven text sizes, three
+corners, three heights, three speeds and two typefaces, defined in
+`index.html`'s `:root`. `test-tokens.js` fails if `index.html` or `admin.html`
+uses a literal size, corner, shadow, speed or typeface anywhere, including in
+strings a script builds markup from; a deliberate exception goes in its list
+with the reason. The type is Barlow Semi Condensed for labels, buttons, names
+and numbers and Barlow for sentences, self-hosted in `assets/fonts/` and
+inlined into the three static pages. The icons are one drawn family in a sprite
+at the top of `index.html`'s body; no emoji is drawn by the interface, and a
+page that needs an icon copies its `<symbol>` (the test fails if a copy
+differs). `tools/styleguide.html` draws all of it from `index.html`'s own
+stylesheet at load, so it is the reference and cannot go stale. The reasoning
+is in `docs/ARCHITECTURE.md`, "The look".
+
 ## Invariants
 
 These are load-bearing. Changing any of them needs a deliberate conversation,
@@ -230,7 +249,8 @@ is the one exception and is safe only because it is not at the base directory;
 nothing the website loads may come from it.
 
 **No third-party code or fonts on the website.** Leaflet and supabase-js are vendored in
-`assets/vendor/`. (The Android app compiles Capacitor and its two plugins
+`assets/vendor/`; Barlow is served from `assets/fonts/` and carried inline by the
+static pages, never linked from a font service. (The Android app compiles Capacitor and its two plugins
 into the APK; the site itself loads none of it.) CARTO map tiles are the only remaining third party and are
 disclosed to users in the app. Do not reintroduce CDN links.
 
@@ -250,9 +270,9 @@ reported. `star` is deliberately absent — it is inside `start`.
 An earlier version ran a DELETE on every read and was documented as fixed long
 before it actually was.
 
-**Tests extract the shipped code.** The JavaScript suites pull functions out of
-`index.html` by comment markers and run them, so a passing test cannot drift
-from the app. Keep the markers intact when editing those regions.
+**Tests extract the shipped code.** Six of the JavaScript suites pull functions
+out of `index.html` by comment markers and run them, so a passing test cannot
+drift from the app; the seventh, `test-tokens.js`, reads the shipped styles. Keep the markers intact when editing those regions.
 
 ## Route-specific content
 

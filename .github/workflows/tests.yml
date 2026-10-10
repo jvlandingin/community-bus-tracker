@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           for t in test-hours test-guard test-strip test-prompts test-mystop \
-                   test-thanks test-boot; do
+                   test-thanks test-tokens test-boot; do
             echo "::group::$t"
             node "tests/$t.js"
             echo "::endgroup::"

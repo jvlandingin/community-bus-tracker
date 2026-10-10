@@ -214,8 +214,14 @@ that look arbitrary until you know why.
 
 Nothing in the documentation is claimed without being checked. The JavaScript
 suites extract the shipped code out of `index.html` by comment markers and run
-it, so a passing test cannot drift from the app. The SQL suites rebuild the
-database from scratch and run behavioural checks against it. See `tests/`.
+it, so a passing test cannot drift from the app, and one more holds every page
+to the design tokens: seven text sizes, three corners, three heights, three
+speeds and one typeface. The SQL suites rebuild the database from scratch and
+run behavioural checks against it. See `tests/`.
+
+`tools/styleguide.html` draws the colours, the type, the tokens, every icon and
+the app's parts, straight from `index.html`'s stylesheet. Open it through any
+web server, such as the deployed site.
 
 All of them run in GitHub Actions on every pull request and every push to
 `main`, and the ones that need nothing installed also run as Netlify's build
@@ -233,5 +239,5 @@ That is the point. This exists so communities can have it, not so it can be
 enclosed. `SOURCE_URL` in the config makes the app show a link to your source,
 which is how you meet that obligation.
 
-Bundled third-party libraries keep their own licences. See
-`THIRD-PARTY-NOTICES.md`.
+Bundled third-party libraries and the Barlow typeface keep their own licences.
+See `THIRD-PARTY-NOTICES.md`.

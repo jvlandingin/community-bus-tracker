@@ -25,6 +25,49 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-10 — An art direction, agreed before it was built
+
+The maintainer's next question was about the look rather than the features: it
+read as generic templates, icons and shapes, and could it look professional.
+The answer was planned before anything was built, as a page of drawn examples,
+and four decisions were put to the maintainer with a recommendation each. All
+four recommendations were taken:
+
+- **The typeface:** Barlow Semi Condensed, over Atkinson Hyperlegible or
+  staying with each phone's own font. It fits the strip's eight checkpoint
+  names at a readable size, and it looks like transport signage without being
+  any operator's lettering.
+- **The coach's colours:** a cream body with the app's maroon and gold, over an
+  all-maroon body or keeping the simple bus symbol.
+- **The mark:** the coach seen from the front, over a signboard or route lines.
+- **How far:** all four steps — the foundations and a style guide; the
+  typeface, the icons and the map's buttons; the signboard and the mark; the
+  coach and the pictures. A fifth, a basemap in the app's own colours, was left
+  out as a decision of its own: it needs either a paid map style or map data
+  hosted here, and both are bigger than everything else put together.
+
+**Rules the work was held to**, stated in the plan and kept: nothing new from
+anyone else (the font and the drawings are served from this site, so the
+privacy panel stays true word for word); under 60 KB added to the tracker;
+nothing that looks like the bus company's own livery, logo or lettering; text
+stays text, so the signboard and every icon still read to a screen reader;
+icon names follow the content-blocker rule; and the flyer, the briefing and the
+guide change in the same commit as the app, with the poster still one sheet.
+
+**Where it stands.** The first two steps are in: seven text sizes, three
+corners and three heights where there had been twenty-one sizes, nineteen
+corners and forty shadows, and three speeds with three curves where there had
+been ten curves, all held by a test that fails on a new literal; a
+style guide page that draws them from the tracker's own stylesheet; Barlow,
+46 KB for five weights, cached for a year; and one drawn icon family with no
+emoji left in the interface. Doing it turned up one bug that had shipped: the
+first tap on a bus in the list could open its popup with the top cut off for a
+few seconds.
+
+**Not yet checked:** how Barlow renders on a real iPhone and a real low-end
+Android, and whether riders read the sampaguita on the salamat button as a
+thank-you without the words beside it. They always have the words beside it.
+
 ## 2026-10-10 — A redesign, and some fun
 
 The maintainer asked whether the UI could be more beautiful, and then whether

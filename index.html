@@ -36,6 +36,20 @@
 <script src="assets/vendor/leaflet.js"></script>
 <script src="assets/vendor/supabase.js"></script>
 <style>
+  /* Barlow, in its Semi Condensed and normal widths (SIL Open Font License,
+     assets/fonts/OFL.txt). Served from this site like the vendored scripts,
+     so the privacy panel's "everything else is served from this site
+     itself" stays true. Each file is cut down to the characters these pages
+     use, about 9 KB a weight, and has no hinting, which phone browsers
+     ignore anyway. The .v1 in each name is there so the files can be cached
+     for a year: change a file, change its name. swap shows the phone's own
+     font while they load rather than blank space; the strip's labels are
+     measured again once they arrive (see fitTicks). */
+  @font-face{font-family:'Barlow Semi Condensed'; font-style:normal; font-weight:500; font-display:swap; src:url(assets/fonts/barlow-semi-condensed-500.v1.woff2) format('woff2');}
+  @font-face{font-family:'Barlow Semi Condensed'; font-style:normal; font-weight:600; font-display:swap; src:url(assets/fonts/barlow-semi-condensed-600.v1.woff2) format('woff2');}
+  @font-face{font-family:'Barlow Semi Condensed'; font-style:normal; font-weight:700; font-display:swap; src:url(assets/fonts/barlow-semi-condensed-700.v1.woff2) format('woff2');}
+  @font-face{font-family:'Barlow'; font-style:normal; font-weight:400; font-display:swap; src:url(assets/fonts/barlow-400.v1.woff2) format('woff2');}
+  @font-face{font-family:'Barlow'; font-style:normal; font-weight:600; font-display:swap; src:url(assets/fonts/barlow-600.v1.woff2) format('woff2');}
   :root{
     /* --muted and --gold-deep are the darkest values that still read as
        "secondary" while clearing WCAG AA (4.5:1) on both --paper and
@@ -68,10 +82,38 @@
        what makes a card sit on the page instead of being drawn on it. The
        dark blocks below still set this to none — cards there are lifted by
        their surface colour, because there is nothing to cast a shadow onto. */
-    --shadow:0 1px 2px rgba(43,35,32,.05), 0 10px 28px -18px rgba(43,35,32,.28);
-    --radius:16px;
+    --sh-1:0 1px 2px rgba(43,35,32,.05), 0 10px 28px -18px rgba(43,35,32,.28);
     /* 44px: the smallest target a thumb finds reliably on a moving bus. */
     --tap:44px;
+    /* The rest of the system: seven text sizes, three corners, three
+       heights, three speeds. Every size, corner, shadow and timing in this
+       file is one of these, and tests/test-tokens.js fails on a new literal:
+       values that are close but not the same read as careless even when
+       nobody can say why. tools/styleguide.html draws all of them.
+       The sizes are for Barlow Semi Condensed, which is narrower than the
+       phone fonts this file used to be set in, so each step is a little
+       larger than the size it replaced and takes about the same room. */
+    --fs-cap:11px; --fs-label:12px; --fs-small:14px; --fs-body:16px;
+    --fs-title:20px; --fs-headline:26px; --fs-number:34px;
+    /* Corners: small parts, components, and the cards that hold them. A
+       circle is 50% and a pill is 999px; nothing else is allowed. */
+    --r-s:6px; --r-m:12px; --r-l:20px;
+    /* Heights: a card resting on the page (--sh-1, above), a thing floating
+       over it (badges, popups, chips on the map), and an overlay. */
+    --sh-2:0 2px 6px rgba(43,35,32,.18), 0 10px 24px -12px rgba(43,35,32,.32);
+    --sh-3:0 24px 60px -18px rgba(0,0,0,.5);
+    /* Speeds and curves. Arriving things ease out; celebrating things
+       overshoot a little; vehicles accelerate and brake. Anything longer
+       than a beat (a beep, a breathing badge, the parol's sway) states its
+       own duration, because those are moments rather than transitions. */
+    --dur-1:100ms; --dur-2:200ms; --dur-3:320ms;
+    --ease:cubic-bezier(.2,.7,.25,1); --ease-pop:cubic-bezier(.22,1.2,.36,1); --ease-move:cubic-bezier(.45,.05,.35,.95);
+    /* One family in two widths, served from assets/fonts: the condensed cut
+       for everything that is a label, a button, a name or a number, the
+       normal width for sentences. The fallbacks are the phone fonts this
+       page used before, so a blocked font file changes nothing but the look. */
+    --font-ui:'Barlow Semi Condensed',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    --font-text:'Barlow',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
   }
 
   /* Dark theme. The route's second operating window runs to 8:00 PM, so a
@@ -103,8 +145,10 @@
          partner inverts, because indigo on a near-black card is 2.1:1. */
       --mine:#4f46b8; --mine-ink:#b3aaf5; --mine-soft:#2b2846;
       /* Cards are lifted by their own surface colour in dark, not by a
-         shadow that nothing can be cast onto. */
-      --shadow:none;
+         shadow that nothing can be cast onto. Floating things still need
+         one, darker, or a popup melts into the map behind it. */
+      --sh-1:none; --sh-2:0 2px 8px rgba(0,0,0,.45), 0 12px 28px -12px rgba(0,0,0,.6);
+      --sh-3:0 24px 60px -18px rgba(0,0,0,.75);
     }
   }
   :root[data-theme="dark"]{
@@ -119,17 +163,19 @@
          partner inverts, because indigo on a near-black card is 2.1:1. */
       --mine:#4f46b8; --mine-ink:#b3aaf5; --mine-soft:#2b2846;
       /* Cards are lifted by their own surface colour in dark, not by a
-         shadow that nothing can be cast onto. */
-      --shadow:none;
+         shadow that nothing can be cast onto. Floating things still need
+         one, darker, or a popup melts into the map behind it. */
+      --sh-1:none; --sh-2:0 2px 8px rgba(0,0,0,.45), 0 12px 28px -12px rgba(0,0,0,.6);
+      --sh-3:0 24px 60px -18px rgba(0,0,0,.75);
   }
   *{box-sizing:border-box;}
   /* One ring for everything focusable. :focus-visible rather than :focus so
      a thumb tap never leaves a ring behind, but a Tab key always does. */
-  :focus-visible{outline:3px solid var(--brand-ink); outline-offset:2px; border-radius:4px;}
+  :focus-visible{outline:3px solid var(--brand-ink); outline-offset:2px; border-radius:var(--r-s);}
   header :focus-visible{outline-color:#fff;}
   body{
     margin:0; background:var(--paper); color:var(--ink); min-height:100vh;
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    font-family:var(--font-ui);
     -webkit-font-smoothing:antialiased;
     /* A stray downward drag used to rubber-band the page or, worse, start
        pull-to-refresh — which on the sharing tab is a full reload that ends
@@ -158,11 +204,12 @@
     cursor:pointer; color:#fff; font-family:inherit;
     display:flex; align-items:center; justify-content:center;
   }
-  #themeBtn .ico{
-    width:28px; height:28px; border-radius:50%; font-size:14px; line-height:1;
-    background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
+  #themeBtn .ico, #guideLink .ico{
+    position:relative; width:34px; height:34px; border-radius:var(--r-m); color:#fff;
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.24);
     display:flex; align-items:center; justify-content:center;
   }
+  #themeBtn .gi, #guideLink .gi{width:20px; height:20px; vertical-align:0;}
   /* Link to the guide. Deliberately an <a> with a neutral id, not a button
      called help: filter lists hide live-chat and help widgets by name, and
      this app has already lost a control that way once (see
@@ -173,15 +220,9 @@
     width:var(--tap); height:var(--tap); text-decoration:none;
     display:flex; align-items:center; justify-content:center;
   }
-  #guideLink .ico{
-    position:relative; width:28px; height:28px; border-radius:50%;
-    background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
-    color:#fff; font-size:15px; font-weight:700; font-style:italic;
-    font-family:Georgia,'Times New Roman',serif;
-    display:flex; align-items:center; justify-content:center;
-  }
+  /* #guideLink .ico shares #themeBtn's rule above. */
   #guideLink .newdot{
-    position:absolute; top:-1px; right:-1px; width:9px; height:9px;
+    position:absolute; top:-3px; right:-3px; width:9px; height:9px;
     border-radius:50%; background:var(--gold); border:1.5px solid var(--maroon-deep);
   }
   #guideLink.seen .newdot{display:none;}
@@ -198,7 +239,7 @@
      beside the two header buttons on a 360px phone; past that it wraps. */
   header .route{
     position:relative; display:inline-block; margin:0 0 7px -2px;
-    padding:7.8px 10.4px; border-radius:9px;
+    padding:7.8px 10.4px; border-radius:var(--r-s);
     background:
       radial-gradient(circle at 50% 50%, rgba(255,170,40,.13) 1.05px, transparent 1.35px) 10.4px 7.8px/2.6px 2.6px,
       radial-gradient(120% 140% at 30% 0%, #1d1513 0%, #0b0807 70%);
@@ -215,7 +256,7 @@
   }
   header .route .ln{display:block;}
   header .route .amp{color:#ffb22e;}
-  header .sub{font-size:11.5px; opacity:.85; margin-top:2px; font-weight:600; letter-spacing:.03em;}
+  header .sub{font-size:var(--fs-label); opacity:.85; margin-top:2px; font-weight:600; letter-spacing:.03em;}
 
   /* The bottom padding grows by the gesture-bar inset on phones that have
      one, so the admin link is never half under the bar. env() falls back
@@ -226,16 +267,16 @@
      header icon: the admin key is what actually gates the page, so this is a
      convenience for operators who forget the URL, not a control riders need. */
   .adminFoot{text-align:center; margin-top:14px;}
-  .adminFoot a{font-size:12px; color:var(--muted); font-weight:600; text-decoration:underline;}
+  .adminFoot a{font-size:var(--fs-label); color:var(--muted); font-weight:600; text-decoration:underline;}
 
   /* Tabs. Real buttons, not clickable divs: a div is not focusable and is
      announced as nothing at all. */
   .tabs{display:flex; gap:8px; margin-bottom:12px;}
   .tab{
-    flex:1; min-height:var(--tap); padding:12px 8px; border-radius:12px; text-align:center;
+    flex:1; min-height:var(--tap); padding:12px 8px; border-radius:var(--r-m); text-align:center;
     background:var(--surface); border:1.5px solid var(--line); cursor:pointer;
-    font-family:inherit; font-size:13px; font-weight:800; color:var(--muted); user-select:none;
-    transition:.15s;
+    font-family:inherit; font-size:var(--fs-body); font-weight:800; color:var(--muted); user-select:none;
+    transition:background-color var(--dur-2) var(--ease), color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease);
   }
   /* The same gradient as the header band, so the active tab reads as part
      of the signboard rather than a maroon rectangle that nearly matches. */
@@ -246,15 +287,22 @@
      with. */
   .tab .ti{display:inline-block; width:17px; height:17px; margin-right:6px; vertical-align:-3.5px;}
   .tab .ti svg{display:block; width:100%; height:100%; fill:currentColor;}
-  .tab .ti .win{fill:var(--surface);}
-  .tab.active .ti .win{fill:var(--maroon-deep);}
+  /* The drawn icons (the sprite at the top of the body). Sized in em, so an
+     icon sits on the words beside it at any text size; a container that
+     wants a fixed size says so. The coach is a filled drawing rather than a
+     stroked one, so it takes the text colour as its fill. */
+  .gi{display:inline-block; width:1.2em; height:1.2em; vertical-align:-.22em; flex:0 0 auto;}
+  .coachgi{fill:currentColor;}
+  .privacybar .gi, details.note > summary .gi, .tydone .gi, .tyfloat .gi{margin-right:.4em;}
+  .beep .gi{margin-left:.3em;}
+  #askIcon:empty{display:none;}
   /* Read by screen readers, invisible on screen. */
   .vh{position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
       clip:rect(0 0 0 0); white-space:nowrap; border:0;}
 
   .card{
-    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
-    padding:16px; margin-bottom:12px; box-shadow:var(--shadow);
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--r-l);
+    padding:16px; margin-bottom:12px; box-shadow:var(--sh-1);
   }
 
   /* Progressive disclosure. Native <details>/<summary>, so it is focusable,
@@ -266,24 +314,25 @@
   details.fold{padding:0; overflow:hidden;}
   details.fold > summary{
     list-style:none; cursor:pointer; padding:14px 16px; min-height:var(--tap);
-    display:flex; align-items:center; gap:12px; border-radius:var(--radius);
+    display:flex; align-items:center; gap:12px; border-radius:var(--r-l);
   }
   details.fold > summary::-webkit-details-marker{display:none;}
   details.fold > summary .lbl{flex:1; min-width:0;}
   details.fold > summary .cap{
-    display:block; font-size:9.5px; font-weight:800; letter-spacing:.08em;
+    display:block; font-size:var(--fs-cap); font-weight:800; letter-spacing:.08em;
     color:var(--brand-ink); text-transform:uppercase;
   }
-  details.fold > summary .val{display:block; font-size:13px; font-weight:700; margin-top:3px; line-height:1.4;}
-  details.fold > summary .chev{flex:0 0 auto; color:var(--muted); font-size:12px; transition:transform .18s;}
+  details.fold > summary .val{display:block; font-size:var(--fs-small); font-weight:700; margin-top:3px; line-height:1.4;}
+  details.fold > summary .chev{flex:0 0 auto; display:flex; color:var(--muted); transition:transform var(--dur-2) var(--ease);}
+  details.fold > summary .chev .gi{width:18px; height:18px;}
   details.fold[open] > summary .chev{transform:rotate(90deg);}
-  details.fold[open] > summary{border-bottom:1px solid var(--line); border-radius:var(--radius) var(--radius) 0 0;}
+  details.fold[open] > summary{border-bottom:1px solid var(--line); border-radius:var(--r-l) var(--r-l) 0 0;}
   .foldbody{padding:14px 16px 16px;}
 
   /* The quiet variant, for the notes under the map. */
   details.note > summary{
     list-style:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
-    min-height:var(--tap); font-size:11.5px; font-weight:800; color:var(--brand-ink);
+    min-height:var(--tap); font-size:var(--fs-label); font-weight:800; color:var(--brand-ink);
   }
   details.note > summary::-webkit-details-marker{display:none;}
   details.note > .foldbody{padding:0 0 4px;}
@@ -291,10 +340,10 @@
   /* Direction filter. Sits below the headline, not above it: it filters the
      strip, the chips and the map, so it belongs with them rather than being
      the first thing on the page. */
-  .seg{display:flex; background:var(--paper); border:1.5px solid var(--line); border-radius:12px; padding:3px; margin:14px 0 4px;}
+  .seg{display:flex; background:var(--paper); border:1.5px solid var(--line); border-radius:var(--r-m); padding:3px; margin:14px 0 4px;}
   .seg button{
-    flex:1; min-height:var(--tap); border:none; background:transparent; padding:9px 4px; border-radius:9px;
-    font-family:inherit; font-size:12.5px; font-weight:800; color:var(--muted); cursor:pointer;
+    flex:1; min-height:var(--tap); border:none; background:transparent; padding:9px 4px; border-radius:var(--r-s);
+    font-family:inherit; font-size:var(--fs-small); font-weight:800; color:var(--muted); cursor:pointer;
   }
   .seg button.on-all{background:var(--ink); color:var(--surface);}
   .seg button.on-north{background:var(--gold); color:#3d2a05;}
@@ -308,8 +357,8 @@
     display:flex; align-items:baseline; gap:8px;
     margin-top:18px; padding-top:15px; border-top:1px solid var(--line);
   }
-  .status-title{font-size:24px; font-weight:700; text-transform:uppercase; letter-spacing:.02em;}
-  .status-sub{font-size:12.5px; color:var(--muted); margin-top:3px; line-height:1.5;}
+  .status-title{font-size:var(--fs-headline); font-weight:700; text-transform:uppercase; letter-spacing:.02em;}
+  .status-sub{font-size:var(--fs-small); color:var(--muted); margin-top:3px; line-height:1.5;}
 
   /* Dual-track strip */
   .strip{margin:18px 0 6px; padding:0 16px;}
@@ -321,8 +370,8 @@
      folded card's caption, which is what a small maroon label means
      everywhere else on this page; it is not a summary, so it cannot reuse
      that rule. */
-  .striplabel{font-size:9.5px; font-weight:800; letter-spacing:.08em; color:var(--brand-ink); text-transform:uppercase;}
-  .dirlabel{font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--muted);}
+  .striplabel{font-size:var(--fs-cap); font-weight:800; letter-spacing:.08em; color:var(--brand-ink); text-transform:uppercase;}
+  .dirlabel{font-size:var(--fs-cap); font-weight:800; letter-spacing:.08em; color:var(--muted);}
   .dirlabel.nb{text-align:right; margin-bottom:3px;}
   .dirlabel.sb{margin-top:3px;}
   /* The strip is drawn as a line map: each direction a solid line in its own
@@ -333,7 +382,7 @@
      spacing in docs/ARCHITECTURE.md), and the pills are the map's own
      drawn bus, so the strip and the map read as one picture. */
   .track{position:relative; height:26px;}
-  .track .rail{position:absolute; left:0; right:0; top:10.5px; height:5px; border-radius:3px;}
+  .track .rail{position:absolute; left:0; right:0; top:10.5px; height:5px; border-radius:999px;}
   .track.nb .rail{background:var(--gold);}
   .track.sb .rail{background:var(--maroon);}
   .track .stn{
@@ -367,13 +416,13 @@
     width:27px; height:27px; padding:0; border-radius:50%;
     display:flex; align-items:center; justify-content:center; line-height:1;
     background:var(--gold); border:2px solid var(--surface);
-    box-shadow:0 2px 6px rgba(43,35,32,.28);
+    box-shadow:var(--sh-2);
     /* The left transition only means something because renderStrip() keeps
        each bus's pill element alive between polls (keyed by data-bus) — a
        rebuilt element starts at its new position with nothing to glide
        from. The curve eases both ends but stays near-linear through the
        middle: this is a vehicle moving, not a panel arriving. */
-    transition:left 1s cubic-bezier(.45,.05,.35,.95), opacity .5s ease;
+    transition:left 1s var(--ease-move), opacity var(--dur-3) var(--ease);
     white-space:nowrap;
     /* Paint order used to be DOM order, with your own pill appended last.
        Elements are updated in place now, so the layering is said outright:
@@ -382,8 +431,6 @@
   }
   .buspill.sb{background:var(--maroon); color:#fff;}
   .buspill svg{display:block; width:17px; height:17px; fill:#fff;}
-  .buspill .win{fill:var(--gold);}
-  .buspill.sb .win{fill:var(--maroon);}
   .buspill.stale{opacity:.45;}
   /* The bus this phone is sharing. A ring rather than a different fill: gold
      and maroon are carrying the direction, and the strip is too narrow to
@@ -391,7 +438,7 @@
      green is the live dot's, so the ring reads as "the live one that is
      yours" — and because that is colour doing the talking, the line under
      the strip names it in words. */
-  .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), 0 2px 6px rgba(43,35,32,.28); z-index:2;}
+  .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), var(--sh-2); z-index:2;}
   /* On the tracker's strip a pill is a real button: tapping it flies the map
      to that bus and opens its popup, which is where the salamat button and
      everything else about the bus already live. Same look either way — the
@@ -424,7 +471,7 @@
      from the real measured layout: how many names there are and how long they
      are both come from config.txt, so a fixed size here goes wrong the moment
      someone adds a checkpoint. The value below is only the starting point. */
-  .tick span{font-size:var(--tick-fs,8px); font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
+  .tick span{font-size:var(--tick-fs, var(--fs-cap)); font-weight:800; letter-spacing:.02em; color:var(--muted); white-space:nowrap;}
   /* Set by fitTicks() when even the smallest type will not fit: every mark
      stays, every other name goes. The end points always keep theirs. */
   .ticks.thin .tick:nth-child(even):not(.last) span{display:none;}
@@ -437,11 +484,11 @@
   .buslist{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px;}
   .buschip{
     display:inline-flex; align-items:center; gap:6px; padding:6px 12px;
-    min-height:var(--tap); border-radius:22px; font-family:inherit;
-    font-size:11.5px; font-weight:700; cursor:pointer; text-align:left;
+    min-height:var(--tap); border-radius:999px; font-family:inherit;
+    font-size:var(--fs-small); font-weight:700; cursor:pointer; text-align:left;
     border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
   }
-  .buschip .arrow{font-size:10px;}
+  .buschip .arrow{font-size:var(--fs-cap);}
   .buschip.nb .arrow{color:var(--gold-deep);}
   .buschip.sb .arrow{color:var(--brand-ink);}
   /* Direction on the border as well as the arrow, so a mixed list scans at
@@ -463,28 +510,28 @@
   .mystop{margin-top:12px;}
   .mystop-btn{
     width:100%; display:flex; align-items:center; gap:8px; padding:9px 12px;
-    min-height:var(--tap); border-radius:12px; font-family:inherit;
-    font-size:11.5px; font-weight:700; cursor:pointer; text-align:left;
+    min-height:var(--tap); border-radius:var(--r-m); font-family:inherit;
+    font-size:var(--fs-small); font-weight:700; cursor:pointer; text-align:left;
     border:1.5px dashed var(--line); background:transparent; color:var(--muted);
   }
-  .mystop-btn .pin{color:var(--mine-ink); font-size:13px; flex:0 0 auto;}
+  .mystop-btn .pin{color:var(--mine-ink); font-size:var(--fs-small); flex:0 0 auto;}
   .mystop-btn .pin svg{display:block; width:15px; height:15px; fill:currentColor;}
   .mystop-live{
     display:flex; align-items:center; gap:10px; padding:10px 12px;
-    min-height:var(--tap); border-radius:12px; background:var(--paper);
+    min-height:var(--tap); border-radius:var(--r-m); background:var(--paper);
     border:1.5px solid var(--line); border-left:4px solid var(--mine);
   }
   .mystop-live .body{flex:1; min-width:0;}
   .mystop-live .name{
-    display:block; font-size:10.5px; font-weight:800; color:var(--mine-ink);
+    display:block; font-size:var(--fs-cap); font-weight:800; color:var(--mine-ink);
     text-transform:uppercase; letter-spacing:.04em;
   }
-  .mystop-live .rel{display:block; font-size:12.5px; font-weight:700; margin-top:2px; line-height:1.4;}
+  .mystop-live .rel{display:block; font-size:var(--fs-small); font-weight:700; margin-top:2px; line-height:1.4;}
   .mystop-live .rel .quiet{color:var(--muted); font-weight:600;}
   .mystop-live .edit{
-    flex:0 0 auto; min-height:var(--tap); padding:0 12px; border-radius:10px;
+    flex:0 0 auto; min-height:var(--tap); padding:0 12px; border-radius:var(--r-s);
     border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
-    font-family:inherit; font-size:11px; font-weight:700; cursor:pointer;
+    font-family:inherit; font-size:var(--fs-label); font-weight:700; cursor:pointer;
   }
   /* With a bus coming, the card draws the stops between it and you as dots
      on a line: the bus at one end, your stop at the other, one dot for every
@@ -493,12 +540,12 @@
      sentence the card used to print is still there, for screen readers, in
      a .vh span; everything drawn is aria-hidden beside it. */
   .ride{
-    padding:12px 14px; border-radius:14px; background:var(--paper);
+    padding:12px 14px; border-radius:var(--r-m); background:var(--paper);
     border:1.5px solid var(--line); border-left:4px solid var(--mine);
   }
   .ride-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
   .ride-name{
-    min-width:0; font-size:10.5px; font-weight:800; color:var(--mine-ink);
+    min-width:0; font-size:var(--fs-cap); font-weight:800; color:var(--mine-ink);
     text-transform:uppercase; letter-spacing:.05em;
   }
   .ride-name::before{
@@ -506,9 +553,9 @@
     border-radius:50%; background:var(--mine); box-shadow:0 0 0 2px var(--mine-soft);
   }
   .ride .edit{
-    flex:0 0 auto; min-height:34px; padding:0 12px; border-radius:9px;
+    flex:0 0 auto; min-height:34px; padding:0 12px; border-radius:var(--r-s);
     border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
-    font-family:inherit; font-size:11px; font-weight:700; cursor:pointer;
+    font-family:inherit; font-size:var(--fs-label); font-weight:700; cursor:pointer;
   }
   .ride-line{display:flex; align-items:center; margin:12px 0 4px;}
   .ride-bus{
@@ -518,14 +565,12 @@
   }
   .ride.sb .ride-bus{background:var(--maroon); box-shadow:0 0 0 3px var(--maroon-line);}
   .ride-bus svg{width:19px; height:19px; fill:#fff;}
-  .ride-bus .win{fill:var(--gold);}
-  .ride.sb .ride-bus .win{fill:var(--maroon);}
   .ride-track{
     flex:1; position:relative; height:30px; margin:0 -2px;
     display:flex; align-items:center; justify-content:space-around;
   }
   .ride-track::before{
-    content:''; position:absolute; left:0; right:0; top:50%; height:3px; margin-top:-1.5px; border-radius:2px;
+    content:''; position:absolute; left:0; right:0; top:50%; height:3px; margin-top:-1.5px; border-radius:999px;
     background:linear-gradient(90deg, var(--gold), var(--mine));
   }
   .ride.sb .ride-track::before{background:linear-gradient(90deg, var(--maroon), var(--mine));}
@@ -535,21 +580,21 @@
   }
   .ride.sb .ride-track i{border-color:var(--maroon);}
   .ride-track i.next{width:11px; height:11px; border-width:3px;}
-  .ride-track .gap{position:relative; padding:0 3px; background:var(--paper); color:var(--muted); font-size:13px; letter-spacing:2px; line-height:1;}
+  .ride-track .gap{position:relative; padding:0 3px; background:var(--paper); color:var(--muted); font-size:var(--fs-small); letter-spacing:2px; line-height:1;}
   .ride-me{
     flex:0 0 auto; width:22px; height:22px; border-radius:50%; z-index:1; box-sizing:border-box;
     background:var(--mine); border:4px solid var(--surface);
     box-shadow:0 0 0 2px var(--mine), 0 0 0 7px var(--mine-soft);
   }
   .ride-cap{
-    display:flex; justify-content:space-between; gap:10px; font-size:10px; font-weight:800;
+    display:flex; justify-content:space-between; gap:10px; font-size:var(--fs-cap); font-weight:800;
     letter-spacing:.04em; text-transform:uppercase; color:var(--muted);
   }
   .ride-cap .me{color:var(--mine-ink);}
   .ride-big{display:flex; align-items:baseline; flex-wrap:wrap; gap:0 6px; margin-top:8px; line-height:1.2;}
-  .ride-big .num{font-size:30px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums;}
-  .ride-big .unit, .ride-big .km{font-size:14px; font-weight:700;}
-  .ride-sub{margin-top:3px; font-size:11.5px; font-weight:600; color:var(--muted); line-height:1.45; font-variant-numeric:tabular-nums;}
+  .ride-big .num{font-size:var(--fs-number); font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums;}
+  .ride-big .unit, .ride-big .km{font-size:var(--fs-small); font-weight:700;}
+  .ride-sub{margin-top:3px; font-size:var(--fs-label); font-weight:600; color:var(--muted); line-height:1.45; font-variant-numeric:tabular-nums;}
   .ride-sub b{color:var(--ink); font-weight:700;}
   /* Malapit na and Sakay na: the same card, saying it louder at the two
      moments that matter at a roadside. Gold for "two stops out", your own
@@ -557,29 +602,29 @@
      minutes — see myStopWords. */
   .ride-flag{
     display:inline-block; margin-top:10px; padding:4px 10px; border-radius:999px;
-    font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    font-size:var(--fs-label); font-weight:800; letter-spacing:.1em; text-transform:uppercase;
     background:var(--gold); color:#2b2320;
   }
-  .ride.here .ride-flag{background:var(--mine); color:#fff; font-size:13.5px;}
+  .ride.here .ride-flag{background:var(--mine); color:#fff; font-size:var(--fs-small);}
   .ride.near{border-left-color:var(--gold); box-shadow:0 0 0 2px var(--gold-line);}
   .ride.here{box-shadow:0 0 0 3px var(--mine-soft);}
-  .ride.here .ride-big .num{font-size:22px;}
+  .ride.here .ride-big .num{font-size:var(--fs-title);}
   /* The optional buzz. A per-visit choice, kept in sessionStorage like the
      blue dot's switch, so it never becomes a fourth remembered thing. Only
      drawn where the browser can vibrate at all, which leaves out iPhones. */
   .buzz{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
     margin-top:10px; padding-top:9px; border-top:1px dashed var(--line);
-    font-size:12px; font-weight:700; color:var(--muted); cursor:pointer;
+    font-size:var(--fs-label); font-weight:700; color:var(--muted); cursor:pointer;
   }
   .buzz input{
     -webkit-appearance:none; appearance:none; flex:0 0 auto; position:relative; margin:0;
-    width:40px; height:24px; border-radius:12px; background:var(--line); cursor:pointer;
-    transition:background-color .2s ease;
+    width:40px; height:24px; border-radius:999px; background:var(--line); cursor:pointer;
+    transition:background-color var(--dur-2) var(--ease);
   }
   .buzz input::after{
     content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%;
-    background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:left .2s ease;
+    background:#fff; box-shadow:var(--sh-2); transition:left var(--dur-2) var(--ease);
   }
   .buzz input:checked{background:var(--live);}
   .buzz input:checked::after{left:19px;}
@@ -587,37 +632,37 @@
   /* The picker. A list of the route's own stops, searchable, because typing
      three letters beats scrolling seventy-one names on a moving bus. */
   .stopsearch{
-    width:100%; padding:11px 12px; min-height:var(--tap); border-radius:10px;
+    width:100%; padding:11px 12px; min-height:var(--tap); border-radius:var(--r-m);
     border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
-    font-family:inherit; font-size:14px; font-weight:600;
+    font-family:inherit; font-size:var(--fs-body); font-weight:600;
   }
   .stoplist{display:flex; flex-direction:column; gap:4px; margin-top:10px;}
   .stoplist button{
     display:block; width:100%; text-align:left; padding:10px 12px;
-    min-height:var(--tap); border-radius:10px; font-family:inherit;
-    font-size:12.5px; font-weight:700; cursor:pointer;
+    min-height:var(--tap); border-radius:var(--r-m); font-family:inherit;
+    font-size:var(--fs-small); font-weight:700; cursor:pointer;
     border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
   }
-  .stoplist button .approx{color:var(--muted); font-weight:600; font-size:11px;}
-  .stoplist .empty{padding:14px 2px; color:var(--muted); font-size:12.5px; font-weight:600;}
+  .stoplist button .approx{color:var(--muted); font-weight:600; font-size:var(--fs-cap);}
+  .stoplist .empty{padding:14px 2px; color:var(--muted); font-size:var(--fs-small); font-weight:600;}
   .pickrow{display:flex; gap:6px; margin-top:10px;}
   .pickrow button{
-    flex:1; min-height:var(--tap); border-radius:10px; padding:0 8px;
+    flex:1; min-height:var(--tap); border-radius:var(--r-m); padding:0 8px;
     border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
-    font-family:inherit; font-size:11px; font-weight:700; cursor:pointer;
+    font-family:inherit; font-size:var(--fs-label); font-weight:700; cursor:pointer;
   }
   /* Shown over the map while the reader is placing a pin by hand. */
   .pinmode{
     position:absolute; left:8px; right:8px; top:8px; z-index:900;
-    padding:8px 10px; border-radius:10px; background:var(--mine); color:#fff;
-    font-size:11.5px; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,.25);
+    padding:8px 10px; border-radius:var(--r-m); background:var(--mine); color:#fff;
+    font-size:var(--fs-label); font-weight:700; box-shadow:var(--sh-2);
     display:flex; align-items:center; gap:8px;
   }
   .pinmode button{
     margin-left:auto; flex:0 0 auto; min-height:32px; padding:0 10px;
-    border-radius:8px; border:1.5px solid rgba(255,255,255,.5);
+    border-radius:var(--r-s); border:1.5px solid rgba(255,255,255,.5);
     background:transparent; color:#fff; font-family:inherit;
-    font-size:11px; font-weight:700; cursor:pointer;
+    font-size:var(--fs-label); font-weight:700; cursor:pointer;
   }
   .mapwrap{position:relative;}
   /* The empty map explains itself where the reader is already looking. Most
@@ -629,47 +674,45 @@
      through to the map everywhere except its own button. */
   .mapnote{
     position:absolute; left:10px; right:10px; bottom:24px; z-index:650; pointer-events:none;
-    display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:14px;
-    background:var(--surface); border:1px solid var(--line); box-shadow:0 12px 30px -14px rgba(0,0,0,.45);
+    display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:var(--r-m);
+    background:var(--surface); border:1px solid var(--line); box-shadow:var(--sh-2);
   }
   @supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
     .mapnote{background:transparent; -webkit-backdrop-filter:blur(10px) saturate(1.2); backdrop-filter:blur(10px) saturate(1.2);}
     .mapnote::before{content:''; position:absolute; inset:0; border-radius:inherit; background:var(--surface); opacity:.86; z-index:-1;}
   }
   .mapnote .ic{
-    flex:0 0 auto; width:44px; height:44px; border-radius:12px;
+    flex:0 0 auto; width:44px; height:44px; border-radius:var(--r-m);
     display:flex; align-items:center; justify-content:center;
     background:var(--gold-soft); color:var(--gold-deep);
   }
   .mapnote .ic svg{width:24px; height:24px;}
-  .mapnote .ic .win{fill:var(--gold-soft);}
-  .mapnote .ic.night{width:52px; height:52px; border-radius:14px; background:linear-gradient(160deg,#2b2347,#120f22); color:#ffd36b;}
+  .mapnote .ic.night{width:52px; height:52px; border-radius:var(--r-m); background:linear-gradient(160deg,#2b2347,#120f22); color:#ffd36b;}
   .mapnote .ic.night svg{width:40px; height:40px;}
-  .mapnote .t{font-size:16px; font-weight:800; letter-spacing:-.01em; line-height:1.2;}
-  .mapnote .s{margin-top:3px; font-size:12px; font-weight:600; color:var(--muted); line-height:1.4;}
+  .mapnote .t{font-size:var(--fs-body); font-weight:800; letter-spacing:-.01em; line-height:1.2;}
+  .mapnote .s{margin-top:3px; font-size:var(--fs-small); font-weight:600; color:var(--muted); line-height:1.4;}
   .mapnote .s b{color:var(--ink);}
   .mapnote .go{
     pointer-events:auto; display:inline-flex; align-items:center; gap:6px; margin-top:8px;
-    min-height:36px; padding:0 12px; border:0; border-radius:10px; cursor:pointer;
+    min-height:36px; padding:0 12px; border:0; border-radius:var(--r-m); cursor:pointer;
     background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); color:#fff;
-    font-family:inherit; font-size:12px; font-weight:800;
+    font-family:inherit; font-size:var(--fs-small); font-weight:800;
   }
   .mapnote .go svg{width:15px; height:15px; fill:#fff;}
-  .mapnote .go .win{fill:var(--maroon);}
   /* Following one bus, from a link someone sent. Top right, clear of the
      zoom buttons, and it says which bus and how to stop. */
   .followchip{
     position:absolute; top:24px; right:10px; z-index:800;
     display:flex; align-items:center; gap:8px; max-width:calc(100% - 84px);
     padding:5px 5px 5px 12px; border-radius:999px; background:var(--surface); color:var(--ink);
-    border:1px solid var(--line); box-shadow:0 6px 18px -8px rgba(0,0,0,.5);
-    font-size:12px; font-weight:800;
+    border:1px solid var(--line); box-shadow:var(--sh-2);
+    font-size:var(--fs-label); font-weight:800;
   }
   .followchip .dot{flex:0 0 auto; width:9px; height:9px; border-radius:50%; background:var(--live);}
   .followchip .txt{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .followchip button{
     flex:0 0 auto; min-height:32px; padding:0 11px; border:0; border-radius:999px; cursor:pointer;
-    background:var(--paper); color:var(--ink); font-family:inherit; font-size:11.5px; font-weight:800;
+    background:var(--paper); color:var(--ink); font-family:inherit; font-size:var(--fs-label); font-weight:800;
   }
   /* The saved stop on the map. A pin rather than another circle: the map
      already carries circles for stops, checkpoints and sightings, and this
@@ -677,16 +720,18 @@
   .mypin{
     width:14px; height:14px; border-radius:50% 50% 50% 0;
     transform:rotate(-45deg); background:var(--mine);
-    border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.4);
+    border:2px solid #fff; box-shadow:var(--sh-2);
   }
 
   /* Was a flat 290px at every size, which is a letterbox on a desktop and
      barely a map on a phone. */
-  #map{height:min(58vh,420px); min-height:290px; border-radius:12px; margin-top:14px; border:1px solid var(--line);}
+  #map{height:min(58vh,420px); min-height:290px; border-radius:var(--r-m); margin-top:14px; border:1px solid var(--line);}
   /* Leaflet paints its container light grey while tiles load, or forever if
      they never arrive. On a dark page that is a bright panel in the middle of
-     the screen, which is exactly the thing dark mode exists to avoid. */
-  .leaflet-container{background:var(--paper);}
+     the screen, which is exactly the thing dark mode exists to avoid.
+     It also sets its own font on the map, so without the second half of
+     this the popups, the checkpoint labels and the beep were in Helvetica. */
+  .leaflet-container{background:var(--paper); font-family:var(--font-ui);}
 
   /* ---- This route's map, not a map with pins on it ------------------------
      The map used to be CARTO's stock tiles with grey dots on them, which is
@@ -715,8 +760,8 @@
   .cpmk{stroke:var(--maroon); fill:var(--paper);}
   .leaflet-tooltip.cplabel{
     background:var(--surface); color:var(--ink); border:1px solid var(--line);
-    border-radius:5px; padding:1px 5px; font-size:9.5px; font-weight:800;
-    letter-spacing:.06em; box-shadow:var(--shadow); white-space:nowrap; opacity:1;
+    border-radius:var(--r-s); padding:1px 5px; font-size:var(--fs-cap); font-weight:800;
+    letter-spacing:.06em; box-shadow:var(--sh-1); white-space:nowrap; opacity:1;
   }
   .leaflet-tooltip.cplabel::before{display:none;}
   /* Dark: the tiles are already dim, so fade less. Stated twice for the same
@@ -725,7 +770,7 @@
     :root:not([data-theme="light"]) .leaflet-tile-pane{filter:saturate(.7) brightness(.85);}
   }
   :root[data-theme="dark"] .leaflet-tile-pane{filter:saturate(.7) brightness(.85);}
-  .maplegend{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:10.5px; color:var(--muted); font-weight:700;}
+  .maplegend{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:var(--fs-label); color:var(--muted); font-weight:700;}
   .maplegend .sw{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; vertical-align:-1px;}
 
   /* A bus on the map is a badge the size of a fingertip, nothing more. Two
@@ -733,9 +778,9 @@
      on a 290px map; the number and the recency are one tap away instead. */
   .busmk{
     width:30px; height:30px; border-radius:50%;
-    border:2.5px solid #fff; box-shadow:0 1px 6px rgba(0,0,0,.35);
+    border:2.5px solid #fff; box-shadow:var(--sh-2);
     display:flex; align-items:center; justify-content:center;
-    font-size:15px; line-height:1; cursor:pointer;
+    font-size:var(--fs-body); line-height:1; cursor:pointer;
   }
   .busmk.nb{background:var(--gold);}
   .busmk.sb{background:var(--maroon);}
@@ -745,9 +790,12 @@
      phone and a blurry one on most. The windscreen and lamps are cut in the
      disc's own colour so the bus reads as white on gold or white on maroon. */
   .busmk svg{width:19px; height:19px; display:block; fill:#fff;}
-  .busmk .win{fill:var(--gold);}
-  .busmk.sb .win{fill:var(--maroon);}
-  .busmk.delayed .win{fill:#9aa1ac;}
+  /* The signboard over the windscreen is lit: pale on the gold disc, amber
+     on the maroon one, the way a route board reads at night. */
+  .sign{fill:none;}
+  .busmk .sign, .buspill .sign, .ride-bus .sign{fill:#fff1c4;}
+  .busmk.sb .sign, .buspill.sb .sign, .ride.sb .ride-bus .sign{fill:#ffb22e;}
+  .busmk.delayed .sign{fill:#9aa1ac;}
   /* A live badge breathes: a ring in its own colour that swells and fades,
      so "this one is reporting right now" is visible without reading an age.
      The depth shadow is repeated in both keyframes because the animation
@@ -755,12 +803,12 @@
      point — the reduced-motion blanket at the foot of the sheet flattens
      it for everyone who asked. */
   @keyframes breathe-nb{
-    0%{box-shadow:0 1px 6px rgba(0,0,0,.35), 0 0 0 0 rgba(227,154,28,.55);}
-    100%{box-shadow:0 1px 6px rgba(0,0,0,.35), 0 0 0 13px rgba(227,154,28,0);}
+    0%{box-shadow:var(--sh-2), 0 0 0 0 rgba(227,154,28,.55);}
+    100%{box-shadow:var(--sh-2), 0 0 0 13px rgba(227,154,28,0);}
   }
   @keyframes breathe-sb{
-    0%{box-shadow:0 1px 6px rgba(0,0,0,.35), 0 0 0 0 rgba(122,31,43,.55);}
-    100%{box-shadow:0 1px 6px rgba(0,0,0,.35), 0 0 0 13px rgba(122,31,43,0);}
+    0%{box-shadow:var(--sh-2), 0 0 0 0 rgba(122,31,43,.55);}
+    100%{box-shadow:var(--sh-2), 0 0 0 13px rgba(122,31,43,0);}
   }
   .busmk.live.nb{animation:breathe-nb 2.4s ease-out infinite;}
   .busmk.live.sb{animation:breathe-sb 2.4s ease-out infinite;}
@@ -777,21 +825,21 @@
   .busmk.delayed.sb::after{border-top-color:#9aa1ac;}
   .busmk .cnt{
     position:absolute; top:-7px; right:-7px; min-width:16px; height:16px; padding:0 3px;
-    border-radius:9px; background:var(--ink); color:var(--surface); border:1.5px solid #fff;
-    font-size:9.5px; font-weight:800; line-height:1;
+    border-radius:999px; background:var(--ink); color:var(--surface); border:1.5px solid #fff;
+    font-size:var(--fs-cap); font-weight:800; line-height:1;
     display:flex; align-items:center; justify-content:center;
   }
 
   .buspop .leaflet-popup-content-wrapper{
-    background:var(--surface); color:var(--ink); border-radius:12px;
-    border:1px solid var(--line); box-shadow:0 6px 20px rgba(0,0,0,.22);
+    background:var(--surface); color:var(--ink); border-radius:var(--r-m);
+    border:1px solid var(--line); box-shadow:var(--sh-2);
   }
-  .buspop .leaflet-popup-content{margin:9px 12px; font-size:12px; line-height:1.5;}
+  .buspop .leaflet-popup-content{margin:9px 12px; font-size:var(--fs-small); line-height:1.5;}
   .buspop .leaflet-popup-tip{background:var(--surface);}
-  .buspop .pdir{font-size:9.5px; font-weight:800; letter-spacing:.06em;}
+  .buspop .pdir{font-size:var(--fs-cap); font-weight:800; letter-spacing:.06em;}
   .buspop .nb .pdir{color:var(--gold-deep);}
   .buspop .sb .pdir{color:var(--brand-ink);}
-  .buspop .pname{font-weight:800; font-size:13.5px; margin-top:1px;}
+  .buspop .pname{font-weight:800; font-size:var(--fs-body); margin-top:1px;}
   .buspop .page{color:var(--muted); font-weight:600;}
   /* Saying salamat. The only control in the popup, so it gets the full
      width and a target a thumb finds on a moving bus. Named tybtn and not
@@ -799,9 +847,9 @@
   .buspop .tyrow{margin-top:7px; padding-top:6px; border-top:1px solid var(--line);}
   .buspop .tybtn{
     display:flex; align-items:center; justify-content:center; gap:5px;
-    width:100%; min-height:34px; padding:6px 10px; border-radius:9px;
+    width:100%; min-height:34px; padding:6px 10px; border-radius:var(--r-s);
     border:1px solid var(--line); background:var(--paper); color:var(--ink);
-    font:inherit; font-weight:800; font-size:12px; cursor:pointer;
+    font:inherit; font-weight:800; font-size:var(--fs-small); cursor:pointer;
   }
   .buspop .tybtn:hover{border-color:var(--muted);}
   .buspop .tybtn:active{background:var(--line);}
@@ -809,33 +857,33 @@
   /* Kwento ng ruta: one line about the town the bus is passing, from
      config.txt. Something to read while you wait, and the one place in the
      app that says anything about the road itself. */
-  .buspop .kw{margin-top:6px; padding:7px 9px; border-radius:9px; background:var(--gold-soft); font-size:11.5px; line-height:1.35; font-weight:600;}
-  .buspop .kw b{display:block; margin-bottom:1px; font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-deep);}
+  .buspop .kw{margin-top:6px; padding:7px 9px; border-radius:var(--r-s); background:var(--gold-soft); font-size:var(--fs-label); line-height:1.35; font-weight:600;}
+  .buspop .kw b{display:block; margin-bottom:1px; font-size:var(--fs-cap); font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-deep);}
   /* A link that opens the map following this bus, for whoever is fetching
      you. Dashed and quieter than the salamat button: it is the second thing
      in the popup, not the first. Named for what it does, never "share". */
   .buspop .buslink{
     display:flex; align-items:center; justify-content:center; gap:6px; width:100%; margin-top:6px;
-    min-height:34px; padding:6px 10px; border-radius:9px; cursor:pointer;
+    min-height:34px; padding:6px 10px; border-radius:var(--r-s); cursor:pointer;
     border:1.5px dashed var(--line); background:transparent; color:var(--brand-ink);
-    font:inherit; font-size:12px; font-weight:800;
+    font:inherit; font-size:var(--fs-small); font-weight:800;
   }
   /* And the other end of it, on the screen of the person being thanked.
      --ok-ink because it is spelling a word, not painting a shape. */
   .tyline{
     display:flex; align-items:center; gap:7px; margin-top:8px;
-    padding:8px 10px; border-radius:10px;
+    padding:8px 10px; border-radius:var(--r-m);
     background:var(--paper); border:1px solid var(--line);
-    font-weight:800; font-size:13px; color:var(--ok-ink);
+    font-weight:800; font-size:var(--fs-small); color:var(--ok-ink);
   }
-  .mapreset a{display:flex; align-items:center; justify-content:center; color:var(--ink);}
-  .mapreset svg{width:19px; height:19px; display:block;}
+  .mapreset a, .leaflet-control-zoom a{display:flex; align-items:center; justify-content:center; color:var(--ink);}
+  .mapreset svg, .leaflet-control-zoom svg{width:20px; height:20px; display:block;}
   /* Leaflet ships 30px controls. On a touch map that is under every
      guideline going, and these are the only controls on the page a rider
      uses while the bus is moving. Overridden here rather than in the
      vendored stylesheet, which stays byte-identical to the release. */
   .leaflet-touch .leaflet-bar a, .leaflet-bar a{
-    width:var(--tap); height:var(--tap); line-height:var(--tap); font-size:20px;
+    width:var(--tap); height:var(--tap); line-height:var(--tap); font-size:var(--fs-title);
   }
   /* Leaflet's chrome is white and stays white. In light it merely clashes;
      in dark the zoom buttons and the attribution strip are the only bright
@@ -847,17 +895,22 @@
   .leaflet-bar a:hover, .leaflet-bar a:focus{background:var(--paper); color:var(--ink);}
   .leaflet-bar a.leaflet-disabled{background:var(--paper); color:var(--muted);}
   .leaflet-touch .leaflet-bar, .leaflet-touch .leaflet-control-layers{border-color:var(--line);}
+  /* A floating card of buttons, like everything else that floats over the
+     map, rather than Leaflet's grey-bordered stack. */
+  .leaflet-touch .leaflet-bar{border:none; border-radius:var(--r-m); box-shadow:var(--sh-2); overflow:hidden;}
+  .leaflet-touch .leaflet-bar a:first-child{border-top-left-radius:var(--r-m); border-top-right-radius:var(--r-m);}
+  .leaflet-touch .leaflet-bar a:last-child{border-bottom-left-radius:var(--r-m); border-bottom-right-radius:var(--r-m);}
   .leaflet-container .leaflet-control-attribution{background:var(--surface); color:var(--muted);}
   .leaflet-container .leaflet-control-attribution a{color:var(--brand-ink);}
 
   /* Hours */
   .hours{display:flex; gap:10px;}
-  .hourbox{flex:1; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:10px 12px;}
-  .hourbox .dirname{font-size:10px; font-weight:800; letter-spacing:.06em; color:var(--muted);}
-  .hourbox .times{font-size:17px; font-weight:700; letter-spacing:.02em; margin-top:2px; white-space:pre-line; line-height:1.35;}
+  .hourbox{flex:1; background:var(--paper); border:1px solid var(--line); border-radius:var(--r-m); padding:10px 12px;}
+  .hourbox .dirname{font-size:var(--fs-cap); font-weight:800; letter-spacing:.06em; color:var(--muted);}
+  .hourbox .times{font-size:var(--fs-body); font-weight:700; letter-spacing:.02em; margin-top:2px; white-space:pre-line; line-height:1.35;}
   .hourbox.nb .dirname{color:var(--gold-deep);}
   .hourbox.sb .dirname{color:var(--brand-ink);}
-  .headway{font-size:11.5px; color:var(--muted); margin-top:8px; font-weight:600;}
+  .headway{font-size:var(--fs-label); color:var(--muted); margin-top:8px; font-weight:600;}
   /* The folded hours card answers before it is opened: a status line, then
      the day drawn as a bar per direction, the departure windows solid, a
      dotted tail for the three and a half hours the last buses are still on
@@ -865,69 +918,69 @@
      page; the exact times stay one tap away in the boxes above. */
   .dayband{display:block; position:relative; margin-top:9px; padding-top:13px;}
   .dayband .row{display:flex; align-items:center; gap:7px; margin-bottom:5px;}
-  .dayband .d{flex:0 0 10px; font-size:10px; font-weight:800; text-align:center;}
+  .dayband .d{flex:0 0 10px; font-size:var(--fs-cap); font-weight:800; text-align:center;}
   .dayband .row.nb .d{color:var(--gold-deep);}
   .dayband .row.sb .d{color:var(--brand-ink);}
-  .dayband .bar{position:relative; flex:1; height:16px; border-radius:5px; background:var(--line); overflow:hidden;}
+  .dayband .bar{position:relative; flex:1; height:16px; border-radius:999px; background:var(--line); overflow:hidden;}
   .dayband .w{
-    position:absolute; top:0; bottom:0; border-radius:5px; background:var(--gold); color:#2b2320;
+    position:absolute; top:0; bottom:0; border-radius:999px; background:var(--gold); color:#2b2320;
     display:flex; align-items:center; justify-content:center; overflow:hidden; white-space:nowrap;
-    font-size:9px; font-weight:800;
+    font-size:var(--fs-cap); font-weight:800;
   }
   .dayband .row.sb .w{background:var(--maroon); color:#fff;}
   .dayband .tail{
-    position:absolute; top:5px; bottom:5px; border-radius:0 4px 4px 0; opacity:.6;
+    position:absolute; top:5px; bottom:5px; border-radius:0 999px 999px 0; opacity:.6;
     background:repeating-linear-gradient(90deg, var(--gold) 0 3px, transparent 3px 6px);
   }
   .dayband .row.sb .tail{background:repeating-linear-gradient(90deg, var(--maroon) 0 3px, transparent 3px 6px);}
-  .dayband .axis{display:block; position:relative; height:13px; margin-left:17px; font-size:9px; font-weight:700; color:var(--muted);}
+  .dayband .axis{display:block; position:relative; height:13px; margin-left:17px; font-size:var(--fs-cap); font-weight:700; color:var(--muted);}
   .dayband .axis span{position:absolute; transform:translateX(-50%); white-space:nowrap;}
   .dayband .axis span:first-child{transform:none;}
   .dayband .axis span:last-child{transform:translateX(-100%);}
-  .dayband .now{position:absolute; top:0; bottom:13px; width:2px; margin-left:-1px; border-radius:1px; background:var(--ink);}
+  .dayband .now{position:absolute; top:0; bottom:13px; width:2px; margin-left:-1px; border-radius:999px; background:var(--ink);}
   .dayband .now::before{
     content:''; position:absolute; bottom:-3px; left:50%; width:6px; height:6px; margin-left:-3px;
     border-radius:50%; background:var(--ink);
   }
   .dayband .now span{
     position:absolute; top:-7px; left:50%; transform:translateX(-50%); white-space:nowrap;
-    padding:1px 5px; border-radius:6px; background:var(--ink); color:var(--surface);
-    font-size:9px; font-weight:800; font-variant-numeric:tabular-nums;
+    padding:1px 5px; border-radius:var(--r-s); background:var(--ink); color:var(--surface);
+    font-size:var(--fs-cap); font-weight:800; font-variant-numeric:tabular-nums;
   }
-  .hoursstate{display:block; font-size:15px; font-weight:800; letter-spacing:-.01em; color:var(--ink);}
-  .hoursstate .q{font-size:12px; font-weight:600; letter-spacing:0; color:var(--muted);}
+  .hoursstate{display:block; font-size:var(--fs-body); font-weight:800; letter-spacing:-.01em; color:var(--ink);}
+  .hoursstate .q{font-size:var(--fs-label); font-weight:600; letter-spacing:0; color:var(--muted);}
 
   /* Base is .big, not button.big, on purpose: an element+class selector
      outranks the .btn-* modifiers below it, so qualifying it here silently
      repainted every primary button in --ink. Equal specificity plus source
      order means the modifier always wins. */
   .big{
-    width:100%; padding:14px; border-radius:12px; border:none; font-family:inherit;
-    font-size:15px; font-weight:800; cursor:pointer; transition:.15s; color:var(--ink);
+    width:100%; padding:14px; border-radius:var(--r-m); border:none; font-family:inherit;
+    font-size:var(--fs-body); font-weight:800; cursor:pointer; transition:background-color var(--dur-2) var(--ease), color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease); color:var(--ink);
   }
   /* Header gradient again, and a soft glow in the fill's own colour. The
      glow is a fixed rgba of --maroon rather than a token: in dark it reads
      as the brand colour bleeding, which is the effect, not a bug. */
   .btn-primary{
     background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); color:#fff;
-    box-shadow:0 2px 10px -4px rgba(122,31,43,.5);
+    box-shadow:var(--sh-2);
   }
   .btn-stop{background:var(--lost); color:#fff;}
   .btn-ghost{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
   input[type=text], select{
-    width:100%; min-height:var(--tap); padding:12px; border-radius:10px; border:1.5px solid var(--line);
-    background:var(--surface); color:var(--ink); font-size:14px; font-family:inherit;
+    width:100%; min-height:var(--tap); padding:12px; border-radius:var(--r-m); border:1.5px solid var(--line);
+    background:var(--surface); color:var(--ink); font-size:var(--fs-body); font-family:inherit;
   }
   input[type=text]:focus, select:focus{outline:none; border-color:var(--brand-ink);}
-  .fielderr{font-size:12px; color:var(--lost-ink); font-weight:700; margin-top:8px;}
-  .hint{font-size:12px; color:var(--muted); margin-top:10px; line-height:1.55;}
+  .fielderr{font-size:var(--fs-label); color:var(--lost-ink); font-weight:700; margin-top:8px;}
+  .hint{font-size:var(--fs-label); color:var(--muted); margin-top:10px; line-height:1.55;}
   .badge{
-    display:inline-block; font-size:10px; padding:3px 9px; border-radius:20px;
+    display:inline-block; font-size:var(--fs-cap); padding:3px 9px; border-radius:999px;
     background:var(--maroon-soft); color:var(--brand-ink); font-weight:800; letter-spacing:.06em;
   }
-  .sighting{display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:13px;}
+  .sighting{display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:var(--fs-small);}
   .sighting:last-child{border-bottom:none;}
-  .sighting .time{color:var(--muted); white-space:nowrap; font-size:11px; padding-top:2px;}
+  .sighting .time{color:var(--muted); white-space:nowrap; font-size:var(--fs-cap); padding-top:2px;}
   .hidden{display:none !important;}
 
   /* Share flow */
@@ -939,13 +992,13 @@
      a dark one. The arrow and the label were invisible; only .dest, which
      sets its own colour, survived. */
   .dirbtn{
-    flex:1; padding:16px 8px; border-radius:14px; cursor:pointer; text-align:center;
+    flex:1; padding:16px 8px; border-radius:var(--r-m); cursor:pointer; text-align:center;
     border:2px solid var(--line); background:var(--surface);
     font-family:inherit; color:var(--ink);
   }
-  .dirbtn .big-arrow{font-size:22px; line-height:1;}
-  .dirbtn .lbl{font-size:12.5px; font-weight:800; margin-top:5px;}
-  .dirbtn .dest{font-size:10.5px; color:var(--muted); font-weight:600;}
+  .dirbtn .big-arrow{font-size:var(--fs-title); line-height:1;}
+  .dirbtn .lbl{font-size:var(--fs-small); font-weight:800; margin-top:5px;}
+  .dirbtn .dest{font-size:var(--fs-label); color:var(--muted); font-weight:600;}
   .dirbtn.sel-north{border-color:var(--gold); background:var(--gold-soft);}
   .dirbtn.sel-south{border-color:var(--brand-ink); background:var(--maroon-soft);}
   .statusdot{width:10px; height:10px; border-radius:50%; background:var(--muted); margin-top:4px; flex-shrink:0;}
@@ -954,11 +1007,11 @@
   .status-row{display:flex; gap:10px; align-items:flex-start;}
 
   .noticebar{
-    background:var(--gold-soft); border:1.5px solid var(--gold-line); border-radius:12px;
-    padding:11px 13px; margin:0 0 10px; font-size:13px; line-height:1.5;
+    background:var(--gold-soft); border:1.5px solid var(--gold-line); border-radius:var(--r-m);
+    padding:11px 13px; margin:0 0 10px; font-size:var(--fs-small); line-height:1.5;
   }
-  .noticebar .tag{font-size:9.5px; font-weight:800; letter-spacing:.08em; color:var(--gold-deep);}
-  .noticebar .age{font-size:10.5px; color:var(--muted); font-weight:600; margin-top:3px;}
+  .noticebar .tag{font-size:var(--fs-cap); font-weight:800; letter-spacing:.08em; color:var(--gold-deep);}
+  .noticebar .age{font-size:var(--fs-label); color:var(--muted); font-weight:600; margin-top:3px;}
   /* One advisory row, not three. This used to be a gold notice bar, a gold
      first-visit accuracy banner and this line, stacked — two of them styled
      identically — and together they pushed the map off the bottom of a
@@ -973,14 +1026,14 @@
   .privacybar{margin:2px 0 12px;}
   .privacybar button{
     width:100%; text-align:left; background:none; border:none; cursor:pointer;
-    font-family:inherit; font-size:11.5px; line-height:1.55; color:var(--muted);
+    font-family:inherit; font-size:var(--fs-label); line-height:1.55; color:var(--muted);
     padding:6px 2px; min-height:var(--tap);
   }
   .privacybar b{color:var(--ink);}
   .privacybar .more{color:var(--brand-ink); font-weight:800; text-decoration:underline;}
-  .privacy-detail h4{font-size:13px; margin:14px 0 4px;}
+  .privacy-detail h4{font-size:var(--fs-small); margin:14px 0 4px;}
   .privacy-detail h4:first-child{margin-top:0;}
-  .privacy-detail p{font-size:12.5px; color:var(--muted); line-height:1.55; margin-bottom:0;}
+  .privacy-detail p{font-size:var(--fs-small); color:var(--muted); line-height:1.55; margin-bottom:0;}
   .privacy-detail .ok{color:var(--ok-ink);}
   .privacy-detail .hon{color:var(--warn-ink);}
 
@@ -993,9 +1046,9 @@
     display:flex; align-items:center; justify-content:center; padding:22px;
     -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
   }
-  .modal-card{background:var(--surface); border-radius:16px; padding:20px; max-width:380px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,.25);}
-  .modal-card h3{font-size:16px; margin-bottom:8px; display:flex; align-items:center; gap:8px;}
-  .modal-card p{font-size:13px; color:var(--muted); line-height:1.55; margin-bottom:16px;}
+  .modal-card{background:var(--surface); border-radius:var(--r-l); padding:20px; max-width:380px; width:100%; box-shadow:var(--sh-3);}
+  .modal-card h3{font-size:var(--fs-title); margin-bottom:8px; display:flex; align-items:center; gap:8px;}
+  .modal-card p{font-size:var(--fs-small); color:var(--muted); line-height:1.55; margin-bottom:16px;}
   .modal-actions{display:flex; flex-direction:column; gap:8px;}
   .modal-actions button{width:100%;}
   /* The privacy text is long enough to scroll for a couple of screens. Its
@@ -1009,7 +1062,7 @@
   .modal-x{
     margin-left:auto; flex:0 0 auto; width:var(--tap); height:var(--tap);
     background:none; border:none; cursor:pointer; font-family:inherit;
-    font-size:20px; line-height:1; color:var(--muted);
+    font-size:var(--fs-title); line-height:1; color:var(--muted);
   }
 
   /* ---- Trip mode ------------------------------------------------------
@@ -1025,12 +1078,12 @@
     --paper:#060505; --surface:#100d0c; --ink:#f1ebe2; --muted:#9b9088; --line:#2a231f;
     --maroon-soft:#2a1418; --gold-soft:#2a2210; --gold-line:#4a3d20; --maroon-line:#4a2b30;
     --gold-deep:#e8b45c; --brand-ink:#f0a8b0; --lost-ink:#ff8a76; --ok-ink:#7fe0b0; --live:#3ddc97;
-    --shadow:none; color-scheme:dark;
+    --sh-1:none; color-scheme:dark;
   }
   .trip-on header{background:linear-gradient(180deg,#4a141b,#2a0b10);}
   .trip-on .status-row{align-items:center;}
   .trip-on #onbusDot{width:14px; height:14px; margin-top:0;}
-  .trip-on #onbusStatusText{font-size:19px !important; letter-spacing:-.01em;}
+  .trip-on #onbusStatusText{font-size:var(--fs-title) !important; letter-spacing:-.01em;}
   .trip-on .btn-stop{background:#2a0f0c; color:#ff8a76; border:1.5px solid #6b231b;}
   .trip-on #onbusStrip .rail{box-shadow:0 0 10px 1px rgba(227,154,28,.5);}
   .trip-on #onbusStrip .track.sb .rail{background:#b23a4b; box-shadow:0 0 10px 1px rgba(178,58,75,.5);}
@@ -1049,8 +1102,8 @@
   .tktwrap{display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; max-width:340px;}
   .tkt{
     --tp:#fbf4e4; --ti:#6d1a25;
-    position:relative; width:100%; padding:24px 20px 20px; border-radius:6px;
-    color:var(--ti); background:var(--tp); box-shadow:0 30px 60px -20px rgba(0,0,0,.6);
+    position:relative; width:100%; padding:24px 20px 20px; border-radius:var(--r-s);
+    color:var(--ti); background:var(--tp); box-shadow:var(--sh-3);
     font-variant-numeric:tabular-nums; transform:rotate(-1.2deg); text-align:left;
     -webkit-mask:radial-gradient(circle 6px at 50% 0, transparent 98%, #000) 0 0/16px 51% repeat-x,
                  radial-gradient(circle 6px at 50% 100%, transparent 98%, #000) 0 100%/16px 51% repeat-x;
@@ -1059,47 +1112,47 @@
   }
   .tkt::before{content:''; position:absolute; left:0; right:0; top:0; height:6px; background:var(--gold);}
   .tkt-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-top:4px;}
-  .tkt-kick{font-size:10px; font-weight:900; letter-spacing:.16em;}
-  .tkt-date{font-size:10px; font-weight:800; letter-spacing:.06em; opacity:.75; font-family:ui-monospace,Menlo,Consolas,monospace;}
-  .tkt-org{margin-top:2px; font-size:10.5px; font-weight:700; opacity:.75;}
+  .tkt-kick{font-size:var(--fs-cap); font-weight:900; letter-spacing:.16em;}
+  .tkt-date{font-size:var(--fs-cap); font-weight:800; letter-spacing:.06em; opacity:.75; font-family:ui-monospace,Menlo,Consolas,monospace;}
+  .tkt-org{margin-top:2px; font-size:var(--fs-label); font-weight:700; opacity:.75;}
   .tkt hr{border:0; border-top:1.5px dashed rgba(109,26,37,.35); margin:13px -4px;}
-  .tkt-route{display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; font-size:11px; font-weight:800; letter-spacing:.06em;}
-  .tkt-times{font-size:10.5px; opacity:.8; font-family:ui-monospace,Menlo,Consolas,monospace; letter-spacing:.02em;}
+  .tkt-route{display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; font-size:var(--fs-cap); font-weight:800; letter-spacing:.06em;}
+  .tkt-times{font-size:var(--fs-cap); opacity:.8; font-family:ui-monospace,Menlo,Consolas,monospace; letter-spacing:.02em;}
   .tkt-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:5px;}
   .tkt-grid span{
-    position:relative; padding:7px 0 6px; border-radius:4px; text-align:center;
-    border:1.3px solid rgba(109,26,37,.4); font-size:9.5px; font-weight:800; letter-spacing:.04em;
+    position:relative; padding:7px 0 6px; border-radius:var(--r-s); text-align:center;
+    border:1.3px solid rgba(109,26,37,.4); font-size:var(--fs-cap); font-weight:800; letter-spacing:.04em;
   }
   .tkt-grid span.on{background:rgba(227,154,28,.22); border-color:var(--ti);}
   .tkt-grid span.on::after{
     content:''; position:absolute; top:-6px; right:-6px; width:14px; height:14px; border-radius:50%;
     background:#3a2a26; box-shadow:inset 0 2px 3px rgba(0,0,0,.6), 0 0 0 1.5px var(--tp);
   }
-  .tkt-big{font-size:13px; font-weight:700; line-height:1.3;}
-  .tkt-dur{margin-top:2px; font-size:34px; font-weight:900; letter-spacing:-.02em; line-height:1.05;}
-  .tkt-dur small{font-size:16px; font-weight:800; letter-spacing:0;}
-  .tkt-ty{display:flex; align-items:center; gap:9px; margin-top:12px; font-size:14px; font-weight:800; color:#1d5e3c;}
-  .tkt-greet{margin-bottom:4px; font-size:20px; font-weight:900; letter-spacing:-.01em;}
-  .tkt-fine{font-size:10.5px; line-height:1.45; font-weight:600; opacity:.8;}
+  .tkt-big{font-size:var(--fs-small); font-weight:700; line-height:1.3;}
+  .tkt-dur{margin-top:2px; font-size:var(--fs-number); font-weight:900; letter-spacing:-.02em; line-height:1.05;}
+  .tkt-dur small{font-size:var(--fs-body); font-weight:800; letter-spacing:0;}
+  .tkt-ty{display:flex; align-items:center; gap:9px; margin-top:12px; font-size:var(--fs-small); font-weight:800; color:#1d5e3c;}
+  .tkt-greet{margin-bottom:4px; font-size:var(--fs-title); font-weight:900; letter-spacing:-.01em;}
+  .tkt-fine{font-size:var(--fs-label); line-height:1.45; font-weight:600; opacity:.8;}
   .tkt-stamps{position:absolute; right:10px; top:196px; width:150px; height:150px; pointer-events:none;}
   .stamp{
     position:absolute; display:inline-grid; justify-items:center; gap:1px; padding:5px 9px 4px;
-    border:2.6px solid currentColor; border-radius:7px; box-shadow:inset 0 0 0 1.2px var(--tp), inset 0 0 0 2.4px currentColor;
-    font-size:13px; font-weight:900; letter-spacing:.12em; line-height:1.05; text-transform:uppercase;
+    border:2.6px solid currentColor; border-radius:var(--r-s); box-shadow:inset 0 0 0 1.2px var(--tp), inset 0 0 0 2.4px currentColor;
+    font-size:var(--fs-small); font-weight:900; letter-spacing:.12em; line-height:1.05; text-transform:uppercase;
     opacity:.88; mix-blend-mode:multiply;
     -webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -4 0 0 0 3.1'/></filter><rect width='90' height='60' filter='url(%23f)'/></svg>");
     -webkit-mask-size:90px 60px;
     mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -4 0 0 0 3.1'/></filter><rect width='90' height='60' filter='url(%23f)'/></svg>");
     mask-size:90px 60px;
   }
-  .stamp small{font-size:8.5px; font-weight:800; letter-spacing:.14em;}
+  .stamp small{font-size:var(--fs-cap); font-weight:800; letter-spacing:.14em;}
   .stamp.red{color:#b0281c;} .stamp.blue{color:#2a3a9e;} .stamp.green{color:#1d6a43;}
   .stamp.s1{right:0; top:0; transform:rotate(-10deg);}
   .stamp.s2{right:20px; top:92px; transform:rotate(6deg);}
   .tkt-close{
-    min-height:var(--tap); padding:0 26px; border-radius:12px; cursor:pointer;
+    min-height:var(--tap); padding:0 26px; border-radius:var(--r-m); cursor:pointer;
     border:1.5px solid rgba(255,255,255,.45); background:rgba(255,255,255,.14); color:#fff;
-    font-family:inherit; font-size:14px; font-weight:800;
+    font-family:inherit; font-size:var(--fs-small); font-weight:800;
   }
 
   /* ---- Pasko: a parol and a string of lights --------------------------
@@ -1135,33 +1188,41 @@
      the words that matter are already in the popup and the count line. The
      badge itself only gets a ring: Leaflet positions it with its own
      transform, so anything that scales the badge would move it. */
-  .busmk.honk{animation:honkring .9s ease-out 2 both !important;}
-  .busmk.honk svg{animation:hop .9s cubic-bezier(.3,.6,.4,1) both;}
+  .busmk.honk{animation:honkring .9s var(--ease) 2 both !important;}
+  .busmk.honk svg{animation:hop .9s var(--ease) both;}
   .busmk .beep{
     position:absolute; left:calc(100% + 9px); top:50%; z-index:5; white-space:nowrap; pointer-events:none;
-    padding:6px 9px; border-radius:11px; background:#ffd36b; color:#2b2320;
-    font:800 12px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; letter-spacing:.02em;
-    box-shadow:0 4px 12px -4px rgba(0,0,0,.45); transform-origin:0 50%;
-    animation:beep 1.8s cubic-bezier(.2,.9,.3,1.3) both;
+    padding:6px 9px; border-radius:var(--r-m); background:#ffd36b; color:#2b2320;
+    font:800 var(--fs-label)/1 var(--font-ui); letter-spacing:.02em;
+    box-shadow:var(--sh-2); transform-origin:0 50%;
+    animation:beep 1.8s var(--ease-pop) both;
   }
   .busmk .beep::before{content:''; position:absolute; left:-5px; top:50%; margin-top:-5px; border:5px solid transparent; border-left:0; border-right-color:#ffd36b;}
   .tyfloat{
     position:absolute; z-index:60; pointer-events:none; white-space:nowrap; transform:translate(-50%,-100%);
-    padding:5px 10px 5px 8px; border-radius:14px; background:linear-gradient(180deg,#ffe08a,#ffc94a); color:#2b2320;
-    font-size:12.5px; font-weight:800; box-shadow:0 6px 16px -6px rgba(120,70,0,.6);
-    animation:tyfloat 2.2s cubic-bezier(.2,.8,.3,1) both;
+    padding:5px 10px 5px 8px; border-radius:999px; background:linear-gradient(180deg,#ffe08a,#ffc94a); color:#2b2320;
+    font-size:var(--fs-small); font-weight:800; box-shadow:var(--sh-2);
+    animation:tyfloat 2.2s var(--ease) both;
   }
   .tyspark{
     position:absolute; z-index:61; width:8px; height:8px; border-radius:50%; background:#ffd36b; pointer-events:none;
-    animation:tyspark .9s ease-out both;
+    animation:tyspark .9s var(--ease) both;
   }
   /* A short message at the foot of the screen: "Link copied". */
   .toast{
     position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:6000;
-    max-width:calc(100% - 32px); padding:10px 14px; border-radius:12px;
-    background:var(--ink); color:var(--surface); font-size:13px; font-weight:700; text-align:center;
-    box-shadow:0 10px 26px -10px rgba(0,0,0,.6); animation:rise .25s ease;
+    max-width:calc(100% - 32px); padding:10px 14px; border-radius:var(--r-m);
+    background:var(--ink); color:var(--surface); font-size:var(--fs-small); font-weight:700; text-align:center;
+    box-shadow:var(--sh-2); animation:rise var(--dur-3) var(--ease);
   }
+
+  /* ---- Sentences --------------------------------------------------------
+     Most of this page is labels, buttons, names and numbers, and those are
+     set condensed from body down. Anything that is read as a sentence is
+     set in the normal width, which is easier going over a few lines. */
+  .privacy-detail p, .modal-card p, .hint, .headway, .gate p, .sighting, .fielderr,
+  #noticeText, .stoplist .empty, .mapnote .s, .tkt-fine, .privacybar button, .status-sub,
+  input[type=text], select{font-family:var(--font-text);}
 
   /* ---- Motion ----------------------------------------------------------
      Everything in this section is decorative. Nothing here says anything
@@ -1181,7 +1242,7 @@
   @keyframes cardin{from{opacity:0; transform:scale(.96) translateY(6px);} to{opacity:1; transform:none;}}
   @keyframes veil{from{opacity:0;} to{opacity:1;}}
   @keyframes fadein{from{opacity:0;} to{opacity:1;}}
-  @keyframes honkring{0%{box-shadow:0 1px 6px rgba(0,0,0,.35), 0 0 0 0 rgba(255,200,70,.85);} 100%{box-shadow:0 1px 6px rgba(0,0,0,.35), 0 0 0 15px rgba(255,200,70,0);}}
+  @keyframes honkring{0%{box-shadow:var(--sh-2), 0 0 0 0 rgba(255,200,70,.85);} 100%{box-shadow:var(--sh-2), 0 0 0 15px rgba(255,200,70,0);}}
   @keyframes hop{0%{transform:none;} 16%{transform:translateY(-5px) scale(1.18);} 32%{transform:translateY(0) scale(.94);} 48%{transform:translateY(-2px) scale(1.06);} 64%,100%{transform:none;}}
   @keyframes beep{
     0%{opacity:0; transform:translateY(-50%) scale(.4);} 12%{opacity:1; transform:translateY(-50%) scale(1.08);}
@@ -1196,35 +1257,35 @@
   @keyframes sway{0%,100%{transform:rotate(-3deg);} 50%{transform:rotate(3deg);}}
   /* The card is rebuilt on every poll, so the flag pops only when the state
      has just changed: renderMyStop() adds .fresh on that draw alone. */
-  .ride-flag.fresh{animation:popin .3s ease;}
+  .ride-flag.fresh{animation:popin var(--dur-3) var(--ease-pop);}
 
   /* Tab switches and reopening folds. Short enough that switching back and
      forth never feels like waiting. The curve is a hard-decelerate: motion
      spends its speed at the start and settles gently, which is what makes
      the same 200ms read as smooth rather than abrupt. */
-  #trackView, #onbusView{animation:rise .22s cubic-bezier(.2,.7,.25,1);}
-  details.fold[open] > .foldbody, details.note[open] > .foldbody{animation:rise .26s cubic-bezier(.2,.7,.25,1);}
+  #trackView, #onbusView{animation:rise var(--dur-2) var(--ease);}
+  details.fold[open] > .foldbody, details.note[open] > .foldbody{animation:rise var(--dur-3) var(--ease);}
 
   /* Modals and the gate: the veil fades, the card scales in with a whisper
      of overshoot (the y2 > 1 in the bezier), which is what separates
      "arrived" from "stopped". Closing stays instant on purpose —
      closeModal() hands focus back and the tests read .hidden as gone now,
      so an exit animation would mean deferring both. */
-  .modal{animation:veil .16s ease;}
-  .modal-card{animation:cardin .26s cubic-bezier(.22,1.2,.36,1);}
-  .gate{animation:veil .2s ease;}
-  .gate-card{animation:cardin .3s cubic-bezier(.22,1.2,.36,1);}
+  .modal{animation:veil var(--dur-2) var(--ease);}
+  .modal-card{animation:cardin var(--dur-3) var(--ease-pop);}
+  .gate{animation:veil var(--dur-2) var(--ease);}
+  .gate-card{animation:cardin var(--dur-3) var(--ease-pop);}
 
   /* Press feedback. The result of a tap can lag seconds behind on a bus's
      connection; the tap itself should not. The browser's own grey flash is
      dropped only where a scale answers instead. */
-  .tab,.big{transition:background-color .15s ease, color .15s ease, border-color .15s ease, transform .09s ease, filter .15s ease;}
+  .tab,.big{transition:background-color var(--dur-2) var(--ease), color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), transform var(--dur-1) var(--ease), filter var(--dur-2) var(--ease);}
   /* Colour changes on the small controls used to snap (only transform was
      transitioned); every state change now crossfades, which is most of what
      "smooth" means on a page where controls repaint by class swap. */
   .buschip,.dirbtn,.seg button,.mystop-btn,.mystop-live .edit,.stoplist button,
   .pickrow button,.buspop .tybtn,.modal-x,#themeBtn .ico,#guideLink .ico{
-    transition:transform .09s ease, background-color .2s ease, color .2s ease, border-color .2s ease;
+    transition:transform var(--dur-1) var(--ease), background-color var(--dur-2) var(--ease), color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease);
   }
   .tab,.big,.buschip,.dirbtn,.seg button,.mystop-btn,.mystop-live .edit,.stoplist button,
   .pickrow button,.buspop .tybtn,.modal-x,#themeBtn,#guideLink{-webkit-tap-highlight-color:transparent;}
@@ -1253,7 +1314,7 @@
   /* The privacy text and the stop picker scroll inside a pinned card; the
      default scrollbar is the one piece of browser chrome left inside it. */
   .modal-scroll::-webkit-scrollbar{width:8px;}
-  .modal-scroll::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+  .modal-scroll::-webkit-scrollbar-thumb{background:var(--line); border-radius:999px;}
   .modal-scroll::-webkit-scrollbar-track{background:transparent;}
 
   /* The sharing tab's status dot breathes while live: "this is happening
@@ -1267,9 +1328,9 @@
      the whole list every few seconds. The badge fades rather than rises:
      the badge element is the marker itself and Leaflet owns its transform
      for positioning. */
-  .buschip.arrive{animation:rise .3s cubic-bezier(.2,.7,.25,1);}
-  .busmk.arrive{animation:fadein .45s ease;}
-  .buspill.arrive{animation:fadein .45s ease;}
+  .buschip.arrive{animation:rise var(--dur-3) var(--ease);}
+  .busmk.arrive{animation:fadein var(--dur-3) var(--ease);}
+  .buspill.arrive{animation:fadein var(--dur-3) var(--ease);}
 
   /* A bus badge on the map glides to each new position instead of teleporting
      every poll. Leaflet places markers with a transform, so the transition
@@ -1287,13 +1348,13 @@
 
   /* The checkpoint a bus is near is highlighted by class; crossfade the
      handover as a bus moves from one tick's neighbourhood to the next. */
-  .tick span{transition:color .3s ease;}
+  .tick span{transition:color var(--dur-3) var(--ease);}
 
   /* The headline going from "1 bus live" to "2 buses live" is the page's
      most watched sentence changing; it rises in like everything else new.
      Class is added by renderBuses() only when the words actually changed —
      the subtitle updates every poll and deliberately does not move. */
-  .status-title.swap{animation:rise .3s cubic-bezier(.2,.7,.25,1);}
+  .status-title.swap{animation:rise var(--dur-3) var(--ease);}
 
   /* Saying salamat, both ends. The rider's "Salamat sent" pops once, at tap
      time only (the .pop class is added after the optimistic redraw and the
@@ -1301,9 +1362,9 @@
      in when it first appears and takes a brief gold wash when the number
      goes up mid-trip — a person just did something, and a silent digit swap
      does not look like that. */
-  .buspop .tydone.pop{animation:popin .3s ease;}
-  .tyline{animation:rise .3s ease;}
-  .tyline.bump{animation:tybump 1s ease;}
+  .buspop .tydone.pop{animation:popin var(--dur-3) var(--ease-pop);}
+  .tyline{animation:rise var(--dur-3) var(--ease);}
+  .tyline.bump{animation:tybump 1s var(--ease);}
   @keyframes tybump{0%{background:var(--gold-soft); border-color:var(--gold-line);} 100%{background:var(--paper); border-color:var(--line);}}
 
   /* The first minute of a trip. The strip card rises in, a one-line salamat
@@ -1313,26 +1374,26 @@
      left unconditional it would replay on every strip rebuild for the whole
      trip. No fill-mode on .tyhello: a fill would pin opacity at 1 and the
      .bye fade-out could never win. */
-  #onbusStripCard{animation:rise .3s ease;}
+  #onbusStripCard{animation:rise var(--dur-3) var(--ease);}
   .tyhello{
     display:flex; align-items:center; gap:7px; margin:0 0 10px;
-    padding:8px 10px; border-radius:10px;
+    padding:8px 10px; border-radius:var(--r-m);
     background:var(--paper); border:1px solid var(--line);
-    font-weight:800; font-size:13px; color:var(--ok-ink);
-    animation:rise .35s ease;
+    font-weight:800; font-size:var(--fs-small); color:var(--ok-ink);
+    animation:rise var(--dur-3) var(--ease);
   }
-  .tyhello.bye{opacity:0; transition:opacity .7s ease;}
+  .tyhello.bye{opacity:0; transition:opacity .8s var(--ease);}
   #onbusStripCard.hello .buspill.me{animation:mepulse 1.3s ease-in-out infinite;}
   @keyframes mepulse{
-    0%,100%{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), 0 2px 6px rgba(43,35,32,.28);}
-    50%{box-shadow:0 0 0 2px var(--surface), 0 0 0 8px var(--live), 0 2px 6px rgba(43,35,32,.28);}
+    0%,100%{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), var(--sh-2);}
+    50%{box-shadow:0 0 0 2px var(--surface), 0 0 0 8px var(--live), var(--sh-2);}
   }
 
   /* The bus popup scales in like the modals. On the wrapper and a fade on
      the tip, never the popup root: Leaflet positions the root with its own
      transform, and animating that would move the popup off its bus. */
-  .buspop .leaflet-popup-content-wrapper{animation:cardin .18s ease;}
-  .buspop .leaflet-popup-tip-container{animation:fadein .18s ease;}
+  .buspop .leaflet-popup-content-wrapper{animation:cardin var(--dur-2) var(--ease-pop);}
+  .buspop .leaflet-popup-tip-container{animation:fadein var(--dur-2) var(--ease);}
 
   /* First load. Until the first positions answer arrives the page is
      "Loading…" over an empty strip and an empty chip row; this makes that
@@ -1346,7 +1407,7 @@
   #bootGhosts{display:none; gap:6px; margin-top:12px;}
   .booting #bootGhosts{display:flex;}
   #bootGhosts span{
-    flex:1; max-width:150px; min-height:var(--tap); border-radius:22px;
+    flex:1; max-width:150px; min-height:var(--tap); border-radius:999px;
     border:1.5px solid var(--line); background:var(--paper);
     animation:waiting 1.3s ease-in-out infinite;
   }
@@ -1356,8 +1417,8 @@
   /* Theme switching. The class is temporary (cycleTheme() removes it after
      the crossfade) because left on permanently this transition would sit on
      every element and slow every interactive state change on the page. */
-  .theming, .theming *{transition:background-color .28s ease, color .28s ease, border-color .28s ease;}
-  #themeBtn .ico.flip{animation:icoflip .32s ease;}
+  .theming, .theming *{transition:background-color var(--dur-3) var(--ease), color var(--dur-3) var(--ease), border-color var(--dur-3) var(--ease);}
+  #themeBtn .ico.flip{animation:icoflip var(--dur-3) var(--ease);}
   @keyframes icoflip{from{opacity:0; transform:rotate(-120deg) scale(.55);} to{opacity:1; transform:none;}}
 
   /* The guide has honoured this since it was written; the app never did, even
@@ -1375,8 +1436,8 @@
 
   .gate{position:fixed; inset:0; background:var(--paper); z-index:3000; display:flex; align-items:center; justify-content:center; padding:24px;}
   .gate-card{max-width:360px; width:100%;}
-  .gate h2{margin:0 0 6px; font-size:24px; text-transform:uppercase;}
-  .gate p{font-size:13px; color:var(--muted); line-height:1.5; margin:0 0 16px;}
+  .gate h2{margin:0 0 6px; font-size:var(--fs-headline); text-transform:uppercase;}
+  .gate p{font-size:var(--fs-small); color:var(--muted); line-height:1.5; margin:0 0 16px;}
 </style>
 <script>
 /* Applies a saved theme choice before anything paints. Inline and in the head
@@ -1394,16 +1455,52 @@
 <!-- .booting is the first-load skeleton switch; pollPositions() takes it
      off when the first answer lands. -->
 <body class="booting">
+<!-- One icon family, drawn for this app: a 24-point grid, a 2-point stroke,
+     round ends, the same corner as the bus. Referenced with
+     <svg class="gi"><use href="#i-..."/></svg> from the markup and from the
+     strings the script builds. Ids are named for what they show and never
+     for a social widget (see the content-blocker note in CLAUDE.md), which is
+     why thank-you is i-ty: a sampaguita, the flower strung into garlands to
+     honour someone. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3M12 14.6v2"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><path d="M12 7.7v.1" stroke-width="2.6"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.2M12 19v2.2M2.8 12h2.2M19 12h2.2M5.5 5.5l1.6 1.6M16.9 16.9l1.6 1.6M5.5 18.5l1.6-1.6M16.9 7.1l1.6-1.6"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1z"/></symbol>
+    <symbol id="i-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-locate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></symbol>
+    <symbol id="i-fit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/><path d="M8.5 15.5c1.8-.8 2.2-4.5 3.6-5.4s2.7.4 3.6-.7"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s-6.5-6-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.3"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6l6 6-6 6"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.6 8.4l-2.1 5.1-5.1 2.1 2.1-5.1z"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4"/><path d="M6 4.5h11.5l-2.6 4 2.6 4H6"/></symbol>
+    <symbol id="i-ty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M10 9.25C8.73 1.29 15.27 1.29 14 9.25C21.17 5.58 23.2 11.8 15.23 13.05C20.94 18.74 15.65 22.59 12 15.4C8.35 22.59 3.06 18.74 8.77 13.05C.8 11.8 2.83 5.58 10 9.25Z"/><circle cx="12" cy="11.7" r="1.5" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.3l3.3 2"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 13.5a4 4 0 0 0 5.7.3l3-3a4 4 0 0 0-5.7-5.7l-1.1 1.1"/><path d="M14 10.5a4 4 0 0 0-5.7-.3l-3 3a4 4 0 0 0 5.7 5.7l1.1-1.1"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="12" r="3.5"/><path d="M11.5 12H21M17.5 12v3M20.5 12v2.2"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5.5v13M5.5 12h13"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5.5 12h13"/></symbol>
+    <!-- The coach, front on: what every bus on the map and the strip is drawn
+         as. Filled in whatever colour the svg is given, with the windscreen,
+         lamps and signboard cut right through, so they show whatever is
+         behind it: the gold or maroon of a badge, the card under a tab. The
+         curved rabbit-ear mirrors are what make it a provincial bus rather
+         than the bus symbol every map app uses. -->
+    <symbol id="i-coach" viewBox="0 0 24 24"><path d="M5.4 4.75C3.1 3.7 1.55 5.25 1.65 8.2H2.95C2.9 6.35 3.65 5.55 4.85 6.05Z"/><path d="M18.6 4.75C20.9 3.7 22.45 5.25 22.35 8.2H21.05C21.1 6.35 20.35 5.55 19.15 6.05Z"/><rect x="1.3" y="7.9" width="2" height="3.3" rx=".8"/><rect x="20.7" y="7.9" width="2" height="3.3" rx=".8"/><rect x="6.4" y="17" width="3.6" height="3.8" rx="1.1"/><rect x="14" y="17" width="3.6" height="3.8" rx="1.1"/><path fill-rule="evenodd" d="M7.6 2.6h8.8q3 0 3 3v10q0 3 -3 3h-8.8q-3 0 -3 -3v-10q0 -3 3 -3zM7.3 4.1h9.4q0.7 0 0.7 0.7v0.5q0 0.7 -0.7 0.7h-9.4q-0.7 0 -0.7 -0.7v-0.5q0 -0.7 0.7 -0.7zM7.6 7.1h8.8q1.3 0 1.3 1.3v3q0 1.3 -1.3 1.3h-8.8q-1.3 0 -1.3 -1.3v-3q0 -1.3 1.3 -1.3zM7.3 14.1h1.4q0.7 0 0.7 0.7v0.1q0 0.7 -0.7 0.7h-1.4q-0.7 0 -0.7 -0.7v-0.1q0 -0.7 0.7 -0.7zM15.3 14.1h1.4q0.7 0 0.7 0.7v0.1q0 0.7 -0.7 0.7h-1.4q-0.7 0 -0.7 -0.7v-0.1q0 -0.7 0.7 -0.7z"/></symbol>
+  </defs>
+</svg>
 
 <div class="modal hidden" id="privModal" role="dialog" aria-modal="true" aria-labelledby="privTitle">
   <div class="modal-card tall">
-    <h3 id="privTitle">🔒 How your data is handled
-      <button class="modal-x" onclick="closeModal('privModal')" aria-label="Close">✕</button>
+    <h3 id="privTitle"><svg class="gi" aria-hidden="true"><use href="#i-lock"/></svg>How your data is handled
+      <button class="modal-x" onclick="closeModal('privModal')" aria-label="Close"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>
     </h3>
     <div class="modal-scroll privacy-detail">
       <h4 class="ok">If you're just watching the map</h4>
       <p>The app never asks for your location on its own, and you can use the whole map without ever giving it. No account, no name, no phone number. We can't see who is watching.</p>
-      <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the ⊕ button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the tab.</p>
+      <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the location button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the tab.</p>
       <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it.</p>
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
       <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number, and it never adds up across trips: <b>no running total is kept for any driver or any bus, anywhere.</b></p>
@@ -1437,7 +1534,7 @@
 
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
-      <p>Three small things are remembered on your own device, and nowhere else: whether you have opened this guide before (so the dot on the ⓘ stops nagging), your light or dark theme choice, and the stop you saved, if you saved one. All three stay in your browser, are never sent anywhere, and are not linked to anything. Clearing your browser data removes them, and “Remove my stop” in the stop picker deletes the third one on its own.</p>
+      <p>Three small things are remembered on your own device, and nowhere else: whether you have opened this guide before (so the dot on the guide button stops nagging), your light or dark theme choice, and the stop you saved, if you saved one. All three stay in your browser, are never sent anywhere, and are not linked to anything. Clearing your browser data removes them, and “Remove my stop” in the stop picker deletes the third one on its own.</p>
     </div>
     <div class="modal-foot">
       <button class="big btn-ghost" onclick="closeModal('privModal')">Close</button>
@@ -1447,7 +1544,7 @@
 
 <div class="modal hidden" id="dupModal" role="dialog" aria-modal="true" aria-labelledby="dupTitle">
   <div class="modal-card">
-    <h3 id="dupTitle">🚌 Already being shared?</h3>
+    <h3 id="dupTitle"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg>Already being shared?</h3>
     <p id="dupBody"></p>
     <div class="modal-actions">
       <button class="big btn-ghost" onclick="dupCancel()">It's the same bus, don't share</button>
@@ -1458,7 +1555,7 @@
 
 <div class="modal hidden" id="askModal" role="dialog" aria-modal="true" aria-labelledby="askTitle">
   <div class="modal-card">
-    <h3 id="askTitle"></h3>
+    <h3><span id="askIcon" aria-hidden="true"></span><span id="askTitle"></span></h3>
     <p id="askBody"></p>
     <div class="modal-actions">
       <button class="big btn-primary" id="askYes" onclick="askYes()"></button>
@@ -1480,8 +1577,8 @@
 
 <div class="modal hidden" id="stopModal" role="dialog" aria-modal="true" aria-labelledby="stopTitle">
   <div class="modal-card tall">
-    <h3 id="stopTitle">📍 Where do you wait?
-      <button class="modal-x" onclick="closeModal('stopModal')" aria-label="Close">✕</button>
+    <h3 id="stopTitle"><svg class="gi" aria-hidden="true"><use href="#i-pin"/></svg>Where do you wait?
+      <button class="modal-x" onclick="closeModal('stopModal')" aria-label="Close"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>
     </h3>
     <p class="hint" style="margin:0 0 10px;">Pick your usual stop to see how far the bus is from it. Saved on this phone only, never sent anywhere.</p>
     <input type="text" class="stopsearch" id="stopSearch" placeholder="Type a few letters, e.g. Imus" autocomplete="off" oninput="renderStopList()">
@@ -1499,7 +1596,7 @@
 
 <div class="gate hidden" id="gate">
   <form class="card gate-card" onsubmit="event.preventDefault(); submitKey();">
-    <h2>🚌 Bus Tracker</h2>
+    <h2><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg>Bus Tracker</h2>
     <p id="gateMsg">Watching the map needs no key. Sharing from the bus needs the access key from the group chat, or the full link posted there.</p>
     <div style="height:6px"></div>
     <input type="text" id="gateKey" placeholder="Access key" autocomplete="off" autofocus>
@@ -1515,9 +1612,9 @@
   <div class="headbar">
     <div class="route"><span class="led"><span class="ln">Mendez / Tagaytay</span> <span class="ln"><span class="amp">⇄</span> One Ayala</span></span></div>
     <div class="sub">WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER · UNOFFICIAL</div>
-    <button type="button" id="themeBtn" onclick="cycleTheme()"><span class="ico"></span></button>
+    <button type="button" id="themeBtn" onclick="cycleTheme()"><span class="ico"><svg class="gi" aria-hidden="true"><use href="#i-auto"/></svg></span></button>
     <a id="guideLink" href="how-to.html" aria-label="How to use this tracker" title="How to use this tracker"
-       onclick="try{localStorage.setItem('wt-guide-seen','1');}catch(e){}"><span class="ico">i<span class="newdot"></span></span></a>
+       onclick="try{localStorage.setItem('wt-guide-seen','1');}catch(e){}"><span class="ico"><svg class="gi" aria-hidden="true"><use href="#i-info"/></svg><span class="newdot"></span></span></a>
   </div>
   <div id="parol" aria-hidden="true"><svg viewBox="0 0 60 104"><line x1="30" y1="-30" x2="30" y2="10" stroke="#f3c460" stroke-width="1.6"/><circle cx="30" cy="33" r="23" fill="rgba(255,240,200,.14)" stroke="#f3c460" stroke-width="2.6"/><polygon points="30.0,13.5 34.8,26.4 48.5,27.0 37.8,35.5 41.5,48.8 30.0,41.2 18.5,48.8 22.2,35.5 11.5,27.0 25.2,26.4" fill="#ffcf5c" stroke="#fff4cf" stroke-width="1.4" stroke-linejoin="round"/><polygon points="30.0,13.5 34.8,26.4 48.5,27.0 37.8,35.5 41.5,48.8 30.0,41.2 18.5,48.8 22.2,35.5 11.5,27.0 25.2,26.4" fill="none" stroke="#c4432e" stroke-width=".9" transform="translate(30 33) scale(.55) translate(-30 -33)"/><circle cx="30" cy="33" r="3.6" fill="#fff"/><path d="M21 52 C 19 64, 25 72, 19 84 S 23 98, 18 104" fill="none" stroke="#ffcf5c" stroke-width="2.4" stroke-linecap="round"/><path d="M39 52 C 41 64, 35 72, 41 84 S 37 98, 42 104" fill="none" stroke="#c4432e" stroke-width="2.4" stroke-linecap="round"/><path d="M30 56 C 30 68, 33 76, 30 88" fill="none" stroke="#fff4cf" stroke-width="2" stroke-linecap="round"/></svg></div>
 </header>
@@ -1525,7 +1622,7 @@
 <div class="wrap">
   <div class="tabs">
     <button type="button" class="tab active" id="tabTrack" aria-pressed="true" onclick="switchTab('track')"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2.2c-4 0-7.2 3.1-7.2 7.1 0 5.2 6.1 11.6 6.6 12.1.3.3.9.3 1.2 0 .5-.5 6.6-6.9 6.6-12.1 0-4-3.2-7.1-7.2-7.1zm0 9.9a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg></span>Track buses</button>
-    <button type="button" class="tab" id="tabOnbus" aria-pressed="false" onclick="switchTab('share')"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/><rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/><rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/><rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/><circle class="win" cx="8.3" cy="14.5" r="1.3"/><circle class="win" cx="15.7" cy="14.5" r="1.3"/></svg></span>I'm on the bus</button>
+    <button type="button" class="tab" id="tabOnbus" aria-pressed="false" onclick="switchTab('share')"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-coach"/></svg></span>I'm on the bus</button>
   </div>
 
   <div class="noticebar hidden" id="noticeBar">
@@ -1602,7 +1699,7 @@
       <div class="hint hidden" id="chipNote">Tap any bus to see it up close and say salamat.</div>
 
       <details class="note">
-        <summary>ⓘ What the colours mean</summary>
+        <summary><svg class="gi" aria-hidden="true"><use href="#i-info"/></svg>What the colours mean</summary>
         <div class="foldbody">
           <div class="maplegend">
             <span><span class="sw" style="background:var(--gold)"></span>Northbound ▲</span>
@@ -1632,7 +1729,7 @@
           <span class="val" id="hoursSummary">–</span>
           <span class="dayband" id="dayBand" aria-hidden="true"></span>
         </span>
-        <span class="chev" aria-hidden="true">▶</span>
+        <span class="chev" aria-hidden="true"><svg class="gi"><use href="#i-chev"/></svg></span>
       </summary>
       <div class="foldbody">
         <div class="hours">
@@ -1652,7 +1749,7 @@
           <span class="cap">Sightings</span>
           <span class="val" id="sightSummary">Bus spotted but nobody sharing? Post it here</span>
         </span>
-        <span class="chev" aria-hidden="true">▶</span>
+        <span class="chev" aria-hidden="true"><svg class="gi"><use href="#i-chev"/></svg></span>
       </summary>
       <div class="foldbody">
         <div class="hint" style="margin:0 0 12px;" id="sightingIntro">Post it so others know.</div>
@@ -1686,7 +1783,7 @@
          when something has actually been posted. -->
     <div class="privacybar">
       <button type="button" onclick="openModal('privModal')">
-        🔒 <b>No account. No name.</b> Your location is never needed and never
+        <svg class="gi" aria-hidden="true"><use href="#i-lock"/></svg><b>No account. No name.</b> Your location is never needed and never
         leaves your phone. Positions are volunteer-reported, so they can be
         wrong or missing.
         <span class="more">How your data is handled</span>
@@ -1700,13 +1797,13 @@
       <div class="status-row" style="margin-bottom:12px;">
         <div class="statusdot" id="onbusDot"></div>
         <div>
-          <div style="font-weight:800; font-size:14.5px;" id="onbusStatusText">Not sharing</div>
+          <div style="font-weight:800; font-size:var(--fs-body);" id="onbusStatusText">Not sharing</div>
           <div class="hint" style="margin-top:2px;" id="gpsLiveHint">Shares only while this page is open and the screen is on.</div>
         </div>
       </div>
 
       <form id="onbusSetup" onsubmit="event.preventDefault(); startSharing();">
-        <div style="font-size:12.5px; font-weight:800; margin-bottom:6px;">Which direction is this bus going?</div>
+        <div style="font-size:var(--fs-small); font-weight:800; margin-bottom:6px;">Which direction is this bus going?</div>
         <div class="dirpick">
           <button type="button" class="dirbtn" id="pickNorth" onclick="pickDir('north')" aria-pressed="false">
             <div class="big-arrow">▲</div><div class="lbl">Northbound</div><div class="dest">to One Ayala, Makati</div>
@@ -1715,7 +1812,7 @@
             <div class="big-arrow">▼</div><div class="lbl">Southbound</div><div class="dest">to Mendez / Tagaytay</div>
           </button>
         </div>
-        <div style="font-size:12.5px; font-weight:800; margin:2px 0 6px;">Bus number <span style="font-weight:600; color:var(--muted);">(optional, but it helps)</span></div>
+        <div style="font-size:var(--fs-small); font-weight:800; margin:2px 0 6px;">Bus number <span style="font-weight:600; color:var(--muted);">(optional, but it helps)</span></div>
         <input type="text" id="busLabel" maxlength="12" placeholder="e.g. 98018">
         <div class="hint" style="margin-top:6px;">If two people share the same bus, the number shows it as one bus, not two.</div>
         <div style="height:10px"></div>
@@ -1749,7 +1846,7 @@
            showTripHello() at trip start and gone a few seconds later. It is
            a thank-you, not a status: the status lives in the dot above and
            the strip below, and both keep saying it after this line goes. -->
-      <div class="tyhello hidden" id="tyHello">🙏 <span><b>Salamat!</b> Your bus is on everyone's map now.</span></div>
+      <div class="tyhello hidden" id="tyHello"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg><span><b>Salamat!</b> Your bus is on everyone's map now.</span></div>
       <div class="striplabel">EVERYONE CAN SEE THIS</div>
       <div class="strip" id="onbusStrip">
         <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
@@ -2098,7 +2195,7 @@ let HOME_BOUNDS = null;     // the whole route, what the reset button goes back 
 // dot is the first), and it is named in the privacy panel rather than left
 // for someone to find.
 const THEMES = ['system','light','dark'];
-const THEME_ICON = { system:'◐', light:'☀', dark:'☾' };
+const THEME_ICON = { system:'i-auto', light:'i-sun', dark:'i-moon' };
 const THEME_SAYS = {
   system:'Theme: following your device. Tap for light.',
   light:'Theme: light. Tap for dark.',
@@ -2121,7 +2218,7 @@ function applyTheme(pref){
   else root.setAttribute('data-theme', pref);
   const btn = document.getElementById('themeBtn');
   if (btn){
-    btn.querySelector('.ico').textContent = THEME_ICON[pref];
+    btn.querySelector('.ico').innerHTML = '<svg class="gi" aria-hidden="true"><use href="#' + THEME_ICON[pref] + '"/></svg>';
     btn.setAttribute('aria-label', THEME_SAYS[pref]);
     btn.title = THEME_SAYS[pref];
   }
@@ -2188,6 +2285,12 @@ function labelSide(i){
 }
 function initMap() {
   map = L.map('map', { zoomControl:true }).setView([14.33, 120.96], 10);
+  // Leaflet's zoom buttons print a + and a − in whatever font is to hand;
+  // they get the same drawn icons as every other control on the page.
+  [['.leaflet-control-zoom-in','i-plus'], ['.leaflet-control-zoom-out','i-minus']].forEach(function(p){
+    const a = document.querySelector('#map ' + p[0]);
+    if (a) a.innerHTML = '<svg class="gi" aria-hidden="true"><use href="#' + p[1] + '"/></svg>';
+  });
   // Panes, bottom to top: tiles (200), the stops in overlayPane (400),
   // place-name tiles (450), checkpoint marks (460) and their names (470),
   // then Leaflet's own markerPane (600) for the buses.
@@ -2296,9 +2399,7 @@ function addResetControl(){
     a.setAttribute('role', 'button');
     a.title = 'Show the whole route';
     a.setAttribute('aria-label', 'Show the whole route');
-    a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
-      'stroke-width="2" stroke-linecap="round" aria-hidden="true">'+
-      '<circle cx="12" cy="12" r="6"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>';
+    a.innerHTML = '<svg class="gi" aria-hidden="true"><use href="#i-fit"/></svg>';
     L.DomEvent.on(a, 'click', function(e){ L.DomEvent.stop(e); resetView(); });
     L.DomEvent.disableClickPropagation(box);
     return box;
@@ -2320,12 +2421,10 @@ function addLocateControl(){
     a.setAttribute('aria-pressed', 'false');
     a.title = 'Show my location on the map';
     a.setAttribute('aria-label', 'Show my location on the map');
-    // A pointer, not a crosshair. The reset control directly above it is
-    // already a circle with four ticks, and at 20 px two crosshairs stacked
-    // on top of each other are one control as far as a reader is concerned.
-    a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
-      'stroke-width="2" stroke-linejoin="round" aria-hidden="true">'+
-      '<path d="M21 3 3 10.6l7.7 2.7L13.4 21z"/></svg>';
+    // The target every other map uses for "where am I". The control above
+    // it used to be a crosshair too, and two stacked crosshairs read as one
+    // control, so that one is the frame of the whole route instead.
+    a.innerHTML = '<svg class="gi" aria-hidden="true"><use href="#i-locate"/></svg>';
     L.DomEvent.on(a, 'click', function(e){ L.DomEvent.stop(e); toggleMyLocation(); });
     L.DomEvent.disableClickPropagation(box);
     return box;
@@ -2345,20 +2444,16 @@ function freshness(ts){
 // marker sits on the position it is reporting. The old pill was sized by its
 // own text against a hand-picked anchor, which put a bus with a long number
 // most of a block from where it actually was.
-// Front view of a bus, white on the disc, with the windscreen and lamps cut
-// in the disc's colour (class win, coloured in CSS by direction). Drawn
-// rather than 🚌 because the emoji is a different picture on every phone.
+// Front view of a provincial coach, white on the disc, its windscreen and
+// lamps cut through so they show the disc's own colour. Drawn rather than
+// 🚌 because the emoji is a different picture on every phone, and drawn as
+// this route's kind of bus rather than the generic one every map app uses:
+// the rabbit-ear mirrors and the signboard over the windscreen are the tell.
+// The signboard is a hole too, unless the place it is drawn lights it (class
+// sign, coloured in CSS).
 const BUS_GLYPH =
-  '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-  '<rect x="1.8" y="7.6" width="2.4" height="3.4" rx=".7"/>' +
-  '<rect x="19.8" y="7.6" width="2.4" height="3.4" rx=".7"/>' +
-  '<rect x="4.5" y="2.8" width="15" height="15.6" rx="3.2"/>' +
-  '<rect x="6.4" y="16.8" width="3.8" height="3.6" rx="1.1"/>' +
-  '<rect x="13.8" y="16.8" width="3.8" height="3.6" rx="1.1"/>' +
-  '<rect class="win" x="6.6" y="5.2" width="10.8" height="6.1" rx="1.3"/>' +
-  '<circle class="win" cx="8.3" cy="14.5" r="1.3"/>' +
-  '<circle class="win" cx="15.7" cy="14.5" r="1.3"/>' +
-  '</svg>';
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/>' +
+  '<rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg>';
 function busIcon(dir, fresh, count) {
   return L.divIcon({
     className: 'busmk ' + (dir==='north'?'nb':'sb') + ' ' + fresh,
@@ -2400,9 +2495,9 @@ function thanksWords(n){
 }
 function thanksControl(id, isSelf, done){
   if (isSelf) return '';                                  // rule 2
-  if (done) return '<div class="tyrow"><div class="tydone">🙏 Salamat sent</div></div>';
+  if (done) return '<div class="tyrow"><div class="tydone"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>Salamat sent</div></div>';
   return '<div class="tyrow"><button type="button" class="tybtn" ' +
-         'onclick="sayThanks(\'' + id + '\')">🙏 Say salamat</button></div>';
+         'onclick="sayThanks(\'' + id + '\')"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>Say salamat</button></div>';
 }
 // The salamat ticket, at the end of a trip. Everything it prints comes from
 // what this phone saw while sharing, and none of it is sent or kept: the
@@ -2472,7 +2567,11 @@ function renderMyThanks(){
   row.classList.toggle('hidden', !words);
   // Emptied rather than left stale when it goes: the row is aria-live, and a
   // number nobody can see is still a number something might read out.
-  row.textContent = words ? '🙏 ' + words : '';
+  row.textContent = '';
+  if (words){
+    row.innerHTML = '<svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>';
+    row.appendChild(document.createTextNode(words));
+  }
   // The first appearance already rises in via CSS (display:none restarts the
   // animation), so the gold wash is only for a count going up on a row that
   // was already showing.
@@ -2495,7 +2594,7 @@ function floatThanks(){
   const x = r.left + r.width/2 + window.scrollX, y = r.top + window.scrollY;
   const made = [];
   const b = document.createElement('div');
-  b.className = 'tyfloat'; b.textContent = '🙏 salamat!';
+  b.className = 'tyfloat'; b.innerHTML = '<svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>salamat!';
   b.style.left = x + 'px'; b.style.top = (y - 4) + 'px';
   made.push(b);
   for (let i=0;i<8;i++){
@@ -2592,7 +2691,7 @@ function honkBus(id){
   el.classList.remove('honk'); void el.offsetWidth; el.classList.add('honk');
   const old = el.querySelector('.beep');
   if (old) old.parentNode.removeChild(old);
-  el.insertAdjacentHTML('beforeend', '<span class="beep">beep beep! 🙏</span>');
+  el.insertAdjacentHTML('beforeend', '<span class="beep">beep beep!<svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg></span>');
   setTimeout(function(){
     el.classList.remove('honk');
     const b = el.querySelector('.beep');
@@ -2604,9 +2703,7 @@ function honkBus(id){
 // by a sharer and goes straight into innerHTML here, so it is escaped exactly
 // as it is in the chips and on the admin page. The server's 12 character cap
 // is not a defence, only the reason nobody has managed anything with it yet.
-const LINK_GLYPH =
-  '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">' +
-  '<path d="M10 13.5a4 4 0 0 0 5.7.3l3-3a4 4 0 0 0-5.7-5.7l-1.1 1.1"/><path d="M14 10.5a4 4 0 0 0-5.7-.3l-3 3a4 4 0 0 0 5.7 5.7l1.1-1.1"/></svg>';
+const LINK_GLYPH = '<svg class="gi" aria-hidden="true"><use href="#i-link"/></svg>';
 function busPopupHtml(b){
   const fresh = freshness(b.ts);
   const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
@@ -2680,11 +2777,13 @@ function fitTickBox(box){
     }
     return false;
   };
-  for (let fs=8; fs>=6; fs-=0.5){
+  // From the caption size down. The names are set in the condensed face,
+  // which at 11px takes about the room the phone font took at 8.
+  for (let fs=11; fs>=8; fs-=0.5){
     box.style.setProperty('--tick-fs', fs+'px');
     if (!clashes()) return;
   }
-  // Too many names for the width even at 6px, which is as small as these get
+  // Too many names for the width even at 8px, which is as small as these get
   // before they stop being readable at all. Drop every other label and keep
   // every mark: half a legible strip beats a full illegible one, and the
   // bus pills are still positioned against the full set.
@@ -2695,6 +2794,10 @@ window.addEventListener('resize', function(){
   clearTimeout(fitTimer);
   fitTimer = setTimeout(fitTicks, 150);
 });
+// The strip is first measured in the phone's own font, because the page's
+// fonts load in parallel and swap in when they arrive. Measure again then:
+// the condensed face is narrower, so the names can usually go back up a size.
+try{ if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fitTicks(); }); }catch(e){}
 function haversineKm(a,b){
   const R=6371,d2r=Math.PI/180;
   const dLat=(b.lat-a.lat)*d2r,dLng=(b.lng-a.lng)*d2r;
@@ -3604,11 +3707,21 @@ function reducedMotion(){
 function focusBus(id){
   const b = clusterBuses(BUSES).find(function(x){return x.id===id;});
   if (!b || !map) return;
-  map.setView([b.lat,b.lng], 14, { animate: !reducedMotion() });
   // Tapping the chip and then hunting for which badge it meant is two steps
-  // for one question, so the badge answers it on arrival.
+  // for one question, so the badge answers it on arrival — on arrival, not
+  // while the map is still flying there. Leaflet pans an opening popup into
+  // view against the map as it is at that moment, so one opened mid-flight
+  // could sit with its top cut off by the map's edge for seconds, until the
+  // next redraw happened to move it. The timer is a backstop for a move that
+  // never reports its end.
   const m = busMarkers[id];
-  if (m && map.hasLayer(m)) m.openPopup();
+  if (m && map.hasLayer(m)){
+    let opened = false;
+    const open = function(){ if (!opened && map.hasLayer(m)){ opened = true; m.openPopup(); } };
+    map.once('moveend', open);
+    setTimeout(open, 1500);
+  }
+  map.setView([b.lat,b.lng], 14, { animate: !reducedMotion() });
 }
 
 // ---- The empty map says when ----------------------------------------
@@ -3620,9 +3733,7 @@ function focusBus(id){
 //  - inside operating hours: nobody is sharing, and a way to be the first.
 // It is not drawn until the first positions answer has landed, so a page
 // that is still loading never claims the map is empty.
-const CLOCK_GLYPH =
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">' +
-  '<circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.4 2"/></svg>';
+const CLOCK_GLYPH = '<svg class="gi" aria-hidden="true"><use href="#i-clock"/></svg>';
 function napBusSvg(awake){
   const body = '#efe6d6', ink = '#1b1530';
   return '<svg viewBox="0 0 48 48" aria-hidden="true">' +
@@ -4148,6 +4259,8 @@ let askOnYes=null, askOnNo=null;
 
 function showAsk(o){
   document.getElementById('askTitle').textContent=o.title;
+  const ic = document.getElementById('askIcon');
+  if (ic) ic.innerHTML = o.icon ? '<svg class="gi' + (o.icon === 'i-coach' ? ' coachgi' : '') + '" aria-hidden="true"><use href="#' + o.icon + '"/></svg>' : '';
   document.getElementById('askBody').textContent=o.body;
   document.getElementById('askYes').textContent=o.yesLabel;
   document.getElementById('askNo').textContent=o.noLabel;
@@ -4203,7 +4316,7 @@ function onWrongDirection(hit){
   const other = shareDir==='north' ? 'south' : 'north';
   const towards = shareDir==='north' ? 'Mendez / Tagaytay' : 'One Ayala';
   showAsk({
-    title:'🧭 Which way is this bus going?',
+    icon:'i-compass', title:'Which way is this bus going?',
     body:'This bus has moved about '+hit.km.toFixed(1)+' km toward '+towards+
          ', but the direction picked was '+(shareDir==='north'?'northbound':'southbound')+
          '. Nothing is being shared until you answer.',
@@ -4217,7 +4330,7 @@ function onWrongDirection(hit){
 function onLongIdle(){
   askOpen=true;
   showAsk({
-    title:'🚌 Still on the bus?',
+    icon:'i-coach', title:'Still on the bus?',
     body:'This bus has not moved for about 20 minutes. That can just be traffic or a wait at the terminal, so nothing has changed. If you have already gotten off, tap Stop sharing so it leaves everyone\'s map.',
     yesLabel:'Yes, still on the bus',
     onYes:function(){ resetIdleRef(); },
@@ -4230,7 +4343,7 @@ function onTripFinished(){
   askOpen=true; endAsked=true;
   const dest = shareDir==='north' ? 'One Ayala' : 'Mendez / Tagaytay';
   showAsk({
-    title:'🏁 Is this trip finished?',
+    icon:'i-flag', title:'Is this trip finished?',
     body:'This bus has been parked at '+dest+' for a few minutes, which usually means the trip is over. Sharing will stop by itself in 5 minutes unless you say it is still going.',
     yesLabel:'Stop sharing',
     onYes:function(){ stopSharing(); },
@@ -4495,7 +4608,7 @@ function showTicket(trip, end){
     '<hr>' +
     '<div class="tkt-big">You kept the bus on everyone’s map for</div>' +
     '<div class="tkt-dur">' + (hrs ? hrs + '<small> h </small>' : '') + rem + '<small> min</small></div>' +
-    (ty ? '<div class="tkt-ty"><span aria-hidden="true">🙏</span><span>' + ty + '</span></div>' : '') +
+    (ty ? '<div class="tkt-ty"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg><span>' + ty + '</span></div>' : '') +
     '<hr>' +
     '<div class="tkt-greet">' + ticketGreeting(endMins) + '</div>' +
     '<div class="tkt-fine">Made on this phone from what it saw. Nothing about this trip was kept, and this ticket is gone when you close it.</div>' +

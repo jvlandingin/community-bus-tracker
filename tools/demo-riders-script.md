@@ -1,187 +1,167 @@
 # Riders' demo video: the script
 
-The scene-by-scene script for `assets/flyer/demo-riders.mp4`, written out so
-the words and the order can be changed before anything is rendered. Times
-are from the last render (66 seconds, portrait, silent). Once this is agreed,
-`tools/demo-cuts.js` is changed to match and the video re-rendered.
+The scene-by-scene script for `assets/flyer/demo-riders.mp4`, to agree on
+before anything is rendered. Once it is settled, `tools/demo-cuts.js` is
+changed to match and the video is re-rendered.
+
+**Draft 2.** The motion does the explaining; the words only name the scene.
+Each scene gets one caption of three to five words where possible, in
+English and Tagalog mixed. Two scenes have no caption at all.
 
 How to read it:
 
-- **Kicker / Headline / Sub** are the words at the top of the frame. A
-  numbered kicker shows its number in a dot.
+- **Caption** is the one line at the top of the frame.
 - **On the phone** is what the real tracker does, tapped through by the
-  renderer. **Graphics** are the moving parts drawn around the phone.
-- Where a line comes from: *(flyer)* is the flyer's own wording, *(app)* is
-  what the tracker itself prints, and *(new)* was written for the video.
-  New lines are the ones to check first.
-- Every frame that shows the tracker carries the label **"Halimbawa ·
-  example screen"** at the foot. The buses are the flyer's made-up ones.
+  renderer.
+- **Graphics** are the moving parts drawn around the phone. Any words in
+  them are labels of one to three words, never sentences.
+- Times are estimates for the shorter cut, about 45 seconds in all.
+- Every frame that shows the tracker carries **"Halimbawa · example
+  screen"** at the foot. The buses are the flyer's made-up ones.
 
 ## At a glance
 
-| # | Time | Scene | Headline |
-|---|------|-------|----------|
-| 0 | 0:00–0:05 | Cover | Nasaan na ang bus? |
-| 1 | 0:05–0:08.5 | Open the link | Walang app. Walang account. |
-| 2 | 0:08.5–0:16 | Where the buses are | Bawat bilog, isang bus. |
-| 3 | 0:16–0:20.5 | Save your stop | Ilang stop pa bago dumating? |
-| 4 | 0:20.5–0:32 | The bus coming | Bibilangin ng app. |
-| 5 | 0:32–0:41 | Salamat | Isang tap mo, ramdam ng nag-share. |
-| 6 | 0:41–0:48.5 | On a bus yourself | I-share ang lokasyon ng bus. |
-| 7 | 0:48.5–0:54 | The ticket | I-tap ang Stop. May ticket ka pa. |
-| 8 | 0:54–0:59 | Why it is safe | Libre, walang ads. |
-| 9 | 0:59–1:06 | Close | Buksan ngayon |
+| # | Time | Scene | Caption |
+|---|------|-------|---------|
+| 0 | 0:00–0:03.5 | Cover | Nasaan na ang bus? |
+| 1 | 0:03.5–0:10 | Where the buses are | Live ang bawat bus |
+| 2 | 0:10–0:21 | How far is it | Easily monitor kung gaano kalayo pa |
+| 3 | 0:21–0:28 | Salamat | *(no caption)* |
+| 4 | 0:28–0:34 | On a bus yourself | Tap to share kung nasaan na ang bus |
+| 5 | 0:34–0:39 | The ticket | *(no caption)* |
+| 6 | 0:39–0:45 | Close | Buksan ngayon |
+
+Removed since draft 1:
+- "Walang app. Walang account." The phone now flies in straight from the
+  cover.
+- "Bibilangin ng app." The countdown stays as part of scene 2.
+- The "Libre, walang ads" card.
+- The captions on the salamat and ticket scenes. Those scenes stay, shown
+  with no words.
 
 ---
 
-## 0 · Cover (0:00–0:05)
+## 0 · Cover (0:00–0:03.5)
 
-A full-frame card in maroon, no phone.
+A full-frame card in maroon, with no phone.
 
 - **Board:** the dot-matrix route board, MENDEZ / TAGAYTAY ⇄ ONE AYALA.
-- **Eyebrow:** WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER · UNOFFICIAL *(app's header)*
-- **Headline:** Nasaan na **ang bus?** *(flyer)*
-- **Lede:** Tingnan kung nasaan ang bus ngayon — bago ka pa lumabas ng bahay. *(flyer)*
-- **Small print at the foot:** Halimbawa lang ang mga bus sa video na ito *(new)*
-- **Graphics:** the view of Taal from the ridge at dawn; the sun comes up and
-  the coach drives in with its headlamp on.
+- **Caption:** Nasaan na **ang bus?**
+- **Small print at the foot:** Halimbawa lang ang mga bus
+- **Graphics:** the dawn view over Taal. The sun comes up and the coach
+  drives in.
 
-Frame 0 is the thumbnail a group chat shows, so the board and the headline
-are on screen from the very first frame.
+The longer lede line ("Tingnan kung nasaan ang bus ngayon…") is dropped.
+Frame 0 is the group chat's thumbnail, so the board and the caption are on
+screen from the first frame.
 
-## 1 · Open the link (0:05–0:08.5)
+## 1 · Where the buses are (0:03.5–0:10)
 
-- **Kicker:** ① Buksan ang link *(flyer)*
-- **Headline:** Walang app. Walang **account.** *(flyer)*
-- **Sub:** Walang ida-download. Bubukas agad sa browser mo, sa kahit anong phone. *(flyer)*
-- **On the phone:** the tracker as it opens, showing four buses.
-- **Graphics:** the livery stripes wipe across; the phone flies in tilted and
-  settles; a gold line underlines the web address in its address bar.
-
-## 2 · Where the buses are (0:08.5–0:16)
-
-- **Kicker:** ② Tingnan kung nasaan ang bus *(new)*
-- **Headline:** Bawat bilog, **isang bus.** *(new)*
-- **Sub:** Live ang posisyon, galing sa mga nasa bus mismo. *(new; the flyer says "Galing sa mga volunteer ang posisyon")*
-- **On the phone:** the map pans in to Imus and Kawit, where 98018 is.
-- **Graphics:**
-  - The camera zooms in on the line map at the top.
-  - A gold callout reads **▲ Papuntang Ayala** on the top line, then a maroon
-    one reads **▼ Papuntang Mendez** on the bottom line *(new)*.
-  - The camera moves down to the map. A callout reads **Live · 98018** on the
-    bus *(new)*.
-
-## 3 · Save your stop (0:16–0:20.5)
-
-- **Kicker:** ③ I-save ang stop mo *(new)*
-- **Headline:** Ilang stop pa **bago dumating?** *(new)*
+- **Caption:** Live ang **bawat bus**
 - **On the phone:**
-  1. The phone scrolls down to the saved-stop card and taps "Set your stop".
-  2. It types "S&R" and picks **S&R Kawit**.
-  3. The card reads "about 5 stops before yours · 3.0 km" *(app)*.
-
-## 4 · The bus coming (0:20.5–0:32)
-
-- **Kicker:** Malapit na ba? *(new)*
-- **Headline:** Bibilangin ng app. *(new)*
+  1. The livery stripes wipe the cover away and the phone flies in, tilted,
+     and settles.
+  2. The map pans in to Imus and Kawit, where bus 98018 is.
 - **Graphics:**
-  - The camera closes in on the card. A flip counter beside the headline
-    reads **5 stops pa · 3.0 km**.
-  - At 0:22.5 a chip in the corner says **Pinabilis** ("sped up"). The bus
-    covers the last three kilometres in about eight seconds.
-  - The counter flips down in step with the card: 4, 3, 2.
-  - At two stops, the LED board slams in with **MALAPIT NA!** and the card
-    turns gold with the same words *(app)*.
-  - At one stop, the board slams in with **SAKAY NA!** with a burst. The card
-    says "Next stop is yours. Get ready to wave it down." *(app)*
+  - A gold line underlines the web address in the address bar.
+  - The camera zooms in on the line map at the top.
+  - A gold callout reads **▲ Pa-Ayala** on the top line, then a maroon one
+    reads **▼ Pa-Mendez** on the bottom line.
+  - The camera moves down to the map, and a callout reads **Live · 98018**
+    on the bus.
 
-## 5 · Salamat (0:32–0:41)
+## 2 · How far is it (0:10–0:21)
 
-- **Kicker:** ④ Mag-salamat *(new)*
-- **Headline:** Isang tap mo, **ramdam ng nag-share.** *(new)*
-- **On the phone:** the rider taps bus 98018 on the map. The popup opens with
-  the town line ("Kawit, where independence was declared on 12 June 1898")
+- **Caption:** Easily monitor **kung gaano kalayo pa**
+- **On the phone:**
+  1. The phone scrolls to the saved-stop card, taps "Set your stop", types
+     "S&R" and picks **S&R Kawit**.
+  2. The card reads "about 5 stops before yours · 3.0 km".
+- **Graphics:**
+  - The camera closes in on the card, and a flip counter appears:
+    **5 stops · 3.0 km**.
+  - A **Pinabilis** chip ("sped up") shows while the bus covers the last
+    three kilometres in about eight seconds.
+  - The counter flips down with the card: 4, 3, 2.
+  - At two stops the LED board slams in with **MALAPIT NA!**, and the card
+    turns gold.
+  - At one stop the board slams in with **SAKAY NA!** and a burst. The card
+    says "Next stop is yours."
+
+> **About "With built-in timer":** this half of your line is left out on
+> purpose. The app deliberately never shows minutes or an arrival time. It
+> keeps no record of past trips to estimate one from, and CLAUDE.md treats
+> any wording that implies one as a bug. What the app counts down is stops
+> and kilometres. If you want a second line, "Built-in countdown" or
+> "Live ang bilang ng stops" says what it actually does.
+
+## 3 · Salamat (0:21–0:28), shown without words
+
+- **Caption:** none.
+- **On the phone:** the rider taps bus 98018 on the map. The popup opens,
   and the rider taps **Say salamat**.
 - **Graphics:**
-  - A second phone slides in: the person sharing from bus 98018. The labels
-    above the two phones read **Ikaw** and **Nasa bus 98018** *(new)*.
+  - A second phone slides in beside the first. The labels above the two
+    phones read **Ikaw** and **Nasa bus 98018**.
   - Sampaguita fly from the rider's phone to the sharer's.
-  - A green ring goes round **"1 rider said salamat"** on the sharer's screen
-    *(app)*.
+  - The sharer's screen shows "1 rider said salamat", and a green ring
+    pulses round it.
 
-## 6 · On a bus yourself (0:41–0:48.5)
+The labels are the one bit of text left, because without them the second
+phone is a stranger. They could go too, if the flowers carry it.
+
+## 4 · On a bus yourself (0:28–0:34)
 
 The background turns to night.
 
-- **Kicker:** ⑤ Nasa bus ka? *(new)*
-- **Headline:** I-share ang lokasyon **ng bus.** *(new)*
-- **Sub:** I-tap ang “I'm on the bus”, piliin ang direksyon. Puwede mong itigil anumang oras. *(new)*
+- **Caption:** Tap to share **kung nasaan na ang bus**
 - **On the phone:** the rider taps "I'm on the bus", then Northbound, types
-  98019, and taps Start. The sharing tab goes dark.
-- **Graphics:** the camera closes in on the "Everyone can see this" line map.
-  A callout reads **Ito ang bus mo** on the green-ringed bus *(new)*.
+  98019 and taps Start. The sharing tab goes dark.
+- **Graphics:** the camera closes in on the line map, and a callout reads
+  **Ito ang bus mo** on the green-ringed bus.
 
-## 7 · The ticket (0:48.5–0:54)
+This caption is eight words, which is over the three-to-five aim. A
+four-word version would be **"Tap. Live na ang bus."**
 
-- **Kicker:** Pagbaba mo *(new)*
-- **Headline:** I-tap ang Stop. May **ticket** ka pa. *(new)*
-- **Graphics:**
-  - A clock chip says **Makalipas ang 2 oras** ("2 hours later") *(new)*, and
-    the trip jumps ahead.
-  - Three riders the video does not show say salamat.
+## 5 · The ticket (0:34–0:39), shown without words
+
+- **Caption:** none.
+- **Graphics:** a clock chip reads **Makalipas ang 2 oras**, and the trip
+  jumps ahead. This chip has to stay: the video's own rule is that a skipped
+  stretch says so.
 - **On the phone:** the rider taps Stop, and the camera closes in on the
-  salamat ticket. It shows Mendez → Ayala, 2 h 26 min on the map, "3 riders
-  said salamat" and the BUONG RUTA stamp *(app)*.
+  salamat ticket: Mendez → Ayala, "3 riders said salamat", and the BUONG
+  RUTA stamp.
 
-## 8 · Why it is safe (0:54–0:59)
-
-A full-frame card in maroon. The example-screen label goes away here, because
-the tracker is no longer on screen.
-
-- **Eyebrow:** Bakit ito ligtas gamitin *(flyer)*
-- **Headline:** Libre, **walang ads.** *(flyer)*
-- **Four rows, each ticked as it pops in:**
-  1. **Walang app.** Browser lang. Walang i-i-install. *(flyer)*
-  2. **Walang account.** Walang pangalan, walang number, walang email. *(flyer)*
-  3. **Hindi ka nito sinusundan.** Kung nanonood ka lang, hindi hinihingi ang location mo. *(flyer)*
-  4. **Walang itinatagong history ng biyahe.** Ang huling posisyon lang ang naka-imbak, at nabubura pagtapos. *(flyer, shortened)*
-
-## 9 · Close (0:59–1:06)
+## 6 · Close (0:39–0:45)
 
 - **Board:** the route board, with a scanline passing over it.
-- **Eyebrow:** Buksan ngayon *(new)*
-- **Link:** community-bus-tracker.netlify.app, typed out letter by letter,
-  then the QR code pops in with a scan line.
-- **Lede:** I-scan ang QR o i-type ang link. Gumagana sa kahit anong phone. *(flyer)*
-- **Call to action:** I-post sa group chat ninyo! *(new)*
-- **Disclaimer:** **Hindi ito opisyal.** Not affiliated with, run by, or
-  endorsed by Wonderful Transport. Galing sa mga volunteer ang posisyon.
-  Kapag walang nag-share, walang bus sa mapa — hindi ibig sabihin walang bus. *(flyer)*
-- **Graphics:** the coach drives across the bottom and off.
+- **Caption:** Buksan ngayon
+- **Graphics:** the link community-bus-tracker.netlify.app types itself out,
+  then the QR code pops in. Below them is **I-post sa group chat!**, and the
+  coach drives across the bottom and off.
+- **Disclaimer (small print, required):** **Hindi ito opisyal.** Not
+  affiliated with, run by, or endorsed by Wonderful Transport. Kapag walang
+  nag-share, walang bus sa mapa.
+
+The "I-scan ang QR o i-type ang link…" line is dropped.
 
 ---
 
-## New since the last render (main, 10 October)
+## Possible additions
 
-The saved-stop card now has a **riding mode**. On board, it follows your own
-bus to the stop you get off at, rather than the nearest bus coming. A sharer's
-own bus is picked automatically; anyone else taps **I'm on this bus** in the
-bus's popup. The card then says **Malapit na!** and **Bababa na!** with "Get
-ready to get off", and while sharing, the card also shows on the sharing tab.
+- **BABABA NA!** The saved-stop card now has a riding mode from main: on
+  board it follows your own bus, and the card says Malapit na! and then
+  Bababa na!. In scene 4, the LED board could count down to **BABABA NA!**,
+  so the video pairs catching the bus (SAKAY NA!) with getting off it, and
+  still uses no caption.
 
-The video does not show any of this yet. Two ways it could:
+## Rules the script still keeps
 
-- In scene 6 or 7, keep the saved stop (or save the stop you get off at) and
-  let the card count down to **BABABA NA!** on the LED board. This mirrors
-  scene 4's SAKAY NA!, so the two halves of the video rhyme: waiting for the
-  bus, and getting off it.
-- In scene 5, the popup now also shows **I'm on this bus**. A rider who is
-  not sharing could tap it to follow the bus they boarded.
-
-## Rules the script has to keep
-
-- Every frame showing the tracker carries the example-screen label.
-- Sped-up or skipped stretches say so.
+- The example-screen label is on every frame that shows the tracker.
+- The skip says so.
 - The disclaimer stays in the close.
-- No caption claims minutes or an arrival time.
-- No caption claims anything the flyer or the briefing does not.
+- No minutes or arrival times anywhere.
+- The four safety points left with the "Libre, walang ads" card. The
+  disclaimer is now the only reassurance in the video. That is allowed, but
+  worth knowing.

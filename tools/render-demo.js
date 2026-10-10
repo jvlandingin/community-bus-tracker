@@ -64,8 +64,8 @@
 // Needs Chromium (chrome-headless-shell first, as in render-flyer.sh) and
 // ffmpeg with libx264, and nothing installed: like the other tools it drives
 // the browser directly over its debugging pipe, because there is
-// deliberately no package.json in this repository. Both cuts take about
-// twenty minutes, nearly all of it screenshots.
+// deliberately no package.json in this repository. Both cuts take about a
+// quarter of an hour, nearly all of it screenshots.
 'use strict';
 const fs = require('fs');
 const os = require('os');

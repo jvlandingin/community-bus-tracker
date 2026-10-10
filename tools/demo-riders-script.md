@@ -4,9 +4,9 @@ The scene-by-scene script for `assets/flyer/demo-riders.mp4`, to agree on
 before anything is rendered. Once it is settled, `tools/demo-cuts.js` is
 changed to match and the video is re-rendered.
 
-**Draft 2.** The motion does the explaining; the words only name the scene.
-Each scene gets one caption of three to five words where possible, in
-English and Tagalog mixed. Two scenes have no caption at all.
+**Draft 3.** The motion does the explaining; the words only name the scene.
+There are four short captions in the whole video, in English and Tagalog
+mixed, and three scenes have no caption at all.
 
 How to read it:
 
@@ -24,14 +24,15 @@ How to read it:
 | # | Time | Scene | Caption |
 |---|------|-------|---------|
 | 0 | 0:00–0:03.5 | Cover | Nasaan na ang bus? |
-| 1 | 0:03.5–0:10 | Where the buses are | Live ang bawat bus |
-| 2 | 0:10–0:21 | How far is it | Easily monitor kung gaano kalayo pa |
+| 1 | 0:03.5–0:10 | Where the buses are | *(no caption)* |
+| 2 | 0:10–0:21 | How far is it | Gaano kalayo pa? |
 | 3 | 0:21–0:28 | Salamat | *(no caption)* |
-| 4 | 0:28–0:34 | On a bus yourself | Tap to share kung nasaan na ang bus |
+| 4 | 0:28–0:34 | On a bus yourself | Share kung nasaan ang bus |
 | 5 | 0:34–0:39 | The ticket | *(no caption)* |
 | 6 | 0:39–0:45 | Close | Buksan ngayon |
 
 Removed since draft 1:
+- "Live ang bawat bus". The buses scene now has no caption.
 - "Walang app. Walang account." The phone now flies in straight from the
   cover.
 - "Bibilangin ng app." The countdown stays as part of scene 2.
@@ -55,9 +56,9 @@ The longer lede line ("Tingnan kung nasaan ang bus ngayon…") is dropped.
 Frame 0 is the group chat's thumbnail, so the board and the caption are on
 screen from the first frame.
 
-## 1 · Where the buses are (0:03.5–0:10)
+## 1 · Where the buses are (0:03.5–0:10), shown without words
 
-- **Caption:** Live ang **bawat bus**
+- **Caption:** none.
 - **On the phone:**
   1. The livery stripes wipe the cover away and the phone flies in, tilted,
      and settles.
@@ -72,7 +73,7 @@ screen from the first frame.
 
 ## 2 · How far is it (0:10–0:21)
 
-- **Caption:** Easily monitor **kung gaano kalayo pa**
+- **Caption:** Gaano **kalayo pa?**
 - **On the phone:**
   1. The phone scrolls to the saved-stop card, taps "Set your stop", types
      "S&R" and picks **S&R Kawit**.
@@ -88,12 +89,6 @@ screen from the first frame.
   - At one stop the board slams in with **SAKAY NA!** and a burst. The card
     says "Next stop is yours."
 
-> **About "With built-in timer":** this half of your line is left out on
-> purpose. The app deliberately never shows minutes or an arrival time. It
-> keeps no record of past trips to estimate one from, and CLAUDE.md treats
-> any wording that implies one as a bug. What the app counts down is stops
-> and kilometres. If you want a second line, "Built-in countdown" or
-> "Live ang bilang ng stops" says what it actually does.
 
 ## 3 · Salamat (0:21–0:28), shown without words
 
@@ -114,14 +109,11 @@ phone is a stranger. They could go too, if the flowers carry it.
 
 The background turns to night.
 
-- **Caption:** Tap to share **kung nasaan na ang bus**
+- **Caption:** Share **kung nasaan ang bus**
 - **On the phone:** the rider taps "I'm on the bus", then Northbound, types
   98019 and taps Start. The sharing tab goes dark.
 - **Graphics:** the camera closes in on the line map, and a callout reads
   **Ito ang bus mo** on the green-ringed bus.
-
-This caption is eight words, which is over the three-to-five aim. A
-four-word version would be **"Tap. Live na ang bus."**
 
 ## 5 · The ticket (0:34–0:39), shown without words
 

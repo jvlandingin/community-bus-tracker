@@ -777,7 +777,22 @@ until something has been kept, which is the no-zero rule again.
 than a pile of the same card. `ticketArtSvg()` draws the two ends as roadside
 signs carrying their places' marks, boarded on the left and left on the right,
 with the coach on the road between them heading for the second: read like the
-ticket, rather than like the map, because a ticket is read as from → to. The
+ticket, rather than like the map, because a ticket is read as from → to.
+Behind the coach is the view at the destination, asked for by the maintainer
+("like Taal when arriving at Tagaytay"): one per kind of place in `MARKS`
+(`TICKET_VIEWS`), chosen by the same sixth field of the destination's
+`CHECKPOINT` line, so nothing names a town. The volcano is Taal Lake with the
+island in it, the towers a skyline, the terminal a long wave of a roof on the
+bay, coffee the shrubs in rows under a shade tree, the church a bell tower and
+a stone front among the town's roofs, the shrine a heritage house with its
+balcony and tower, the crossing shops under awnings with the wires overhead,
+and the flag a monument with the Philippine flag over it. That one is held to
+the flag's own rules: blue above red, because red on top means a state of
+war, the triangle at the hoist, twice as long as it is high, and lit by a lamp
+after dark, the way a flag flown at night is. The coach sits left of centre
+so the view has the middle of the picture, where the eye goes and nothing
+stands in front of it, and at night the views have their lights on like the
+coach. An end with no mark keeps the plain hills. The
 sky comes from the stamps (`ticketSky()`: dawn for Madaling araw, night for Gabi
 na, day otherwise), so a kept copy draws the same picture from what it keeps
 and needs no clock. At night the coach has its windows lit and its lamp on,

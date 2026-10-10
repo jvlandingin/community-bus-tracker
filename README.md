@@ -47,9 +47,10 @@ company's name or initials, for the same reason.
   attached to a person is the one thing this project's promise to the bus
   company rules out.
 - **A ticket at Stop:** a sharer who taps Stop gets a salamat ticket for the
-  trip — a picture of where they got on and off, how long their bus was on the
-  map, how many riders said salamat, a stamp or two. Made on the phone, sent
-  nowhere, and never about how the bus was driven.
+  trip — a picture of where they got on and off, with the view where they got
+  off behind the bus (Taal Lake for Tagaytay, the towers for One Ayala), how
+  long their bus was on the map, how many riders said salamat, a stamp or two.
+  Made on the phone, sent nowhere, and never about how the bus was driven.
 - **My tickets:** tap Keep and a copy of the ticket goes into an album on the
   sharer's own phone, which counts the places on the route their trips have
   passed and the stamps they have collected. A kept copy is a souvenir, not a

@@ -139,6 +139,50 @@ check(S.ticketArtSvg({ from: 'volcano', to: 'towers', sky: 'noon' }) === S.ticke
         S.TICKET_SKIES.day.coach === S.SCENE_TIMES.day.coach && /--c-glass:#f3c56b/.test(S.TICKET_SKIES.night.coach),
     'the coach is the app\'s own, by day as on the empty map, and at night with its windows lit');
 }
+// Behind the coach, the view at the trip's destination: Taal Lake for a
+// trip that ends at Tagaytay, towers for one that ends in the city. One for
+// every kind of place a mark can name, chosen by the same field of config.txt,
+// so a fork's places get views without a line of code naming a town.
+{
+  const kinds = Object.keys(S.MARKS).sort();
+  check(Object.keys(S.TICKET_VIEWS).sort().join(',') === kinds.join(','), 'a view for every kind of place the marks can name',
+    Object.keys(S.TICKET_VIEWS).sort().join(' '));
+  const viewOf = (kind, sky) => S.TICKET_VIEWS[kind](S.TICKET_SKIES[sky]);
+  const all = [];
+  for (const kind of kinds) for (const sky of Object.keys(S.TICKET_SKIES)) all.push({ kind, sky, v: viewOf(kind, sky) });
+  check(all.every(x => S.ticketArtSvg({ from: 'crossing', to: x.kind, sky: x.sky }).includes(x.v)),
+    'and the picture of a trip draws the view of the place it ended at, under its sky');
+  const toTowers = S.ticketArtSvg({ from: 'volcano', to: 'towers', sky: 'day' });
+  check(toTowers.includes(viewOf('towers', 'day')) && !toTowers.includes(viewOf('volcano', 'day')),
+    'the view is the destination\'s, never the place it was boarded at');
+  const nowhere = S.ticketArtSvg({ from: 'volcano', to: '', sky: 'day' });
+  check(!all.some(x => nowhere.includes(x.v)), 'an end with no mark gets the plain hills, not somebody else\'s view');
+  check(S.ticketArtSvg({ from: 'coffee', to: 'coffee', sky: 'night', one: true }).includes(viewOf('coffee', 'night')),
+    'and a trip that began and ended by the same place shows that place');
+  check(all.every(x => {
+    const svg = S.ticketArtSvg({ from: 'church', to: x.kind, sky: x.sky });
+    const at = svg.indexOf(x.v);
+    return at > 0 && at < svg.indexOf('r="22"') && at < svg.indexOf('viewBox="0 0 364 136"');
+  }), 'drawn behind the signs and the coach, so it never covers a mark or the bus');
+  check(all.every(x => !/ id="|<text|https?:|href=|r="22"|r="7" fill="none"/.test(x.v)),
+    'with no ids, no words and nothing loaded, and nothing that could be taken for a sign');
+  const byDay = kinds.map(k => viewOf(k, 'day'));
+  check(new Set(byDay).size === kinds.length, 'every kind of place is its own picture');
+  const lit = ['towers', 'terminal', 'church', 'shrine', 'crossing'];
+  check(S.TICKET_SKIES.night.win === '#f3c56b' && lit.every(k => viewOf(k, 'night').includes('#f3c56b') && !viewOf(k, 'day').includes('#f3c56b')),
+    'and at night the buildings have their lights on, like the coach', lit.join(' '));
+  // The flag of the Philippines is flown with the blue on top in time of
+  // peace; red on top means a state of war. The view that flies it must
+  // never be the second, and the triangle belongs at the hoist.
+  const flag = viewOf('flag', 'day');
+  const yOf = fill => { const m = new RegExp('<rect x="([\\d.]+)" y="([\\d.]+)" width="([\\d.]+)" height="([\\d.]+)" fill="' + fill + '"').exec(flag); return m ? m.slice(1).map(Number) : null; };
+  const blue = yOf('#0038a8'), red = yOf('#ce1126');
+  const tri = /<path d="M([\d.]+) ([\d.]+)L([\d.]+) ([\d.]+)L([\d.]+) ([\d.]+)Z" fill="#fff"\/>/.exec(flag);
+  check(!!blue && !!red && blue[1] < red[1] && blue[0] === red[0] && blue[2] === red[2] && blue[3] === red[3],
+    'the flag flies blue above red, as in time of peace', blue && red ? `blue y ${blue[1]}, red y ${red[1]}` : 'not found');
+  check(!!tri && !!blue && +tri[1] === blue[0] && +tri[5] === blue[0] && +tri[3] > blue[0] && blue[2] === 2 * (blue[3] + red[3]),
+    'with the white triangle at the hoist, on a flag twice as long as it is high');
+}
 const tktCode = slice('function showTicket(', '// ---- Trip mode');
 check(/tktArt\(fromIdx, toIdx, TKT_KEEP\.st\) \+ tktGrid\(fromIdx, toIdx\)/.test(tktCode),
   'the ticket at Stop draws it above its punched stops');

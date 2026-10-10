@@ -52,6 +52,15 @@ album counts the places on the route a sharer's kept trips have passed, the
 four stamps, and the tickets themselves. Time on the map was left out on
 purpose, because added up it is working hours.
 
+Asked whether each place still had its art, "like Taal when arriving at
+Tagaytay", it had, but only as the small drawing on the arrival sign. So the
+picture now has the destination's view behind the coach: Taal Lake and the
+volcano island for Tagaytay, towers for One Ayala, the terminal's wave of a
+roof on the bay for PITX, coffee under a shade tree for Amadeo, a church, a
+heritage house with its tower, shops at a crossing, and a monument with the
+flag. They are by kind of place, like the marks, so the code names no town.
+The flag is pinned the right way up by a test: blue above red.
+
 **Left as it was:** the flyer's "Walang itinatagong history ng biyahe". It is
 about what the system stores, its claim that no driver's route, speed or stops
 are recorded still holds, and the poster has no room to spare. The briefing

@@ -154,9 +154,9 @@ cannot be produced — if one is ever wanted, that is the deliberate conversatio
 not a follow-up. `test-thanks.js` and `db/07-thanks-tests.sql` hold all of it.
 
 **The sharer gets a ticket at Stop** (October 2026): a picture of where they got
-on and off (the two places' marks as roadside signs, the coach between, the sky
-from its stamps), how long the bus was on the map, how many said salamat, a stamp
-or two. Made on the phone and sent nowhere. Fenced the same way as the count: no
+on and off (the two places' marks as roadside signs, the coach between, the view
+at the destination behind it, the sky from its stamps), how long the bus was on
+the map, how many said salamat, a stamp or two. Made on the phone and sent nowhere. Fenced the same way as the count: no
 stamp may be about how the bus was driven (speed, trip time, comparisons — the
 driver metric again), no ticket for a trip under five minutes or one that never
 reached the map, no zero. It is built from a six-field record in memory, and
@@ -229,8 +229,11 @@ scene covers the guide, the flyer and the briefing. Each checkpoint can name a
 drawn mark (`MARKS`) in an optional sixth field of its `CHECKPOINT` line; it is drawn beside
 the town line in a bus's popup and on the stop of a sharer's ticket, whose
 stamps sit beside what they stamp, never over the words. The ticket's own
-picture is the marks of the trip's two ends (`ticketArtSvg()`), so every kept
-ticket in the album is a different card.
+picture is the marks of the trip's two ends (`ticketArtSvg()`) with the view at
+the destination behind them, one per kind of place (`TICKET_VIEWS`, chosen by
+the same sixth field), so every kept ticket in the album is a different card.
+The flag view flies the Philippine flag blue above red, as in peace, and
+`test-pictures.js` fails if it is ever drawn the other way up.
 
 **Android sharers can use an app** (`mobile/`, October 2026) that keeps GPS
 running with the screen locked. It is a Capacitor shell that loads the live
@@ -329,7 +332,9 @@ the words in each page's `header .route` (and in `tools/app-icons.html`, for
 the link-preview picture), so a fork edits those, runs `tools/make-pictures.js`
 and re-runs `tools/render-icons.sh`. The empty map's scene is this route's own
 view, Taal from the Tagaytay ridge, in `sceneSvg()`: a fork redraws its ground
-or keeps the volcano. `how-to.html` used to be the exception —
+or keeps the volcano. The ticket's views are by kind of place, so they follow
+`config.txt` like the marks, but the volcano one is Taal too: a fork whose
+volcano has no lake redraws that one. `how-to.html` used to be the exception —
 its screenshots and screen recordings showed this deployment, so a fork had to
 recapture them or delete the page. Every figure on it is now drawn in HTML and
 CSS from the same tokens as the app, and the page loads nothing over the

@@ -53,7 +53,7 @@ function renderer() {
     block(html, '// ---- THE PICTURES (unit tested)', '// ---- END PICTURES') +
     'S.SIGN_FONT=SIGN_FONT;S.signGlyph=signGlyph;S.signLayout=signLayout;S.signboardSvg=signboardSvg;' +
     'S.COACH_SIDE=COACH_SIDE;S.SCENE_TIMES=SCENE_TIMES;S.sceneSvg=sceneSvg;S.MARKS=MARKS;S.markSvg=markSvg;' +
-    'S.TICKET_SKIES=TICKET_SKIES;S.ticketArtSvg=ticketArtSvg;')(S);
+    'S.TICKET_SKIES=TICKET_SKIES;S.TICKET_VIEWS=TICKET_VIEWS;S.ticketArtSvg=ticketArtSvg;')(S);
   return S;
 }
 

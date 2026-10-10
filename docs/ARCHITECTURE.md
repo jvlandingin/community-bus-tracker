@@ -301,6 +301,10 @@ Hoisting the headline above the strip only when the count is zero would buy
 that back, and is the obvious follow-up if the empty case turns out to be the
 one people are actually looking at.
 
+October 2026 paid most of it back without moving anything: an empty map now
+says why on the map itself, where the reader is already looking (see "The
+empty map says when" below). The headline still says it too, a scroll later.
+
 A hairline above the headline marks the split: over the line is where the buses
 are, under it is what the app has to say about them.
 
@@ -371,7 +375,56 @@ the old grey stop dots, because the photo is a photo; recapturing it needs
 a browser that can reach CARTO and is the one part of this that could not
 be done in the same commit.
 
+## The empty map says when
+
+October 2026. Nobody sharing is what most visitors see, and a blank map reads
+as a broken one. `renderMapNote()` lays one card over the map whenever no bus
+is live, in one of four voices, decided from the operating hours alone:
+
+- **inside operating hours**: nobody is sharing right now, with the last
+  trips possibly still on the road if the window has just closed, and a
+  button to the sharing tab — the empty map is also the best moment to ask
+  someone on a bus to be the first;
+- **closed in the middle of the day**: "No buses until 3:20 PM", the earlier
+  of the two directions' next departures, with both listed under it;
+- **closed at night**: *Tulog pa ang bus* — the bus is asleep — with the
+  first trips of the morning;
+- **within the hour before the first trip**: *Gising na ang bus*, waking up.
+
+It is not drawn until the first positions answer has landed, so a page that
+is still loading never claims the map is empty, and it carries nothing the
+page did not already know.
+
+The folded hours card answers before it is opened, too: a status line
+(departing, last buses still on the road, or closed until a time) and the
+day drawn as a band of the departure windows with a mark at now.
+`serviceState()` decides the line and is tested to agree with
+`withinWindows()` — which decides the headline — at every minute of the day,
+because a card saying the last buses are on the road over a headline saying
+the service has stopped would leave a rider believing whichever they read
+second.
+
+**Two wrong times were found on the way.** The empty headline named the day's
+first departure whatever the hour, so every afternoon between the windows it
+sent riders home until tomorrow's 6:00 AM with a 3:40 PM trip due;
+`nextTrip()` now looks forward from now. And the map's own sentence first
+named the northbound time whatever the southbound one said, which is the
+later bus whenever the southbound window opens first; `firstNextTrip()` takes
+the earlier. Both are in `test-hours.js`, and the first one fails on the old
+code.
+
 ## Progress strip
+
+**It is drawn as a line map** (October 2026): each direction a solid line in
+its own livery colour, a station at every checkpoint with the terminals a size
+bigger, and the map's drawn bus as the pill instead of 🚌. Two pale rails with
+emoji on them read as a progress bar rather than as a route. The stations sit
+at the same evenly spaced positions as the names between the lines, so nothing
+below about spacing changed. A reader with a saved stop sees it as a station
+of its own on both lines, in their colour, placed by `busPlace()` exactly as a
+bus at that spot would be, so a bus coming down the line visibly closes on it
+— on the tracker's strip only, because the person on the sharing tab is on a
+bus, not waiting for one.
 
 The strip snapped each bus to its nearest checkpoint until July 2026, so a bus
 anywhere between PITX and One Ayala sat on the PITX tick until it jumped the
@@ -538,6 +591,27 @@ that needs travel-time history the system deliberately does not keep — so the
 card says how far, not how long, and the test suite fails if a sentence ever
 starts implying otherwise.
 
+**The card draws the stops** (October 2026). With a bus coming, it puts the
+bus at one end of a line and the stop at the other, with one dot for every
+stop still between them, so "about 8 stops" is seen without being counted.
+The dots are the counted stops — `namedStopKms()` projects them exactly as
+`stopChainKms()` does, and `test-mystop.js` checks that one is the other —
+and they run in the order the bus will meet them, so the first is the "next
+stop" the card names. Past eleven they no longer fit a phone, so the line
+keeps the next five and the last three with an ellipsis between; the number
+beside it stays exact. The sentence the card used to print is still there for
+screen readers, in a visually hidden span, with everything drawn
+`aria-hidden` beside it.
+
+It speaks up twice, and only twice: **Malapit na!** at two stops or fewer,
+and **Sakay na!** when yours is the next stop and the bus is inside 2 km
+(`rideState()`). Both are counts, like everything else on the card. A phone
+that can vibrate also gets a switch to buzz once per bus when either happens,
+kept in `sessionStorage` like the location dot's switch, so it dies with the
+tab and never becomes a fourth remembered thing; the flag pops only on the
+draw where the state changes, because the card is rebuilt on every poll and a
+pop that replays every six seconds stops meaning anything.
+
 **It cost three more files.** `flyer.html`, `for-operators.html` and
 `how-to.html` all redraw the tracker's screen, so all three gained the row.
 Two things that cost a render each and are worth knowing before touching it
@@ -546,6 +620,106 @@ buy the height back out of the mock's own furniture (the poster's mock column
 spans the full page height, so it is what decides one sheet or two); and the
 guide's callout dots are percentages of a figure that just got taller, so
 adding a row there means re-measuring every dot below it, not nudging them.
+The October card did it all again: the poster's copy drops the Change button
+and the two captions under the line on paper, and the line map paid for the
+rest by being shorter than the old rails. The briefing's example screen was
+already taller than an A4 page and had always printed split across two; it
+now prints at phone width, whole, on one.
+
+## Following one bus, and the town lines
+
+October 2026. **Send a link to this bus**, in a bus's popup, hands over a
+`#b=` link that opens the map following that bus: centred on it, a chip
+saying which bus, re-centred on every poll, and a Stop that clears the hash.
+It is for "nasa bus na ako" to whoever is fetching you. The link carries the
+bus's public id and nothing else — the same id every map already receives,
+which `sql/04-session-id-privacy.sql` made something that cannot be turned
+back into a session id — so it adds nothing to what anyone can see, and it
+stops meaning anything when the trip ends, because the id dies with the row.
+It goes to the phone's own sending sheet where there is one and to the
+clipboard everywhere else. The function is `sendBusLink` and the button
+`.buslink`, never anything with `share` in it, for the reason in "Content
+blockers" below.
+
+The popup also carries one line about the town the bus is passing, or the next
+one it will reach — *Kwento ng ruta*: "Passing Amadeo, the coffee capital of
+the Philippines". The lines are an optional fifth field on each `CHECKPOINT`
+in `config.txt`, so a fork writes its own or leaves them off and the popup says
+nothing. `storyFor()` picks the same checkpoint the strip's pill points at.
+Keep each one a single checked fact: a wrong one is printed to every rider on
+the route.
+
+## Small celebrations, and what they may not become
+
+October 2026. Four small things, each of which had to be checked against the
+rules above before it was built.
+
+- **The bus says beep beep.** Tapping salamat makes the bus on the rider's own
+  map hop and say so. Nothing is sent for it and nothing waits on it: it is the
+  tap being seen. Reduced motion turns it off.
+- **The thank-you floats up the sharer's strip** when their count rises, once
+  per rise and never on the first draw of a trip, so it means "somebody just
+  did this" rather than replaying a number they already had.
+- **Trip mode.** While a trip is live and the sharing tab is on screen, the tab
+  goes black and the strip glows: a phone on a dashboard is read in glances,
+  and on the OLED screens most mid-range Androids have, black costs less
+  battery. It is the token block redefined under `:root.trip-on`, so every card
+  follows without a rule each, tied to `sharing` rather than to the status line
+  so a passing error mid-trip does not flash it back to daylight.
+- **The salamat ticket.** Stop hands the sharer a ticket for the trip — where
+  they got on and off, how long their bus was on the map, how many riders said
+  salamat, and a stamp or two for the trip's shape — made on the phone from
+  what it saw and kept nowhere: it is gone when it is closed. It is the most
+  rewarding thing this app shows anybody, which is exactly why it is fenced:
+  **no stamp is about how the bus was driven** (no speed, no trip time, nothing
+  that compares one run with another — those are the driver numbers
+  `for-operators.html` promises the tool cannot produce), a trip under five
+  minutes or that never reached the map gets no ticket, and the salamat line
+  goes through `thanksWords()`, so a quiet trip shows no zero. The record it is
+  made from is six numbers and flags in one variable — when the trip started,
+  roughly where on the chain, how many other buses were on the map, whether a
+  write landed, the highest count seen — and `test-thanks.js` fails if it grows
+  a seventh, or if anything is ever appended to it: a ticket that needed a
+  trail on the phone would be the thin end of "no location history".
+- **A parol.** From 1 September — the "ber" months, when the country starts
+  decorating — to Three Kings on 6 January, the header hangs a parol and a
+  string of lights. The season is worked out on the reader's phone; the admin
+  page can switch it off (`parol_enabled`, absent means on).
+
+## The name, the icons and the link preview
+
+October 2026. The tracker had been called by the bus company's initials,
+which is the one name a community tool should not carry: a link preview is
+read before anyone opens the page and its disclaimers. Every title a reader
+sees now says **Bus Tracker**, and the route says the rest. The header carries
+the route name on the amber LED board a bus has above its windscreen — drawn,
+not a font: bold text seen through a mask of dots over a board of unlit ones,
+so it stays plain text for screen readers and costs no download.
+
+**Home screen.** `manifest.webmanifest` and the icons in `assets/icons/` make
+"Add to Home screen" give the bus on maroon rather than a screenshot or a
+letter. There is deliberately no service worker: an offline copy of a live map
+would be a map of where the buses were, which is worse than no map.
+
+**The icons are rendered, not drawn by hand.** `tools/app-icons.html` is the
+source, and `tools/render-icons.sh` screenshots it with headless Chromium at
+each size, like `render-flyer.sh` does for the flyer. Both scripts prefer
+`chrome-headless-shell`: full Chrome's headless mode lays the page out in a
+viewport about 87 px shorter than the window and still returns a picture the
+full size, so the bottom of every screenshot comes out unpainted. On the
+flyer's chat image that had been a strip of plain paper colour, unnoticed; on
+an icon it is a black band. `app-icons.html` paints a warning across the
+picture if it finds itself in a short viewport, so the failure cannot ship
+quietly. The preview picture names this route, so a fork edits that page and
+re-runs the script.
+
+**The link preview's picture needs a full address**, because the crawlers that
+build preview cards will not resolve a relative one, and `index.html` cannot
+know its own address. So the committed `og:image` is relative, and
+`tools/write-preview-url.js` rewrites it at build time from the address
+Netlify gives every build — the second line of the published site that is not
+the committed one, after the CARTO key. A host that does not set it gets a
+preview with no picture and nothing else changes.
 
 ## Duplicate sharer handling
 
@@ -602,6 +776,11 @@ built in a JS string that a DOM scan never sees, and a filter can match an
 attribute's value as readily as its name. `star` is deliberately not on the
 list: it is a substring of `start`, and a scan that cries wolf on
 `onbusStartBtn` is a scan somebody eventually deletes.
+
+The October controls were named the same way: the follow link is
+`sendBusLink` and `.buslink`, its chip `followchip`, the ticket `tkt*` and
+the buzz switch `buzzBox`. None of them is the kind of thing a filter list
+hunts for, and the scan agrees.
 
 ## Known limitations
 
@@ -710,7 +889,12 @@ deploy folder:
 - `test-guard.js`, `test-strip.js`, `test-prompts.js`, `test-hours.js`,
   `test-mystop.js` and `test-thanks.js` extract the shipped code out of
   index.html by comment markers and run it, so a passing
-  test cannot drift from the app. They need Node, plus config-template.txt one
+  test cannot drift from the app. Since October 2026 they also hold the hours
+  card and the parol season (`test-hours`), the stop-by-stop card and its two
+  louder states (`test-mystop`), the town lines (`test-strip`) and the
+  ticket's rules (`test-thanks`); every one of those checks was watched
+  failing against a deliberately broken copy of the page before it was
+  trusted. They need Node, plus config-template.txt one
   level up. `test-boot.js` additionally loads both pages in a real DOM (jsdom)
   over a local HTTP server, including a deploy with `assets/` missing and a
   config.txt that was never filled in.

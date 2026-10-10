@@ -25,6 +25,47 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-10 — A redesign, and some fun
+
+The maintainer asked whether the UI could be more beautiful, and then whether
+the app could be more fun, after picking the salamat ticket for sharers out of
+the first set of ideas as the one they liked best. Nine design ideas and seven
+of nine fun ones were built in one go; the commit log has what each one is, and
+`docs/ARCHITECTURE.md` why each one is shaped the way it is. This entry is the
+parts that were decided rather than built.
+
+**The name is Bus Tracker.** The previous entry noted that "WT Live" reads as
+the bus company's initials in a link preview, before anyone has seen a
+disclaimer. Settled: every title a reader sees says Bus Tracker, and the route
+says the rest. The header line that names the company as UNOFFICIAL stays.
+
+**Two fun ideas were left out on purpose.** Telling a sharer how many phones
+have the map open ("10 people are watching") would change who can see the
+watching count, which only the admin page can today; that is a decision about
+the count, not a decoration, so it waits for one. And "Ingat po" as a second
+kind of thank-you needs a database migration for what is really the same
+gesture as salamat. Neither is ruled out.
+
+**Two bugs turned up by using the thing, not by reading it.** Every afternoon
+between the windows, the empty headline sent riders home until tomorrow's first
+trip with a 3:40 PM bus due. And tapping salamat closed the popup before
+"Salamat sent" appeared, so the rider never saw their thank-you land, though it
+did. Both were live; both are fixed and pinned by tests that fail on the old
+code.
+
+**One rule that shaped the favourite.** The ticket is the most rewarding thing
+the app shows anyone, which made it the most likely place for a driver metric
+to creep in: "trip took 2 h 05 min" is a stopwatch on a driver with one more
+step. So its stamps are about the trip's shape and the time of day only, it is
+made on the phone and kept nowhere, and a test fails if the record it is built
+from ever grows.
+
+**Not yet checked:** the link preview picture in an actual Messenger chat (it
+only gets its full address on a Netlify build), "Add to Home screen" and the
+buzz on a real Android phone, and the seven one-line town stories, which were
+written from general knowledge and are now printed to every rider: they are
+the first thing to read over before this is merged.
+
 ## 2026-10-09 — If it were built again from scratch
 
 A review rather than a change: what would come out the same if the whole thing

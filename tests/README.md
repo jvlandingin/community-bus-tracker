@@ -13,12 +13,12 @@ Needs Node. Run from this folder with `index.html`, `admin.html` and
 `config-template.txt` reachable one level up:
 
 ```
-node test-hours.js      # split operating hours, the en-route allowance
+node test-hours.js      # split operating hours, the en-route allowance, the hours card, the parol season
 node test-guard.js      # wrong-direction detection on simulated trips
-node test-strip.js      # progress strip position and wording
+node test-strip.js      # progress strip position and wording, the town lines in the popup
 node test-prompts.js    # idle, end-of-trip and direction prompts
-node test-mystop.js     # the saved stop: which bus is coming, how far, how many stops
-node test-thanks.js     # saying salamat: the words, who is offered it, what it never draws
+node test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
+node test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket
 node test-boot.js       # loads both pages in a real DOM (needs jsdom)
 ```
 

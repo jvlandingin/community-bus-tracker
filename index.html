@@ -1891,6 +1891,20 @@ function nowMins(){
   const now = new Date();
   return now.getHours()*60 + now.getMinutes();
 }
+// Whichever direction leaves first, for a sentence that can only name one
+// time: "No buses until 3:20 PM". Taking the northbound time whatever the
+// southbound one said would name the later bus whenever the southbound
+// window opens first. Null when neither direction has hours.
+function firstNextTrip(nowMins){
+  let best = null;
+  ['north','south'].forEach(function(d){
+    const t = nextTripMins(d, nowMins);
+    if (t === null) return;
+    const wait = (t - nowMins + 1440) % 1440;
+    if (!best || wait < best.wait) best = { wait:wait, label:nextTrip(d, nowMins) };
+  });
+  return best;
+}
 // What one direction's service is doing at nowMins, for the hours card:
 // 'departing' inside a departure window, 'enroute' in the three and a half
 // hours after one closes while its last buses are still on the road, and
@@ -3636,10 +3650,8 @@ function renderMapNote(anyBus){
   const times = '<b>' + escapeHtml(nn || '–') + '</b> from Mendez · <b>' + escapeHtml(ss || '–') + '</b> from One Ayala';
   let html;
   if (st === 'closed'){
-    const soon = [nextTripMins('north', m), nextTripMins('south', m)]
-      .filter(function(x){ return x !== null; })
-      .map(function(x){ return (x - m + 1440) % 1440; });
-    const wait = soon.length ? Math.min.apply(null, soon) : 9999;
+    const first = firstNextTrip(m);
+    const wait = first ? first.wait : 9999;
     const h = Math.floor(m/60);
     if (wait <= 60 && h < 12){
       html = '<div class="ic night">' + napBusSvg(true) + '</div><div><div class="t">Gising na ang bus</div>' +
@@ -3648,7 +3660,7 @@ function renderMapNote(anyBus){
       html = '<div class="ic night">' + napBusSvg(false) + '</div><div><div class="t">Tulog pa ang bus</div>' +
              '<div class="s">The buses are asleep. First trips ' + times + '</div></div>';
     } else {
-      html = '<div class="ic">' + CLOCK_GLYPH + '</div><div><div class="t">No buses until ' + escapeHtml(nn || ss || 'the next trip') + '</div>' +
+      html = '<div class="ic">' + CLOCK_GLYPH + '</div><div><div class="t">No buses until ' + escapeHtml(first ? first.label : 'the next trip') + '</div>' +
              '<div class="s">Next trips ' + times + '</div></div>';
     }
   } else {

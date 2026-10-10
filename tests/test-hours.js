@@ -10,6 +10,7 @@ new Function('S', 'let SET={hours:{north:[],south:[]}};' + block +
   'S.parseHM=parseHM;S.fmtHM=fmtHM;S.withinWindows=withinWindows;S.hoursLabel=function(d,w){SET.hours[d]=w;return hoursLabel(d);};' +
   'S.nextTrip=function(d,w,m){SET.hours[d]=w;return nextTrip(d,m);};' +
   'S.serviceState=serviceState;S.inParolSeason=inParolSeason;' +
+  'S.firstNextTrip=function(n,s,m){SET.hours.north=n;SET.hours.south=s;return firstNextTrip(m);};' +
   'S.routeState=function(n,s,m){SET.hours.north=n;SET.hours.south=s;return routeState(m);};')(S);
 
 let fail = 0;
@@ -79,6 +80,23 @@ check(S.routeState(poster, [['04:00','05:00']], M(7,0)) === 'departing', 'one di
 check(S.routeState([['04:00','05:00']], [['05:00','06:00']], M(7,0)) === 'enroute', 'only buses still on the road: en route');
 check(S.routeState(poster, poster, M(14,0)) === 'closed', 'both closed: closed');
 check(S.routeState([], poster, M(14,0)) === 'unknown', 'one direction unknown: the route does not claim closed');
+
+// The empty map names one time, so it has to be the earlier of the two
+// directions'. It used to take northbound's whatever southbound said.
+{
+  const south = [['06:30','10:00'], ['15:20','20:00']];
+  const f = S.firstNextTrip(poster, south, M(14,0));
+  check(f && f.label === '3:20 PM' && f.wait === 80, '2:00pm: the southbound 3:20 leaves before the northbound 3:40',
+    f && f.label);
+  const g = S.firstNextTrip(poster, south, M(23,45));
+  check(g && g.label === '6:00 AM' && g.wait === 375, 'late at night: tomorrow\'s first, from whichever end it is', g && g.label);
+  check(S.firstNextTrip([], [], M(9,0)) === null, 'no hours anywhere: nothing to name');
+  const h = S.firstNextTrip([], south, M(14,0));
+  check(h && h.label === '3:20 PM', 'one direction without hours does not hide the other\'s');
+  const note = html.slice(html.indexOf('function renderMapNote('), html.indexOf('// ---- Follow my bus'));
+  check(/const first = firstNextTrip\(m\);/.test(note) && /No buses until ' \+ escapeHtml\(first \? first\.label/.test(note),
+    'and the empty map really does ask it, rather than picking a direction itself');
+}
 
 // Pasko season, which the admin page can switch off: the ber months, to
 // Three Kings. Local dates, as the phone reading the page sees them.

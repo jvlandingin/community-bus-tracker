@@ -17,12 +17,12 @@ made in response to bugs that had already shipped.
 The six dependency-free JavaScript suites, run from the repository root:
 
 ```
-node tests/test-hours.js      # split operating hours, the en-route allowance
+node tests/test-hours.js      # split operating hours, the en-route allowance, the hours card, the parol season
 node tests/test-guard.js      # wrong-direction detection on simulated trips
-node tests/test-strip.js      # progress strip position and wording
+node tests/test-strip.js      # progress strip position and wording, the town lines in the popup
 node tests/test-prompts.js    # idle, end-of-trip and direction prompts
-node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops
-node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws
+node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
+node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket
 ```
 
 These are also Netlify's build command, so a failure cancels the deploy.
@@ -58,6 +58,15 @@ cd mobile && npm ci && npx cap sync android
 cd android && ./gradlew assembleDebug
 ```
 
+Two scripts regenerate committed images from HTML sources. Neither runs at
+deploy time and both need only a Chromium; they prefer `chrome-headless-shell`,
+because full Chrome's headless screenshots leave the bottom 87 px unpainted:
+
+```
+sh tools/render-flyer.sh     # assets/flyer: poster PDF, briefing PDF, chat image
+sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview picture
+```
+
 ## Architecture
 
 **Five pages, one config file.** `index.html` is the tracker (watch + share),
@@ -74,6 +83,15 @@ attach to an email. `tools/render-flyer.sh` drives headless Chromium to produce
 both plus a chat-sized PNG, and `tools/make-qr.js` regenerates the flyer's QR
 code as an inline path when the deployment URL changes. Neither tool runs at
 deploy time and neither needs anything installed.
+
+**It is called Bus Tracker**, never by the bus company's initials: a link
+preview is read before the disclaimers are. `manifest.webmanifest` and
+`assets/icons/` make "Add to Home screen" work (deliberately no service
+worker: an offline map of where the buses were is worse than none). The icons
+and the preview picture are rendered from `tools/app-icons.html`, and
+`tools/write-preview-url.js` rewrites `og:image` to a full address at build
+time — the second line of the published site that differs from the commit,
+after the CARTO key.
 
 **Three credentials, not interchangeable.** The route slug is public and unlocks
 reading. The share key lives only in the link posted to the community, and
@@ -114,12 +132,28 @@ running total per sharer is the driver metric `for-operators.html` promises
 cannot be produced — if one is ever wanted, that is the deliberate conversation,
 not a follow-up. `test-thanks.js` and `db/07-thanks-tests.sql` hold all of it.
 
+**The sharer gets a ticket at Stop** (October 2026): where they got on and off,
+how long the bus was on the map, how many said salamat, a stamp or two. Made on
+the phone, kept nowhere. Fenced the same way as the count: no stamp may be about
+how the bus was driven (speed, trip time, comparisons — the driver metric
+again), no ticket for a trip under five minutes or one that never reached the
+map, no zero. It is built from a six-field record in memory, and `test-thanks.js`
+fails if that record grows a field or anything is ever appended to it.
+
+**A reader can send a link to one bus**: `#b=` plus the bus's public id, which
+every map already has, so the link reveals nothing and dies with the trip. It is
+`sendBusLink`/`.buslink`, never anything called share. The same popup tells one
+line about the town the bus is passing, from an optional fifth field on each
+`CHECKPOINT` in `config.txt`.
+
 **The app keeps exactly three things between visits**, all on the device and
 all named in the privacy panel: whether the guide has been opened, the
 light/dark/system theme choice, and the reader's saved stop. Adding a fourth
 means editing that panel in the same commit — the panel is the promise, not the
 code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
 `localStorage` keys the app writes stops matching the set the panel names.
+Per-visit switches go in `sessionStorage` for exactly this reason — the
+location dot, and the saved-stop card's "buzz once" switch.
 
 **The tracking tab reads picture first, words second.** Top to bottom: the
 progress strip, the map, the saved stop, then the headline, the direction
@@ -129,7 +163,10 @@ them; the headline is the chip list's empty state written out, so it sits with
 that list; and the filter moves the strip, the map and the list together from
 wherever it is placed. The cost is that "No buses live" — which carries the
 operating hours and the next departures — is now below the fold on a phone, so
-an empty map explains itself a scroll later than it used to.
+an empty map explains itself a scroll later than it used to. Most of that is
+bought back by `renderMapNote()`, which says why the map is empty on the map
+itself: next trips, the bus asleep (*tulog pa*) or waking, or nobody sharing
+inside hours with a button to be the first.
 
 **The map is this route's, not a map with pins on it.** CARTO's basemap is
 split into its `nolabels` and `only_labels` layers with the stop marks
@@ -139,6 +176,14 @@ labelled with the strip's short names, and the bus badge is an inline SVG
 rather than 🚌. No new request, storage or third party. **There is
 deliberately no route line**: the road is not known well enough to draw and
 a wrong line is worse than none. `docs/ARCHITECTURE.md` has the reasoning.
+The strip above it is drawn in the same idiom: a line map with a station per
+checkpoint, the drawn bus as its pills, and the reader's saved stop as a
+station of their own.
+
+**The sharing tab goes dark during a trip** (`:root.trip-on`, the token block
+redefined, set by `syncTripMode()`), and **a parol hangs in the header** from 1
+September to 6 January unless the admin page switches it off (`parol_enabled`
+in settings, absent means on).
 
 **Android sharers can use an app** (`mobile/`, October 2026) that keeps GPS
 running with the screen locked. It is a Capacitor shell that loads the live
@@ -211,7 +256,11 @@ from the app. Keep the markers intact when editing those regions.
 
 ## Route-specific content
 
-Everything adapts from `config.txt`. `how-to.html` used to be the exception —
+Everything adapts from `config.txt`, including the optional one-line story on
+each `CHECKPOINT` — facts about Cavite, so a fork writes its own or leaves them
+off. One file outside it does not adapt: `tools/app-icons.html` draws this
+route's name into the link-preview picture, so a fork edits it and re-runs
+`tools/render-icons.sh`. `how-to.html` used to be the exception —
 its screenshots and screen recordings showed this deployment, so a fork had to
 recapture them or delete the page. Every figure on it is now drawn in HTML and
 CSS from the same tokens as the app, and the page loads nothing over the
@@ -225,6 +274,9 @@ layout means updating the recreations in the same commit.** `test-boot.js`
 section 8 defends the two halves of this that a machine can check — that the
 page still loads nothing, and that its copied `:root` tokens still match
 `index.html`'s.
+
+The guide also redraws the sharing tab in trip mode and the salamat ticket, so
+changing either means changing `how-to.html` in the same commit.
 
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`
 each redraw the tracker's screen the same way, showing four buses live because

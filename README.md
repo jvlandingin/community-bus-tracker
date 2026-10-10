@@ -14,7 +14,10 @@ so itself, in the header strip and in "How your data is handled", because
 leaving that to whoever posts the link is how a community tool starts getting
 mistaken for an official one. If you deploy it for a route, edit those two
 places, plus the `<title>` and the `og:` tags at the top of `index.html` that
-name the route in link previews.
+name the route in link previews, the name in `manifest.webmanifest`, and the
+route on the link-preview picture (`tools/app-icons.html`, then
+`sh tools/render-icons.sh`). It calls itself Bus Tracker, never by the bus
+company's name or initials, for the same reason.
 
 ## What it does
 
@@ -24,23 +27,43 @@ name the route in link previews.
   shares the vehicle's position for that trip. Needs a community key. Stop
   anytime. In a browser the screen has to stay on; the Android app in
   `mobile/` keeps sharing with it locked.
-- **Your own stop:** save the stop you wait at and the page says how far the
-  next bus still is from *it* — `▲ Northbound · 3.0 km away · about 5 stops
-  before yours` — measured along the road rather than as the crow flies. Pick
-  from the route's own stop list, or drop a pin. There is also an opt-in ➤
+- **Your own stop:** save the stop you wait at and the card under the map
+  draws the next bus coming, your stop, and a dot for every stop still between
+  them — *about 5 stops before yours · 3.0 km* — measured along the road
+  rather than as the crow flies. Two stops out it says **Malapit na!**, and
+  **Sakay na!** when yours is next; phones that can vibrate can buzz once.
+  Pick from the route's own stop list, or drop a pin. There is also an opt-in ➤
   control on the map that shows where you are. **All of this stays on your
   phone**: the stop is saved in the browser, the distance is worked out on the
   device from positions the page already has, and nothing about a person
   watching is ever sent anywhere.
 - **Say salamat:** tap a bus on the map and thank whoever is carrying the
-  phone through the trip. The person sharing sees `🙏 3 riders said salamat`
-  under their progress strip; nobody else sees it, on any bus. It belongs to
+  phone through the trip; the bus on your map says *beep beep!* back. The
+  person sharing sees `🙏 3 riders said salamat` float up their progress
+  strip; nobody else sees it, on any bus. It belongs to
   that one trip and is deleted with it — **there is no running total for any
   driver, and nowhere to keep one**, which is deliberate: an appreciation score
   attached to a person is the one thing this project's promise to the bus
   company rules out.
+- **A ticket at Stop:** a sharer who taps Stop gets a salamat ticket for the
+  trip — where they got on and off, how long their bus was on the map, how
+  many riders said salamat, a stamp or two. Made on the phone, kept nowhere,
+  and never about how the bus was driven.
+- **Follow one bus:** "Send a link to this bus", in a bus's popup, sends a
+  link that opens the map following that bus — for whoever is fetching you.
+  It carries only the bus's public ID and dies with the trip. The popup also
+  has a line about the town the bus is passing.
+- **An empty map says when:** with nobody sharing, the map says when the next
+  trips leave, or that the bus is still asleep, or asks someone on a bus to be
+  the first. The hours card shows the day as a band with a mark at now.
 - **Light and dark:** follows the device by default, with a ☀/☾/◐ control in
-  the header to override it either way. The map's tiles follow too.
+  the header to override it either way. The map's tiles follow too, and the
+  sharing tab goes dark during a trip so a phone on a dashboard is easy to
+  read and easier on the battery.
+- **Home screen and link previews:** "Add to Home screen" gives the bus on
+  maroon, and a link posted in a group chat previews with a picture of the
+  route on a bus's LED signboard. From September to Three Kings a parol hangs
+  in the header (the admin page can switch it off).
 - **Sightings:** a board for when nobody is sharing GPS. Direction and nearest
   landmark are picked rather than typed, so recent ones also show on the
   progress strip as dashed marks — clearly not live GPS. Can be switched off
@@ -101,8 +124,9 @@ migration.
    public route slug and your admin key.
 3. **Copy `config-template.txt` to `config.txt`** and fill in your Supabase URL,
    anon key, route slug, source URL, checkpoints and stops. Checkpoints are the
-   handful of labels on the progress strip. Stops are every place the bus calls
-   at, in route order.
+   handful of labels on the progress strip, each with an optional one-line
+   story about the place for the bus popups. Stops are every place the bus
+   calls at, in route order.
 4. **Get a free CARTO basemap key** at
    [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey). Since late
    August 2026 CARTO stamps "API KEY REQUIRED" across tiles requested without
@@ -120,10 +144,15 @@ migration.
    repositories. Unlike the Supabase anon key, which unlocks nothing because
    the tables have RLS with no policies, a stolen CARTO key spends your monthly
    tile allowance. Restrict it to your domain if CARTO's dashboard lets you.
+
+   The build also writes one line of `index.html`: `tools/write-preview-url.js`
+   turns the link preview's picture into a full address, from the URL Netlify
+   gives every build. Nothing to set; another host leaves it relative and the
+   preview simply has no picture.
 5. **Deploy** to any static host. Netlify works well: point it at your fork and
    it publishes on every push to `main`. However you host it, the site must
    contain `index.html`, `admin.html`, `how-to.html`, `flyer.html`,
-   `for-operators.html`, `config.txt` and
+   `for-operators.html`, `config.txt`, `manifest.webmanifest` and
    `assets/`.
 6. **Open `/admin.html`**, sign in with your admin key, and set your operating
    hours. Use the Generate button to make a share key, and post the link it

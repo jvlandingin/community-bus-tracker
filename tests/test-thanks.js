@@ -13,7 +13,8 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const src = html.slice(html.indexOf('// ---- SAYING SALAMAT (unit tested)'),
                        html.indexOf('// ---- END SALAMAT'));
 const S = {};
-new Function('S', src + 'S.thanksWords=thanksWords;S.thanksControl=thanksControl;')(S);
+new Function('S', src + 'S.thanksWords=thanksWords;S.thanksControl=thanksControl;' +
+  'S.ticketStamps=ticketStamps;S.ticketWorthShowing=ticketWorthShowing;S.ticketGreeting=ticketGreeting;')(S);
 
 let fail = 0;
 const check = (c, label, note) => {
@@ -138,6 +139,19 @@ check(!/alert\(|showAsk\([^)]*salamat/i.test(html.slice(html.indexOf('async func
                                                           html.indexOf('// Everything the badge no longer says'))),
   'and is still never shown an error for being kind');
 
+// Found in October 2026 by watching it in a real browser: the redraw ran
+// inside the button's own click, took the button out of the page, and Leaflet
+// then read the tap as a tap on the map and closed the popup. The thank-you
+// still went through; the rider just never saw it land. The fix is to let the
+// click finish first, and this pins that it stays first.
+{
+  const body = html.slice(html.indexOf('async function sayThanks'), html.indexOf('// Everything the badge no longer says'));
+  const wait = body.indexOf('await new Promise(function(r){ setTimeout(r, 0); });');
+  const redraw = body.indexOf('renderBuses();');
+  check(wait > 0 && redraw > 0 && wait < redraw,
+    'the popup is not redrawn until the tap that opened it has finished');
+}
+
 console.log('\n=== 10. every RPC the pages call exists in a migration ===');
 // The same failure one step earlier: a page that calls a function no
 // migration defines is a feature that is silently dead on arrival, and
@@ -187,6 +201,83 @@ check(/onclick="focusBus\(/.test(html.slice(html.indexOf('function renderStrip')
   'a strip pill routes to the map popup rather than growing its own button');
 check(!/tybtn/.test(html.slice(html.indexOf('function renderStrip'), html.indexOf('function renderBuses'))),
   'and no salamat control is drawn on the strip itself');
+
+console.log('\n=== 12. the ticket: stamps are never about the driving ===');
+// Rule 5 in index.html. The ticket at Stop is the most rewarding thing the
+// app shows a sharer, which is exactly why it must not become the driver
+// metric for-operators.html promises this tool cannot produce: no speed, no
+// trip time, nothing that compares one run with another.
+{
+  const M = (h, m) => h * 60 + m;
+  const trip = (o) => Object.assign({ fromIdx: 2, toIdx: 4, lastIdx: 7, fromShort: 'AMADEO', toShort: 'IMUS',
+                                      startMins: M(9, 0), endMins: M(10, 30), othersAtStart: 3 }, o);
+  const names = st => st.map(x => x.t).join(',');
+  check(S.ticketStamps(trip({})).length === 0, 'an ordinary midday trip in the middle of the route: no stamps');
+  const full = S.ticketStamps(trip({ fromIdx: 0, toIdx: 7, fromShort: 'MENDEZ', toShort: 'AYALA' }));
+  check(names(full) === 'Buong ruta' && full[0].s === 'MENDEZ → AYALA', 'end to end: Buong ruta', full[0] && full[0].s);
+  check(names(S.ticketStamps(trip({ fromIdx: 7, toIdx: 0 }))) === 'Buong ruta', 'and the same the other way');
+  check(names(S.ticketStamps(trip({ startMins: M(4, 10), endMins: M(6, 0) }))) === 'Madaling araw', 'before 5 AM: Madaling araw');
+  check(names(S.ticketStamps(trip({ startMins: M(17, 0), endMins: M(19, 0) }))) === 'Gabi na', 'ending after 6:30 PM: Gabi na');
+  check(names(S.ticketStamps(trip({ startMins: M(23, 0), endMins: M(0, 40) }))) === 'Gabi na', 'and a trip that runs past midnight');
+  check(names(S.ticketStamps(trip({ othersAtStart: 0 }))) === 'Unang bus', 'nobody else on the map when it started: Unang bus');
+  const many = S.ticketStamps(trip({ fromIdx: 0, toIdx: 7, startMins: M(4, 0), endMins: M(7, 0), othersAtStart: 0 }));
+  check(many.length === 2, 'never more than two, so the ticket stays a ticket', names(many));
+
+  // Duration cannot change a stamp. Same shape, same time of day, from an
+  // hour to three: the stamps come out identical, so nothing on the ticket
+  // can be read as "this one was quick".
+  for (const base of [trip({}), trip({ fromIdx: 0, toIdx: 7 }), trip({ othersAtStart: 0 })]) {
+    const outs = [60, 95, 140, 180].map(d => names(S.ticketStamps(Object.assign({}, base, { endMins: base.startMins + d }))));
+    check(outs.every(o => o === outs[0]), 'an hour or three, the stamps are the same', outs[0] || '(none)');
+  }
+  const words = [];
+  for (const f of [0, 7]) for (const t of [0, 7]) for (const sm of [M(4, 0), M(9, 0), M(17, 0), M(23, 0)]) for (const o of [0, 2]) {
+    S.ticketStamps(trip({ fromIdx: f, toIdx: t, fromShort: f ? 'AYALA' : 'MENDEZ', toShort: t ? 'AYALA' : 'MENDEZ',
+                          startMins: sm, endMins: (sm + 120) % 1440, othersAtStart: o }))
+      .forEach(x => words.push(x.t + ' ' + x.s));
+  }
+  const badW = words.filter(w => /(fast|quick|slow|speed|km\/h|kph|\bmin|hour|record|rank|score|best|on time|late\b|delay)/i.test(w));
+  check(words.length > 0 && badW.length === 0, 'and no stamp says anything about how the bus was driven',
+    badW.length ? badW.join(' / ') : [...new Set(words)].join(' / '));
+  check(S.ticketStamps(trip({ fromIdx: 0, toIdx: 7 })).every(x => ['red', 'blue', 'green'].includes(x.c)),
+    'every stamp has an ink the ticket knows how to draw');
+}
+
+console.log('\n=== 13. the ticket: when there is one at all ===');
+// Rule 6: a trip too short to have helped anyone gets no ticket.
+check(!S.ticketWorthShowing(null), 'no trip: no ticket');
+check(!S.ticketWorthShowing({ mins: 4, writes: 9 }), 'four minutes: no ticket');
+check(S.ticketWorthShowing({ mins: 5, writes: 1 }), 'five minutes with the bus on the map: a ticket');
+check(!S.ticketWorthShowing({ mins: 90, writes: 0 }), 'an hour and a half that never reached the map: no ticket');
+check(S.ticketGreeting(18 * 60 + 30) === 'Ingat pauwi!' && S.ticketGreeting(30) === 'Ingat pauwi!',
+  'an evening or late-night trip: Ingat pauwi');
+check(S.ticketGreeting(7 * 60) === 'Ingat sa biyahe!' && S.ticketGreeting(4 * 60) === 'Ingat sa biyahe!',
+  'a morning one: Ingat sa biyahe');
+
+console.log('\n=== 14. the ticket: made on the phone, kept nowhere ===');
+// The ticket is built from a handful of numbers the sharing phone keeps for
+// the trip, never a trail of positions. "No location history" is the system's
+// first rule; a feature that needed one on the device would be the thin end
+// of it, so the record's shape is pinned here.
+{
+  const begin = html.slice(html.indexOf('function tripBegin('), html.indexOf('function nearestCheckpoint('));
+  // Top-level keys only: the start is worked out by a call whose argument
+  // is an object of its own, and that object is not kept.
+  const lit = ((begin.match(/TRIP = \{([\s\S]*?)\n  \};/) || [])[1] || '').replace(/\{[^{}]*\}/g, '');
+  const keys = [...lit.matchAll(/(?:^|[,\s])([a-zA-Z]+)\s*:/g)].map(m => m[1]).sort().join(',');
+  check(keys === 'maxThanks,others,polled,start,startKm,writes', 'the trip record is six numbers and flags', keys);
+  const writes = [...html.matchAll(/TRIP\.([a-zA-Z]+)\s*(?:=[^=]|\+\+)/g)].map(m => m[1]);
+  check(writes.length > 0 && writes.every(k => ['maxThanks', 'polled', 'writes'].includes(k)),
+    'and nothing else is ever written into it', [...new Set(writes)].join(','));
+  check(!/TRIP\.[a-zA-Z]+\.push\(/.test(html), 'nothing is appended to it, so no trail can grow there');
+  const show = html.slice(html.indexOf('function showTicket('), html.indexOf('// ---- Trip mode'));
+  check(/const ty = thanksWords\(trip\.maxThanks\);/.test(show) && /\(ty \?/.test(show),
+    'the salamat line goes through thanksWords, so a quiet trip shows no zero');
+  check(!/rpc\(|fetch\(|localStorage|sessionStorage/.test(show), 'drawing the ticket sends nothing and stores nothing');
+  check(/if \(!\(opts && opts\.quiet\)\) showTicket\(trip, endCoords\);/.test(html) &&
+        /await stopSharing\(\{ quiet:true \}\);\s*setShareUI\('error'/.test(html),
+    'and a session the server has blocked ends on its error, not on a ticket');
+}
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);

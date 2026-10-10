@@ -85,7 +85,9 @@ continuity only.
   "headway_min": 30,
   "bus_expiry_min": 10,
   "sighting_expiry_min": 120,
-  "max_sessions": 25
+  "max_sessions": 25,
+  "sightings_enabled": true,
+  "parol_enabled": true
 }
 ```
 
@@ -96,6 +98,16 @@ after a window closes, so it only says "closed" once that has elapsed.
 
 Ranges enforced server-side by `_check_settings`: headway 1 to 720, bus expiry 1
 to 120, sighting expiry 5 to 1440, max sessions 1 to 200.
+
+The two booleans are display switches, set from `admin.html`, and **absent
+means on** for both, so a route whose stored settings predate a switch keeps
+what it already had. `sightings_enabled` shows or hides the sightings board
+(`docs/ARCHITECTURE.md` has what "hidden" does and does not lock).
+`parol_enabled` lets the tracker hang a parol and a string of lights in its
+header from 1 September to 6 January; the season itself is worked out on the
+reader's phone (`inParolSeason()`), so the setting is only ever a veto.
+Neither needed a migration: `_check_settings` validates the keys it knows and
+passes the rest through, and `get_settings` returns the whole object.
 
 ## RPC surface
 

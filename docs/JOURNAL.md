@@ -25,6 +25,181 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-10 — An art direction, agreed before it was built
+
+The maintainer's next question was about the look rather than the features: it
+read as generic templates, icons and shapes, and could it look professional.
+The answer was planned before anything was built, as a page of drawn examples,
+and four decisions were put to the maintainer with a recommendation each. All
+four recommendations were taken:
+
+- **The typeface:** Barlow Semi Condensed, over Atkinson Hyperlegible or
+  staying with each phone's own font. It fits the strip's eight checkpoint
+  names at a readable size, and it looks like transport signage without being
+  any operator's lettering.
+- **The coach's colours:** a cream body with the app's maroon and gold, over an
+  all-maroon body or keeping the simple bus symbol.
+- **The mark:** the coach seen from the front, over a signboard or route lines.
+- **How far:** all four steps — the foundations and a style guide; the
+  typeface, the icons and the map's buttons; the signboard and the mark; the
+  coach and the pictures. A fifth, a basemap in the app's own colours, was left
+  out as a decision of its own: it needs either a paid map style or map data
+  hosted here, and both are bigger than everything else put together.
+
+**Rules the work was held to**, stated in the plan and kept: nothing new from
+anyone else (the font and the drawings are served from this site, so the
+privacy panel stays true word for word); under 60 KB added to the tracker;
+nothing that looks like the bus company's own livery, logo or lettering; text
+stays text, so the signboard and every icon still read to a screen reader;
+icon names follow the content-blocker rule; and the flyer, the briefing and the
+guide change in the same commit as the app, with the poster still one sheet.
+
+**Where it stands.** The first two steps are in: seven text sizes, three
+corners and three heights where there had been twenty-one sizes, nineteen
+corners and forty shadows, and three speeds with three curves where there had
+been ten curves, all held by a test that fails on a new literal; a
+style guide page that draws them from the tracker's own stylesheet; Barlow,
+46 KB for five weights, cached for a year; and one drawn icon family with no
+emoji left in the interface. Doing it turned up one bug that had shipped: the
+first tap on a bus in the list could open its popup with the top cut off for a
+few seconds.
+
+The third step is in too: the header's route board is a real dot matrix,
+built from lit dots five across and seven down like the boards on the buses,
+and the coach is the mark, on the home screen, in every tab and on the link
+preview. The board kept the rule the old one had: the route name is still
+text in the page, and any character it cannot draw leaves the lettered board
+instead.
+
+And the fourth: the empty map is a picture now, the coach parked on the ridge
+above Taal at night, at dawn or in the midday sun, with the next trips written
+on its sky, and the same view covers the guide, the flyer and the briefing.
+Each checkpoint can carry a small drawing of the kind of place it is, beside its
+line in a bus's popup and on its stop on the ticket, chosen in config.txt so
+the code names no town. Two things that had looked wrong for a while were put
+right on the way: the ticket's stamps sat over "3 riders said salamat", and the
+parol hung on the corner of the sharing tab.
+
+**Not yet checked:** how Barlow renders on a real iPhone and a real low-end
+Android, how the board's glow looks on a cheap screen in sunlight, and whether
+riders read the sampaguita on the salamat button as a thank-you without the
+words beside it. They always have the words beside it. The link preview with
+the new picture has not been seen in an actual Messenger chat. The marks were
+chosen from general knowledge of each town, like the town lines, and are worth
+the same read-through before this is merged.
+
+## 2026-10-10 — A redesign, and some fun
+
+The maintainer asked whether the UI could be more beautiful, and then whether
+the app could be more fun, after picking the salamat ticket for sharers out of
+the first set of ideas as the one they liked best. Nine design ideas and seven
+of nine fun ones were built in one go; the commit log has what each one is, and
+`docs/ARCHITECTURE.md` why each one is shaped the way it is. This entry is the
+parts that were decided rather than built.
+
+**The name is Bus Tracker.** The previous entry noted that "WT Live" reads as
+the bus company's initials in a link preview, before anyone has seen a
+disclaimer. Settled: every title a reader sees says Bus Tracker, and the route
+says the rest. The header line that names the company as UNOFFICIAL stays.
+
+**Two fun ideas were left out on purpose.** Telling a sharer how many phones
+have the map open ("10 people are watching") would change who can see the
+watching count, which only the admin page can today; that is a decision about
+the count, not a decoration, so it waits for one. And "Ingat po" as a second
+kind of thank-you needs a database migration for what is really the same
+gesture as salamat. Neither is ruled out.
+
+**Two bugs turned up by using the thing, not by reading it.** Every afternoon
+between the windows, the empty headline sent riders home until tomorrow's first
+trip with a 3:40 PM bus due. And tapping salamat closed the popup before
+"Salamat sent" appeared, so the rider never saw their thank-you land, though it
+did. Both were live; both are fixed and pinned by tests that fail on the old
+code.
+
+**One rule that shaped the favourite.** The ticket is the most rewarding thing
+the app shows anyone, which made it the most likely place for a driver metric
+to creep in: "trip took 2 h 05 min" is a stopwatch on a driver with one more
+step. So its stamps are about the trip's shape and the time of day only, it is
+made on the phone and kept nowhere, and a test fails if the record it is built
+from ever grows.
+
+**Not yet checked:** the link preview picture in an actual Messenger chat (it
+only gets its full address on a Netlify build), "Add to Home screen" and the
+buzz on a real Android phone, and the seven one-line town stories, which were
+written from general knowledge and are now printed to every rider: they are
+the first thing to read over before this is merged.
+
+## 2026-10-09 — If it were built again from scratch
+
+A review rather than a change: what would come out the same if the whole thing
+were rebuilt today, and what would not. Nothing in the code moved. It is written
+down because the useful part was the list, and a list that lives only in a
+conversation gets rebuilt from nothing next time.
+
+**The core would come out the same.** One row per sharing session and no history
+table; every read and write through `SECURITY DEFINER` functions over tables
+with RLS and no policies; three separate credentials and open reads; polling
+rather than Realtime; distance along the checkpoint chain and never minutes; a
+stop picker instead of a location prompt; static pages, vendored libraries, no
+framework; a Capacitor shell that loads the live site. These are the decisions
+that make the project what it is, and none of them would be made differently.
+
+**What a rider or driver would actually notice is small.** Four things:
+
+- *The name.* The link preview and the browser tab say "WT Live", which reads as
+  the bus company's initials. The header does say UNOFFICIAL, but the preview is
+  seen in the group chat before anyone opens the page, and it carries no such
+  word. A rebuild would use a name that does not borrow the company's.
+  `for-operators.html` already calls it "Community bus tracker". Not decided:
+  the name is the maintainer's call.
+- *The pictures on the flyer and the guide would always match the app*, because
+  they would be captured from a labelled demo mode of the real tracker by the
+  headless-Chromium script that already exists, instead of drawn by hand. Today
+  their map photos still show the old grey stop dots.
+- *No sightings board.* It was switched off the same day it was redesigned, and
+  the group chat already does its job. Riders see no difference, since it is
+  off.
+- *The Android app would have come first*, and been tried on a real trip before
+  any of the design passes. Same app, about two months earlier. As of this entry
+  `mobile/README.md` still lists that trip as not done.
+
+**What only matters behind the scenes, or to another route:**
+
+- **`sql/` cannot build an empty database.** `01-base.sql` opens with
+  `alter table public.routes`; nothing in `sql/` creates `routes`,
+  `bus_positions` or `sightings`, and nothing inserts a route row. Those exist
+  only in `tests/db/00-legacy-baseline.sql`, the reconstruction of the original
+  production database, which also seeds a test share key, fake buses and a spam
+  sighting, so running it is not the answer either. Checked against a fresh
+  PostgreSQL 16 by following the README exactly: `01` to `05` and `07` fail with
+  `relation "public.routes" does not exist`, and the only table created is
+  `watching_now`. All 187 database checks pass, but only as upgrades of the
+  baseline, so CI has never tried a fresh install. This is the lesson from
+  `tests/README.md` again: a runbook nobody has followed end to end is not a
+  runbook. It matters if another community wants its own copy, and it matters
+  to this route if its database ever has to be rebuilt.
+- **The route is not all in `config.txt`.** `set_bus_position` hardcodes a
+  Cavite bounding box (`sql/03-kick-block.sql`), so a deployment anywhere else
+  would have every position refused, and the page would explain it as being
+  outside "the Mendez to Makati route". The header, the direction destinations,
+  the closing-hours sentence, the trip questions and the map's default centre are
+  fixed text in `index.html`.
+- **The code would be organised differently**, invisibly to anyone using it.
+  ES modules instead of one long inline script, so the tests import the shipped
+  code rather than cutting `index.html` apart at comment markers (one cut takes
+  everything from `function haversineKm` up to `function timeAgo`, so it depends
+  on the order the functions happen to be in). One shared token stylesheet
+  instead of five copies and a drift test. The site published from a
+  subfolder, which would make a root `package.json` harmless. Roughly half the
+  rules in `CLAUDE.md` exist to compensate for these, and would not be needed.
+
+**If one thing is done, it is the fresh install**: a schema file that builds the
+database from empty plus a function that creates a route, and a CI job that
+installs from nothing, so the README's setup steps are proven on every commit
+the way the test runbook already is.
+
+---
+
 ## 2026-09-15 — CARTO started charging rent, in watermarks
 
 **What happened.** The live map began showing "API KEY REQUIRED" printed

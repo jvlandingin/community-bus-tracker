@@ -1,8 +1,9 @@
 # Third-party notices
 
-This project bundles the following libraries in `assets/vendor/`. They are
-served from the site itself rather than a CDN, so the app makes no third-party
-requests other than map tiles. Each keeps its own licence, reproduced below.
+This project bundles the following libraries in `assets/vendor/` and one
+typeface in `assets/fonts/`. They are served from the site itself rather than
+a CDN, so the app makes no third-party requests other than map tiles. Each
+keeps its own licence, reproduced or pointed to below.
 
 The Supabase browser bundle is minified and carries no header comment of its
 own, so its notice is reproduced here rather than in the file. The Leaflet
@@ -77,6 +78,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+---
+
+## Barlow and Barlow Semi Condensed
+
+https://github.com/jpt/barlow
+
+Files: `assets/fonts/*.woff2`. The same five files are also carried inline,
+as data URIs, by `how-to.html`, `flyer.html` and `for-operators.html`
+(written there by `tools/embed-fonts.js`).
+
+Each file is a subset of the published font, cut down with fontTools to the
+characters these pages use and with its hinting removed. The licence permits
+this, and Barlow declares no Reserved Font Name, so the cut files keep the
+name.
+
+```
+Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+```
+
+The full licence text is in `assets/fonts/OFL.txt`, next to the files.
 
 ---
 

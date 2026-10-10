@@ -16,22 +16,34 @@
 # Outputs:
 #   flyer-a4.pdf         the poster: one LANDSCAPE A4 sheet, three columns,
 #                        for printing and putting up at terminals
-#   flyer-chat.png       1080x3120, sized for a Messenger feed
+#   flyer-chat.png       1080x3440, sized for a Messenger feed
 #   for-operators.pdf    the briefing, for attaching to an email
 #
 # The PNGs capture the top of the flyer rather than the whole scroll, which is
 # why the route name, the headline, the example screen and the link all sit in
 # the first screenful of flyer.html. If that stops being true, these images
-# quietly start cutting off the thing they exist to show.
+# quietly start cutting off the thing they exist to show. It did once: the
+# cover over the headline pushed the link and its QR code off the foot, which
+# is why the picture is 1720 points tall rather than 1560. Measure the bottom
+# of .passiton at 540 wide after changing anything above it.
 
 set -eu
 
 OUT="${1:-$(cd "$(dirname "$0")/.." && pwd)/assets/flyer}"
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 
+# chrome-headless-shell first. Full Chrome's headless mode (the only one it
+# has since version 132) lays the page out in a viewport about 87px shorter
+# than --window-size and still returns a picture the full size, so the bottom
+# of every screenshot is either unpainted or the page background. On the
+# flyer image that is a strip of plain paper colour across the foot, which
+# is how it went unnoticed; on an icon it is a black band. The shell's
+# viewport is the size it is given. The PDFs are unaffected either way.
 CHROME="${CHROME:-}"
 if [ -z "$CHROME" ]; then
   for c in \
+    /opt/pw-browsers/chromium_headless_shell-*/chrome-linux/headless_shell \
+    "$(command -v chrome-headless-shell 2>/dev/null || true)" \
     /opt/pw-browsers/chromium-*/chrome-linux/chrome \
     "$(command -v chromium 2>/dev/null || true)" \
     "$(command -v chromium-browser 2>/dev/null || true)" \
@@ -64,8 +76,8 @@ done
 # --- The image. Rendered at half the target size with a 2x device scale,
 #     so text is laid out at phone widths and comes out at retina density. ---
 # shellcheck disable=SC2086
-"$CHROME" $FLAGS --force-device-scale-factor=2 --window-size=540,1560 \
+"$CHROME" $FLAGS --force-device-scale-factor=2 --window-size=540,1720 \
   --screenshot="$OUT/flyer-chat.png" "file://$ROOT/flyer.html" 2>/dev/null
-echo "  wrote $OUT/flyer-chat.png (1080x3120)"
+echo "  wrote $OUT/flyer-chat.png (1080x3440)"
 
 echo "Done."

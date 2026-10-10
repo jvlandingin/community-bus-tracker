@@ -1,24 +1,30 @@
 # Deploys come from git now, not drag-and-drop, so a bad commit becomes the
-# live site by itself. These six suites run as the build command and a
+# live site by itself. These nine suites run as the build command and a
 # failure cancels the deploy.
 #
-# They are the six that need nothing installed. Each one extracts the
-# shipped functions out of index.html by their comment markers and runs
-# them, so a failure here means the HTML that is about to be published is
+# They are the nine that need nothing installed. Each one reads the
+# shipped files themselves: eight extract functions out of index.html by
+# their comment markers and run them, and test-tokens.js reads every page's
+# styles. So a failure here means the HTML that is about to be published is
 # broken, not that some copy of it is.
 #
 # Nothing is compiled and nothing is installed. There is deliberately no
 # package.json, because it would make Netlify run npm install and then
 # publish node_modules along with the site.
 #
-# One line of the published site is no longer the committed one. The first
-# build step writes the CARTO basemap key into config.txt from the
+# Two lines of the published site are no longer the committed ones. The
+# first build step writes the CARTO basemap key into config.txt from the
 # CARTO_API_KEY environment variable, set in Netlify's build settings, so
 # the key is not sitting in a public repository for a bot to find. It does
 # not make the key secret from anyone using the site: config.txt is still
 # fetched by the browser. Unset, it is a no-op and the map is watermarked,
-# so a fork deploying straight from git still works. Everything else that
-# gets published is the repository exactly as committed.
+# so a fork deploying straight from git still works.
+#
+# The second rewrites index.html's og:image, the picture on a link preview,
+# from a relative path to a full address, because the crawlers that draw
+# preview cards will not resolve a relative one. The address comes from the
+# URL Netlify gives every build, so a fork needs to set nothing. Everything
+# else that gets published is the repository exactly as committed.
 #
 # test-boot.js is missing from this list because it needs jsdom, and the
 # six database suites need a PostgreSQL. Both run in GitHub Actions
@@ -28,9 +34,22 @@
   publish = "."
   command = """
     node tools/write-basemap-key.js && \
+    node tools/write-preview-url.js && \
     node tests/test-hours.js && \
     node tests/test-guard.js && \
     node tests/test-strip.js && \
     node tests/test-prompts.js && \
     node tests/test-mystop.js && \
-    node tests/test-thanks.js"""
+    node tests/test-thanks.js && \
+    node tests/test-signboard.js && \
+    node tests/test-pictures.js && \
+    node tests/test-tokens.js"""
+
+# The font files can be kept by a phone for a year, because their names
+# change whenever their bytes do (the .v1 in each). Everything else keeps
+# Netlify's default, which revalidates on every visit: the pages and
+# config.txt have to be fresh the moment they change.
+[[headers]]
+  for = "/assets/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

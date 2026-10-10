@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Bus Tracker: Style guide</title>
+<!-- Every colour, size, corner, height, speed and icon the app uses, and the
+     parts built from them, for anyone changing the look of any of the five
+     pages.
+
+     This page keeps no copy of any of it. At load it reads index.html, takes
+     the stylesheet and the icon sprite out of it, and draws everything below
+     with those, so what it shows is what the tracker ships and it cannot
+     drift. The token tables, and the lists of which rules use each token,
+     are computed from that stylesheet too. tests/test-tokens.js is the other
+     half: it fails when index.html or admin.html uses a value that is not
+     one of these.
+
+     Served with the site, so it is at /tools/styleguide.html on any deploy.
+     Opened as a file it cannot read index.html (browsers refuse that), so
+     run a server at the repository root, for example
+     python3 -m http.server, and open /tools/styleguide.html. -->
+<style>
+  /* This page's own furniture, and only that: the app's stylesheet arrives
+     above it at load, and a rule here names its own .sg- classes so that it
+     never restyles one of the app's parts that are on show. */
+  .sg{max-width:980px; margin:0 auto; padding:16px 16px 64px;}
+  .sg-intro{font-family:var(--font-text); font-size:var(--fs-body); line-height:1.55; color:var(--muted); max-width:62ch; margin:4px 0 18px;}
+  .sg-intro code, .sg-note code{font-size:.9em;}
+  .sg h2{font-size:var(--fs-headline); margin:34px 0 4px; letter-spacing:.01em;}
+  .sg h3{font-size:var(--fs-cap); font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--brand-ink); margin:18px 0 8px;}
+  .sg-note{font-family:var(--font-text); font-size:var(--fs-small); line-height:1.55; color:var(--muted); max-width:66ch; margin:0 0 12px;}
+  .sg-grid{display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr));}
+  .sg-row{display:flex; flex-wrap:wrap; gap:12px; align-items:center;}
+  .sg-name{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:var(--fs-label); color:var(--ink);}
+  .sg-val{font-family:ui-monospace,Menlo,Consolas,monospace; font-size:var(--fs-cap); color:var(--muted); word-break:break-all;}
+  .sg-uses{font-family:var(--font-text); font-size:var(--fs-cap); color:var(--muted); margin-top:4px; line-height:1.45;}
+  .sg-theme{display:flex; gap:6px; margin:6px 0 0;}
+  .sg-theme button{
+    min-height:36px; padding:0 12px; border-radius:999px; border:1.5px solid rgba(255,255,255,.3);
+    background:transparent; color:#fff; font-family:inherit; font-size:var(--fs-small); font-weight:700; cursor:pointer;
+  }
+  .sg-theme button[aria-pressed="true"]{background:#fff; color:var(--maroon);}
+  .sg-fail{margin:16px; padding:16px; border-radius:var(--r-m); background:#fff3cd; color:#5c3d00; font-family:sans-serif;}
+
+  /* Colour */
+  .sg-pair{display:grid; grid-template-columns:1fr 1fr; border-radius:var(--r-m); overflow:hidden; border:1px solid var(--line);}
+  .sg-pair .sg-fill{padding:16px 12px; font-weight:800; font-size:var(--fs-title);}
+  .sg-pair .sg-ink{padding:16px 12px; background:var(--surface); font-weight:800; font-size:var(--fs-title);}
+  .sg-pair .sg-lbl{display:block; font-size:var(--fs-cap); font-weight:700; letter-spacing:.04em; margin-top:4px; opacity:.85;}
+  .sg-sw{border-radius:var(--r-m); border:1px solid var(--line); overflow:hidden; background:var(--surface);}
+  .sg-sw .sg-chip{height:52px;}
+  .sg-sw .sg-meta{padding:8px 10px;}
+
+  /* Type */
+  .sg-type{display:grid; grid-template-columns:150px minmax(0,1fr); gap:6px 16px; align-items:baseline; padding:10px 0; border-bottom:1px solid var(--line);}
+  .sg-type:last-child{border-bottom:0;}
+  .sg-type .sg-s{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .sg-type .sg-s.sg-text{font-family:var(--font-text); white-space:normal;}
+  .sg-fam{display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));}
+  .sg-fam .sg-aa{font-size:var(--fs-number); line-height:1.1;}
+
+  /* Corners, heights */
+  .sg-shape{height:84px; background:var(--maroon-soft); border:1.5px solid var(--maroon-line);}
+  .sg-lift{height:84px; background:var(--surface); border-radius:var(--r-l); display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--muted);}
+  .sg-lift-bed{padding:22px; border-radius:var(--r-l); background:var(--paper);}
+
+  /* Motion */
+  .sg-lane{position:relative; height:36px; border-radius:999px; background:var(--paper); border:1px solid var(--line); margin:6px 0 2px;}
+  .sg-lane .sg-dot{position:absolute; top:4px; left:4px; width:26px; height:26px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center;}
+  .sg-lane .sg-dot svg{width:17px; height:17px; fill:#fff;}
+  .sg-motion{display:grid; grid-template-columns:150px minmax(0,1fr); gap:4px 16px; align-items:center;}
+  /* A phone: the names go above what they name. */
+  @media (max-width:560px){
+    .sg-type, .sg-motion{grid-template-columns:minmax(0,1fr);}
+    .sg-type .sg-s{white-space:normal;}
+  }
+
+  /* Icons */
+  .sg-icons{display:grid; gap:8px; grid-template-columns:repeat(auto-fill, minmax(104px, 1fr));}
+  .sg-icon{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-m); padding:12px 6px 8px; text-align:center; color:var(--ink);}
+  .sg-icon svg{width:28px; height:28px; display:block; margin:0 auto 6px;}
+  .sg-icon.sg-small svg{width:16px; height:16px;}
+
+  /* Parts: a bed for each, so the app's own margins have room. */
+  .sg-part{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-l); padding:14px 16px 16px;}
+  .sg-part > .sg-name{display:block; margin-bottom:10px;}
+  .sg-badges{display:flex; gap:26px; align-items:center; padding:18px 8px;}
+  .sg-badges .busmk{position:relative;}
+
+  /* The signboard and the mark */
+  .sg-boards{display:flex; flex-wrap:wrap; gap:14px; align-items:flex-start;}
+  .sg-board{display:inline-block; padding:3px; border-radius:var(--r-s);
+    background:radial-gradient(120% 140% at 30% 0%, #1d1513 0%, #0b0807 70%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), inset 0 3px 10px rgba(0,0,0,.75);}
+  .sg-board .dmsvg{display:block; max-width:100%; height:auto;}
+  .sg-mark img{display:block; border-radius:var(--r-s);}
+  .sg-preview{max-width:100%; border-radius:var(--r-m); box-shadow:var(--sh-2);}
+  .sg-scenes{display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));}
+  /* The map's own card, out of the map: it is absolutely placed in there. */
+  .sg-scenes .mapnote{position:relative; left:auto; right:auto; bottom:auto; z-index:auto;}
+  .sg-icon .mark{width:30px; height:30px; display:block; margin:0 auto 6px; color:var(--brand-ink);}
+</style>
+</head>
+<body>
+<header>
+  <div class="headbar" style="padding-right:0">
+    <div class="route"><span class="led"><span class="ln">Style guide</span></span></div>
+    <div class="sub">BUS TRACKER · DRAWN FROM INDEX.HTML'S OWN STYLESHEET</div>
+    <div class="sg-theme" role="group" aria-label="Theme">
+      <button type="button" data-t="light" aria-pressed="false">Light</button>
+      <button type="button" data-t="dark" aria-pressed="false">Dark</button>
+      <button type="button" data-t="" aria-pressed="true">Device</button>
+    </div>
+  </div>
+</header>
+
+<main class="sg" id="sg">
+  <p class="sg-intro">Everything on this page is drawn with the tracker's own stylesheet and icons, read from
+    <code>index.html</code> as this page loads, so it shows what ships. The tables are computed from that
+    stylesheet too, including which rules use each token. <code>tests/test-tokens.js</code> fails when
+    <code>index.html</code> or <code>admin.html</code> uses a size, corner, shadow or speed that is not
+    one of these. The guide, the flyer and the briefing copy the same values; <code>test-boot.js</code>
+    keeps the copies in step.</p>
+
+  <h2>Colour</h2>
+  <p class="sg-note">Four colours come in pairs, because they do two jobs. The first of each pair is a
+    <b>fill</b>, a shape with white or near-black text on it, and it keeps its value in the dark theme.
+    The second is the same colour used <b>as text</b>, and it inverts in dark, because maroon spelling a
+    word on a near-black card is unreadable. Pick by what the colour is doing.</p>
+  <div class="sg-grid" id="sgPairs"></div>
+  <h3>Pages, text and lines</h3>
+  <div class="sg-grid" id="sgNeutrals"></div>
+  <h3>Tints and states</h3>
+  <div class="sg-grid" id="sgTints"></div>
+
+  <h2>Type</h2>
+  <p class="sg-note">One family in two widths, served from <code>assets/fonts</code> under the SIL Open
+    Font License. The condensed cut is for everything that is a label, a button, a name or a number; the
+    normal width is for sentences. Seven sizes, nothing between them.</p>
+  <div class="sg-fam">
+    <div class="sg-part">
+      <span class="sg-name">--font-ui</span>
+      <div class="sg-aa" style="font-family:var(--font-ui); font-weight:700">Barlow Semi Condensed</div>
+      <div style="font-family:var(--font-ui); font-size:var(--fs-body)">
+        <span style="font-weight:500">500 Medium</span> ·
+        <span style="font-weight:600">600 Semibold</span> ·
+        <span style="font-weight:700">700 Bold</span></div>
+      <div class="sg-uses" style="margin-top:8px">Strip labels, chips, buttons, headlines, the bus number, every number.</div>
+    </div>
+    <div class="sg-part">
+      <span class="sg-name">--font-text</span>
+      <div class="sg-aa" style="font-family:var(--font-text); font-weight:600">Barlow</div>
+      <div style="font-family:var(--font-text); font-size:var(--fs-body)">
+        <span style="font-weight:400">400 Regular</span> ·
+        <span style="font-weight:600">600 Semibold</span></div>
+      <div class="sg-uses" style="margin-top:8px">Hints, the privacy panel, the map's explanations, anything typed.</div>
+    </div>
+  </div>
+  <h3>The seven sizes</h3>
+  <div class="sg-part" id="sgSizes"></div>
+
+  <h2>Corners</h2>
+  <p class="sg-note">Small parts, components, and the cards that hold them. A circle is 50% and a pill is
+    999px; there is no fourth corner.</p>
+  <div class="sg-grid" id="sgCorners"></div>
+
+  <h2>Heights</h2>
+  <p class="sg-note">A card resting on the page, a thing floating over it (a bus on the map, a popup, a
+    toast), and an overlay. In dark the resting card has no shadow at all, because there is nothing to cast
+    one onto; it is lifted by its own surface colour instead.</p>
+  <div class="sg-grid" id="sgHeights"></div>
+
+  <h2>Motion</h2>
+  <p class="sg-note">Three speeds and three curves. Things that arrive ease out; things that celebrate
+    overshoot a little; vehicles accelerate and brake. Anything longer than a beat (a beep, a breathing
+    badge, the parol's sway) states its own length, because it is a moment rather than a transition. With
+    reduced motion asked for, the app flattens all of it; these lanes play only when pressed.</p>
+  <div class="sg-part">
+    <div class="sg-motion" id="sgMotion"></div>
+    <div class="sg-row" style="margin-top:12px"><button type="button" class="big btn-primary" style="width:auto; padding:12px 28px" id="sgPlay">Play, four times slower</button></div>
+  </div>
+
+  <h2>Icons</h2>
+  <p class="sg-note">One family, drawn for this app: a 24-point grid, a 2-point stroke, round ends, the
+    same corner as the coach. Each is a <code>&lt;symbol&gt;</code> in the sprite at the top of
+    <code>index.html</code>'s body, used as <code>&lt;svg class="gi"&gt;&lt;use href="#i-…"/&gt;&lt;/svg&gt;</code>.
+    Named for what they show and never for a social widget, because content blockers hide those by name:
+    thank-you is <code>i-ty</code>, a sampaguita.</p>
+  <div class="sg-icons" id="sgIcons"></div>
+
+  <h2>The signboard and the mark</h2>
+  <p class="sg-note">The route board is a real dot matrix, five dots across and seven down per letter, drawn
+    by the SIGNBOARD block in <code>index.html</code>, which these are drawn with too. An accented letter is
+    drawn as its plain letter and Ñ has its own; a character the board has no dots for leaves the lettered
+    board in place rather than a board with a hole in it. The guide, the flyer and the briefing carry boards
+    drawn by <code>tools/make-pictures.js</code> from the same block.</p>
+  <div class="sg-boards" id="sgBoards"></div>
+  <h3>The mark</h3>
+  <p class="sg-note">The coach the map draws, white on the livery's maroon with the gold trim and its signboard
+    lit. The favicon below is read from <code>index.html</code>; the home-screen icons and the link-preview
+    picture are rendered from <code>tools/app-icons.html</code>.</p>
+  <div class="sg-row" id="sgMark"></div>
+
+  <h2>The coach and the pictures</h2>
+  <p class="sg-note">For the moments the map has nothing else to show, and the covers of the guide, the flyer
+    and the briefing: a provincial coach in the app's own cream, maroon and gold (no operator's livery, logo or
+    lettering), parked at the start of the line above Taal Lake, at three times of day. Drawn by the PICTURES
+    block in <code>index.html</code>, which draws these too.</p>
+  <div class="sg-scenes" id="sgScenes"></div>
+  <div class="sg-part" style="margin-top:12px"><span class="sg-name">COACH_SIDE</span><div id="sgCoach"></div></div>
+  <h3>Marks, one per kind of place</h3>
+  <p class="sg-note">Beside a checkpoint's line in a bus's popup, and on its stop on a sharer's ticket. Which
+    checkpoint gets which is the sixth field of its line in <code>config.txt</code>, so none of them names this
+    route.</p>
+  <div class="sg-icons" id="sgMarks"></div>
+
+  <h2>Parts</h2>
+  <p class="sg-note">The app's own classes, unchanged. A part that only exists inside the map or a script
+    is drawn here with the same markup the script writes.</p>
+  <div class="sg-grid" style="grid-template-columns:repeat(auto-fill, minmax(340px, 1fr))">
+    <div class="sg-part"><span class="sg-name">.big .btn-primary / .btn-ghost / .btn-stop</span>
+      <button type="button" class="big btn-primary">Start sharing my location</button>
+      <div style="height:8px"></div>
+      <button type="button" class="big btn-ghost">Back to the map</button>
+      <div style="height:8px"></div>
+      <button type="button" class="big btn-stop">Stop sharing</button>
+    </div>
+    <div class="sg-part"><span class="sg-name">.tabs .tab</span>
+      <div class="tabs" style="margin:0">
+        <button type="button" class="tab active" aria-pressed="true"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-pin"/></svg></span>Track buses</button>
+        <button type="button" class="tab" aria-pressed="false"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-coach"/></svg></span>I'm on the bus</button>
+      </div>
+      <span class="sg-name" style="display:block; margin:16px 0 0">.seg</span>
+      <div class="seg">
+        <button type="button" class="on-all">All buses</button>
+        <button type="button">▲ Northbound</button>
+        <button type="button">▼ Southbound</button>
+      </div>
+    </div>
+    <div class="sg-part"><span class="sg-name">.buschip .nb / .sb</span>
+      <div class="buslist">
+        <button type="button" class="buschip nb"><span class="arrow">▲</span><b>98018</b>Javalera <span class="age">6s ago</span></button>
+        <button type="button" class="buschip sb"><span class="arrow">▼</span><b>98021</b>Coastal Road <span class="age">14s ago</span></button>
+      </div>
+    </div>
+    <div class="sg-part"><span class="sg-name">.busmk: northbound live, southbound, two sharing, delayed</span>
+      <div class="sg-badges" id="sgBadges"></div>
+    </div>
+    <div class="sg-part"><span class="sg-name">.noticebar</span>
+      <div class="noticebar" style="margin:0">
+        <div class="tag">NOTICE</div>
+        <div style="margin-top:2px; font-weight:600;">Holiday schedule on Monday: first trip 5:00 AM.</div>
+        <div class="age">posted 2h ago</div>
+      </div>
+    </div>
+    <div class="sg-part"><span class="sg-name">details.card.fold</span>
+      <details class="card fold" style="margin:0">
+        <summary>
+          <span class="lbl"><span class="cap">Operating hours</span><span class="val">Every 30 minutes, 4:00 to 10:00 AM and 3:40 to 8:00 PM</span></span>
+          <span class="chev" aria-hidden="true"><svg class="gi"><use href="#i-chev"/></svg></span>
+        </summary>
+        <div class="foldbody"><div class="hint" style="margin:0">Folded content sits here.</div></div>
+      </details>
+    </div>
+  </div>
+</main>
+
+<script>
+(async function(){
+  'use strict';
+  const fail = msg => {
+    const d = document.createElement('div');
+    d.className = 'sg-fail'; d.textContent = msg;
+    document.body.prepend(d);
+  };
+
+  // ---- Borrow the app's stylesheet and sprite ---------------------------
+  let html;
+  try{
+    const r = await fetch('../index.html', { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    html = await r.text();
+  }catch(e){
+    fail('Could not read ../index.html (' + e.message + '). Browsers will not let a page opened as a file read ' +
+         'another file, so serve the repository root, for example with python3 -m http.server, and open ' +
+         '/tools/styleguide.html from there.');
+    return;
+  }
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  // The fonts are addressed from the site root in index.html; this page is
+  // one folder down.
+  const css = [...doc.querySelectorAll('head style')].map(s => s.textContent).join('\n')
+    .replace(/url\((['"]?)assets\//g, 'url($1../assets/');
+  const st = document.createElement('style');
+  st.textContent = css;
+  document.head.insertBefore(st, document.head.querySelector('style'));   // ahead of this page's own rules
+  const sprite = doc.querySelector('body > svg');
+  if (sprite) document.body.prepend(document.importNode(sprite, true));
+  // The bus badge's glyph is a script string in index.html, not markup.
+  const glyph = (html.match(/const BUS_GLYPH =\s*'([^']*)'\s*\+\s*'([^']*)';/) || []).slice(1).join('');
+  // The signboard renderer, taken out by its markers and run, the way
+  // tools/make-pictures.js and the tests do.
+  let sign = null;
+  try{
+    const a = html.indexOf('// ---- THE SIGNBOARD (unit tested)'), b = html.indexOf('// ---- END SIGNBOARD');
+    if (a >= 0 && b > a) sign = new Function(html.slice(a, b) + '; return { signboardSvg: signboardSvg };')();
+  }catch(e){ sign = null; }
+  const favicon = (doc.querySelector('link[rel="icon"]') || {}).href || '';
+  let pics = null;
+  try{
+    const a = html.indexOf('// ---- THE PICTURES (unit tested)'), b = html.indexOf('// ---- END PICTURES');
+    if (a >= 0 && b > a) pics = new Function(html.slice(a, b) +
+      '; return { sceneSvg: sceneSvg, markSvg: markSvg, MARKS: MARKS, COACH_SIDE: COACH_SIDE };')();
+  }catch(e){ pics = null; }
+
+  // ---- What the stylesheet defines, and who uses it ---------------------
+  const plain = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const rootBlock = plain.slice(plain.indexOf(':root{'), plain.indexOf('}', plain.indexOf(':root{')));
+  const tokens = [...rootBlock.matchAll(/(--[a-z0-9-]+)\s*:/g)].map(m => m[1]);
+  const rules = [...plain.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(m => ({ sel: m[1].trim().replace(/\s+/g, ' '), body: m[2] }));
+  // One entry per selector, so a rule written for four selectors at once
+  // counts as the four places it styles.
+  const usedBy = name => {
+    const out = [];
+    for (const r of rules) {
+      if (r.sel.startsWith(':root') || !r.body.includes('var(' + name + ')')) continue;
+      for (const one of r.sel.split(',')) out.push(one.trim());
+    }
+    return [...new Set(out)];
+  };
+  const usesLine = name => {
+    const u = usedBy(name);
+    if (!u.length) return 'Not used anywhere yet.';
+    return 'Used in ' + u.length + (u.length === 1 ? ' place: ' : ' places, among them ') +
+      u.slice(0, 5).join(', ') + (u.length > 5 ? ' …' : '');
+  };
+  const val = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+
+  // ---- Colour -------------------------------------------------------------
+  const PAIRS = [['--maroon', '--brand-ink', '#fff', 'Southbound, the brand'], ['--gold', '--gold-deep', '#3d2a05', 'Northbound'],
+                 ['--lost', '--lost-ink', '#fff', 'Stale, lost, stop'], ['--mine', '--mine-ink', '#fff', 'The reader\'s own stop']];
+  const NEUTRALS = ['--paper', '--surface', '--ink', '--muted', '--line', '--live', '--ok-ink', '--warn-ink'];
+  const TINTS = ['--maroon-deep', '--maroon-soft', '--maroon-line', '--gold-soft', '--gold-line', '--mine-soft'];
+  function drawColour(){
+    const pairs = document.getElementById('sgPairs'); pairs.innerHTML = '';
+    for (const [fill, ink, on, job] of PAIRS) {
+      if (!tokens.includes(fill) || !tokens.includes(ink)) continue;
+      const box = el('div');
+      const p = el('div', 'sg-pair');
+      const f = el('div', 'sg-fill', 'Aa'); f.style.background = 'var(' + fill + ')'; f.style.color = on;
+      f.appendChild(el('span', 'sg-lbl', fill + ' ' + val(fill)));
+      const i = el('div', 'sg-ink', 'Aa'); i.style.color = 'var(' + ink + ')';
+      i.appendChild(el('span', 'sg-lbl', ink + ' ' + val(ink)));
+      p.append(f, i); box.append(p, el('div', 'sg-uses', job));
+      pairs.appendChild(box);
+    }
+    for (const [id, list] of [['sgNeutrals', NEUTRALS], ['sgTints', TINTS]]) {
+      const g = document.getElementById(id); g.innerHTML = '';
+      for (const t of list.filter(t => tokens.includes(t))) {
+        const sw = el('div', 'sg-sw');
+        const c = el('div', 'sg-chip'); c.style.background = 'var(' + t + ')';
+        const m = el('div', 'sg-meta'); m.append(el('div', 'sg-name', t), el('div', 'sg-val', val(t)));
+        sw.append(c, m); g.appendChild(sw);
+      }
+    }
+  }
+
+  // ---- Type ---------------------------------------------------------------
+  const SAMPLE = {
+    '--fs-cap': ['MALAGASANG · PALAPALA · ONE AYALA', false],
+    '--fs-label': ['NORTHBOUND → ONE AYALA', false],
+    '--fs-small': ['98018 Javalera · 6s ago', false],
+    '--fs-body': ['Every rider who says salamat is counted once.', true],
+    '--fs-title': ['How your data is handled', false],
+    '--fs-headline': ['3 buses on the road', false],
+    '--fs-number': ['1.2 km', false],
+  };
+  function drawType(){
+    const box = document.getElementById('sgSizes'); box.innerHTML = '';
+    for (const t of tokens.filter(t => t.startsWith('--fs-'))) {
+      const row = el('div', 'sg-type');
+      const meta = el('div'); meta.append(el('div', 'sg-name', t), el('div', 'sg-val', val(t)));
+      const [txt, isText] = SAMPLE[t] || ['The quick brown fox', false];
+      const s = el('div', 'sg-s' + (isText ? ' sg-text' : ''), txt);
+      s.style.fontSize = 'var(' + t + ')'; s.style.fontWeight = isText ? '400' : '700';
+      const right = el('div'); right.append(s, el('div', 'sg-uses', usesLine(t)));
+      row.append(meta, right); box.appendChild(row);
+    }
+  }
+
+  // ---- Corners and heights -----------------------------------------------
+  function drawShapes(){
+    const c = document.getElementById('sgCorners'); c.innerHTML = '';
+    const corners = tokens.filter(t => t.startsWith('--r-')).map(t => [t, 'var(' + t + ')'])
+      .concat([['circle', '50%'], ['pill', '999px']]);
+    for (const [name, r] of corners) {
+      const box = el('div', 'sg-sw');
+      const s = el('div', 'sg-shape'); s.style.borderRadius = r;
+      if (name === 'circle') { s.style.width = '84px'; s.style.margin = '10px auto'; }
+      if (name === 'pill') { s.style.height = '44px'; s.style.margin = '30px 10px'; }
+      const pad = el('div'); pad.style.padding = '10px 10px 0'; pad.appendChild(s);
+      const m = el('div', 'sg-meta');
+      m.append(el('div', 'sg-name', name), el('div', 'sg-val', name.startsWith('--') ? val(name) : r));
+      if (name.startsWith('--')) m.appendChild(el('div', 'sg-uses', usesLine(name)));
+      box.append(pad, m); c.appendChild(box);
+    }
+    const h = document.getElementById('sgHeights'); h.innerHTML = '';
+    for (const t of tokens.filter(t => t.startsWith('--sh-'))) {
+      const box = el('div');
+      const bed = el('div', 'sg-lift-bed');
+      const s = el('div', 'sg-lift', t); s.style.boxShadow = 'var(' + t + ')';
+      bed.appendChild(s);
+      box.append(bed, el('div', 'sg-val', val(t) || 'none'), el('div', 'sg-uses', usesLine(t)));
+      h.appendChild(box);
+    }
+  }
+
+  // ---- Motion -------------------------------------------------------------
+  const lanes = [];
+  function drawMotion(){
+    const m = document.getElementById('sgMotion'); m.innerHTML = ''; lanes.length = 0;
+    const speeds = tokens.filter(t => t.startsWith('--dur-'));
+    const curves = tokens.filter(t => t.startsWith('--ease'));
+    const add = (label, dur, ease, uses) => {
+      const meta = el('div');
+      meta.append(el('div', 'sg-name', label),
+        el('div', 'sg-val', label === dur ? val(dur) + ' with ' + ease : val(ease) + ' over ' + dur));
+      const lane = el('div', 'sg-lane'); const dot = el('div', 'sg-dot');
+      dot.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/></svg>';
+      lane.appendChild(dot);
+      const right = el('div'); right.append(lane, el('div', 'sg-uses', uses));
+      m.append(meta, right); lanes.push({ dot, lane, dur, ease });
+    };
+    for (const d of speeds) add(d, d, '--ease', usesLine(d));
+    for (const c of curves) add(c, '--dur-3', c, usesLine(c));
+  }
+  document.getElementById('sgPlay').addEventListener('click', function(){
+    for (const l of lanes) {
+      const ms = parseFloat(val(l.dur)) * (/ms$/.test(val(l.dur)) ? 1 : 1000);
+      // Slowed four times so the difference between the curves can be seen;
+      // the ratios between the speeds are kept.
+      const span = l.lane.clientWidth - 34;
+      l.dot.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(' + span + 'px)' }],
+        { duration: ms * 4, easing: val(l.ease), fill: 'forwards' });
+    }
+  });
+
+  // ---- Icons --------------------------------------------------------------
+  function drawIcons(){
+    const g = document.getElementById('sgIcons'); g.innerHTML = '';
+    for (const s of document.querySelectorAll('body > svg symbol')) {
+      const box = el('div', 'sg-icon');
+      const filled = !s.getAttribute('stroke');
+      box.innerHTML = '<svg aria-hidden="true"' + (filled ? ' style="fill:currentColor"' : '') + '><use href="#' + s.id + '"/></svg>';
+      box.appendChild(el('div', 'sg-name', s.id));
+      g.appendChild(box);
+    }
+  }
+
+  // ---- Parts that only a script draws -------------------------------------
+  function drawBadges(){
+    const b = document.getElementById('sgBadges'); b.innerHTML = '';
+    const mk = (cls, extra) => { const d = el('div', 'busmk ' + cls); d.innerHTML = glyph + (extra || ''); b.appendChild(d); };
+    mk('nb fresh live'); mk('sb fresh'); mk('nb fresh', '<span class="cnt">2</span>'); mk('sb delayed');
+  }
+
+  // ---- The signboard and the mark ---------------------------------------
+  function drawBoards(){
+    const box = document.getElementById('sgBoards'); box.innerHTML = '';
+    if (!sign) { box.appendChild(el('div', 'sg-note', 'The renderer could not be read from index.html.')); return; }
+    const routeWords = [...doc.querySelectorAll('header .route .ln')].map(e => e.textContent);
+    const boards = [[routeWords, 'the header'], [['Sakay na!'], 'a flag'], [['Malapit na!'], ''], [['Tulog pa'], ''],
+                    [['Bus Tracker'], ''], [['Parañaque · Pérez'], 'Ñ, and é as e'], [['中山'], 'no dots: stays lettered']];
+    boards.forEach(function(bd, i){
+      const wrap = el('div');
+      const svg = sign.signboardSvg(bd[0], { id: 'sgb' + i });
+      if (svg) { const b = el('div', 'sg-board'); b.innerHTML = svg; wrap.appendChild(b); }
+      else wrap.appendChild(el('div', 'sg-name', '“' + bd[0].join(' ') + '”'));
+      if (bd[1]) wrap.appendChild(el('div', 'sg-uses', bd[1]));
+      box.appendChild(wrap);
+    });
+    // This page's own header, the way the tracker draws its own.
+    const route = document.querySelector('header .route');
+    if (route && !route.classList.contains('dm')) {
+      const svg = sign.signboardSvg([...route.querySelectorAll('.ln')].map(e => e.textContent), { id: 'sghead' });
+      if (svg) { route.insertAdjacentHTML('beforeend', svg); route.classList.add('dm'); }
+    }
+  }
+  function drawMark(){
+    const box = document.getElementById('sgMark'); box.innerHTML = '';
+    const add = (src, size, label) => {
+      const w = el('div', 'sg-mark');
+      const i = document.createElement('img'); i.src = src; i.width = size; i.height = size; i.alt = '';
+      w.append(i, el('div', 'sg-uses', label)); box.appendChild(w);
+    };
+    if (favicon) [16, 32, 64].forEach(s => add(favicon, s, s + ' px'));
+    add('../assets/icons/icon-192.png', 96, 'home screen');
+    const p = document.createElement('img'); p.src = '../assets/icons/preview.png'; p.alt = 'The link-preview picture';
+    p.className = 'sg-preview'; p.width = 600; p.height = 315;
+    const pw = el('div'); pw.append(p, el('div', 'sg-uses', 'link preview, 1200 × 630')); box.appendChild(pw);
+  }
+
+  // ---- The coach and the pictures ---------------------------------------
+  function drawPictures(){
+    const sc = document.getElementById('sgScenes'), co = document.getElementById('sgCoach'), mk = document.getElementById('sgMarks');
+    sc.innerHTML = co.innerHTML = mk.innerHTML = '';
+    if (!pics) { sc.appendChild(el('div', 'sg-note', 'The pictures could not be read from index.html.')); return; }
+    [['night', 'Tulog pa ang bus', 'The buses are asleep. First trips <b>4:00 AM</b> from Mendez'],
+     ['dawn', 'Gising na ang bus', 'The first trips are coming up: <b>4:00 AM</b> from Mendez'],
+     ['day', 'No buses until 3:40 PM', 'Next trips <b>3:40 PM</b> from Mendez']].forEach(function(r){
+      const card = el('div', 'mapnote scene ' + r[0]);
+      card.innerHTML = '<div class="tx"><div class="t">' + r[1] + '</div><div class="s">' + r[2] + '</div></div>' + pics.sceneSvg(r[0], 'sgs-' + r[0]);
+      const wrap = el('div'); wrap.append(card, el('div', 'sg-uses', r[0] + ': the empty map, ' + (r[0] === 'day' ? 'in the midday break' : r[0] === 'dawn' ? 'in the hour before the first trip' : 'from evening to the last hour before the first trip')));
+      sc.appendChild(wrap);
+    });
+    co.innerHTML = '<svg viewBox="0 0 364 136" style="display:block;width:100%;max-width:560px;height:auto;' +
+      '--c-body:#f3ecdf;--c-roof:#e6dccb;--c-skirt:#d9cfbe;--c-band:#7a1f2b;--c-gold:#e39a1c;--c-glass:#3b5566;--c-glint:rgba(255,255,255,.3);' +
+      '--c-head:#2f4250;--c-led:#ffb22e;--c-lamp:#fff3c4;--c-hub:#cfc7bb;--c-sign:#120d0b;--c-dark:#2b2320">' + pics.COACH_SIDE + '</svg>';
+    Object.keys(pics.MARKS).forEach(function(k){
+      const box = el('div', 'sg-icon'); box.innerHTML = pics.markSvg(k); box.appendChild(el('div', 'sg-name', k)); mk.appendChild(box);
+    });
+  }
+
+  function drawAll(){ drawColour(); drawType(); drawShapes(); drawMotion(); drawIcons(); drawBadges(); drawBoards(); drawMark(); drawPictures(); }
+  drawAll();
+
+  // ---- Theme --------------------------------------------------------------
+  // Nothing is stored: this page is a reference, and the reader's own choice
+  // on the tracker is theirs.
+  for (const btn of document.querySelectorAll('.sg-theme button')) {
+    btn.addEventListener('click', function(){
+      const t = btn.getAttribute('data-t');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (const o of document.querySelectorAll('.sg-theme button')) o.setAttribute('aria-pressed', String(o === btn));
+      drawAll();
+    });
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawType);
+})();
+</script>
+</body>
+</html>

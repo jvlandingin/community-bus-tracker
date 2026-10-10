@@ -13,14 +13,30 @@ Needs Node. Run from this folder with `index.html`, `admin.html` and
 `config-template.txt` reachable one level up:
 
 ```
-node test-hours.js      # split operating hours, the en-route allowance
+node test-hours.js      # split operating hours, the en-route allowance, the hours card, the parol season
 node test-guard.js      # wrong-direction detection on simulated trips
-node test-strip.js      # progress strip position and wording
+node test-strip.js      # progress strip position and wording, the town lines in the popup
 node test-prompts.js    # idle, end-of-trip and direction prompts
-node test-mystop.js     # the saved stop: which bus is coming, how far, how many stops
-node test-thanks.js     # saying salamat: the words, who is offered it, what it never draws
+node test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
+node test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket
+node test-signboard.js  # the dot-matrix route board: its letters, the boards drawn into other pages, the mark
+node test-pictures.js   # the coach and the empty map's scenes, the marks, the checkpoint lines, the covers
+node test-tokens.js     # the design system: every size, corner, shadow and speed a token; the copied fonts and icons
 node test-boot.js       # loads both pages in a real DOM (needs jsdom)
 ```
+
+`test-tokens.js` is the odd one out: it runs no app code. It reads the
+style of every page, wherever it is written (the `<style>` block, a style
+attribute, a string a script builds markup from), and fails if `index.html`
+or `admin.html` uses a text size, corner, shadow, speed or typeface that is
+not one of the tokens at the top of `index.html`. A literal that is allowed
+on purpose goes in its `EXCEPTIONS` list with the reason, and an entry that
+stops matching anything fails too. It also checks that the other four pages
+carry every token with the app's values, that the fonts inlined into the
+three static pages are byte for byte the files in `assets/fonts` (if not, run
+`node tools/embed-fonts.js`), and that every icon a page copies from the
+tracker's sprite is unchanged. `tools/styleguide.html` draws everything it
+holds the pages to.
 
 `test-boot.js` needs `npm install jsdom` and serves the real files over a local
 HTTP server. It covers a deploy with `assets/` deliberately missing, because

@@ -22,9 +22,9 @@ node tests/test-guard.js      # wrong-direction detection on simulated trips
 node tests/test-strip.js      # progress strip position and wording, the town lines in the popup
 node tests/test-prompts.js    # idle, end-of-trip and direction prompts
 node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
-node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket
+node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album
 node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the mark
-node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers
+node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture
 node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
 ```
 
@@ -74,8 +74,9 @@ Two more rewrite committed text. `node tools/embed-fonts.js` copies the font
 files in `assets/fonts/` into the three static pages as data URIs; run it after
 replacing a font file. `node tools/make-pictures.js` draws the dot-matrix route
 board into the guide, the flyer, the briefing and `tools/app-icons.html`, from
-the words beside each board, and the scenes that cover the three pages, with
-`index.html`'s own code; run it after changing those words or the drawings.
+the words beside each board, the scenes that cover the three pages, and the
+picture on the guide's ticket, with `index.html`'s own code; run it after
+changing those words or the drawings.
 `test-tokens.js`, `test-signboard.js` and `test-pictures.js` fail until you do.
 
 ## Architecture
@@ -152,13 +153,27 @@ running total per sharer is the driver metric `for-operators.html` promises
 cannot be produced — if one is ever wanted, that is the deliberate conversation,
 not a follow-up. `test-thanks.js` and `db/07-thanks-tests.sql` hold all of it.
 
-**The sharer gets a ticket at Stop** (October 2026): where they got on and off,
-how long the bus was on the map, how many said salamat, a stamp or two. Made on
-the phone, kept nowhere. Fenced the same way as the count: no stamp may be about
-how the bus was driven (speed, trip time, comparisons — the driver metric
-again), no ticket for a trip under five minutes or one that never reached the
-map, no zero. It is built from a six-field record in memory, and `test-thanks.js`
-fails if that record grows a field or anything is ever appended to it.
+**The sharer gets a ticket at Stop** (October 2026): a picture of where they got
+on and off (the two places' marks as roadside signs, the coach between, the view
+at the destination behind it, the sky from its stamps), how long the bus was on
+the map, how many said salamat, a stamp or two. Made on the phone and sent nowhere. Fenced the same way as the count: no
+stamp may be about how the bus was driven (speed, trip time, comparisons — the
+driver metric again), no ticket for a trip under five minutes or one that never
+reached the map, no zero. It is built from a six-field record in memory, and
+`test-thanks.js` fails if that record grows a field or anything is ever appended
+to it.
+
+**A ticket is kept only if the sharer taps Keep**, and then only as a souvenir,
+never a stopwatch: My tickets keeps six things per ticket in `wt-tickets` — the
+day, the direction, the two ends' short names, the stamps by kind, and a yes or
+no for salamat. No clock time, no duration, no bus number, no count, no
+position, because anyone on board can share and a phone full of timed tickets
+would be the conductor's timesheet. The album counts tickets, places passed and
+stamps collected, and nothing that could rank anybody: no time on the map, no
+salamat total (a flower per thanked ticket, never added up), nothing per bus,
+no streak. Keeping is a tap on one ticket and never a default; `keepTicket()`
+is the only thing that adds. `test-thanks.js` sections 15 to 17 hold all of it,
+and `docs/ARCHITECTURE.md`, "Keeping the ticket", has the reasoning.
 
 **A reader can send a link to one bus**: `#b=` plus the bus's public id, which
 every map already has, so the link reveals nothing and dies with the trip. It is
@@ -166,11 +181,11 @@ every map already has, so the link reveals nothing and dies with the trip. It is
 line about the town the bus is passing, from an optional fifth field on each
 `CHECKPOINT` in `config.txt`.
 
-**The app keeps exactly three things between visits**, all on the device and
+**The app keeps exactly four things between visits**, all on the device and
 all named in the privacy panel: whether the guide has been opened, the
-light/dark/system theme choice, and the reader's saved stop. Adding a fourth
-means editing that panel in the same commit — the panel is the promise, not the
-code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
+light/dark/system theme choice, the reader's saved stop, and the tickets a
+sharer chose to keep. Adding a fifth means editing that panel in the same
+commit — the panel is the promise, not the code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
 `localStorage` keys the app writes stops matching the set the panel names.
 Per-visit switches go in `sessionStorage` for exactly this reason — the
 location dot, and the saved-stop card's "buzz once" switch.
@@ -213,7 +228,12 @@ or lettering) parked above Taal Lake at night, dawn or midday — from
 scene covers the guide, the flyer and the briefing. Each checkpoint can name a
 drawn mark (`MARKS`) in an optional sixth field of its `CHECKPOINT` line; it is drawn beside
 the town line in a bus's popup and on the stop of a sharer's ticket, whose
-stamps sit beside what they stamp, never over the words.
+stamps sit beside what they stamp, never over the words. The ticket's own
+picture is the marks of the trip's two ends (`ticketArtSvg()`) with the view at
+the destination behind them, one per kind of place (`TICKET_VIEWS`, chosen by
+the same sixth field), so every kept ticket in the album is a different card.
+The flag view flies the Philippine flag blue above red, as in peace, and
+`test-pictures.js` fails if it is ever drawn the other way up.
 
 **Android sharers can use an app** (`mobile/`, October 2026) that keeps GPS
 running with the screen locked. It is a Capacitor shell that loads the live
@@ -256,7 +276,10 @@ not a judgement call mid-task.
 upserted in place. There is no trail table, so the tool cannot be used to review
 a driver's speed, breaks or route — the data does not exist. This is the single
 most important property of the system. The wrong-direction guard tracks progress
-in the sharing phone's memory only and it dies with the tab.
+in the sharing phone's memory only and it dies with the tab. A kept ticket is the
+one thing that outlasts a trip, on the sharer's own phone and only on a tap, and
+it holds a date and two checkpoint names, never a position or a time, so it
+cannot grow into a trail either.
 
 **No watcher location leaves the device, ever.** The reader can save a stop and
 switch on a dot showing where they are; both are computed and stored on the
@@ -309,7 +332,9 @@ the words in each page's `header .route` (and in `tools/app-icons.html`, for
 the link-preview picture), so a fork edits those, runs `tools/make-pictures.js`
 and re-runs `tools/render-icons.sh`. The empty map's scene is this route's own
 view, Taal from the Tagaytay ridge, in `sceneSvg()`: a fork redraws its ground
-or keeps the volcano. `how-to.html` used to be the exception —
+or keeps the volcano. The ticket's views are by kind of place, so they follow
+`config.txt` like the marks, but the volcano one is Taal too: a fork whose
+volcano has no lake redraws that one. `how-to.html` used to be the exception —
 its screenshots and screen recordings showed this deployment, so a fork had to
 recapture them or delete the page. Every figure on it is now drawn in HTML and
 CSS from the same tokens as the app, and the page loads nothing over the

@@ -25,6 +25,57 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-10 — Keeping the ticket
+
+The maintainer asked whether a sharer could collect the tickets of every ride,
+with stats, kept on the phone and never sent: to make sharing, and watching,
+more fun and more useful. The ticket had been built to be kept nowhere, so this
+reversed a promise, and it was planned before anything was built. Three
+decisions went to the maintainer with a recommendation each, and "sounds good,
+let's implement" took all three:
+
+- **The promise changes** from "never kept" to "kept only if you tap Keep, on
+  this phone only". A kept copy is a souvenir, not a stopwatch: the day, the
+  direction, the two places, the stamps, and whether anyone said salamat. No
+  times, no duration, no bus number, no count, because anyone on board can
+  share and a conductor's phone full of timed tickets is a timesheet.
+- **Salamat in the album is a flower** on each ticket someone thanked, with no
+  number anywhere, over a per-ticket count or a running total.
+- **The album first**, the ideas for watchers after.
+
+The maintainer then suggested art on each ticket depending on where the trip
+started and ended, "so collecting makes more sense". That became the ticket's
+picture: the two places' marks as roadside signs, the coach on the road between
+them. One thing was added to it: the sky follows the stamps (dawn, night, or
+day), so tickets differ more and a kept copy needs no clock to draw it. The
+album counts the places on the route a sharer's kept trips have passed, the
+four stamps, and the tickets themselves. Time on the map was left out on
+purpose, because added up it is working hours.
+
+Asked whether each place still had its art, "like Taal when arriving at
+Tagaytay", it had, but only as the small drawing on the arrival sign. So the
+picture now has the destination's view behind the coach: Taal Lake and the
+volcano island for Tagaytay, towers for One Ayala, the terminal's wave of a
+roof on the bay for PITX, coffee under a shade tree for Amadeo, a church, a
+heritage house with its tower, shops at a crossing, and a monument with the
+flag. They are by kind of place, like the marks, so the code names no town.
+The flag is pinned the right way up by a test: blue above red.
+
+**Left as it was:** the flyer's "Walang itinatagong history ng biyahe". It is
+about what the system stores, its claim that no driver's route, speed or stops
+are recorded still holds, and the poster has no room to spare. The briefing
+and the guide do say it now.
+
+**Not yet checked:** whether sharers notice Keep on a real phone; how the
+picture's small signs read on a cheap screen in daylight; and whether the
+Android app keeps its album across an app update, as WebView storage should
+unless the app's data is cleared.
+
+**Next, from the same plan, not built:** for watchers, "Sasakay ka na?" — when
+the bus you are watching reaches your saved stop, offer to start sharing it,
+on phones that opened the share link — and a saved stop for each direction,
+for people who wait at one stop in the morning and another in the evening.
+
 ## 2026-10-10 — An art direction, agreed before it was built
 
 The maintainer's next question was about the look rather than the features: it

@@ -19,7 +19,8 @@ const S = {};
 new Function('S', hav + prog + mine +
   'S.buildRouteChain=buildRouteChain;S.routeProgressKm=routeProgressKm;' +
   'S.stopChainKms=stopChainKms;S.approachInfo=approachInfo;S.myStopWords=myStopWords;' +
-  'S.haversineKm=haversineKm;S.namedStopKms=namedStopKms;S.stopsBetween=stopsBetween;S.rideState=rideState;')(S);
+  'S.haversineKm=haversineKm;S.namedStopKms=namedStopKms;S.stopsBetween=stopsBetween;S.rideState=rideState;' +
+  'S.aboardBus=aboardBus;S.aboardInfo=aboardInfo;S.aboardWords=aboardWords;')(S);
 
 const txt = fs.readFileSync(path.join(ROOT, 'config-template.txt'), 'utf8').split(/\r?\n/);
 const CP = txt.filter(l => l.trim().startsWith('CHECKPOINT =')).map(l => {
@@ -233,6 +234,69 @@ console.log('\n=== 9. Malapit na, Sakay na: louder, never sooner than true ===')
   // The buzz is one more thing a page could quietly start remembering.
   check(/sessionStorage\.setItem\('wt-buzz'/.test(html) && !/localStorage\.\w+\(\s*'wt-buzz'/.test(html),
     'the buzz switch lasts the visit only, so it is not a fourth thing kept between visits');
+}
+
+console.log('\n=== 10. on the bus already: your own bus, to where you get off ===');
+// Waiting asks "which bus reaches me"; riding asks "how far is MY bus from
+// my stop". The nearest coming bus is the wrong answer on board, so the
+// riding card follows one bus only: the one this phone is sharing, or the
+// one its reader said they are on.
+{
+  const me = kmOf('New Imus City Hall');
+  // Two northbound buses short of the stop: one running ahead, one behind.
+  const ahead = { id: 'ahead', direction: 'north', ts: 1, km: kmOf('SM City General Trias'), members: ['ahead'] };
+  const mine = { id: 'mine', direction: 'north', ts: 1, km: kmOf('Biclatan'), members: ['mine', 'other'] };
+  const waiting = S.approachInfo([ahead, mine], me, KMS, 'all');
+  check(waiting.id === 'ahead', 'waiting at the stop, the bus running ahead is the one coming', waiting.id);
+
+  check(S.aboardBus([ahead, { ...mine, self: true }], null).id === 'mine',
+    'a sharer\'s bus is the one the server flagged as theirs, with nothing asked of them');
+  check(S.aboardBus([ahead, mine], 'other').id === 'mine',
+    'a rider\'s pick is found by any id in the cluster, because clusters reorder');
+  check(S.aboardBus([ahead, { ...mine, self: true }], 'ahead').id === 'mine',
+    'and while sharing, the server\'s answer wins over a pick');
+  check(S.aboardBus([ahead], 'gone') === null && S.aboardBus([], 'mine') === null && S.aboardBus([ahead, mine], null) === null,
+    'a bus that has left the map, or no pick at all, is no bus rather than the nearest one');
+
+  const on = S.aboardInfo(mine, me, KMS);
+  check(!on.passed && on.id === 'mine' && on.stops === 9,
+    'riding, the card counts down on your own bus, not the one ahead of it', `${on.stops} stops, ${on.km.toFixed(1)} km`);
+  check(S.stopsBetween(on, me, S.namedStopKms(STOPS, CP, CHAIN)).length === on.stops,
+    'and draws the same stops as dots, through the same stopsBetween()');
+  check(S.aboardWords(on) === '▲ Northbound · on your bus · 13 km to go · about 9 stops before yours',
+    'its sentence says it is your bus and how far is left', `"${S.aboardWords(on)}"`);
+
+  const last = S.aboardInfo({ id: 'm', direction: 'north', ts: 1, km: kmOf('Malagasang 1-G') }, me, KMS);
+  check(S.rideState(last) !== '', 'one stop out, the card speaks up, as it does at the roadside');
+  const at = S.aboardInfo({ id: 'm', direction: 'north', ts: 1, km: me + 0.2 }, me, KMS);
+  check(!at.passed && at.km === 0 && S.rideState(at) === 'here',
+    'a fix just past the sign is still at your stop, not behind it', 'phones wobble and buses pull in beyond the sign');
+  const gone = S.aboardInfo({ id: 'm', direction: 'north', ts: 1, km: kmOf('Ospital ng Imus') }, me, KMS);
+  check(gone.passed && S.aboardWords(gone) === '▲ Northbound · your stop is behind this bus',
+    'past it, it says so rather than counting backwards', `"${S.aboardWords(gone)}"`);
+  // Southbound runs the chain the other way, so "to go" inverts with it.
+  const sbOn = S.aboardInfo({ id: 's', direction: 'south', ts: 1, km: kmOf('New Imus City Hall') }, kmOf('Biclatan'), KMS);
+  check(!sbOn.passed && sbOn.stops === 9, 'southbound counts down the other way along the chain', `${sbOn.stops} stops`);
+  check(S.aboardInfo({ id: 's', direction: 'south', ts: 1, km: kmOf('Biclatan') }, me, KMS).passed,
+    'and a southbound bus below your stop has passed it');
+
+  check(S.aboardInfo(null, me, KMS) === null && S.aboardInfo(mine, null, KMS) === null &&
+        S.aboardInfo({ id: 'x', direction: 'north', ts: 1, km: null }, me, KMS) === null && S.aboardWords(null) === null,
+    'no bus, no stop, or a bus off the chain: nothing, never a throw');
+  [on, last, at, gone, sbOn].forEach((i, n) => check(!/\bmin|\bETA|arriv|\bsoon\b/i.test(S.aboardWords(i)),
+    `riding sentence ${n + 1} promises no arrival time`, S.aboardWords(i)));
+
+  // The riding card's own strings are in the same functions section 9 read.
+  const body = html.slice(html.indexOf('function renderMyStop('), html.indexOf('function openStopPicker('))
+    .replace(/^\s*\/\/.*$/gm, '');
+  check(['Bababa na!', 'Get ready to get off.', 'I got off', 'Your bus'].every(w => body.includes(w)),
+    'the riding card says Bababa na and offers "I got off", from the region the time check reads');
+  // Which bus you are on is about you, so it is held like the buzz: for the
+  // visit, on this phone, and never sent.
+  check(/sessionStorage\.setItem\('wt-aboard'/.test(html) && !/localStorage\.\w+\(\s*'wt-aboard'/.test(html),
+    'the bus you said you are on lasts the visit only, so it is not a fifth thing kept between visits');
+  check(!/rpc\([^)]*ABOARD/.test(html) && !/fetch\([^)]*ABOARD/.test(html),
+    'and it is never put in a request');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

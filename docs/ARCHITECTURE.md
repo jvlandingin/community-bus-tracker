@@ -186,7 +186,7 @@ Three details make it work:
   in the guide and admin headers would be two more things to look at for no
   more control.
 
-The preference is the second of the three things this app keeps between
+The preference is the second of the four things this app keeps between
 visits, after the
 guide-seen dot. Both are named in the privacy panel — the panel used to claim
 nothing was kept once you close the page, which the guide dot had already made
@@ -701,7 +701,8 @@ rules above before it was built.
 - **The salamat ticket.** Stop hands the sharer a ticket for the trip — where
   they got on and off, how long their bus was on the map, how many riders said
   salamat, and a stamp or two for the trip's shape — made on the phone from
-  what it saw and kept nowhere: it is gone when it is closed. It is the most
+  what it saw and sent nowhere: it is gone when it is closed, unless the
+  sharer taps Keep (see "Keeping the ticket" below). It is the most
   rewarding thing this app shows anybody, which is exactly why it is fenced:
   **no stamp is about how the bus was driven** (no speed, no trip time, nothing
   that compares one run with another — those are the driver numbers
@@ -723,6 +724,94 @@ rules above before it was built.
   page can switch it off (`parol_enabled`, absent means on). It hangs in the
   middle, and the two tabs part to make room for it: hung at the right, it sat
   on the corner of the sharing tab.
+
+## Keeping the ticket
+
+October 2026. The maintainer asked whether a sharer could collect their
+tickets, with some stats, kept on the phone and never sent: a reason to share
+again, and to open the app at all. The ticket had been made deliberately to be
+kept nowhere, so this reversed a promise, and it was decided as one. What was
+agreed is a collection that keeps the souvenir and leaves the stopwatch
+behind.
+
+**Why that line.** Anyone on board can share: a rider, the conductor, the
+driver. The ticket at Stop prints the clock times and "on the map for 2 h 51
+min". Kept after every run on a conductor's phone, that would be a list of
+trip times, breaks and working days that a supervisor could ask to see — the
+driver numbers `for-operators.html` promises this tool cannot produce, moved
+from the server to a pocket. So a kept ticket is six things (rule 8 in the
+album block of `index.html`):
+
+- the day, as a date and nothing finer;
+- the direction;
+- where the trip was boarded and where it was left, as checkpoint short
+  names: never a position, so nothing to draw a route from;
+- its stamps, by kind (`full`, `dawn`, `night`, `first`), which are about the
+  shape of the trip and the time of day and were already fenced by rule 5;
+- whether anyone said salamat, as a yes or no.
+
+It leaves out the clock times, the duration, the bus number and the count.
+`albumEntry()` makes those six from everything `showTicket()` knows and drops
+the rest, `albumClean()` takes only those six back out of storage, and nothing
+in the album block reads the time of day.
+
+**Keeping is a tap, never a default** (rule 10). The ticket at Stop gets a
+Keep button, like pocketing a paper ticket; closing it without one leaves
+nothing behind, which is what happened to every ticket before. A crew member
+who wants no record simply never taps it. `keepTicket()` is the only thing that
+adds to the album and runs only from that button.
+
+**The album adds up nothing that could rank anybody** (rule 9). It counts
+tickets, the places on the route that kept trips have passed (both ends and
+everything between, worked out from the two names against `config.txt`), the
+four stamps, and northbound against southbound. It does not count time on the
+map (summed, that is working hours), anything per bus, or streaks, which
+punish a missed day and on a crew member's phone are an attendance sheet. The
+flower is drawn on each thanked ticket and never added up: decided over a
+per-ticket count (summable by hand) and over a running total, which is exactly
+the figure the salamat design exists not to keep. A stamp not yet collected is
+printed faint with "not yet", never "×0", and the album is not offered at all
+until something has been kept, which is the no-zero rule again.
+
+**Every ticket has its own picture**, so the album reads as a collection rather
+than a pile of the same card. `ticketArtSvg()` draws the two ends as roadside
+signs carrying their places' marks, boarded on the left and left on the right,
+with the coach on the road between them heading for the second: read like the
+ticket, rather than like the map, because a ticket is read as from → to. The
+sky comes from the stamps (`ticketSky()`: dawn for Madaling araw, night for Gabi
+na, day otherwise), so a kept copy draws the same picture from what it keeps
+and needs no clock. At night the coach has its windows lit and its lamp on,
+because it is driving, not parked for the night like the empty map's. The
+picture has no ids, so a page of them never collides. A trip that began and
+ended by the same checkpoint gets one sign, and a place with no mark gets the
+strip's plain station ring.
+
+**Where it lives.** `wt-tickets` in `localStorage`, the fourth thing the
+privacy panel names, with "Remove all" in the album and Remove (asked twice)
+on each kept ticket; removing the last ticket removes the key. The honest
+limits, all stated in the album or the panel: it is in that one browser, so
+clearing browser data loses it, and the Android app and Chrome on the same
+phone keep separate albums; there is no backup, because a backup is a copy
+somewhere else. There is no cap: a ticket is under a hundred bytes, so a
+commuter riding twice a day for years stays far inside the browser's storage,
+and a collection that silently drops its oldest tickets would be worse than a
+large one.
+
+**Names.** The album is `albumModal`, `albumRow`, `.tktmini`, `tktKeep` and
+`tktDrop`, with the `i-tkt` icon: nothing a content-blocker list hunts for.
+
+**What this changed elsewhere.** The privacy panel's ticket paragraph and its
+list of remembered things; the ticket's own small print; `how-to.html`'s ticket
+(its picture is drawn into it by `tools/make-pictures.js`), its step 6 and its
+privacy card; and `for-operators.html`, whose keystone now ends "not even on
+a sharer's own phone (below)" and which explains the souvenir in a short
+section under its table. That placement is forced by print: the keystone and
+the table share a page and the table never splits, so the first attempt, a
+paragraph in the keystone and a row in the table, sent the whole table to a
+page of its own and the briefing to eight pages. The pointer had to fit on the
+keystone's last line. The flyer's "Walang itinatagong history ng biyahe" was
+left as it is: it is about what the system stores, and its claim that no
+driver's route, speed or stops are recorded still holds.
 
 ## The name, the icons and the link preview
 
@@ -924,8 +1013,8 @@ list: it is a substring of `start`, and a scan that cries wolf on
 `onbusStartBtn` is a scan somebody eventually deletes.
 
 The October controls were named the same way: the follow link is
-`sendBusLink` and `.buslink`, its chip `followchip`, the ticket `tkt*` and
-the buzz switch `buzzBox`. None of them is the kind of thing a filter list
+`sendBusLink` and `.buslink`, its chip `followchip`, the ticket `tkt*`, the
+album `album*` and `.tktmini`, and the buzz switch `buzzBox`. None of them is the kind of thing a filter list
 hunts for, and the scan agrees.
 
 ## Known limitations
@@ -1037,8 +1126,9 @@ deploy folder:
   index.html by comment markers and run it, so a passing
   test cannot drift from the app. Since October 2026 they also hold the hours
   card and the parol season (`test-hours`), the stop-by-stop card and its two
-  louder states (`test-mystop`), the town lines (`test-strip`) and the
-  ticket's rules (`test-thanks`); every one of those checks was watched
+  louder states (`test-mystop`), the town lines (`test-strip`), the
+  ticket's rules and the album's (`test-thanks`) and the ticket's picture
+  (`test-pictures`); every one of those checks was watched
   failing against a deliberately broken copy of the page before it was
   trusted. They need Node, plus config-template.txt one
   level up. `test-tokens.js` runs no app code: it reads every page's styles

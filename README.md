@@ -47,9 +47,15 @@ company's name or initials, for the same reason.
   attached to a person is the one thing this project's promise to the bus
   company rules out.
 - **A ticket at Stop:** a sharer who taps Stop gets a salamat ticket for the
-  trip — where they got on and off, how long their bus was on the map, how
-  many riders said salamat, a stamp or two. Made on the phone, kept nowhere,
-  and never about how the bus was driven.
+  trip — a picture of where they got on and off, how long their bus was on the
+  map, how many riders said salamat, a stamp or two. Made on the phone, sent
+  nowhere, and never about how the bus was driven.
+- **My tickets:** tap Keep and a copy of the ticket goes into an album on the
+  sharer's own phone, which counts the places on the route their trips have
+  passed and the stamps they have collected. A kept copy is a souvenir, not a
+  stopwatch: the day, the places, the stamps and a flower if anyone said
+  salamat, with no times, no bus number and no count, so no pile of them can
+  time a trip or rank a driver.
 - **Follow one bus:** "Send a link to this bus", in a bus's popup, sends a
   link that opens the map following that bus — for whoever is fetching you.
   It carries only the bus's public ID and dies with the trip. The popup also

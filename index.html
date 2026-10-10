@@ -623,7 +623,7 @@
   .ride.here{box-shadow:0 0 0 3px var(--mine-soft);}
   .ride.here .ride-big .num{font-size:var(--fs-title);}
   /* The optional buzz. A per-visit choice, kept in sessionStorage like the
-     blue dot's switch, so it never becomes a fourth remembered thing. Only
+     blue dot's switch, so it never becomes a fifth remembered thing. Only
      drawn where the browser can vibrate at all, which leaves out iPhones. */
   .buzz{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
@@ -1193,6 +1193,92 @@
     border:1.5px solid rgba(255,255,255,.45); background:rgba(255,255,255,.14); color:#fff;
     font-family:inherit; font-size:var(--fs-small); font-weight:800;
   }
+  /* The picture of the trip's two ends (ticketArtSvg), under the route line. */
+  .tkt .tktart{display:block; width:100%; height:auto; margin:4px 0 10px;}
+  /* A kept ticket has no time line to stamp beside, so its stamps get a row. */
+  .tkt-stamprow{display:flex; flex-wrap:wrap; justify-content:center; gap:8px 12px; padding:2px 0;}
+  .tkt-stamprow .stamp.s2{margin-right:0;}
+  /* The picture and Keep make the ticket taller than a small phone, so this
+     one dialog scrolls, centred when it fits and from the top when not. */
+  #tktModal{overflow-y:auto; align-items:flex-start;}
+  #tktModal .tktwrap{margin:auto;}
+  .tkt-acts{display:flex; flex-wrap:wrap; justify-content:center; gap:10px;}
+  /* Gold is a fill with near-black words on it, like the chips. Once kept it
+     steps back to the outline the other buttons wear, and leads to the album. */
+  .tkt-keep{
+    display:inline-flex; align-items:center; gap:8px; min-height:var(--tap); padding:0 22px; border-radius:var(--r-m);
+    cursor:pointer; border:1.5px solid var(--gold); background:var(--gold); color:#2b2320;
+    font-family:inherit; font-size:var(--fs-small); font-weight:900; box-shadow:var(--sh-2);
+  }
+  .tkt-keep .gi{width:18px; height:18px;}
+  .tkt-keep.done{background:rgba(255,255,255,.14); color:#fff; box-shadow:none;}
+  .tkt-keep:disabled{opacity:.8; cursor:default;}
+
+  /* ---- My tickets -------------------------------------------------------
+     The album of kept tickets. The dialog is the app's, in either theme;
+     what is in it is paper, cream with the ticket's maroon print, because
+     it is the tickets. */
+  .albumrow{
+    display:flex; align-items:center; gap:12px; width:100%; min-height:var(--tap); padding:14px 16px;
+    text-align:left; cursor:pointer; font-family:inherit; color:var(--ink);
+  }
+  .albumrow .ico{flex:0 0 auto; display:flex; align-items:center; justify-content:center; width:38px; height:38px;
+    border-radius:50%; background:var(--gold-soft); color:var(--gold-deep);}
+  .albumrow .ico .gi{width:21px; height:21px;}
+  .albumrow .lbl{flex:1; min-width:0;}
+  .albumrow .cap{display:block; font-size:var(--fs-cap); font-weight:800; letter-spacing:.08em; color:var(--brand-ink); text-transform:uppercase;}
+  .albumrow .val{display:block; margin-top:3px; font-size:var(--fs-small); font-weight:700; line-height:1.4;}
+  .albumrow .chev{flex:0 0 auto; display:flex; color:var(--muted);}
+  .albumrow .chev .gi{width:18px; height:18px;}
+  .modal-card.album{max-width:420px;}
+  .alb-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+  .alb-stats div{padding:10px 4px 9px; border-radius:var(--r-m); background:var(--paper); border:1px solid var(--line); text-align:center;}
+  .alb-stats b{display:block; font-size:var(--fs-headline); font-weight:900; line-height:1; color:var(--brand-ink); font-variant-numeric:tabular-nums;}
+  .alb-stats b small{font-size:var(--fs-small); font-weight:800; color:var(--muted);}
+  .alb-stats span{display:block; margin-top:5px; font-size:var(--fs-cap); font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);}
+  .alb-h{display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin:18px 0 8px;
+    font-size:var(--fs-cap); font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--brand-ink);}
+  .alb-h span{font-size:var(--fs-label); font-weight:700; letter-spacing:.02em; color:var(--muted);}
+  .alb-h i{font-style:normal;}
+  .alb-paper{--tp:#fbf4e4; --ti:#6d1a25; padding:12px; border-radius:var(--r-m); background:var(--tp); color:var(--ti);}
+  /* A place no kept trip has passed yet is printed faint and dashed: a
+     place still to ride through, not a mark against anybody. */
+  .alb-paper .tkt-grid span:not(.on){opacity:.5; border-style:dashed;}
+  .alb-stamps{display:grid; grid-template-columns:1fr 1fr; gap:14px 6px; justify-items:center; padding:14px 8px 12px;}
+  .alb-stamp{display:flex; flex-direction:column; align-items:center; gap:7px;}
+  .alb-stamp:nth-child(odd) .stamp{transform:rotate(-5deg);}
+  .alb-stamp:nth-child(even) .stamp{transform:rotate(4deg);}
+  .alb-stamp .stamp{font-size:var(--fs-label); white-space:nowrap;}
+  .alb-stamp b{font-size:var(--fs-label); font-weight:900; letter-spacing:.04em;}
+  .alb-stamp.yet .stamp{opacity:.2;}
+  .alb-stamp.yet b{font-weight:700; opacity:.6;}
+  .alb-list{display:grid; grid-template-columns:1fr 1fr; gap:12px 10px;}
+  .tktmini{
+    position:relative; display:flex; flex-direction:column; gap:3px; min-width:0; padding:10px 8px 9px;
+    border:none; border-radius:var(--r-s); cursor:pointer; text-align:left; font-family:inherit;
+    color:#6d1a25; background:#fbf4e4; box-shadow:var(--sh-1);
+  }
+  .tktmini::before{content:''; position:absolute; left:0; right:0; top:0; height:4px; border-radius:var(--r-s) var(--r-s) 0 0; background:var(--gold);}
+  .tktmini:nth-child(odd){transform:rotate(-.8deg);}
+  .tktmini:nth-child(even){transform:rotate(.7deg);}
+  .tktmini .tktart{display:block; width:100%; height:auto; margin:2px 0 3px;}
+  .tm-date{display:flex; align-items:center; justify-content:space-between; gap:4px; font-family:ui-monospace,Menlo,Consolas,monospace;
+    font-size:var(--fs-cap); font-weight:800; letter-spacing:.06em; opacity:.8;}
+  .tm-date .gi{width:15px; height:15px; color:#1d5e3c;}
+  .tm-route{font-size:var(--fs-label); font-weight:900; letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .tm-st{display:flex; flex-wrap:wrap; gap:3px;}
+  .tm-st i{padding:0 4px; border:1.3px solid currentColor; border-radius:var(--r-s); font-style:normal;
+    font-size:var(--fs-cap); font-weight:900; letter-spacing:.05em; text-transform:uppercase;}
+  .tm-st i.red{color:#b0281c;} .tm-st i.blue{color:#2a3a9e;} .tm-st i.green{color:#1d6a43;}
+  .alb-more{margin-top:14px;}
+  .alb-since{margin-top:14px; text-align:center; font-size:var(--fs-label); font-weight:700; color:var(--muted);}
+  .alb-end{display:flex; align-items:center; gap:12px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line);}
+  .alb-end .hint{flex:1; margin:0; font-size:var(--fs-label);}
+  .alb-clear{
+    flex:0 0 auto; min-height:var(--tap); padding:0 14px; border-radius:var(--r-m); cursor:pointer;
+    border:1.5px solid var(--line); background:var(--paper); color:var(--lost-ink);
+    font-family:inherit; font-size:var(--fs-label); font-weight:800;
+  }
 
   /* ---- Pasko: a parol and a string of lights --------------------------
      September to early January, the season the whole country decorates for
@@ -1521,6 +1607,7 @@
     <symbol id="i-compass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.6 8.4l-2.1 5.1-5.1 2.1 2.1-5.1z"/></symbol>
     <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4"/><path d="M6 4.5h11.5l-2.6 4 2.6 4H6"/></symbol>
     <symbol id="i-ty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M10 9.25C8.73 1.29 15.27 1.29 14 9.25C21.17 5.58 23.2 11.8 15.23 13.05C20.94 18.74 15.65 22.59 12 15.4C8.35 22.59 3.06 18.74 8.77 13.05C.8 11.8 2.83 5.58 10 9.25Z"/><circle cx="12" cy="11.7" r="1.5" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-tkt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 6.5h15a1 1 0 0 1 1 1v2.6a1.9 1.9 0 0 0 0 3.8v2.6a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-2.6a1.9 1.9 0 0 0 0-3.8V7.5a1 1 0 0 1 1-1z"/><path d="M15 9.2v.6M15 11.7v.6M15 14.2v.6"/></symbol>
     <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 13.5a4 4 0 0 0 5.7.3l3-3a4 4 0 0 0-5.7-5.7l-1.1 1.1"/><path d="M14 10.5a4 4 0 0 0-5.7-.3l-3 3a4 4 0 0 0 5.7 5.7l1.1-1.1"/></symbol>
     <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="12" r="3.5"/><path d="M11.5 12H21M17.5 12v3M20.5 12v2.2"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5.5v13M5.5 12h13"/></symbol>
@@ -1553,7 +1640,8 @@
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID for your session. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
       <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop.</p>
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and it goes when the trip does. Nothing keeps a total for you, so there is no score to go up or down.</p>
-      <p>When you tap Stop, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way. <b>It is not sent anywhere and not kept</b>: it is gone when you close it, so a screenshot is the only copy there will ever be.</p>
+      <p>When you tap Stop, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>it is not sent anywhere</b>. Close it and it is gone.</p>
+      <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Remove all” in My tickets deletes every copy.</p>
 
       <div id="privSightings">
         <h4 class="ok">Sightings</h4>
@@ -1577,7 +1665,7 @@
 
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
-      <p>Three small things are remembered on your own device, and nowhere else: whether you have opened this guide before (so the dot on the guide button stops nagging), your light or dark theme choice, and the stop you saved, if you saved one. All three stay in your browser, are never sent anywhere, and are not linked to anything. Clearing your browser data removes them, and “Remove my stop” in the stop picker deletes the third one on its own.</p>
+      <p>Four small things are remembered on your own device, and nowhere else: whether you have opened this guide before (so the dot on the guide button stops nagging), your light or dark theme choice, the stop you saved, if you saved one, and the tickets you chose to keep, if you kept any. All four stay in your browser, are never sent anywhere, and are not linked to anything. Clearing your browser data removes them, “Remove my stop” in the stop picker deletes the third one on its own, and “Remove all” in My tickets the fourth.</p>
     </div>
     <div class="modal-foot">
       <button class="big btn-ghost" onclick="closeModal('privModal')">Close</button>
@@ -1607,14 +1695,38 @@
   </div>
 </div>
 
+<!-- My tickets: the tickets a sharer chose to keep, on this phone only.
+     Filled by renderAlbum(). Before the ticket's own dialog on purpose, so a
+     kept ticket opened from here draws over the album, not under it. -->
+<div class="modal hidden" id="albumModal" role="dialog" aria-modal="true" aria-labelledby="albumTitle">
+  <div class="modal-card tall album">
+    <h3 id="albumTitle"><svg class="gi" aria-hidden="true"><use href="#i-tkt"/></svg>My tickets
+      <button class="modal-x" onclick="closeModal('albumModal')" aria-label="Close"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>
+    </h3>
+    <div class="modal-scroll">
+      <div id="albumBody"></div>
+      <div class="alb-end">
+        <p class="hint">Kept on this phone only and never sent anywhere. Clearing this browser’s data removes them.</p>
+        <button type="button" class="alb-clear" id="albumClear" onclick="clearAlbum()">Remove all</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- What a sharer gets for tapping Stop: a thank-you shaped like a
      conductor's punched ticket. Written by showTicket() from what this phone
-     saw on that trip; nothing on it is sent or kept, and it is gone when it
-     is closed. -->
+     saw on that trip. Nothing on it is sent, and it is gone when it is closed
+     unless Keep is tapped, which puts a copy of six things from it in My
+     tickets (see the album block). A kept one opens here too, with Remove
+     where Keep was. -->
 <div class="modal hidden" id="tktModal" role="dialog" aria-modal="true" aria-labelledby="tktKick">
   <div class="tktwrap">
     <div class="tkt" id="tktCard"></div>
-    <button type="button" class="tkt-close" onclick="closeModal('tktModal')">Close</button>
+    <div class="tkt-acts">
+      <button type="button" class="tkt-keep" id="tktKeep" onclick="keepTicket()"><svg class="gi" aria-hidden="true"><use href="#i-tkt"/></svg><span>Keep this ticket</span></button>
+      <button type="button" class="tkt-close hidden" id="tktDrop" onclick="dropKeptTicket()">Remove</button>
+      <button type="button" class="tkt-close" onclick="closeTicket()">Close</button>
+    </div>
   </div>
 </div>
 
@@ -1904,6 +2016,14 @@
            rather than only found by someone who goes looking. -->
       <div class="tyline hidden" id="tyLine" aria-live="polite"></div>
     </div>
+
+    <!-- The tickets this phone has kept. Drawn by syncAlbumRow() only once
+         there is one, so nobody is offered an empty album or a zero. -->
+    <button type="button" class="card albumrow hidden" id="albumRow" onclick="openAlbum()">
+      <span class="ico" aria-hidden="true"><svg class="gi"><use href="#i-tkt"/></svg></span>
+      <span class="lbl"><span class="cap">My tickets</span><span class="val" id="albumRowVal"></span></span>
+      <span class="chev" aria-hidden="true"><svg class="gi"><use href="#i-chev"/></svg></span>
+    </button>
   </div>
 
   <div class="adminFoot"><a href="admin.html">Operating this route? Admin panel →</a></div>
@@ -2136,6 +2256,63 @@ const MARKS = {
 function markSvg(name, cls){
   const m = MARKS[String(name || '').toLowerCase()];
   return m ? '<svg class="mark' + (cls ? ' ' + cls : '') + '" viewBox="0 0 32 32" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + m + '</svg>' : '';
+}
+
+// The picture on a ticket: the place the trip was boarded at and the place
+// it was left at, as two roadside signs carrying their marks, and the coach
+// on the road between them heading for the second. Two tickets for different
+// trips are two different pictures, which is what makes keeping them a
+// collection. The sky is the trip's time of day as its stamps tell it
+// (ticketSky in the album block), so a kept copy draws the same picture from
+// the little it keeps. Printed in the ticket's own ink on its own paper, with
+// no ids, so a page of them never collides.
+const TICKET_SKIES = {
+  day:   { sky:'#e3f2f7', hill:'#c9dfd0', ground:'#d3e0bf', road:'#8f8579', post:'#6d1a25', orb:'#e39a1c', edge:'rgba(109,26,37,.35)',
+           coach:SCENE_TIMES.day.coach },
+  dawn:  { sky:'#fbe1c0', hill:'#efc6a2', ground:'#e6cba8', road:'#86706a', post:'#6d1a25', orb:'#f2a96a', edge:'rgba(109,26,37,.35)',
+           coach:SCENE_TIMES.dawn.coach },
+  // On the road at night, not parked for it: the windows lit, the board on,
+  // the lamp out front.
+  night: { sky:'#241a33', hill:'#33253f', ground:'#1b1420', road:'#3b3138', post:'#d9cfbf', orb:'#f6e9c8', edge:'transparent',
+           coach:'--c-body:#cfc6b8;--c-roof:#bfb6a8;--c-skirt:#b3aa9c;--c-band:#5e1822;--c-gold:#a8761c;--c-glass:#f3c56b;' +
+                 '--c-glint:rgba(255,255,255,.08);--c-head:#3a2a1e;--c-led:#ffb22e;--c-lamp:#fff3c4;--c-hub:#9a9286;--c-sign:#120d0b;--c-dark:#211a18' }
+};
+// t: { from, to } mark names ('' for a place without one, which gets a plain
+// station ring like the strip's), sky, and one: true when the trip began and
+// ended by the same place, which is one sign rather than two of the same.
+function ticketArtSvg(t){
+  t = t || {};
+  const k = TICKET_SKIES[t.sky] ? t.sky : 'day', c = TICKET_SKIES[k];
+  const sign = function(cx, mark){
+    const key = String(mark || '').toLowerCase();
+    const m = Object.prototype.hasOwnProperty.call(MARKS, key) ? MARKS[key] : '';
+    return '<rect x="' + (cx - 1.5) + '" y="52" width="3" height="13" fill="' + c.post + '"/>' +
+      '<circle cx="' + cx + '" cy="32" r="22" fill="#fbf4e4" stroke="#6d1a25" stroke-width="1.6"/>' +
+      '<circle cx="' + cx + '" cy="32" r="18.5" fill="none" stroke="#6d1a25" stroke-width=".8" opacity=".4"/>' +
+      (m ? '<svg x="' + (cx - 15) + '" y="17" width="30" height="30" viewBox="0 0 32 32" fill="none" stroke="#6d1a25" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + m + '</svg>'
+         : '<circle cx="' + cx + '" cy="32" r="7" fill="none" stroke="#6d1a25" stroke-width="3.2"/>');
+  };
+  const one = !!t.one, bx = one ? 136 : 106;
+  const sky = k === 'night'
+    ? '<path d="M28 9h0M70 22h0M96 8h0M128 18h0M163 7h0M236 12h0M282 20h0M249 4h0" stroke="' + c.orb + '" stroke-width="2" stroke-linecap="round" opacity=".85"/>' +
+      '<path d="M206 9a8 8 0 1 0 0 16a6.2 8 0 1 1 0-16z" fill="' + c.orb + '"/>'
+    : k === 'dawn'
+    ? '<path d="M204 34v-6M190 38l-4-4M218 38l4-4M181 47l-6-1M227 47l6-1" stroke="' + c.orb + '" stroke-width="1.6" stroke-linecap="round"/>' +
+      '<circle cx="204" cy="52" r="12" fill="' + c.orb + '"/>'
+    : '<circle cx="150" cy="16" r="6.5" fill="' + c.orb + '"/>' +
+      '<path d="M150 4.5v2.4M150 25.1v2.4M138.5 16h2.4M159.1 16h2.4M141.9 7.9l1.7 1.7M156.4 22.4l1.7 1.7M141.9 24.1l1.7-1.7M156.4 9.6l1.7-1.7" stroke="' + c.orb + '" stroke-width="1.6" stroke-linecap="round"/>' +
+      '<path d="M86 22a4 4 0 0 1 4-4a5.5 5.5 0 0 1 10.5-1.5a4 4 0 0 1 3.5 5.5z" fill="#fff" opacity=".9"/>' +
+      '<path d="M206 26a3 3 0 0 1 3-3a4 4 0 0 1 7.6-1a3 3 0 0 1 2.4 4z" fill="#fff" opacity=".8"/>';
+  const beam = k === 'night' ? '<path d="M' + (bx + 87) + ' 61L' + (bx + 128) + ' 55V71Z" fill="rgba(255,243,196,.32)"/>' : '';
+  return '<svg class="tktart" viewBox="0 0 300 84" aria-hidden="true" focusable="false" style="' + c.coach + '">' +
+    '<rect x=".75" y=".75" width="298.5" height="82.5" rx="9" fill="' + c.sky + '"/>' + sky +
+    '<path d="M.75 58C40 50 80 54 120 50C170 45 220 54 260 49C280 47 292 50 299.25 50V66H.75Z" fill="' + c.hill + '"/>' +
+    '<path d="M.75 64H299.25V74.25a9 9 0 0 1-9 9H9.75a9 9 0 0 1-9-9Z" fill="' + c.ground + '"/>' +
+    '<rect x=".75" y="64" width="298.5" height="9" fill="' + c.road + '"/>' +
+    '<path d="M8 68.5H292" stroke="#fbf4e4" stroke-width="1.4" stroke-dasharray="7 6" opacity=".55"/>' +
+    (one ? sign(86, t.from) : sign(34, t.from) + sign(266, t.to)) + beam +
+    '<svg x="' + bx + '" y="37.5" width="88" height="33" viewBox="0 0 364 136">' + COACH_SIDE + '</svg>' +
+    '<rect x=".75" y=".75" width="298.5" height="82.5" rx="9" fill="none" stroke="' + c.edge + '" stroke-width="1.3"/></svg>';
 }
 // ---- END PICTURES ---------------------------------------------------------
 
@@ -2401,7 +2578,10 @@ function ensureClient(){ if (!sb) sb = supabase.createClient(CFG.SUPABASE_URL, C
 // way out, and Tab is kept inside. Without that, a keyboard or screen reader
 // user tabs straight out of the dialog into the page behind it, which is
 // still there, still focusable, and now unreachable visually.
-let modalReturn = null;
+// One place to go back to per open dialog, because one can open over
+// another: a kept ticket opens over My tickets, and closing it should land
+// on the ticket it came from, and closing the album on the row it came from.
+const modalReturns = [];
 function focusables(el){
   return [].slice.call(el.querySelectorAll(
     'button,[href],input,select,textarea,summary,[tabindex]:not([tabindex="-1"])'
@@ -2417,22 +2597,23 @@ function topLayer(){
 function openModal(id){
   const m = document.getElementById(id);
   if (!m) return;
-  modalReturn = document.activeElement;
+  if (m.classList.contains('hidden')) modalReturns.push(document.activeElement);
   m.classList.remove('hidden');
   const f = focusables(m);
   if (f.length) f[0].focus();
 }
 function closeModal(id){
   const m = document.getElementById(id);
-  if (!m) return;
+  if (!m || m.classList.contains('hidden')) return;
   m.classList.add('hidden');
-  if (modalReturn && modalReturn.getClientRects && modalReturn.getClientRects().length) modalReturn.focus();
-  modalReturn = null;
+  const back = modalReturns.pop();
+  if (back && back.getClientRects && back.getClientRects().length) back.focus();
 }
 document.addEventListener('keydown', function(e){
   const m = topLayer();
   if (!m) return;
-  if (e.key === 'Escape' && (m.id === 'privModal' || m.id === 'tktModal')){ closeModal(m.id); return; }
+  if (e.key === 'Escape' && m.id === 'tktModal'){ closeTicket(); return; }
+  if (e.key === 'Escape' && (m.id === 'privModal' || m.id === 'albumModal')){ closeModal(m.id); return; }
   if (e.key !== 'Tab') return;
   const f = focusables(m);
   if (!f.length) return;
@@ -2811,14 +2992,29 @@ function thanksControl(id, isSelf, done){
 //  6. A trip too short to have helped anyone gets no ticket: under five
 //     minutes on the map, or never on the map at all.
 //  7. The salamat line follows rule 1. No zero, ever.
+//
+// The four stamps, under the names a kept ticket stores them by (k). Their
+// words are the ones rule 5 reads, so a stamp added here is a stamp the test
+// checks. Buong ruta prints the trip's own two ends on a ticket; the album,
+// which shows the kind rather than one trip, prints the line below.
+const STAMPS = {
+  full:  { t:'Buong ruta',    s:'end to end',       c:'red' },
+  dawn:  { t:'Madaling araw', s:'before 5 AM',      c:'blue' },
+  night: { t:'Gabi na',       s:'after dark',       c:'blue' },
+  first: { t:'Unang bus',     s:'first on the map', c:'green' }
+};
+function stampOf(k, s){
+  const d = STAMPS[k];
+  return { k:k, t:d.t, s:s || d.s, c:d.c };
+}
 function ticketStamps(t){
   const out = [];
   const last = t.lastIdx;
   if ((t.fromIdx === 0 && t.toIdx === last) || (t.fromIdx === last && t.toIdx === 0))
-    out.push({ t:'Buong ruta', s:(t.fromShort||'') + ' → ' + (t.toShort||''), c:'red' });
-  if (t.startMins < 300) out.push({ t:'Madaling araw', s:'before 5 AM', c:'blue' });
-  else if (t.endMins >= 1110 || t.endMins < t.startMins) out.push({ t:'Gabi na', s:'after dark', c:'blue' });
-  if (t.othersAtStart === 0) out.push({ t:'Unang bus', s:'first on the map', c:'green' });
+    out.push(stampOf('full', (t.fromShort||'') + ' → ' + (t.toShort||'')));
+  if (t.startMins < 300) out.push(stampOf('dawn'));
+  else if (t.endMins >= 1110 || t.endMins < t.startMins) out.push(stampOf('night'));
+  if (t.othersAtStart === 0) out.push(stampOf('first'));
   return out.slice(0, 2);
 }
 function ticketWorthShowing(t){
@@ -2830,9 +3026,105 @@ function ticketGreeting(endMins){
 }
 // ---- END SALAMAT
 
+// ---- THE TICKET ALBUM (unit tested) ---------------------------------------
+// A ticket is gone when it is closed unless the sharer taps Keep. Then a copy
+// goes into My tickets, in this browser and nowhere else. The copy is the
+// souvenir and not the stopwatch. Anyone on board can share, the conductor
+// and the driver included, and a pile of tickets with their clock times on
+// would be a timesheet on that phone: the driver numbers for-operators.html
+// promises this tool cannot produce. So three more rules, held by
+// test-thanks.js with the seven above:
+//
+//  8. A kept ticket is six things: the day, the direction, where the trip
+//     was boarded and where it was left (checkpoints' short names, never a
+//     position), its stamps by name, and whether anyone said salamat. No
+//     clock time, no duration, no bus number, no count.
+//  9. The album adds up only what cannot rank anybody: tickets, places,
+//     stamps, directions. No time on the map, no salamat total, nothing per
+//     bus, no streak to keep alive.
+// 10. Keeping is a tap on one ticket, never a default, and keepTicket() is
+//     the only thing that adds to the album.
+const TKT_DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+const TKT_MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+function owns(o, k){ return Object.prototype.hasOwnProperty.call(o, k); }
+function ymd(d){
+  const p = function(n){ return (n < 10 ? '0' : '') + n; };
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+// t: { when, dir, fromShort, toShort, stamps (ticketStamps' list), thanked }
+function albumEntry(t){
+  return {
+    d: ymd(t.when), dir: t.dir === 'south' ? 's' : 'n',
+    from: String(t.fromShort || ''), to: String(t.toShort || ''),
+    st: (t.stamps || []).map(function(s){ return s.k; }).filter(function(k){ return owns(STAMPS, k); }),
+    ty: !!t.thanked
+  };
+}
+// What came back out of storage, which anything on this phone could have
+// written: only well-formed tickets, only their six things, nothing longer
+// than a short name.
+function albumClean(raw){
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(function(e){
+    return !!e && typeof e === 'object' && typeof e.d === 'string' && /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(e.d) &&
+      (e.dir === 'n' || e.dir === 's') && typeof e.from === 'string' && typeof e.to === 'string' && Array.isArray(e.st);
+  }).map(function(e){
+    return { d:e.d, dir:e.dir, from:e.from.slice(0, 24), to:e.to.slice(0, 24),
+             st:e.st.filter(function(k){ return typeof k === 'string' && owns(STAMPS, k); }).slice(0, 2), ty:!!e.ty };
+  });
+}
+// Where a kept ticket's ends are on the route as config.txt has it now, or
+// -1 for a name it no longer has.
+function cpIndex(cps, short){
+  for (let i = 0; i < cps.length; i++) if ((cps[i].short || cps[i].name) === short) return i;
+  return -1;
+}
+// Every checkpoint some kept trip passed, its two ends included, by index.
+function albumPlaces(list, cps){
+  const seen = {};
+  list.forEach(function(e){
+    const a = cpIndex(cps, e.from), b = cpIndex(cps, e.to);
+    if (a < 0 && b < 0) return;
+    const lo = a < 0 ? b : b < 0 ? a : Math.min(a, b), hi = Math.max(a, b);
+    for (let i = lo; i <= hi; i++) seen[i] = 1;
+  });
+  return Object.keys(seen).map(Number).sort(function(x, y){ return x - y; });
+}
+function albumStats(list, cps){
+  const stamps = {};
+  Object.keys(STAMPS).forEach(function(k){ stamps[k] = 0; });
+  let north = 0;
+  list.forEach(function(e){
+    if (e.dir === 'n') north++;
+    e.st.forEach(function(k){ if (owns(stamps, k)) stamps[k]++; });
+  });
+  const days = list.map(function(e){ return e.d; }).sort();
+  return { tickets:list.length, north:north, south:list.length - north,
+           places:albumPlaces(list, cps).length, of:cps.length, stamps:stamps, since:days[0] || '' };
+}
+// The sky a ticket is drawn under, from its stamps, so a kept copy needs no
+// clock to draw the same picture.
+function ticketSky(st){
+  st = st || [];
+  return st.indexOf('dawn') >= 0 ? 'dawn' : st.indexOf('night') >= 0 ? 'night' : 'day';
+}
+function keptGreeting(st){
+  return (st || []).indexOf('night') >= 0 ? 'Ingat pauwi!' : 'Ingat sa biyahe!';
+}
+function keptDate(d){
+  const p = d.split('-').map(Number), when = new Date(p[0], p[1] - 1, p[2]);
+  return TKT_DAYS[when.getDay()] + ' ' + p[2] + ' ' + TKT_MONTHS[p[1] - 1];
+}
+function keptSince(d){
+  if (!d) return '';
+  const p = d.split('-').map(Number);
+  return TKT_MONTHS[p[1] - 1] + ' ' + p[0];
+}
+// ---- END ALBUM
+
 // Which buses this tab has already thanked. sessionStorage, not local: it
 // belongs to the visit, like the map's blue dot and the watcher id, and it
-// is deliberately NOT one of the three things the privacy panel promises are
+// is deliberately NOT one of the four things the privacy panel promises are
 // remembered between visits. Losing it costs nothing — the server drops a
 // repeat on its own, so the worst case is a button that offers itself twice.
 let THANKED = null;
@@ -3359,12 +3651,13 @@ function rideState(info){
 
 // ---- My stop: storage, the picker, and the marks on the map -----------
 // The saved stop is the THIRD thing this app keeps between visits, after the
-// guide-seen dot and the theme choice. All three are named in the privacy
-// panel, and the panel is the promise the code is only the implementation
-// of: a fourth means editing that panel in the same commit as the feature.
+// guide-seen dot and the theme choice; the kept tickets are the fourth. All
+// four are named in the privacy panel, and the panel is the promise the code
+// is only the implementation of: a fifth means editing that panel in the same
+// commit as the feature.
 //
 // Whether the blue dot is switched on is kept in sessionStorage instead, so
-// it dies with the tab and never becomes a fourth remembered thing. Opting
+// it dies with the tab and never becomes a fifth remembered thing. Opting
 // in again next visit is a small price for a permission that stays a
 // per-visit decision.
 let MYSTOP = null;        // {name, lat, lng}, in this browser and nowhere else
@@ -4744,8 +5037,8 @@ function startSharing(){
 // runs at a real trip start — a guard pausing and resuming mid-trip never
 // comes back through here, so the welcome cannot repeat itself at someone
 // forty minutes into sharing. Everything is per-trip state in memory: this
-// deliberately stores nothing, so the privacy panel's list of three stays
-// three.
+// deliberately stores nothing, so the privacy panel's list of four stays
+// four.
 let helloT1=null, helloT2=null;
 function showTripHello(){
   const el=document.getElementById('tyHello');
@@ -4884,14 +5177,8 @@ function showTicket(trip, end){
   // "4:12–7:03 AM", or both halves in full when the trip crosses noon.
   const a = clockText(began), b = clockText(now);
   const times = a.slice(-2) === b.slice(-2) ? a.slice(0, -3) + '–' + b : a + '–' + b;
-  const DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   const label = document.getElementById('busLabel').value.trim();
   const ty = thanksWords(trip.maxThanks);
-  const grid = CHECKPOINTS.map(function(c, i){
-    return '<span' + (i === fromIdx || i === toIdx ? ' class="on"' : '') + '>' + markSvg(c.mark) +
-      '<b>' + escapeHtml(c.short || c.name) + '</b></span>';
-  }).join('');
   // Each stamp sits beside what it stamps, in the space the line leaves,
   // rather than over the words: the first by the time, the second by the
   // goodbye. Decorative, so hidden from screen readers like the holes.
@@ -4901,23 +5188,219 @@ function showTicket(trip, end){
       '<small>' + escapeHtml(st.s) + '</small></span>' : '';
   };
   const hrs = Math.floor(mins/60), rem = mins % 60;
+  // What Keep would put in My tickets if it is tapped: the six things
+  // albumEntry() makes of this trip, and none of the times printed below.
+  TKT_KEEP = albumEntry({ when:now, dir:shareDir, fromShort:tktPlace(fromIdx), toShort:tktPlace(toIdx),
+                          stamps:stamps, thanked:trip.maxThanks > 0 });
   document.getElementById('tktCard').innerHTML =
     '<div class="tkt-head"><span class="tkt-kick" id="tktKick">SALAMAT TICKET</span>' +
-      '<span class="tkt-date">' + DAYS[now.getDay()] + ' ' + now.getDate() + ' ' + MONTHS[now.getMonth()] + '</span></div>' +
+      '<span class="tkt-date">' + TKT_DAYS[now.getDay()] + ' ' + now.getDate() + ' ' + TKT_MONTHS[now.getMonth()] + '</span></div>' +
     '<div class="tkt-org">Community bus tracker · unofficial</div>' +
     '<hr>' +
     '<div class="tkt-route"><span>' + (shareDir === 'south' ? '▼ SOUTHBOUND' : '▲ NORTHBOUND') +
       (label ? ' · BUS ' + escapeHtml(label.toUpperCase()) : '') + '</span><span class="tkt-times">' + times + '</span></div>' +
-    '<div class="tkt-grid">' + grid + '</div>' +
+    tktArt(fromIdx, toIdx, TKT_KEEP.st) + tktGrid(fromIdx, toIdx) +
     '<hr>' +
     '<div class="tkt-big">You kept the bus on everyone’s map for</div>' +
     '<div class="tkt-row"><div class="tkt-dur">' + (hrs ? hrs + '<small> h </small>' : '') + rem + '<small> min</small></div>' + stamp(0) + '</div>' +
     (ty ? '<div class="tkt-ty"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg><span>' + ty + '</span></div>' : '') +
     '<hr>' +
     '<div class="tkt-row"><div class="tkt-greet">' + ticketGreeting(endMins) + '</div>' + stamp(1) + '</div>' +
-    '<div class="tkt-fine">Made on this phone from what it saw. Nothing about this trip was kept, and this ticket is gone when you close it.</div>';
+    '<div class="tkt-fine">Made on this phone and sent nowhere. It is gone when you close it, unless you keep it.</div>';
+  tktMode('live');
   openModal('tktModal');
 }
+// The two ends of a trip as checkpoints: the picture of them, and every stop
+// on the route with the pair of them punched, each carrying its mark.
+function tktPlace(i){
+  const c = CHECKPOINTS[i];
+  return c ? (c.short || c.name) : '';
+}
+function tktArt(fromIdx, toIdx, st){
+  const mark = function(i){ return (CHECKPOINTS[i] && CHECKPOINTS[i].mark) || ''; };
+  return ticketArtSvg({ from:mark(fromIdx), to:mark(toIdx), sky:ticketSky(st), one:fromIdx >= 0 && fromIdx === toIdx });
+}
+function tktGrid(fromIdx, toIdx){
+  return '<div class="tkt-grid">' + CHECKPOINTS.map(function(c, i){
+    return '<span' + (i === fromIdx || i === toIdx ? ' class="on"' : '') + '>' + markSvg(c.mark) +
+      '<b>' + escapeHtml(c.short || c.name) + '</b></span>';
+  }).join('') + '</div>';
+}
+
+// ---- The ticket album -------------------------------------------------
+// My tickets: the copies a sharer chose to keep, in this browser and nowhere
+// else, and the fourth thing the privacy panel says the app remembers. What
+// a copy holds and what the album may add up are rules 8 to 10 in the album
+// block; this is the part that touches the page and the storage.
+let TKT_KEEP = null;     // what Keep would keep, only while a ticket is on screen
+let TKT_SHOWN = -1;      // which kept ticket is open, by its place in the list
+let TKT_SHOWN_AS = '';   // and what it was, in case another tab moved the list
+let TKT_DROP_ARMED = false, ALB_CLEAR_ARMED = false;
+let ALB_SHOW = 24;       // tickets drawn before "Show older"
+function loadAlbum(){
+  try{ return albumClean(JSON.parse(localStorage.getItem('wt-tickets') || '[]')); }catch(e){ return []; }
+}
+// Removing the last ticket removes the key, so an emptied album leaves
+// nothing behind it.
+function saveAlbum(list){
+  try{
+    if (list.length) localStorage.setItem('wt-tickets', JSON.stringify(list));
+    else localStorage.removeItem('wt-tickets');
+    return true;
+  }catch(e){ return false; }
+}
+// The buttons under the ticket: Keep on the one Stop just made, Remove on a
+// kept one opened from the album. Each starts fresh every time.
+function tktMode(mode){
+  const keep = document.getElementById('tktKeep'), drop = document.getElementById('tktDrop');
+  keep.classList.toggle('hidden', mode !== 'live');
+  keep.classList.remove('done'); keep.disabled = false;
+  keep.querySelector('span').textContent = 'Keep this ticket';
+  drop.classList.toggle('hidden', mode !== 'kept');
+  drop.textContent = 'Remove';
+  TKT_DROP_ARMED = false;
+}
+function keepTicket(){
+  const keep = document.getElementById('tktKeep');
+  // Kept already: the same button now goes to the album.
+  if (!TKT_KEEP){ closeTicket(); openAlbum(); return; }
+  const list = loadAlbum();
+  list.push(TKT_KEEP);
+  if (!saveAlbum(list)){
+    keep.disabled = true;
+    keep.querySelector('span').textContent = 'This browser won’t let the page keep it';
+    return;
+  }
+  TKT_KEEP = null;
+  keep.classList.add('done');
+  keep.querySelector('span').textContent = 'Kept · see My tickets';
+  syncAlbumRow();
+}
+function closeTicket(){
+  TKT_KEEP = null; TKT_SHOWN = -1; TKT_SHOWN_AS = '';
+  closeModal('tktModal');
+}
+function stampHtml(s, cls){
+  return '<span class="stamp ' + s.c + (cls ? ' ' + cls : '') + '" aria-hidden="true">' + escapeHtml(s.t) +
+    '<small>' + escapeHtml(s.s) + '</small></span>';
+}
+// A kept ticket, drawn again from its six things: the same picture and
+// punched stops, its stamps, the flower if anyone said salamat, and none of
+// what it was never given.
+function showKeptTicket(i){
+  const e = loadAlbum()[i];
+  if (!e) return;
+  const a = cpIndex(CHECKPOINTS, e.from), b = cpIndex(CHECKPOINTS, e.to);
+  const ends = escapeHtml(e.from || '?') + ' → ' + escapeHtml(e.to || '?');
+  const stamps = e.st.map(function(k, j){ return stampHtml(stampOf(k, k === 'full' ? e.from + ' → ' + e.to : ''), 's' + (j+1)); }).join('');
+  const middle = (stamps ? '<div class="tkt-stamprow">' + stamps + '</div>' : '') +
+    (e.ty ? '<div class="tkt-ty"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg><span>Someone said salamat</span></div>' : '');
+  document.getElementById('tktCard').innerHTML =
+    '<div class="tkt-head"><span class="tkt-kick" id="tktKick">SALAMAT TICKET</span><span class="tkt-date">' + keptDate(e.d) + '</span></div>' +
+    '<div class="tkt-org">Community bus tracker · unofficial</div>' +
+    '<hr>' +
+    '<div class="tkt-route"><span>' + (e.dir === 's' ? '▼ SOUTHBOUND' : '▲ NORTHBOUND') + '</span><span class="tkt-times">' + ends + '</span></div>' +
+    tktArt(a, b, e.st) + tktGrid(a, b) +
+    '<hr>' + (middle ? middle + '<hr>' : '') +
+    '<div class="tkt-greet">' + keptGreeting(e.st) + '</div>' +
+    '<div class="tkt-fine">Kept on this phone only: the day, the places and the stamps. No times, no bus number, no count.</div>';
+  TKT_KEEP = null; TKT_SHOWN = i; TKT_SHOWN_AS = JSON.stringify(e);
+  tktMode('kept');
+  openModal('tktModal');
+}
+function dropKeptTicket(){
+  const drop = document.getElementById('tktDrop');
+  if (!TKT_DROP_ARMED){ TKT_DROP_ARMED = true; drop.textContent = 'Tap again to remove it'; return; }
+  const list = loadAlbum(), same = function(x){ return JSON.stringify(x) === TKT_SHOWN_AS; };
+  const at = same(list[TKT_SHOWN]) ? TKT_SHOWN : list.findIndex(same);
+  if (at >= 0){ list.splice(at, 1); saveAlbum(list); }
+  closeTicket();
+  syncAlbumRow();
+  if (list.length) renderAlbum(); else closeModal('albumModal');
+}
+// The row on the sharing tab. Drawn only once a ticket has been kept: an
+// empty album is not something anyone needs to be shown.
+function syncAlbumRow(){
+  const row = document.getElementById('albumRow');
+  if (!row) return;
+  const list = loadAlbum();
+  row.classList.toggle('hidden', !list.length);
+  if (!list.length) return;
+  const st = albumStats(list, CHECKPOINTS);
+  document.getElementById('albumRowVal').textContent =
+    st.tickets + (st.tickets === 1 ? ' ticket' : ' tickets') + ' · ' + st.places + ' of ' + st.of + ' places on the route';
+}
+function openAlbum(){
+  ALB_SHOW = 24; ALB_CLEAR_ARMED = false;
+  document.getElementById('albumClear').textContent = 'Remove all';
+  renderAlbum();
+  const sc = document.querySelector('#albumModal .modal-scroll');
+  if (sc) sc.scrollTop = 0;
+  openModal('albumModal');
+}
+function albumMore(){ ALB_SHOW += 24; renderAlbum(); }
+// Remove all asks twice too, and says how many it is about to remove.
+function clearAlbum(){
+  const btn = document.getElementById('albumClear');
+  if (!ALB_CLEAR_ARMED){ ALB_CLEAR_ARMED = true; btn.textContent = 'Tap again to remove all ' + loadAlbum().length; return; }
+  ALB_CLEAR_ARMED = false;
+  saveAlbum([]);
+  syncAlbumRow();
+  closeModal('albumModal');
+}
+function attrText(s){ return escapeHtml(s).replace(/"/g, '&quot;'); }
+function renderAlbum(){
+  const list = loadAlbum(), st = albumStats(list, CHECKPOINTS);
+  const kinds = Object.keys(STAMPS), got = kinds.filter(function(k){ return st.stamps[k] > 0; }).length;
+  const seen = {};
+  albumPlaces(list, CHECKPOINTS).forEach(function(i){ seen[i] = 1; });
+  const places = CHECKPOINTS.map(function(c, i){
+    return '<span' + (seen[i] ? ' class="on"' : '') + '>' + markSvg(c.mark) + '<b>' + escapeHtml(c.short || c.name) + '</b>' +
+      '<i class="vh">' + (seen[i] ? ', passed' : ', not yet') + '</i></span>';
+  }).join('');
+  // A stamp not yet collected is shown faint, as something to look out
+  // for, and says so; it is never printed as a zero.
+  const stamps = kinds.map(function(k){
+    const n = st.stamps[k], s = STAMPS[k];
+    return '<div class="alb-stamp' + (n ? '' : ' yet') + '">' + stampHtml(stampOf(k)) +
+      '<b aria-hidden="true">' + (n ? '×' + n : 'not yet') + '</b>' +
+      '<i class="vh">' + escapeHtml(s.t + ', ' + s.s + ': ' + (n ? n + (n === 1 ? ' ticket' : ' tickets') : 'not yet')) + '</i></div>';
+  }).join('');
+  const order = list.map(function(e, i){ return i; }).reverse();
+  const minis = order.slice(0, ALB_SHOW).map(function(i){
+    const e = list[i], a = cpIndex(CHECKPOINTS, e.from), b = cpIndex(CHECKPOINTS, e.to);
+    const dir = e.dir === 's' ? 'southbound' : 'northbound';
+    return '<button type="button" class="tktmini" data-i="' + i + '" aria-label="' +
+        attrText(keptDate(e.d) + ', ' + dir + ', ' + (e.from || '?') + ' to ' + (e.to || '?') + (e.ty ? ', someone said salamat' : '')) + '">' +
+      tktArt(a, b, e.st) +
+      '<span class="tm-date">' + keptDate(e.d) + (e.ty ? '<svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>' : '') + '</span>' +
+      '<span class="tm-route">' + (e.dir === 's' ? '▼ ' : '▲ ') + escapeHtml(e.from || '?') + ' → ' + escapeHtml(e.to || '?') + '</span>' +
+      (e.st.length ? '<span class="tm-st">' + e.st.map(function(k){ return '<i class="' + STAMPS[k].c + '">' + escapeHtml(STAMPS[k].t) + '</i>'; }).join('') + '</span>' : '') +
+    '</button>';
+  }).join('');
+  document.getElementById('albumBody').innerHTML =
+    '<div class="alb-stats">' +
+      '<div><b>' + st.tickets + '</b><span>' + (st.tickets === 1 ? 'ticket' : 'tickets') + '</span></div>' +
+      '<div><b>' + st.places + '<small>/' + st.of + '</small></b><span>places</span></div>' +
+      '<div><b>' + got + '<small>/' + kinds.length + '</small></b><span>stamps</span></div>' +
+    '</div>' +
+    '<div class="alb-h">Places on the route</div>' +
+    '<div class="alb-paper"><div class="tkt-grid">' + places + '</div></div>' +
+    '<div class="alb-h">Stamps</div>' +
+    '<div class="alb-paper alb-stamps">' + stamps + '</div>' +
+    '<div class="alb-h">Tickets<span><i aria-hidden="true">▲ </i>' + st.north + '<i class="vh"> northbound,</i> · <i aria-hidden="true">▼ </i>' +
+      st.south + '<i class="vh"> southbound</i></span></div>' +
+    '<div class="alb-list">' + minis + '</div>' +
+    (order.length > ALB_SHOW ? '<button type="button" class="big btn-ghost alb-more" onclick="albumMore()">Show older tickets</button>' : '') +
+    (st.since ? '<div class="alb-since">Since ' + keptSince(st.since) + '</div>' : '');
+}
+(function(){
+  const body = document.getElementById('albumBody');
+  if (body) body.addEventListener('click', function(ev){
+    const b = ev.target.closest('.tktmini');
+    if (b) showKeptTicket(+b.getAttribute('data-i'));
+  });
+})();
 
 // ---- Trip mode -------------------------------------------------------
 // The sharing tab goes dark while a trip is live and that tab is on screen
@@ -5131,6 +5614,7 @@ function start(){
   STOP_KMS = stopChainKms(STOPS, CHECKPOINTS, ROUTE_CHAIN);
   NAMED_STOPS = namedStopKms(STOPS, CHECKPOINTS, ROUTE_CHAIN);
   loadMyStop();
+  syncAlbumRow();
   readFollowLink();
   if (!mapReady){
     initMap(); buildTicks(); buildSightingPlaces(); renderHours();
@@ -5157,8 +5641,8 @@ applyTheme(themePref());
 
 // The gold dot on the guide link is a first-visit nudge, not a setting. It
 // was once the only thing this app kept between visits; it is now one of
-// three, with the theme choice and the saved stop. All three stay on the
-// device, all three are named in the privacy panel, and losing this one
+// four, with the theme choice, the saved stop and the kept tickets. All four
+// stay on the device, all four are named in the privacy panel, and losing this one
 // costs nothing but one extra dot.
 (function(){
   const link=document.getElementById('guideLink');

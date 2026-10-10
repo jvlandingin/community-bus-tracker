@@ -585,17 +585,22 @@ function run(page, include, label, configText, setup) {
 
   // The panel is the promise and the code is only the implementation. This is
   // that rule made mechanical: every key the app writes to localStorage has to
-  // be one the panel has told the reader about. A fourth remembered thing
-  // fails here until the paragraph is rewritten in the same commit.
+  // be one the panel has told the reader about. A fifth remembered thing
+  // fails here until the paragraph is rewritten in the same commit, as the
+  // fourth, the kept tickets, was.
   const appSrc = fs.readFileSync(path.join(APP, 'index.html'), 'utf8');
   const keys = [...new Set([...appSrc.matchAll(/localStorage\.(?:setItem|removeItem)\(\s*'([^']+)'/g)]
     .map(m => m[1]))].sort();
-  check(keys.join(',') === 'wt-guide-seen,wt-mystop,wt-theme',
-    'the app keeps exactly the three things the privacy panel names', keys.join(',') || 'none');
+  check(keys.join(',') === 'wt-guide-seen,wt-mystop,wt-theme,wt-tickets',
+    'the app keeps exactly the four things the privacy panel names', keys.join(',') || 'none');
   const panel = ok.d.getElementById('privModal').textContent.replace(/\s+/g, ' ');
-  check(/Three small things are remembered on your own device/.test(panel),
-    'and the panel counts them out loud, so a fourth cannot slip in quietly');
+  check(/Four small things are remembered on your own device/.test(panel),
+    'and the panel counts them out loud, so a fifth cannot slip in quietly');
   check(/the stop you saved/i.test(panel), 'naming the saved stop among them');
+  check(/the tickets you chose to keep/i.test(panel) && /Remove all.{0,4} in My tickets/.test(panel),
+    'and the kept tickets, with the way to delete them');
+  check(/Nothing is ever kept unless you tap Keep/.test(panel) && /leaves out the times, how long the trip took, the bus number and how many riders thanked you/.test(panel),
+    'saying a ticket is kept only on a tap, and what a kept one leaves out');
   // The old panel promised the app never asks for location while watching.
   // That is no longer true, so the promise had to move rather than be dropped.
   check(!/never asks for your location\./.test(panel),
@@ -606,6 +611,62 @@ function run(page, include, label, configText, setup) {
   // Opting the dot on is a per-visit decision, so it must not be remembered.
   check(!/localStorage\.[a-zA-Z]+\([^)]*myloc/i.test(appSrc),
     'whether the location dot is on is never written to localStorage');
+
+  console.log('\n=== 12. My tickets: kept only when asked, and only the souvenir ===');
+  // The ticket at Stop is gone when it is closed unless Keep is tapped. Drive
+  // the real page: a ticket shown and closed keeps nothing, Keep keeps six
+  // things and no stopwatch, the album opens on what was kept, and Remove
+  // takes it away again, key and all.
+  {
+    const w = ok.w, d = ok.d;
+    const row = d.getElementById('albumRow'), modal = d.getElementById('tktModal'), album = d.getElementById('albumModal');
+    const keepBtn = d.getElementById('tktKeep'), dropBtn = d.getElementById('tktDrop');
+    const hidden = el => !el || el.className.includes('hidden');
+    w.localStorage.removeItem('wt-tickets');
+    w.syncAlbumRow();
+    check(hidden(row), 'with nothing kept, the sharing tab offers no album at all');
+    w.switchTab('share');
+    w.pickDir('north');
+    d.getElementById('busLabel').value = '98019';
+    // A whole-route trip of 2 h 51 min, thanked three times.
+    const first = cps[0], last = cps[cps.length - 1];
+    const trip = () => ({ start: Date.now() - 171 * 60000, startKm: 0, others: 2, writes: 5, maxThanks: 3, polled: true });
+    const end = { latitude: +last[2], longitude: +last[3] };
+    w.showTicket(trip(), end);
+    check(!hidden(modal) && !!d.querySelector('#tktCard svg.tktart'), 'Stop shows the ticket, with the picture of its two ends');
+    check(!hidden(keepBtn) && hidden(dropBtn), 'and Keep under it, not Remove');
+    check(w.localStorage.getItem('wt-tickets') === null, 'showing it keeps nothing');
+    w.closeTicket();
+    check(w.localStorage.getItem('wt-tickets') === null && hidden(row), 'and closing it without Keep leaves nothing behind');
+
+    w.showTicket(trip(), end);
+    keepBtn.click();
+    const raw = w.localStorage.getItem('wt-tickets');
+    const kept = JSON.parse(raw || '[]');
+    check(kept.length === 1 && Object.keys(kept[0]).sort().join(',') === 'd,dir,from,st,to,ty',
+      'Keep keeps one ticket, of six things', raw);
+    check(kept.length === 1 && kept[0].from === first[1] && kept[0].to === last[1] && kept[0].dir === 'n' && kept[0].st.includes('full') && kept[0].ty === true,
+      'the ends it was punched for, the direction, its stamps and the flower');
+    check(!!raw && !/98019|\d:\d\d|171|"3"|:3[,}]/.test(raw), 'and not the bus number, a clock time, the minutes or the count', raw);
+    check(/Kept/.test(keepBtn.textContent) && !hidden(row) && /1 ticket\b/.test(row.textContent),
+      'the button says so, and the sharing tab now offers My tickets', row.textContent.replace(/\s+/g, ' ').trim());
+    keepBtn.click();
+    check(hidden(modal) && !hidden(album), 'tapped again, the button opens the album');
+    const minis = d.querySelectorAll('#albumBody .tktmini');
+    check(minis.length === 1 && !!minis[0].querySelector('svg.tktart'), 'which holds the kept ticket, with its picture');
+    check(/1\s*ticket/.test(d.getElementById('albumBody').textContent) && !/×0/.test(d.getElementById('albumBody').textContent),
+      'counts it, and prints no zero for the stamps still to collect');
+    minis[0].click();
+    check(!hidden(modal) && hidden(keepBtn) && !hidden(dropBtn), 'opening it shows the kept copy, with Remove where Keep was');
+    const keptText = d.getElementById('tktCard').textContent.replace(/\s+/g, ' ');
+    check(!/\d:\d\d|BUS 98019|\bmin\b/.test(keptText) && /Someone said salamat/.test(keptText) && !/3 riders/.test(keptText),
+      'with no times, no bus number and no minutes, and a flower with no count', keptText.slice(0, 90));
+    dropBtn.click();
+    check(w.localStorage.getItem('wt-tickets') !== null && /again/.test(dropBtn.textContent), 'Remove asks twice');
+    dropBtn.click();
+    check(w.localStorage.getItem('wt-tickets') === null, 'and the second tap removes it, leaving no key behind');
+    check(hidden(row) && hidden(album) && hidden(modal), 'with the album gone from the tab again');
+  }
 
   console.log('\n=== 11. inside the Android app ===');
   // mobile/ loads this same page in a Capacitor shell, whose bridge puts the

@@ -1,6 +1,8 @@
 // Checks the salamat button as shipped: the words it prints, who is offered
 // it, and the several things it must never do — draw a zero, draw a number
-// on somebody else's bus, or carry a name a content blocker hunts for.
+// on somebody else's bus, or carry a name a content blocker hunts for. Then
+// the ticket a sharer gets at Stop, and the album of tickets they chose to
+// keep: what a kept one may hold and what the album may add up.
 //
 // The code under test is pulled straight out of index.html by its comment
 // markers, like the other suites, so a passing run here cannot drift from
@@ -12,9 +14,19 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 
 const src = html.slice(html.indexOf('// ---- SAYING SALAMAT (unit tested)'),
                        html.indexOf('// ---- END SALAMAT'));
+const albumSrc = html.slice(html.indexOf('// ---- THE TICKET ALBUM (unit tested)'),
+                            html.indexOf('// ---- END ALBUM'));
 const S = {};
-new Function('S', src + 'S.thanksWords=thanksWords;S.thanksControl=thanksControl;' +
-  'S.ticketStamps=ticketStamps;S.ticketWorthShowing=ticketWorthShowing;S.ticketGreeting=ticketGreeting;')(S);
+new Function('S', src + albumSrc + 'S.thanksWords=thanksWords;S.thanksControl=thanksControl;' +
+  'S.ticketStamps=ticketStamps;S.ticketWorthShowing=ticketWorthShowing;S.ticketGreeting=ticketGreeting;' +
+  'S.STAMPS=STAMPS;S.albumEntry=albumEntry;S.albumClean=albumClean;S.albumPlaces=albumPlaces;S.albumStats=albumStats;' +
+  'S.ticketSky=ticketSky;S.keptGreeting=keptGreeting;S.keptDate=keptDate;S.keptSince=keptSince;')(S);
+// The part of the page around the ticket and the album, cut at the next
+// function so a check about one function reads that function alone.
+const fn = name => {
+  const a = html.indexOf('function ' + name + '(');
+  return a < 0 ? '' : html.slice(a, html.indexOf('\nfunction ', a + 1));
+};
 
 let fail = 0;
 const check = (c, label, note) => {
@@ -241,6 +253,17 @@ console.log('\n=== 12. the ticket: stamps are never about the driving ===');
     badW.length ? badW.join(' / ') : [...new Set(words)].join(' / '));
   check(S.ticketStamps(trip({ fromIdx: 0, toIdx: 7 })).every(x => ['red', 'blue', 'green'].includes(x.c)),
     'every stamp has an ink the ticket knows how to draw');
+  // A kept ticket stores its stamps by kind, so every stamp a ticket can get
+  // has to be one of the kinds, and the album prints each kind's own words.
+  const kinds = Object.keys(S.STAMPS);
+  check(kinds.join(',') === 'full,dawn,night,first', 'four kinds of stamp, each under the name a kept ticket stores', kinds.join(','));
+  check(S.ticketStamps(many.length ? trip({ fromIdx: 0, toIdx: 7, startMins: M(4, 0), othersAtStart: 0 }) : trip({}))
+          .concat(S.ticketStamps(trip({ startMins: M(17, 0), endMins: M(19, 0), othersAtStart: 0 })))
+          .every(x => kinds.includes(x.k) && S.STAMPS[x.k].t === x.t),
+    'every stamp a ticket gets carries its kind');
+  const kindWords = kinds.map(k => S.STAMPS[k].t + ' ' + S.STAMPS[k].s);
+  check(kindWords.every(w => !/(fast|quick|slow|speed|km\/h|kph|\bmin|hour|record|rank|score|best|on time|late\b|delay)/i.test(w)),
+    'and the words the album prints for each kind say nothing about the driving either', kindWords.join(' / '));
 }
 
 console.log('\n=== 13. the ticket: when there is one at all ===');
@@ -254,7 +277,7 @@ check(S.ticketGreeting(18 * 60 + 30) === 'Ingat pauwi!' && S.ticketGreeting(30) 
 check(S.ticketGreeting(7 * 60) === 'Ingat sa biyahe!' && S.ticketGreeting(4 * 60) === 'Ingat sa biyahe!',
   'a morning one: Ingat sa biyahe');
 
-console.log('\n=== 14. the ticket: made on the phone, kept nowhere ===');
+console.log('\n=== 14. the ticket: made on the phone, kept only if asked ===');
 // The ticket is built from a handful of numbers the sharing phone keeps for
 // the trip, never a trail of positions. "No location history" is the system's
 // first rule; a feature that needed one on the device would be the thin end
@@ -270,13 +293,138 @@ console.log('\n=== 14. the ticket: made on the phone, kept nowhere ===');
   check(writes.length > 0 && writes.every(k => ['maxThanks', 'polled', 'writes'].includes(k)),
     'and nothing else is ever written into it', [...new Set(writes)].join(','));
   check(!/TRIP\.[a-zA-Z]+\.push\(/.test(html), 'nothing is appended to it, so no trail can grow there');
-  const show = html.slice(html.indexOf('function showTicket('), html.indexOf('// ---- Trip mode'));
+  const show = fn('showTicket');
   check(/const ty = thanksWords\(trip\.maxThanks\);/.test(show) && /\(ty \?/.test(show),
     'the salamat line goes through thanksWords, so a quiet trip shows no zero');
-  check(!/rpc\(|fetch\(|localStorage|sessionStorage/.test(show), 'drawing the ticket sends nothing and stores nothing');
+  check(show.length > 0 && !/rpc\(|fetch\(|localStorage|sessionStorage|saveAlbum|keepTicket/.test(show),
+    'drawing the ticket sends nothing and stores nothing');
+  check(/TKT_KEEP = albumEntry\(\{ when:now, dir:shareDir, fromShort:tktPlace\(fromIdx\), toShort:tktPlace\(toIdx\),\s*stamps:stamps, thanked:trip\.maxThanks > 0 \}\);/.test(show),
+    'what Keep would keep is albumEntry() of the trip: the ends, the stamps, and only whether anyone thanked');
   check(/if \(!\(opts && opts\.quiet\)\) showTicket\(trip, endCoords\);/.test(html) &&
         /await stopSharing\(\{ quiet:true \}\);\s*setShareUI\('error'/.test(html),
     'and a session the server has blocked ends on its error, not on a ticket');
+}
+
+console.log('\n=== 15. a kept ticket: the souvenir, not the stopwatch ===');
+// Rule 8. Anyone on board can share, the conductor and the driver included,
+// so a pile of kept tickets with their clock times on would be a timesheet
+// on that phone: trip times, breaks, a day's runs. A kept ticket is six
+// things, and none of them is a time, a duration, a bus number or a count.
+{
+  const when = new Date(2026, 9, 9, 7, 31);
+  const stamps = [{ k: 'full', t: 'Buong ruta', s: 'MENDEZ → AYALA', c: 'red' }, { k: 'dawn', t: 'Madaling araw', s: 'before 5 AM', c: 'blue' }];
+  // Everything showTicket() knows about the trip, handed over at once: the
+  // entry has to take the six things and drop the rest on its own.
+  const e = S.albumEntry({ when, dir: 'north', fromShort: 'MENDEZ', toShort: 'AYALA', stamps, thanked: true,
+    mins: 171, startMins: 280, endMins: 451, label: '98019', maxThanks: 7, startKm: 0.4, times: '4:40–7:31 AM' });
+  check(Object.keys(e).sort().join(',') === 'd,dir,from,st,to,ty', 'six things, and only those six', Object.keys(e).sort().join(','));
+  check(e.d === '2026-10-09' && e.dir === 'n' && e.from === 'MENDEZ' && e.to === 'AYALA', 'the day, the direction and the two ends', JSON.stringify(e));
+  check(e.st.join(',') === 'full,dawn', 'the stamps, by kind', e.st.join(','));
+  check(e.ty === true, 'and that somebody said salamat, as a yes', String(e.ty));
+  const json = JSON.stringify(e);
+  check(!/98019|171|280|451|4:40|7:31|\b7\b|0\.4/.test(json) && Object.values(e).every(v => typeof v !== 'number'),
+    'no bus number, no minutes, no clock, no count, no position anywhere in it', json);
+  check(S.albumEntry({ when, dir: 'south', fromShort: 'AYALA', toShort: 'MENDEZ', stamps: [], thanked: false }).ty === false &&
+        S.albumEntry({ when, dir: 'south', stamps: [] }).dir === 's', 'a trip nobody thanked keeps no flower; southbound is s');
+  check(S.albumEntry({ when, dir: 'north', stamps: [{ k: 'toString' }, { k: 'fastest' }] }).st.length === 0,
+    'a stamp that is not one of the four is not kept');
+  // The day is all the clock it may keep: nothing in the block reads a time.
+  check(!/getHours|getMinutes|getSeconds|getTime|Date\.now|toISOString|toTimeString/.test(albumSrc),
+    'nothing in the album block reads the time of day, only the date');
+  check(S.ticketSky(['full', 'dawn']) === 'dawn' && S.ticketSky(['night']) === 'night' && S.ticketSky(['first']) === 'day' && S.ticketSky() === 'day',
+    'its picture\'s sky comes from its stamps, so it needs no clock to draw it again');
+  check(S.keptGreeting(['night']) === 'Ingat pauwi!' && S.keptGreeting(['dawn', 'first']) === 'Ingat sa biyahe!',
+    'and so does its goodbye');
+  check(S.keptDate('2026-10-09') === 'FRI 9 OCT' && S.keptSince('2026-08-21') === 'AUG 2026' && S.keptSince('') === '',
+    'the day it prints is the ticket\'s own date format', S.keptDate('2026-10-09'));
+  check(JSON.stringify(S.albumClean(JSON.parse(JSON.stringify([e])))) === JSON.stringify([e]),
+    'and it comes back out of storage exactly as it went in');
+  const kept = fn('showKeptTicket');
+  check(kept.length > 0 && !/clockText|tkt-dur|tkt-big|busLabel|BUS /.test(kept),
+    'a kept ticket drawn again has no times line, no duration and no bus number to draw');
+  check(/e\.ty \? '<div class="tkt-ty">[^']*Someone said salamat/.test(kept) && !/thanksWords/.test(kept),
+    'and its flower says somebody thanked, never how many');
+}
+
+console.log('\n=== 16. the album adds up nothing that ranks anybody ===');
+// Rule 9. It counts tickets, places and stamps. No time on the map (summed,
+// that is working hours), no salamat total (the driver metric again),
+// nothing per bus, no streak to keep alive.
+{
+  const cps = ['MENDEZ', 'TGY', 'AMADEO', 'GEN.T', 'IMUS', 'KAWIT', 'PITX', 'AYALA'].map(short => ({ short, name: short }));
+  const list = [
+    { d: '2026-09-29', dir: 'n', from: 'AMADEO', to: 'PITX', st: [], ty: false },
+    { d: '2026-10-02', dir: 's', from: 'PITX', to: 'AMADEO', st: ['night'], ty: true },
+    { d: '2026-08-21', dir: 'n', from: 'TGY', to: 'TGY', st: ['first'], ty: true },
+  ];
+  const st = S.albumStats(list, cps);
+  check(Object.keys(st).sort().join(',') === 'north,of,places,since,south,stamps,tickets',
+    'tickets, directions, places, stamps and the first day: nothing else', Object.keys(st).sort().join(','));
+  check(st.tickets === 3 && st.north === 2 && st.south === 1 && st.places === 6 && st.of === 8 && st.since === '2026-08-21',
+    'counted the way they read', JSON.stringify(st));
+  check(Object.keys(st.stamps).join(',') === Object.keys(S.STAMPS).join(',') && st.stamps.night === 1 && st.stamps.first === 1 && st.stamps.full === 0,
+    'one count per kind of stamp', JSON.stringify(st.stamps));
+  const flipped = list.map(e => Object.assign({}, e, { ty: !e.ty }));
+  check(JSON.stringify(S.albumStats(flipped, cps)) === JSON.stringify(st),
+    'whether anyone said salamat changes no number in it: the flowers are never added up');
+  check(S.albumPlaces(list, cps).join(',') === '1,2,3,4,5,6', 'a place counts once a kept trip has passed it, the two ends included',
+    S.albumPlaces(list, cps).join(','));
+  check(S.albumPlaces([{ d: '2026-01-01', dir: 'n', from: 'GONE', to: 'IMUS', st: [], ty: false }], cps).join(',') === '4' &&
+        S.albumPlaces([{ d: '2026-01-01', dir: 'n', from: 'GONE', to: 'NOWHERE', st: [], ty: false }], cps).length === 0 &&
+        S.albumPlaces([], cps).length === 0,
+    'an end config.txt no longer has is skipped rather than guessed at');
+  const render = fn('renderAlbum');
+  const tyUses = [...render.matchAll(/\.ty\b(.{0,3})/g)].map(m => m[1]);
+  check(render.length > 0 && tyUses.length > 0 && tyUses.every(u => u === ' ? '),
+    'the album only ever draws a flower for it, one ticket at a time', tyUses.join('|'));
+  check(/n \? '×' \+ n : 'not yet'/.test(render) && !/×0/.test(render),
+    'a stamp not collected yet says so, never ×0');
+  const sync = fn('syncAlbumRow');
+  check(/row\.classList\.toggle\('hidden', !list\.length\)/.test(sync),
+    'and the album is not offered at all until something has been kept');
+  check(!/streak|ranking|leader|best trip|fastest|average|total time|hours on/i.test(render + sync + albumSrc.replace(/^\s*\/\/.*$/gm, '')),
+    'no streak, no ranking, no best or average anywhere in it');
+}
+
+console.log('\n=== 17. keeping is a tap, and only Keep adds a ticket ===');
+// Rule 10. Nothing is kept unless the sharer taps Keep on that ticket, and
+// what is stored is exactly what albumEntry() made.
+{
+  check(S.albumClean('nope').length === 0 && S.albumClean(null).length === 0 && S.albumClean({}).length === 0,
+    'storage that is not a list of tickets reads as no tickets');
+  const junk = [
+    { d: '2026-10-09', dir: 'n', from: 'A', to: 'B', st: ['full', 'fastest', 'dawn', 'night'], ty: 1, mins: 171, label: 'X', times: '4:40' },
+    { d: 'yesterday', dir: 'n', from: 'A', to: 'B', st: [] },
+    { d: '2026-13-45', dir: 'n', from: 'A', to: 'B', st: [] },
+    { d: '2026-10-09', dir: 'up', from: 'A', to: 'B', st: [] },
+    { d: '2026-10-09', dir: 's', from: 'A'.repeat(500), to: 7, st: [] },
+    { d: '2026-10-09', dir: 's', from: 'A'.repeat(500), to: 'B', st: [] },
+    null, 'x', 42,
+  ];
+  const clean = S.albumClean(junk);
+  check(clean.length === 2, 'only well-formed tickets come back out of storage', String(clean.length));
+  check(clean.every(e => Object.keys(e).sort().join(',') === 'd,dir,from,st,to,ty'),
+    'each with its six things and anything else dropped', clean.map(e => Object.keys(e).join(',')).join(' | '));
+  check(clean[0].st.join(',') === 'full,dawn' && clean[0].ty === true && clean[1].from.length === 24,
+    'unknown stamps dropped, at most two kept, a flag kept as a yes or no, a name kept short', JSON.stringify(clean));
+  const writes = [...html.matchAll(/localStorage\.(setItem|removeItem)\(\s*'wt-tickets'/g)];
+  check(writes.length === 2 && writes.every(m => fn('saveAlbum').includes(m[0])),
+    'the album is written in one place, saveAlbum()');
+  const callers = ['keepTicket', 'dropKeptTicket', 'clearAlbum'];
+  const calls = [...html.matchAll(/saveAlbum\(/g)].length - 1;
+  check(calls === callers.length && callers.every(c => fn(c).includes('saveAlbum(')),
+    'which only Keep, Remove and Remove all call', String(calls) + ' calls');
+  check([...html.matchAll(/\.push\(TKT_KEEP\)/g)].length === 1 && /list\.push\(TKT_KEEP\);/.test(fn('keepTicket')),
+    'and only Keep adds, with exactly the six things showTicket() made');
+  // Comments may name it; code may not call it.
+  const code = html.replace(/<!--[\s\S]*?-->/g, '').replace(/^\s*\/\/.*$/gm, '');
+  check([...code.matchAll(/keepTicket\(/g)].length === 2 && /onclick="keepTicket\(\)"/.test(code),
+    'Keep runs from its button and from nowhere else: keeping is never a default');
+  const sets = [...html.matchAll(/TKT_KEEP = ([^;]+);/g)].map(m => m[1].trim());
+  check(sets.filter(v => v !== 'null').length === 1 && /^albumEntry\(/.test(sets.find(v => v !== 'null')),
+    'what Keep would keep is only ever albumEntry() of the ticket on screen', sets.join(' | '));
+  check(/function closeTicket\(\)\{\s*TKT_KEEP = null;/.test(html),
+    'and closing the ticket forgets it, so a ticket nobody kept leaves nothing behind');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');

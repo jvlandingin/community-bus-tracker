@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Draws the tracker's pictures into the pages that cannot draw their own: the
-// dot-matrix route board, and the view from the ridge that covers the guide,
-// the flyer and the briefing.
+// dot-matrix route board, the view from the ridge that covers the guide, the
+// flyer and the briefing, and the picture on the guide's salamat ticket.
 //
 // The tracker draws its board at load (drawSignboard in index.html) and its
 // scenes on the empty map (renderMapNote). The guide, the flyer and the
@@ -22,6 +22,11 @@
 // Each scene is the same, with the time of day and an id unique on the page:
 //
 //   <!-- scene time=dawn id=cover -->  ...the picture...  <!-- /scene -->
+//
+// And a ticket's picture, with the marks of the trip's two ends and its sky
+// (one=1 for a trip that began and ended by the same place):
+//
+//   <!-- tktart from=crossing to=towers sky=dawn -->  ...  <!-- /tktart -->
 //
 // Change the words, or the drawing in index.html, then run:
 //
@@ -47,7 +52,8 @@ function renderer() {
   new Function('S', block(html, '// ---- THE SIGNBOARD (unit tested)', '// ---- END SIGNBOARD') +
     block(html, '// ---- THE PICTURES (unit tested)', '// ---- END PICTURES') +
     'S.SIGN_FONT=SIGN_FONT;S.signGlyph=signGlyph;S.signLayout=signLayout;S.signboardSvg=signboardSvg;' +
-    'S.COACH_SIDE=COACH_SIDE;S.SCENE_TIMES=SCENE_TIMES;S.sceneSvg=sceneSvg;S.MARKS=MARKS;S.markSvg=markSvg;')(S);
+    'S.COACH_SIDE=COACH_SIDE;S.SCENE_TIMES=SCENE_TIMES;S.sceneSvg=sceneSvg;S.MARKS=MARKS;S.markSvg=markSvg;' +
+    'S.TICKET_SKIES=TICKET_SKIES;S.ticketArtSvg=ticketArtSvg;')(S);
   return S;
 }
 
@@ -95,9 +101,25 @@ function scenes(src, S) {
   return out;
 }
 
+// Every ticket picture in one file, the same way again.
+function arts(src, S) {
+  const out = [];
+  const re = /<!-- tktart([^>]*?) -->([\s\S]*?)<!-- \/tktart -->/g;
+  let m;
+  while ((m = re.exec(src))) {
+    const opts = {};
+    for (const part of m[1].trim().split(/\s+/).filter(Boolean)) { const [k, v] = part.split('='); opts[k] = v; }
+    if (!(opts.sky in S.TICKET_SKIES)) throw new Error('no ticket sky called ' + opts.sky);
+    const svg = S.ticketArtSvg({ from: opts.from || '', to: opts.to || '', sky: opts.sky, one: opts.one === '1' });
+    out.push({ start: m.index, end: m.index + m[0].length, open: '<!-- tktart' + m[1] + ' -->', close: '<!-- /tktart -->',
+      from: opts.from || '', to: opts.to || '', sky: opts.sky, current: m[2], wanted: svg });
+  }
+  return out;
+}
+
 // The file as it should be, with every picture redrawn.
 function redraw(src, S) {
-  const all = boards(src, S).map(b => Object.assign({ close: '<!-- /signboard -->' }, b)).concat(scenes(src, S))
+  const all = boards(src, S).map(b => Object.assign({ close: '<!-- /signboard -->' }, b)).concat(scenes(src, S), arts(src, S))
     .sort((a, b) => a.start - b.start);
   let res = '', at = 0;
   for (const p of all) {
@@ -107,14 +129,14 @@ function redraw(src, S) {
   return res + src.slice(at);
 }
 
-module.exports = { renderer, boards, scenes, redraw, FILES, ROOT };
+module.exports = { renderer, boards, scenes, arts, redraw, FILES, ROOT };
 
 if (require.main === module) {
   const S = renderer();
   for (const f of FILES) {
     const file = path.join(ROOT, f);
     const src = fs.readFileSync(file, 'utf8');
-    const n = boards(src, S).length + scenes(src, S).length;
+    const n = boards(src, S).length + scenes(src, S).length + arts(src, S).length;
     const next = redraw(src, S);
     if (next === src) { console.log(`${f}: ${n} picture${n === 1 ? '' : 's'}, already current`); continue; }
     fs.writeFileSync(file, next);

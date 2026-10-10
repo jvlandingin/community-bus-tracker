@@ -4,14 +4,14 @@
 // their own, and the mark that goes with it.
 //
 // The renderer is pulled out of index.html by its comment markers, like the
-// other suites, and tools/make-signboard.js runs the same block, so a pass
+// other suites, and tools/make-pictures.js runs the same block, so a pass
 // here cannot drift from either. Keep the markers intact.
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const html = read('index.html');
-const tool = require(path.join(ROOT, 'tools', 'make-signboard.js'));
+const tool = require(path.join(ROOT, 'tools', 'make-pictures.js'));
 const S = tool.renderer();
 
 let fail = 0;
@@ -80,7 +80,7 @@ check(/clip-path:inset\(50%\)/.test(hide) && !/display:\s*none|visibility:\s*hid
 check(/if \(!svg\) return;/.test(html), 'a board that cannot be drawn leaves the lettered one alone');
 
 console.log('\n=== 5. the boards drawn into other pages are current ===');
-// tools/make-signboard.js draws these with the same renderer. If the words
+// tools/make-pictures.js draws these with the same renderer. If the words
 // beside a board change, or the renderer does, the picture is out of date
 // until the tool is run again.
 const expect = { 'how-to.html': 1, 'flyer.html': 2, 'for-operators.html': 1, 'tools/app-icons.html': 1 };
@@ -90,7 +90,7 @@ for (const f of tool.FILES) {
   check(bs.length === (expect[f] || 0), `${f}: has its ${expect[f]} board${expect[f] === 1 ? '' : 's'}`, bs.map(b => b.lines.join(' / ')).join(' | '));
   const stale = bs.filter(b => b.current !== b.wanted);
   check(!stale.length, `${f}: every board shows the words beside it`,
-    stale.length ? 'stale: ' + stale.map(b => b.lines.join(' / ')).join(' | ') + ' (run node tools/make-signboard.js)' : 'current');
+    stale.length ? 'stale: ' + stale.map(b => b.lines.join(' / ')).join(' | ') + ' (run node tools/make-pictures.js)' : 'current');
   check(bs.every(b => b.lines.join(' ').includes('Ayala')), `${f}: and the words are the route's`);
 }
 

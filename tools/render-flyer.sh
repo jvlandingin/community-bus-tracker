@@ -16,13 +16,16 @@
 # Outputs:
 #   flyer-a4.pdf         the poster: one LANDSCAPE A4 sheet, three columns,
 #                        for printing and putting up at terminals
-#   flyer-chat.png       1080x3120, sized for a Messenger feed
+#   flyer-chat.png       1080x3440, sized for a Messenger feed
 #   for-operators.pdf    the briefing, for attaching to an email
 #
 # The PNGs capture the top of the flyer rather than the whole scroll, which is
 # why the route name, the headline, the example screen and the link all sit in
 # the first screenful of flyer.html. If that stops being true, these images
-# quietly start cutting off the thing they exist to show.
+# quietly start cutting off the thing they exist to show. It did once: the
+# cover over the headline pushed the link and its QR code off the foot, which
+# is why the picture is 1720 points tall rather than 1560. Measure the bottom
+# of .passiton at 540 wide after changing anything above it.
 
 set -eu
 
@@ -73,8 +76,8 @@ done
 # --- The image. Rendered at half the target size with a 2x device scale,
 #     so text is laid out at phone widths and comes out at retina density. ---
 # shellcheck disable=SC2086
-"$CHROME" $FLAGS --force-device-scale-factor=2 --window-size=540,1560 \
+"$CHROME" $FLAGS --force-device-scale-factor=2 --window-size=540,1720 \
   --screenshot="$OUT/flyer-chat.png" "file://$ROOT/flyer.html" 2>/dev/null
-echo "  wrote $OUT/flyer-chat.png (1080x3120)"
+echo "  wrote $OUT/flyer-chat.png (1080x3440)"
 
 echo "Done."

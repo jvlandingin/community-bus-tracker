@@ -71,11 +71,22 @@ preview. The board kept the rule the old one had: the route name is still
 text in the page, and any character it cannot draw leaves the lettered board
 instead.
 
+And the fourth: the empty map is a picture now, the coach parked on the ridge
+above Taal at night, at dawn or in the midday sun, with the next trips written
+on its sky, and the same view covers the guide, the flyer and the briefing.
+Each checkpoint can carry a small drawing of the kind of place it is, beside its
+line in a bus's popup and on its stop on the ticket, chosen in config.txt so
+the code names no town. Two things that had looked wrong for a while were put
+right on the way: the ticket's stamps sat over "3 riders said salamat", and the
+parol hung on the corner of the sharing tab.
+
 **Not yet checked:** how Barlow renders on a real iPhone and a real low-end
 Android, how the board's glow looks on a cheap screen in sunlight, and whether
 riders read the sampaguita on the salamat button as a thank-you without the
 words beside it. They always have the words beside it. The link preview with
-the new picture has not been seen in an actual Messenger chat.
+the new picture has not been seen in an actual Messenger chat. The marks were
+chosen from general knowledge of each town, like the town lines, and are worth
+the same read-through before this is merged.
 
 ## 2026-10-10 — A redesign, and some fun
 

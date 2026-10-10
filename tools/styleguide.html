@@ -97,6 +97,10 @@
   .sg-board .dmsvg{display:block; max-width:100%; height:auto;}
   .sg-mark img{display:block; border-radius:var(--r-s);}
   .sg-preview{max-width:100%; border-radius:var(--r-m); box-shadow:var(--sh-2);}
+  .sg-scenes{display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));}
+  /* The map's own card, out of the map: it is absolutely placed in there. */
+  .sg-scenes .mapnote{position:relative; left:auto; right:auto; bottom:auto; z-index:auto;}
+  .sg-icon .mark{width:30px; height:30px; display:block; margin:0 auto 6px; color:var(--brand-ink);}
 </style>
 </head>
 <body>
@@ -191,13 +195,26 @@
     by the SIGNBOARD block in <code>index.html</code>, which these are drawn with too. An accented letter is
     drawn as its plain letter and Ñ has its own; a character the board has no dots for leaves the lettered
     board in place rather than a board with a hole in it. The guide, the flyer and the briefing carry boards
-    drawn by <code>tools/make-signboard.js</code> from the same block.</p>
+    drawn by <code>tools/make-pictures.js</code> from the same block.</p>
   <div class="sg-boards" id="sgBoards"></div>
   <h3>The mark</h3>
   <p class="sg-note">The coach the map draws, white on the livery's maroon with the gold trim and its signboard
     lit. The favicon below is read from <code>index.html</code>; the home-screen icons and the link-preview
     picture are rendered from <code>tools/app-icons.html</code>.</p>
   <div class="sg-row" id="sgMark"></div>
+
+  <h2>The coach and the pictures</h2>
+  <p class="sg-note">For the moments the map has nothing else to show, and the covers of the guide, the flyer
+    and the briefing: a provincial coach in the app's own cream, maroon and gold (no operator's livery, logo or
+    lettering), parked at the start of the line above Taal Lake, at three times of day. Drawn by the PICTURES
+    block in <code>index.html</code>, which draws these too.</p>
+  <div class="sg-scenes" id="sgScenes"></div>
+  <div class="sg-part" style="margin-top:12px"><span class="sg-name">COACH_SIDE</span><div id="sgCoach"></div></div>
+  <h3>Marks, one per kind of place</h3>
+  <p class="sg-note">Beside a checkpoint's line in a bus's popup, and on its stop on a sharer's ticket. Which
+    checkpoint gets which is the sixth field of its line in <code>config.txt</code>, so none of them names this
+    route.</p>
+  <div class="sg-icons" id="sgMarks"></div>
 
   <h2>Parts</h2>
   <p class="sg-note">The app's own classes, unchanged. A part that only exists inside the map or a script
@@ -284,13 +301,19 @@
   // The bus badge's glyph is a script string in index.html, not markup.
   const glyph = (html.match(/const BUS_GLYPH =\s*'([^']*)'\s*\+\s*'([^']*)';/) || []).slice(1).join('');
   // The signboard renderer, taken out by its markers and run, the way
-  // tools/make-signboard.js and the tests do.
+  // tools/make-pictures.js and the tests do.
   let sign = null;
   try{
     const a = html.indexOf('// ---- THE SIGNBOARD (unit tested)'), b = html.indexOf('// ---- END SIGNBOARD');
     if (a >= 0 && b > a) sign = new Function(html.slice(a, b) + '; return { signboardSvg: signboardSvg };')();
   }catch(e){ sign = null; }
   const favicon = (doc.querySelector('link[rel="icon"]') || {}).href || '';
+  let pics = null;
+  try{
+    const a = html.indexOf('// ---- THE PICTURES (unit tested)'), b = html.indexOf('// ---- END PICTURES');
+    if (a >= 0 && b > a) pics = new Function(html.slice(a, b) +
+      '; return { sceneSvg: sceneSvg, markSvg: markSvg, MARKS: MARKS, COACH_SIDE: COACH_SIDE };')();
+  }catch(e){ pics = null; }
 
   // ---- What the stylesheet defines, and who uses it ---------------------
   const plain = css.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -480,7 +503,28 @@
     const pw = el('div'); pw.append(p, el('div', 'sg-uses', 'link preview, 1200 × 630')); box.appendChild(pw);
   }
 
-  function drawAll(){ drawColour(); drawType(); drawShapes(); drawMotion(); drawIcons(); drawBadges(); drawBoards(); drawMark(); }
+  // ---- The coach and the pictures ---------------------------------------
+  function drawPictures(){
+    const sc = document.getElementById('sgScenes'), co = document.getElementById('sgCoach'), mk = document.getElementById('sgMarks');
+    sc.innerHTML = co.innerHTML = mk.innerHTML = '';
+    if (!pics) { sc.appendChild(el('div', 'sg-note', 'The pictures could not be read from index.html.')); return; }
+    [['night', 'Tulog pa ang bus', 'The buses are asleep. First trips <b>4:00 AM</b> from Mendez'],
+     ['dawn', 'Gising na ang bus', 'The first trips are coming up: <b>4:00 AM</b> from Mendez'],
+     ['day', 'No buses until 3:40 PM', 'Next trips <b>3:40 PM</b> from Mendez']].forEach(function(r){
+      const card = el('div', 'mapnote scene ' + r[0]);
+      card.innerHTML = '<div class="tx"><div class="t">' + r[1] + '</div><div class="s">' + r[2] + '</div></div>' + pics.sceneSvg(r[0], 'sgs-' + r[0]);
+      const wrap = el('div'); wrap.append(card, el('div', 'sg-uses', r[0] + ': the empty map, ' + (r[0] === 'day' ? 'in the midday break' : r[0] === 'dawn' ? 'in the hour before the first trip' : 'from evening to the last hour before the first trip')));
+      sc.appendChild(wrap);
+    });
+    co.innerHTML = '<svg viewBox="0 0 364 136" style="display:block;width:100%;max-width:560px;height:auto;' +
+      '--c-body:#f3ecdf;--c-roof:#e6dccb;--c-skirt:#d9cfbe;--c-band:#7a1f2b;--c-gold:#e39a1c;--c-glass:#3b5566;--c-glint:rgba(255,255,255,.3);' +
+      '--c-head:#2f4250;--c-led:#ffb22e;--c-lamp:#fff3c4;--c-hub:#cfc7bb;--c-sign:#120d0b;--c-dark:#2b2320">' + pics.COACH_SIDE + '</svg>';
+    Object.keys(pics.MARKS).forEach(function(k){
+      const box = el('div', 'sg-icon'); box.innerHTML = pics.markSvg(k); box.appendChild(el('div', 'sg-name', k)); mk.appendChild(box);
+    });
+  }
+
+  function drawAll(){ drawColour(); drawType(); drawShapes(); drawMotion(); drawIcons(); drawBadges(); drawBoards(); drawMark(); drawPictures(); }
   drawAll();
 
   // ---- Theme --------------------------------------------------------------

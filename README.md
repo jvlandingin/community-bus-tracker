@@ -16,7 +16,7 @@ mistaken for an official one. If you deploy it for a route, edit those two
 places, plus the `<title>` and the `og:` tags at the top of `index.html` that
 name the route in link previews, the name in `manifest.webmanifest`, and the
 route on the dot-matrix boards: the words in each page's header and in
-`tools/app-icons.html`, then `node tools/make-signboard.js` and
+`tools/app-icons.html`, then `node tools/make-pictures.js` and
 `sh tools/render-icons.sh`. It calls itself Bus Tracker, never by the bus
 company's name or initials, for the same reason.
 
@@ -126,8 +126,10 @@ migration.
 3. **Copy `config-template.txt` to `config.txt`** and fill in your Supabase URL,
    anon key, route slug, source URL, checkpoints and stops. Checkpoints are the
    handful of labels on the progress strip, each with an optional one-line
-   story about the place for the bus popups. Stops are every place the bus
-   calls at, in route order.
+   story about the place for the bus popups and an optional small drawing of
+   the kind of place it is (a church, a terminal, a coffee cup, and so on; the
+   template lists them). Stops are every place the bus calls at, in route
+   order.
 4. **Get a free CARTO basemap key** at
    [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey). Since late
    August 2026 CARTO stamps "API KEY REQUIRED" across tiles requested without
@@ -178,6 +180,13 @@ portable vector version of the same figure from `config.txt`, needing no
 screenshot at all — not used by any shipped page currently, but there to run
 by hand (`node tools/make-route-figure.js`) for a fork that would rather not
 photograph anything.
+
+**One picture is this route's own view.** When the map is empty outside
+operating hours, and on the covers of those three pages, the app draws its
+coach parked on the Tagaytay ridge above Taal Lake. It is drawn in code
+(`sceneSvg()` in `index.html`), not photographed, so nothing breaks elsewhere,
+but it is unmistakably Cavite: a fork redraws the ground or keeps the volcano,
+then runs `node tools/make-pictures.js` to redraw the covers.
 
 The two adoption pages need two more edits by hand. A printed poster has no
 runtime to ask what host it is on, so `flyer.html` states the deployment's URL

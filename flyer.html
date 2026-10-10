@@ -139,7 +139,7 @@
     box-shadow:inset 0 -3px 0 var(--gold);
   }
   /* The route on the tracker's dot-matrix board, drawn into this file by
-     tools/make-signboard.js with the tracker's own renderer: two lines on a
+     tools/make-pictures.js with the tracker's own renderer: two lines on a
      screen, one on the printed poster, whose header has no height to spare.
      The words stay in the page, out of sight, for screen readers and search. */
   header .route.dm{
@@ -162,6 +162,11 @@
     font-weight:800;
   }
   .hero h1 em{font-style:normal; color:var(--brand-ink);}
+  /* The cover: the start of the line, drawn into this file by
+     tools/make-pictures.js with the tracker's own scene, the one its empty
+     map shows. The box is the scene's sky; the drawing is its ground. */
+  .cover{overflow:hidden; padding-top:26px; background:linear-gradient(180deg,#f2a96a,#fbe1c0); margin:0 0 14px; border-radius:var(--r-l);}
+  .cover svg.scene{display:block; width:100%; height:auto;}
   .hero .lede{
     font-size:14px; color:var(--muted); margin:7px auto 0; max-width:400px;
     font-weight:600;
@@ -582,11 +587,12 @@
     header .route .dm-1{display:block; width:auto; height:10.5pt;}
     header .route.dm{margin-bottom:2pt; padding:1.5pt;}
     header .sub{font-size:5.5pt; margin-top:1px;}
-    .demo, .cta, .limits, .point, .steps li, .demo-badge, .buspill, .demo-ctl b,
+    .demo, .cta, .limits, .point, .steps li, .demo-badge, .buspill, .demo-ctl b, .cover,
     .demo-seg span.on, .steps .n, .demo-map, .track .rail, .demo-cp, .demo-cp b{
       -webkit-print-color-adjust:exact; print-color-adjust:exact;
     }
     .hero{padding:5mm 0 0;}
+    .cover{padding-top:10pt; margin-bottom:6pt; border-radius:8px;}
     .hero h1{font-size:30pt;}
     .hero .lede{font-size:12pt;}
     .cta .url{font-size:13.5pt;}
@@ -739,6 +745,7 @@
 <div class="sheet">
 
   <section class="hero">
+    <div class="cover" aria-hidden="true"><!-- scene time=dawn id=cover --><svg class="scene" viewBox="0 110 640 190" aria-hidden="true" focusable="false" style="--c-body:#f3ecdf;--c-roof:#e6dccb;--c-skirt:#d9cfbe;--c-band:#7a1f2b;--c-gold:#e39a1c;--c-glass:#5f7f93;--c-glint:rgba(255,255,255,.22);--c-head:#3e5566;--c-led:#ffb22e;--c-lamp:#fff3c4;--c-hub:#cfc7bb;--c-sign:#120d0b;--c-dark:#2b2320"><defs><radialGradient id="cover-cone" cx=".5" cy="0" r="1"><stop offset="0" stop-color="transparent"/><stop offset="1" stop-color="rgba(0,0,0,0)"/></radialGradient><linearGradient id="cover-beam"><stop offset="0" stop-color="#fff3c4" stop-opacity=".75"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></linearGradient></defs><circle cx="470" cy="150" r="22" fill="#fff4d6"/><path d="M0 178C60 166 110 172 160 162C220 150 262 160 300 154C360 146 420 162 470 152C530 140 580 152 640 148V205H0Z" fill="#c2a3a1"/><rect y="186" width="640" height="56" fill="#8bb8c7"/><path d="M452 198h36M458 206h24M448 214h44" stroke="#fff4d6" stroke-width="1.6" stroke-linecap="round" opacity=".45"/><path d="M352 204C380 198 404 186 428 174L442 178L452 172L464 178C488 186 512 196 540 204Z" fill="#9a8492"/><path d="M0 238C80 228 150 240 230 234C330 226 420 240 520 232C570 228 610 232 640 230V300H0Z" fill="#5a4039"/><path d="M0 270C200 263 440 263 640 268V284C440 279 200 279 0 286Z" fill="#86706a"/><g fill="#3f2c28"><circle cx="560" cy="232" r="16"/><circle cx="584" cy="226" r="20"/><circle cx="608" cy="236" r="14"/><circle cx="24" cy="234" r="15"/><path d="M499 204C486 198 474 202 466 210C480 204 491 205 499 206C494 194 486 188 475 188C487 194 494 199 499 205C502 192 512 186 524 188C513 192 505 198 501 206C512 202 524 204 532 212C520 206 508 205 500 207Z"/></g><path d="M502 262C506 242 506 222 499 204" fill="none" stroke="#3f2c28" stroke-width="4" stroke-linecap="round"/><path d="M78 272V206h14" stroke="#3f2c28" stroke-width="3" fill="none"/><path d="M306 251l70-12v28z" fill="url(#cover-beam)"/><svg x="110" y="196" width="200" height="75" viewBox="0 0 364 136"><ellipse cx="186" cy="127" rx="160" ry="5" fill="rgba(0,0,0,.2)"/><rect x="118" y="13" width="120" height="11" rx="5.5" fill="var(--c-roof)"/><path d="M24 34Q24 22 36 22H318Q331 22 336 33L346 72Q349 80 349 88V112Q349 120 341 120H32Q24 120 24 112Z" fill="var(--c-body)"/><path d="M24 100H349V112Q349 120 341 120H32Q24 120 24 112Z" fill="var(--c-skirt)"/><path d="M24 64C56 70 92 80 132 82H348.5L349 92H24Z" fill="var(--c-band)"/><rect x="24" y="94" width="325" height="3.5" fill="var(--c-gold)"/><rect x="38" y="31" width="262" height="42" rx="5" fill="var(--c-glass)"/><g fill="var(--c-head)"><circle cx="62" cy="58" r="5.5"/><circle cx="109" cy="56" r="5.5"/><circle cx="160" cy="59" r="5.5"/><circle cx="208" cy="57" r="5.5"/><circle cx="252" cy="58" r="5.5"/></g><g fill="var(--c-body)"><rect x="84" y="31" width="5" height="42"/><rect x="132" y="31" width="5" height="42"/><rect x="180" y="31" width="5" height="42"/><rect x="228" y="31" width="5" height="42"/></g><path d="M40 33H120L104 71H40Z" fill="var(--c-glint)"/><path d="M305 31H333L344 72H305Z" fill="var(--c-glass)"/><path d="M313 34L322 34L314 69L307 69Z" fill="var(--c-glint)"/><rect x="306" y="76" width="22" height="22" rx="2.5" fill="var(--c-glass)"/><path d="M305 75V116M329 75V116" stroke="rgba(0,0,0,.18)" stroke-width="1.2"/><rect x="301" y="24" width="34" height="6" rx="2" fill="var(--c-sign)"/><path d="M305 27h0m4 0h0m4 0h0m4 0h0m4 0h0m4 0h0m4 0h0" stroke="var(--c-led)" stroke-width="1.8" stroke-linecap="round"/><rect x="274" y="36" width="22" height="9" rx="1.5" fill="var(--c-sign)"/><path d="M278 40.5h0m3.5 0h0m3.5 0h0m3.5 0h0m3.5 0h0" stroke="var(--c-led)" stroke-width="1.6" stroke-linecap="round"/><path d="M120 100V116M168 100V116M216 100V116" stroke="rgba(0,0,0,.14)" stroke-width="1.2"/><path d="M68 120A20 20 0 0 1 108 120ZM262 120A20 20 0 0 1 302 120Z" fill="var(--c-dark)"/><g fill="var(--c-dark)"><circle cx="88" cy="120" r="14.5"/><circle cx="282" cy="120" r="14.5"/></g><g fill="var(--c-hub)"><circle cx="88" cy="120" r="6.5"/><circle cx="282" cy="120" r="6.5"/></g><g fill="var(--c-dark)"><circle cx="88" cy="120" r="2"/><circle cx="282" cy="120" r="2"/></g><rect x="338" y="100" width="10" height="5.5" rx="2.5" fill="var(--c-lamp)"/><rect x="331" y="110" width="20" height="6" rx="2.5" fill="var(--c-dark)"/><path d="M333 27C350 17 363 28 358 44" fill="none" stroke="var(--c-dark)" stroke-width="2.6" stroke-linecap="round"/><rect x="353.5" y="42" width="7.5" height="15" rx="3" fill="var(--c-dark)"/></svg></svg><!-- /scene --></div>
     <h1>Nasaan na<br><em>ang bus?</em></h1>
     <p class="lede">Tingnan kung nasaan ang bus ngayon — bago ka pa lumabas ng bahay.</p>
   </section>

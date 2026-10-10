@@ -48,7 +48,7 @@ community-bus-tracker/
 ```
 
 Deploys come from git: Netlify builds the repository on a push to `main`, and
-`netlify.toml` runs the eight dependency-free JavaScript suites as the build
+`netlify.toml` runs the nine dependency-free JavaScript suites as the build
 command, so a failing one cancels the deploy. Nothing is compiled and nothing is
 installed. There is deliberately no `package.json` at the root, because it
 would make Netlify run `npm install` and publish `node_modules` alongside the
@@ -399,6 +399,25 @@ It is not drawn until the first positions answer has landed, so a page that
 is still loading never claims the map is empty, and it carries nothing the
 page did not already know.
 
+**The three closed voices are pictures** (October 2026, the art direction's
+fourth step). The card becomes the start of the line, a provincial coach
+parked on the Tagaytay ridge above Taal Lake, at the time of day it is: asleep
+under a moon with a street lamp on, its lights coming on at dawn, parked in the
+sun through the midday break. The words sit on the picture's own sky. One
+drawing, three sets of colours, made by `sceneSvg()` in the tested PICTURES
+block; `mapNoteKind()` decides which from the clock and is tested at its
+edges. Inside operating hours the card stays the plain one with the button,
+because then the map underneath is still worth seeing. The coach is generic on
+purpose, cream with the app's maroon and gold and no lettering, because a copy
+of an operator's livery would make the tool look official. The scene is this
+route's view, so a fork either redraws its ground or lives with a volcano.
+
+The same scene, drawn by `tools/make-pictures.js` with the same code, is the
+cover of the guide (dawn), the flyer (dawn) and the briefing (midday). The
+flyer's cover pushed its link off the foot of the chat-sized picture
+`render-flyer.sh` makes from the top of the page, so that picture is taller
+now; the script's header says what to measure.
+
 The folded hours card answers before it is opened, too: a status line
 (departing, last buses still on the road, or closed until a time) and the
 day drawn as a band of the departure windows with a mark at now.
@@ -653,6 +672,15 @@ nothing. `storyFor()` picks the same checkpoint the strip's pill points at.
 Keep each one a single checked fact: a wrong one is printed to every rider on
 the route.
 
+Beside the line is a small drawing of the kind of place it is — a cup for
+Amadeo, the shrine's balcony for Kawit, towers for One Ayala — and the same
+drawings mark each stop on a sharer's ticket. They are a library of generic
+places (`MARKS`: crossing, volcano, coffee, church, flag, shrine, terminal,
+towers), not this route's landmarks, and an optional sixth field on each
+`CHECKPOINT` picks one, so nothing in `index.html` names a town. A place can
+have a mark and no line: leave the fifth field empty. `parseCheckpoint()`
+reads the line and is tested with four, five and six fields.
+
 ## Small celebrations, and what they may not become
 
 October 2026. Four small things, each of which had to be checked against the
@@ -685,10 +713,16 @@ rules above before it was built.
   write landed, the highest count seen — and `test-thanks.js` fails if it grows
   a seventh, or if anything is ever appended to it: a ticket that needed a
   trail on the phone would be the thin end of "no location history".
+  Since the art direction each stop on it carries its place's mark, and the
+  stamps sit beside the time and the goodbye rather than over them: placed
+  at a fixed height, they had covered "3 riders said salamat", the one line
+  a sharer most wants to read.
 - **A parol.** From 1 September — the "ber" months, when the country starts
   decorating — to Three Kings on 6 January, the header hangs a parol and a
   string of lights. The season is worked out on the reader's phone; the admin
-  page can switch it off (`parol_enabled`, absent means on).
+  page can switch it off (`parol_enabled`, absent means on). It hangs in the
+  middle, and the two tabs part to make room for it: hung at the right, it sat
+  on the corner of the sharing tab.
 
 ## The name, the icons and the link preview
 
@@ -714,7 +748,7 @@ has no dots for does not leave a hole: the whole board falls back to the
 lettered version, which is also what shows if the script never runs.
 
 The guide, the flyer and the briefing run no drawing code, so
-`tools/make-signboard.js` draws their boards into the files, with the same
+`tools/make-pictures.js` draws their boards into the files, with the same
 block taken out of `index.html` by its markers, from the words beside each
 board. The flyer carries two: two lines on a screen, one on the printed poster,
 whose header has no height to spare. `tests/test-signboard.js` fails if a
@@ -744,7 +778,7 @@ picture if it finds itself in a short viewport, so the failure cannot ship
 quietly. It is set in the site's own Barlow, which a file can only load from a
 neighbouring file when Chromium is told to allow it, so the script passes
 `--allow-file-access-from-files`. The preview picture names this route on its
-board, so a fork edits the words there, runs `make-signboard.js`, and re-runs
+board, so a fork edits the words there, runs `make-pictures.js`, and re-runs
 the script.
 
 **The link preview's picture needs a full address**, because the crawlers that
@@ -999,7 +1033,7 @@ Nothing here is claimed without being checked. The suites live outside the
 deploy folder:
 
 - `test-guard.js`, `test-strip.js`, `test-prompts.js`, `test-hours.js`,
-  `test-mystop.js`, `test-thanks.js` and `test-signboard.js` extract the shipped code out of
+  `test-mystop.js`, `test-thanks.js`, `test-signboard.js` and `test-pictures.js` extract the shipped code out of
   index.html by comment markers and run it, so a passing
   test cannot drift from the app. Since October 2026 they also hold the hours
   card and the parol season (`test-hours`), the stop-by-stop card and its two

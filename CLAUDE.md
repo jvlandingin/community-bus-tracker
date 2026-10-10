@@ -14,7 +14,7 @@ made in response to bugs that had already shipped.
 
 ## Commands
 
-The eight dependency-free JavaScript suites, run from the repository root:
+The nine dependency-free JavaScript suites, run from the repository root:
 
 ```
 node tests/test-hours.js      # split operating hours, the en-route allowance, the hours card, the parol season
@@ -24,6 +24,7 @@ node tests/test-prompts.js    # idle, end-of-trip and direction prompts
 node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
 node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket
 node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the mark
+node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers
 node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
 ```
 
@@ -71,10 +72,11 @@ sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview pic
 
 Two more rewrite committed text. `node tools/embed-fonts.js` copies the font
 files in `assets/fonts/` into the three static pages as data URIs; run it after
-replacing a font file. `node tools/make-signboard.js` draws the dot-matrix route
+replacing a font file. `node tools/make-pictures.js` draws the dot-matrix route
 board into the guide, the flyer, the briefing and `tools/app-icons.html`, from
-the words beside each board, with `index.html`'s own renderer; run it after
-changing those words. `test-tokens.js` and `test-signboard.js` fail until you do.
+the words beside each board, and the scenes that cover the three pages, with
+`index.html`'s own code; run it after changing those words or the drawings.
+`test-tokens.js`, `test-signboard.js` and `test-pictures.js` fail until you do.
 
 ## Architecture
 
@@ -109,7 +111,7 @@ by the SIGNBOARD block in `index.html` from the words in `header .route .ln`.
 The words stay in the page, hidden from sight only, for screen readers, copy
 and search, and a character the board has no dots for leaves the lettered CSS
 board in place. The pages that run no drawing code carry boards drawn by
-`tools/make-signboard.js` with the same block.
+`tools/make-pictures.js` with the same block.
 
 **Three credentials, not interchangeable.** The route slug is public and unlocks
 reading. The share key lives only in the link posted to the community, and
@@ -201,7 +203,17 @@ station of their own.
 **The sharing tab goes dark during a trip** (`:root.trip-on`, the token block
 redefined, set by `syncTripMode()`), and **a parol hangs in the header** from 1
 September to 6 January unless the admin page switches it off (`parol_enabled`
-in settings, absent means on).
+in settings, absent means on). It hangs between the two tabs, which part for it.
+
+**Pictures only where the screen would be empty.** The working screens stay
+quiet; illustration is for when there is nothing else to show. Closed, the
+empty map's card is a scene — a generic provincial coach (no operator's livery
+or lettering) parked above Taal Lake at night, dawn or midday — from
+`sceneSvg()` in the tested PICTURES block, chosen by `mapNoteKind()`. The same
+scene covers the guide, the flyer and the briefing. Each checkpoint can name a
+drawn mark (`MARKS`) in an optional sixth field of its `CHECKPOINT` line; it is drawn beside
+the town line in a bus's popup and on the stop of a sharer's ticket, whose
+stamps sit beside what they stamp, never over the words.
 
 **Android sharers can use an app** (`mobile/`, October 2026) that keeps GPS
 running with the screen locked. It is a Capacitor shell that loads the live
@@ -291,10 +303,13 @@ drift from the app; the seventh, `test-tokens.js`, reads the shipped styles. Kee
 
 Everything adapts from `config.txt`, including the optional one-line story on
 each `CHECKPOINT` — facts about Cavite, so a fork writes its own or leaves them
-off. The route's name on the boards does not come from config: it is the words
-in each page's `header .route` (and in `tools/app-icons.html`, for the
-link-preview picture), so a fork edits those, runs `tools/make-signboard.js`
-and re-runs `tools/render-icons.sh`. `how-to.html` used to be the exception —
+off, and the optional sixth field picks each one's drawn mark from a library of
+kinds of place. The route's name on the boards does not come from config: it is
+the words in each page's `header .route` (and in `tools/app-icons.html`, for
+the link-preview picture), so a fork edits those, runs `tools/make-pictures.js`
+and re-runs `tools/render-icons.sh`. The empty map's scene is this route's own
+view, Taal from the Tagaytay ridge, in `sceneSvg()`: a fork redraws its ground
+or keeps the volcano. `how-to.html` used to be the exception —
 its screenshots and screen recordings showed this deployment, so a fork had to
 recapture them or delete the page. Every figure on it is now drawn in HTML and
 CSS from the same tokens as the app, and the page loads nothing over the

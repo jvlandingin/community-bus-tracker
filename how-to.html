@@ -137,7 +137,7 @@
   header .route .ln{display:block;}
   header .route .amp{color:#ffb22e;}
   /* The tracker draws this board as a dot matrix at load; this page runs no
-     drawing code, so tools/make-signboard.js draws the same picture into the
+     drawing code, so tools/make-pictures.js draws the same picture into the
      file with the same renderer. Clear of the back link on the right. */
   header .route.dm{
     display:block; width:fit-content; max-width:calc(100% - 84px); padding:3px;
@@ -165,6 +165,11 @@
     padding:4px 9px; border-radius:999px;
   }
   .badge.gold{color:var(--gold-deep); background:var(--gold-soft);}
+  /* The cover: the start of the line, drawn into this file by
+     tools/make-pictures.js with the tracker's own scene, the one its empty
+     map shows. The box is the scene's sky; the drawing is its ground. */
+  .cover{overflow:hidden; padding-top:34px; background:linear-gradient(180deg,#f2a96a,#fbe1c0); margin:-16px -16px 16px; border-radius:var(--r-l) var(--r-l) 0 0;}
+  .cover svg.scene{display:block; width:100%; height:auto;}
   h1{
     font-size:var(--fs-headline); font-weight:700; text-transform:uppercase; letter-spacing:.02em;
     line-height:1.1; margin:0 0 8px;
@@ -684,8 +689,13 @@
   .tkt-grid span{
     position:relative; padding:7px 0 6px; border-radius:var(--r-s); text-align:center;
     border:1.3px solid rgba(109,26,37,.4); font-size:var(--fs-cap); font-weight:800; letter-spacing:.04em;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
   }
+  /* The place's mark over its name, printed faint on the stops the trip
+     passed and dark on the two it was punched for. */
+  .tkt-grid .mark{width:20px; height:20px; opacity:.45;}
   .tkt-grid span.on{background:rgba(227,154,28,.22); border-color:var(--ti);}
+  .tkt-grid span.on .mark{opacity:1;}
   .tkt-grid span.on::after{
     content:''; position:absolute; top:-6px; right:-6px; width:14px; height:14px; border-radius:50%;
     background:#3a2a26; box-shadow:inset 0 2px 3px rgba(0,0,0,.6), 0 0 0 1.5px var(--tp);
@@ -696,9 +706,12 @@
   .tkt-ty{display:flex; align-items:center; gap:9px; margin-top:12px; font-size:var(--fs-small); font-weight:800; color:#1d5e3c;}
   .tkt-greet{margin-bottom:4px; font-size:var(--fs-title); font-weight:900; letter-spacing:-.01em;}
   .tkt-fine{font-size:var(--fs-label); line-height:1.45; font-weight:600; opacity:.8;}
-  .tkt-stamps{position:absolute; right:10px; top:196px; width:150px; height:150px; pointer-events:none;}
+  /* A stamp that does not fit beside its line drops below it, at the right,
+     rather than squeezing the words onto two lines. */
+  .tkt-row{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:4px 10px;}
+  .tkt-row .stamp{margin-left:auto;}
   .stamp{
-    position:absolute; display:inline-grid; justify-items:center; gap:1px; padding:5px 9px 4px;
+    position:relative; flex:0 0 auto; display:inline-grid; pointer-events:none; justify-items:center; gap:1px; padding:5px 9px 4px;
     border:2.6px solid currentColor; border-radius:var(--r-s); box-shadow:inset 0 0 0 1.2px var(--tp), inset 0 0 0 2.4px currentColor;
     font-size:var(--fs-small); font-weight:900; letter-spacing:.12em; line-height:1.05; text-transform:uppercase;
     opacity:.88; mix-blend-mode:multiply;
@@ -709,8 +722,8 @@
   }
   .stamp small{font-size:var(--fs-cap); font-weight:800; letter-spacing:.14em;}
   .stamp.red{color:#b0281c;} .stamp.blue{color:#2a3a9e;} .stamp.green{color:#1d6a43;}
-  .stamp.s1{right:0; top:0; transform:rotate(-10deg);}
-  .stamp.s2{right:20px; top:92px; transform:rotate(6deg);}
+  .stamp.s1{margin-right:2px; transform:rotate(-8deg);}
+  .stamp.s2{margin-right:10px; transform:rotate(5deg);}
   .tkt-close{
     min-height:var(--tap); padding:0 26px; border-radius:var(--r-m); cursor:pointer;
     border:1.5px solid rgba(255,255,255,.45); background:rgba(255,255,255,.14); color:#fff;
@@ -831,6 +844,7 @@
 
   <!-- ================= HERO ================= -->
   <div class="card reveal">
+    <div class="cover" aria-hidden="true"><!-- scene time=dawn id=cover --><svg class="scene" viewBox="0 110 640 190" aria-hidden="true" focusable="false" style="--c-body:#f3ecdf;--c-roof:#e6dccb;--c-skirt:#d9cfbe;--c-band:#7a1f2b;--c-gold:#e39a1c;--c-glass:#5f7f93;--c-glint:rgba(255,255,255,.22);--c-head:#3e5566;--c-led:#ffb22e;--c-lamp:#fff3c4;--c-hub:#cfc7bb;--c-sign:#120d0b;--c-dark:#2b2320"><defs><radialGradient id="cover-cone" cx=".5" cy="0" r="1"><stop offset="0" stop-color="transparent"/><stop offset="1" stop-color="rgba(0,0,0,0)"/></radialGradient><linearGradient id="cover-beam"><stop offset="0" stop-color="#fff3c4" stop-opacity=".75"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></linearGradient></defs><circle cx="470" cy="150" r="22" fill="#fff4d6"/><path d="M0 178C60 166 110 172 160 162C220 150 262 160 300 154C360 146 420 162 470 152C530 140 580 152 640 148V205H0Z" fill="#c2a3a1"/><rect y="186" width="640" height="56" fill="#8bb8c7"/><path d="M452 198h36M458 206h24M448 214h44" stroke="#fff4d6" stroke-width="1.6" stroke-linecap="round" opacity=".45"/><path d="M352 204C380 198 404 186 428 174L442 178L452 172L464 178C488 186 512 196 540 204Z" fill="#9a8492"/><path d="M0 238C80 228 150 240 230 234C330 226 420 240 520 232C570 228 610 232 640 230V300H0Z" fill="#5a4039"/><path d="M0 270C200 263 440 263 640 268V284C440 279 200 279 0 286Z" fill="#86706a"/><g fill="#3f2c28"><circle cx="560" cy="232" r="16"/><circle cx="584" cy="226" r="20"/><circle cx="608" cy="236" r="14"/><circle cx="24" cy="234" r="15"/><path d="M499 204C486 198 474 202 466 210C480 204 491 205 499 206C494 194 486 188 475 188C487 194 494 199 499 205C502 192 512 186 524 188C513 192 505 198 501 206C512 202 524 204 532 212C520 206 508 205 500 207Z"/></g><path d="M502 262C506 242 506 222 499 204" fill="none" stroke="#3f2c28" stroke-width="4" stroke-linecap="round"/><path d="M78 272V206h14" stroke="#3f2c28" stroke-width="3" fill="none"/><path d="M306 251l70-12v28z" fill="url(#cover-beam)"/><svg x="110" y="196" width="200" height="75" viewBox="0 0 364 136"><ellipse cx="186" cy="127" rx="160" ry="5" fill="rgba(0,0,0,.2)"/><rect x="118" y="13" width="120" height="11" rx="5.5" fill="var(--c-roof)"/><path d="M24 34Q24 22 36 22H318Q331 22 336 33L346 72Q349 80 349 88V112Q349 120 341 120H32Q24 120 24 112Z" fill="var(--c-body)"/><path d="M24 100H349V112Q349 120 341 120H32Q24 120 24 112Z" fill="var(--c-skirt)"/><path d="M24 64C56 70 92 80 132 82H348.5L349 92H24Z" fill="var(--c-band)"/><rect x="24" y="94" width="325" height="3.5" fill="var(--c-gold)"/><rect x="38" y="31" width="262" height="42" rx="5" fill="var(--c-glass)"/><g fill="var(--c-head)"><circle cx="62" cy="58" r="5.5"/><circle cx="109" cy="56" r="5.5"/><circle cx="160" cy="59" r="5.5"/><circle cx="208" cy="57" r="5.5"/><circle cx="252" cy="58" r="5.5"/></g><g fill="var(--c-body)"><rect x="84" y="31" width="5" height="42"/><rect x="132" y="31" width="5" height="42"/><rect x="180" y="31" width="5" height="42"/><rect x="228" y="31" width="5" height="42"/></g><path d="M40 33H120L104 71H40Z" fill="var(--c-glint)"/><path d="M305 31H333L344 72H305Z" fill="var(--c-glass)"/><path d="M313 34L322 34L314 69L307 69Z" fill="var(--c-glint)"/><rect x="306" y="76" width="22" height="22" rx="2.5" fill="var(--c-glass)"/><path d="M305 75V116M329 75V116" stroke="rgba(0,0,0,.18)" stroke-width="1.2"/><rect x="301" y="24" width="34" height="6" rx="2" fill="var(--c-sign)"/><path d="M305 27h0m4 0h0m4 0h0m4 0h0m4 0h0m4 0h0m4 0h0" stroke="var(--c-led)" stroke-width="1.8" stroke-linecap="round"/><rect x="274" y="36" width="22" height="9" rx="1.5" fill="var(--c-sign)"/><path d="M278 40.5h0m3.5 0h0m3.5 0h0m3.5 0h0m3.5 0h0" stroke="var(--c-led)" stroke-width="1.6" stroke-linecap="round"/><path d="M120 100V116M168 100V116M216 100V116" stroke="rgba(0,0,0,.14)" stroke-width="1.2"/><path d="M68 120A20 20 0 0 1 108 120ZM262 120A20 20 0 0 1 302 120Z" fill="var(--c-dark)"/><g fill="var(--c-dark)"><circle cx="88" cy="120" r="14.5"/><circle cx="282" cy="120" r="14.5"/></g><g fill="var(--c-hub)"><circle cx="88" cy="120" r="6.5"/><circle cx="282" cy="120" r="6.5"/></g><g fill="var(--c-dark)"><circle cx="88" cy="120" r="2"/><circle cx="282" cy="120" r="2"/></g><rect x="338" y="100" width="10" height="5.5" rx="2.5" fill="var(--c-lamp)"/><rect x="331" y="110" width="20" height="6" rx="2.5" fill="var(--c-dark)"/><path d="M333 27C350 17 363 28 358 44" fill="none" stroke="var(--c-dark)" stroke-width="2.6" stroke-linecap="round"/><rect x="353.5" y="42" width="7.5" height="15" rx="3" fill="var(--c-dark)"/></svg></svg><!-- /scene --></div>
     <h1>Where's the bus?</h1>
     <p class="lede">This page shows where the buses are right now, because someone
       on board is sharing the position. No app to install, no account, no sign-up.
@@ -1309,8 +1323,11 @@
          the date and times in its format, the punched stops, "2 h 51 min",
          thanksWords(3), ticketGreeting() for a morning trip and the two stamps
          ticketStamps() returns first (Buong ruta, Madaling araw; Unang bus
-         would be a third, and it keeps two). Change the function and this is
-         wrong. -->
+         would be a third, and it keeps two), the first beside the time and
+         the second beside the goodbye, as showTicket() places them. Each stop
+         carries the mark config.txt gives its checkpoint, drawn by markSvg()
+         (test-pictures.js checks they are the same drawings). Change either
+         function and this is wrong. -->
     <figure>
       <div class="tktdemo" aria-hidden="true">
         <div class="tktwrap">
@@ -1319,15 +1336,14 @@
             <div class="tkt-org">Community bus tracker · unofficial</div>
             <hr>
             <div class="tkt-route"><span>▲ NORTHBOUND · BUS 98019</span><span class="tkt-times">4:40–7:31 AM</span></div>
-            <div class="tkt-grid"><span class="on">MENDEZ</span><span>TGY</span><span>AMADEO</span><span>GEN.T</span><span>IMUS</span><span>KAWIT</span><span>PITX</span><span class="on">AYALA</span></div>
+            <div class="tkt-grid"><span class="on"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 6v22M9 28h14"/><path d="M8.5 8.5H22v5H8.5L6 11z"/><path d="M23.5 16H10v5h13.5l2.5-2.5z"/></svg><b>MENDEZ</b></span><span><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21.5l6-8h2l1 1.2 1-1.2h2l6 8"/><path d="M3 24.5c2.2-1.2 4.4-1.2 6.6 0s4.4 1.2 6.6 0 4.4-1.2 6.6 0 4.4 1.2 6.2 0"/><path d="M5 28c2-1 3.6-1 5.6 0s3.6 1 5.6 0"/><path d="M15 9.5c-.8-1.4.8-2.2 0-3.6M18 9c-.6-1 .6-1.6 0-2.6"/></svg><b>TGY</b></span><span><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14h14v4a6 6 0 0 1-6 6h-2a6 6 0 0 1-6-6z"/><path d="M21 15.5h1.6a2.6 2.6 0 0 1 0 5.2H20.4"/><path d="M5 27h18"/><path d="M11 10.5c-1-1.5 1-2.5 0-4.2M15.5 10.5c-1-1.5 1-2.5 0-4.2"/></svg><b>AMADEO</b></span><span><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 27V14l8-6 8 6v13z"/><path d="M14 27v-5a2 2 0 0 1 4 0v5"/><path d="M16 8V3.5M14.2 5.3h3.6"/><circle cx="16" cy="15.5" r="1.6"/><path d="M5 27h22"/></svg><b>GEN.T</b></span><span><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 28V4.5"/><path d="M8 6h17v11H8"/><path d="M8 6l7.5 5.5L8 17"/><circle cx="11.6" cy="11.5" r="1.3" fill="currentColor" stroke="none"/><path d="M15.5 11.5H25"/></svg><b>IMUS</b></span><span><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 27V18h24v9"/><path d="M12.5 18v-7h7v7"/><path d="M11.5 11l4.5-5.5 4.5 5.5"/><path d="M16 5.5V2.8"/><path d="M8 22v2M12 22v2M20 22v2M24 22v2M16 14v1.5"/><path d="M2.5 27h27"/></svg><b>KAWIT</b></span><span><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 25.5h26"/><path d="M5 25.5v-9c4-3.2 7.4-4.5 11-4.5s7 1.3 11 4.5v9"/><path d="M10 25.5v-5h12v5"/><path d="M8 17.5c2.6-1.6 5.2-2.4 8-2.4s5.4.8 8 2.4"/></svg><b>PITX</b></span><span class="on"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 27V13h6v14M11 27V5h8v22M19 27V15h7v12"/><path d="M15 9v1.2M15 13.5v1.2M15 18v1.2M8 17v1M22.5 19v1"/><path d="M3 27h26"/></svg><b>AYALA</b></span></div>
             <hr>
             <div class="tkt-big">You kept the bus on everyone’s map for</div>
-            <div class="tkt-dur">2<small> h </small>51<small> min</small></div>
+            <div class="tkt-row"><div class="tkt-dur">2<small> h </small>51<small> min</small></div><span class="stamp red s1" aria-hidden="true">Buong ruta<small>MENDEZ → AYALA</small></span></div>
             <div class="tkt-ty"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg><span>3 riders said salamat</span></div>
             <hr>
-            <div class="tkt-greet">Ingat sa biyahe!</div>
+            <div class="tkt-row"><div class="tkt-greet">Ingat sa biyahe!</div><span class="stamp blue s2" aria-hidden="true">Madaling araw<small>before 5 AM</small></span></div>
             <div class="tkt-fine">Made on this phone from what it saw. Nothing about this trip was kept, and this ticket is gone when you close it.</div>
-            <div class="tkt-stamps"><span class="stamp red s1">Buong ruta<small>MENDEZ → AYALA</small></span><span class="stamp blue s2">Madaling araw<small>before 5 AM</small></span></div>
           </div>
           <span class="tkt-close">Close</span>
         </div>

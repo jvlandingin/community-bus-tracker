@@ -64,6 +64,15 @@ The APK is at `android/app/build/outputs/apk/debug/app-debug.apk`.
 CI does the same in `.github/workflows/android.yml` whenever `mobile/`
 changes, or on demand from the Actions tab, and attaches the APK to the run.
 
+### The launcher icon
+
+The icon is the tracker's mark, the coach on maroon, and unlike the site it
+lives inside the APK, so changing it needs a new APK. Android 8 and later draw
+the adaptive icon in `android/app/src/main/res/drawable/ic_launcher_fg.xml`
+and `ic_launcher_bg.xml`, converted from the `i-coach` symbol in `index.html`;
+older phones use the `mipmap-*/ic_launcher*.png` files, which
+`sh tools/render-icons.sh` renders from `tools/app-icons.html`.
+
 ## Signing: do this once, before the first APK goes to anyone
 
 Android only installs an update over an existing app when both are signed

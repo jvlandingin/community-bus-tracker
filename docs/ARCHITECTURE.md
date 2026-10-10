@@ -757,7 +757,10 @@ renderer starts drawing anything for a character it has no dots for.
 
 **The mark** is the coach every bus on the map is drawn as, front on, white on
 the livery's maroon with the gold trim along the foot and its signboard lit.
-It is the favicon on every public page and the home-screen icon; the admin
+It is the favicon on every public page, the home-screen icon, and the Android
+app's launcher icon (an adaptive icon drawn as vectors in
+`mobile/android/app/src/main/res/drawable/`, plus PNGs for phones older than
+Android 8 that `render-icons.sh` renders); the admin
 page's favicon is the same coach on ink, so an organizer can tell its tab from
 the tracker's. The test fails if a copy of it stops matching the drawing.
 

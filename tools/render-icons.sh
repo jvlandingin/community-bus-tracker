@@ -15,6 +15,12 @@
 #   preview.png                  1200x630, the picture in a link preview;
 #                                tools/write-preview-url.js points og:image at
 #                                it with the site's full address at build time
+#
+# and, into mobile/android/app/src/main/res/mipmap-*/, the Android app's
+# launcher icons for phones older than Android 8: ic_launcher.png (a rounded
+# square) and ic_launcher_round.png (a circle), at each of the five densities.
+# Newer phones use the adaptive icon drawn in that folder's drawable/.
+# They are only in the APK, so a change to them needs a new APK.
 
 set -eu
 
@@ -63,4 +69,17 @@ shot icon-512.png 512 512 icon
 shot icon-maskable-512.png 512 512 maskable
 shot apple-touch-icon.png 180 180 icon
 shot preview.png 1200 630 preview
+
+RES="$ROOT/mobile/android/app/src/main/res"
+if [ -d "$RES" ]; then
+  for d in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+    dir=mipmap-${d%%:*}; px=${d##*:}
+    for kind in launcher:ic_launcher launcher-round:ic_launcher_round; do
+      # shellcheck disable=SC2086
+      "$CHROME" $FLAGS --default-background-color=00000000 --window-size="$px,$px" \
+        --screenshot="$RES/$dir/${kind##*:}.png" "file://$ROOT/tools/app-icons.html#${kind%%:*}" 2>/dev/null
+    done
+    echo "  wrote $RES/$dir/ic_launcher{,_round}.png (${px}x${px})"
+  done
+fi
 echo "Done."

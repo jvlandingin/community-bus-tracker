@@ -1,13 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Launcher foreground: the same bus as the sharing notification, in the
-     app's gold on its maroon (values/ic_launcher_background.xml), sized to
-     sit inside the adaptive icon's 66dp safe zone. -->
+<!-- Launcher foreground: the mark, the same coach every bus on the map is
+     drawn as (i-coach in index.html), white with its windscreen and lamps cut
+     through to the maroon and its signboard lit, over the livery's gold trim.
+     The coach sits inside the adaptive icon's 66dp safe circle; the trim runs
+     to the foot of the 108dp canvas, so on a squared or rounded launcher it
+     reads as the band along the bottom of the web icons, and on a circle it
+     is mostly cropped, as it is there. Converted from the symbol, so if the
+     coach is redrawn, convert it again. tools/render-icons.sh renders the PNGs
+     older Androids use from tools/app-icons.html. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group android:translateX="30" android:translateY="30" android:scaleX="2" android:scaleY="2">
-        <path android:fillColor="#FFE39A1C" android:pathData="M4,16c0,0.88 0.39,1.67 1,2.22V20c0,0.55 0.45,1 1,1h1c0.55,0 1,-0.45 1,-1v-1h8v1c0,0.55 0.45,1 1,1h1c0.55,0 1,-0.45 1,-1v-1.78c0.61,-0.55 1,-1.34 1,-2.22V6c0,-3.5 -3.58,-4 -8,-4S4,2.5 4,6v10zM7.5,17c-0.83,0 -1.5,-0.67 -1.5,-1.5S6.67,14 7.5,14 9,14.67 9,15.5 8.33,17 7.5,17zM16.5,17c-0.83,0 -1.5,-0.67 -1.5,-1.5s0.67,-1.5 1.5,-1.5 1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5zM18,11H6V6h12v5z" />
+    <path android:fillColor="#FFE39A1C" android:pathData="M0,83.5h108v24.5h-108z" />
+    <group android:translateX="29.5" android:translateY="26.6" android:scaleX="2.04" android:scaleY="2.04">
+        <path android:fillColor="#FFFFFFFF" android:pathData="M5.4 4.75C3.1 3.7 1.55 5.25 1.65 8.2H2.95C2.9 6.35 3.65 5.55 4.85 6.05Z" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M18.6 4.75C20.9 3.7 22.45 5.25 22.35 8.2H21.05C21.1 6.35 20.35 5.55 19.15 6.05Z" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M2.1,7.9h0.4a0.8,0.8 0,0 1,0.8,0.8v1.7a0.8,0.8 0,0 1,-0.8,0.8h-0.4a0.8,0.8 0,0 1,-0.8,-0.8v-1.7a0.8,0.8 0,0 1,0.8,-0.8z" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M21.5,7.9h0.4a0.8,0.8 0,0 1,0.8,0.8v1.7a0.8,0.8 0,0 1,-0.8,0.8h-0.4a0.8,0.8 0,0 1,-0.8,-0.8v-1.7a0.8,0.8 0,0 1,0.8,-0.8z" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M7.5,17.0h1.4a1.1,1.1 0,0 1,1.1,1.1v1.6a1.1,1.1 0,0 1,-1.1,1.1h-1.4a1.1,1.1 0,0 1,-1.1,-1.1v-1.6a1.1,1.1 0,0 1,1.1,-1.1z" />
+        <path android:fillColor="#FFFFFFFF" android:pathData="M15.1,17.0h1.4a1.1,1.1 0,0 1,1.1,1.1v1.6a1.1,1.1 0,0 1,-1.1,1.1h-1.4a1.1,1.1 0,0 1,-1.1,-1.1v-1.6a1.1,1.1 0,0 1,1.1,-1.1z" />
+        <path android:fillColor="#FFFFFFFF" android:fillType="evenOdd" android:pathData="M7.6 2.6h8.8q3 0 3 3v10q0 3 -3 3h-8.8q-3 0 -3 -3v-10q0 -3 3 -3zM7.3 4.1h9.4q0.7 0 0.7 0.7v0.5q0 0.7 -0.7 0.7h-9.4q-0.7 0 -0.7 -0.7v-0.5q0 -0.7 0.7 -0.7zM7.6 7.1h8.8q1.3 0 1.3 1.3v3q0 1.3 -1.3 1.3h-8.8q-1.3 0 -1.3 -1.3v-3q0 -1.3 1.3 -1.3zM7.3 14.1h1.4q0.7 0 0.7 0.7v0.1q0 0.7 -0.7 0.7h-1.4q-0.7 0 -0.7 -0.7v-0.1q0 -0.7 0.7 -0.7zM15.3 14.1h1.4q0.7 0 0.7 0.7v0.1q0 0.7 -0.7 0.7h-1.4q-0.7 0 -0.7 -0.7v-0.1q0 -0.7 0.7 -0.7z" />
+        <path android:fillColor="#FFFFB22E" android:pathData="M7.3,4.1h9.4a0.7,0.7 0,0 1,0.7,0.7v0.5a0.7,0.7 0,0 1,-0.7,0.7h-9.4a0.7,0.7 0,0 1,-0.7,-0.7v-0.5a0.7,0.7 0,0 1,0.7,-0.7z" />
     </group>
 </vector>

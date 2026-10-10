@@ -53,6 +53,13 @@
   .mark .sign{fill:#ffb22e;}
   .mark.mask svg{width:50%; height:50%; top:47%;}
   .mark.mask::after{height:11%;}
+  /* The Android app's launcher icons for phones older than Android 8, which
+     take a picture with its shape already cut: a rounded square and a circle,
+     on a clear page. Android 8 and later draw the adaptive icon instead, in
+     mobile/android/app/src/main/res/drawable/ic_launcher_fg.xml and _bg.xml. */
+  html:has(.legacy:target), html:has(.legacy:target) body{background:transparent;}
+  .mark.legacy{border-radius:20%;}
+  .mark.legacy.round{border-radius:50%;}
 
   /* The picture a link preview shows in the group chat, 1200x630. */
   #preview{height:52.5vw; background:linear-gradient(180deg,#7a1f2b,#5c161f); color:#fff;}
@@ -83,6 +90,8 @@
 </svg>
 
 <div class="art mark" id="icon"><svg viewBox="0 0 24 24"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></div>
+<div class="art mark legacy" id="launcher"><svg viewBox="0 0 24 24"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></div>
+<div class="art mark legacy round" id="launcher-round"><svg viewBox="0 0 24 24"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></div>
 <div class="art mark mask" id="maskable"><svg viewBox="0 0 24 24"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></div>
 
 <div class="art" id="preview">

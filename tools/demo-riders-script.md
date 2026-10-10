@@ -15,7 +15,7 @@ How to read it:
   renderer.
 - **Graphics** are the moving parts drawn around the phone. Any words in
   them are labels of one to three words, never sentences.
-- Times are estimates for the shorter cut, about 45 seconds in all.
+- Times are estimates for the shorter cut, about 41 seconds in all.
 - Every frame that shows the tracker carries **"Halimbawa · example
   screen"** at the foot. The buses are the flyer's made-up ones.
 
@@ -26,10 +26,10 @@ How to read it:
 | 0 | 0:00–0:03.5 | Cover | Nasaan na ang bus? |
 | 1 | 0:03.5–0:10 | Where the buses are | *(no caption)* |
 | 2 | 0:10–0:21 | How far is it | Gaano kalayo pa? |
-| 3 | 0:21–0:28 | Salamat | *(no caption)* |
-| 4 | 0:28–0:34 | On a bus yourself | Share kung nasaan ang bus |
-| 5 | 0:34–0:39 | The ticket | *(no caption)* |
-| 6 | 0:39–0:45 | Close | Buksan ngayon |
+| 3 | 0:21–0:24 | Salamat | *(no caption)* |
+| 4 | 0:24–0:30 | On a bus yourself | Share kung nasaan ang bus |
+| 5 | 0:30–0:35 | The ticket | *(no caption)* |
+| 6 | 0:35–0:41 | Close | Buksan ngayon |
 
 Removed since draft 1:
 - "Live ang bawat bus". The buses scene now has no caption.
@@ -90,22 +90,17 @@ screen from the first frame.
     says "Next stop is yours."
 
 
-## 3 · Salamat (0:21–0:28), shown without words
+## 3 · Salamat (0:21–0:24), shown without words
+
+A quick beat on the same phone; no second phone.
 
 - **Caption:** none.
 - **On the phone:** the rider taps bus 98018 on the map. The popup opens,
-  and the rider taps **Say salamat**.
-- **Graphics:**
-  - A second phone slides in beside the first. The labels above the two
-    phones read **Ikaw** and **Nasa bus 98018**.
-  - Sampaguita fly from the rider's phone to the sharer's.
-  - The sharer's screen shows "1 rider said salamat", and a green ring
-    pulses round it.
+  the rider taps **Say salamat**, and the button turns to "Salamat sent".
+  The bus's own little "beep beep!" pops up on its badge *(app)*.
+- **Graphics:** the tap ripple, and nothing else.
 
-The labels are the one bit of text left, because without them the second
-phone is a stranger. They could go too, if the flowers carry it.
-
-## 4 · On a bus yourself (0:28–0:34)
+## 4 · On a bus yourself (0:24–0:30)
 
 The background turns to night.
 
@@ -115,7 +110,7 @@ The background turns to night.
 - **Graphics:** the camera closes in on the line map, and a callout reads
   **Ito ang bus mo** on the green-ringed bus.
 
-## 5 · The ticket (0:34–0:39), shown without words
+## 5 · The ticket (0:30–0:35), shown without words
 
 - **Caption:** none.
 - **Graphics:** a clock chip reads **Makalipas ang 2 oras**, and the trip
@@ -125,7 +120,7 @@ The background turns to night.
   salamat ticket: Mendez → Ayala, "3 riders said salamat", and the BUONG
   RUTA stamp.
 
-## 6 · Close (0:39–0:45)
+## 6 · Close (0:35–0:41)
 
 - **Board:** the route board, with a scanline passing over it.
 - **Caption:** Buksan ngayon

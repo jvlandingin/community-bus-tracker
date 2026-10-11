@@ -979,16 +979,19 @@ the way a real one does: tapped on the rider's phone, stored, and read by the
 sharing phone on its next poll. The flowers between the two are the stage's;
 the line that says "1 rider said salamat" is the tracker's.
 
-**The buses are made up, and every frame says so.** They are the flyer's
-example ones: 98018 five stops before S&R Kawit, 98104 at Amadeo, two sharers
-at Tagaytay, 98077 near Gen. Trias, so the riders' video is the flyer's
-example screen set moving. The rule is the flyer's: a picture of this tool
-that could be mistaken for live data is the one thing it may not publish. A
-label at the foot of the frame says "Halimbawa · example screen" (or "Example
-screen · made-up buses") on every frame that shows the tracker, both covers
-say the buses are made up, and the stretches that are sped up or skipped (a
-bus coming up to the saved stop, two hours of a trip) carry a chip that says
-so.
+**The buses are made up.** They are the flyer's example ones: 98018 five
+stops before S&R Kawit, 98104 at Amadeo, two sharers at Tagaytay, 98077 near
+Gen. Trias, so the riders' video is the flyer's example screen set moving.
+The operators' video says so on every frame that shows the tracker
+("Example screen · made-up buses") and on its cover, by the flyer's rule
+that a picture of this tool must not be mistakable for live data: a company
+reading it as a recording of its own buses is the misreading that rule
+exists for. The riders' video carried "Halimbawa · example screen" the same
+way until October 2026, when the maintainer dropped it there: phones posed
+on a moving stage, with buses crossing the route in seconds under a
+"Pinabilis" chip, are plainly a demo, and the label on every frame was noise
+in a video whose captions had been cut to four. What stays in both is that
+any stretch played faster than life carries a chip saying so.
 
 **Nothing reaches the database.** A script runs in the page before its own
 (`prelude()` in the engine) and answers every call the tracker makes to

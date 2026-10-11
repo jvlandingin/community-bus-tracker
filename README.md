@@ -101,9 +101,9 @@ company's name or initials, for the same reason.
   each, portrait, captioned, with interface sounds and no music, for posting
   in a group chat or sending to the company. They show the real tracker with
   the flyer's made-up buses, on two phones at once where a rider and a sharer
-  both matter, labelled as an example on every frame. They are rendered rather
-  than recorded (`node tools/render-demo.js`, with the moving graphics in
-  `tools/demo-stage.html` and the two scripts in `tools/demo-cuts.js`), so
+  both matter (the operators' cut labelled as an example). They are rendered
+  rather than recorded (`node tools/render-demo.js`, with the moving graphics
+  in `tools/demo-stage.html` and the two scripts in `tools/demo-cuts.js`), so
   they are redone whenever the app changes. A fork rewrites the two scripts,
   which name this route's stops.
 

@@ -42,7 +42,9 @@ const OFF_LEFT = { cx: -330, cy: 620, s: .57, rx: 0, ry: 24, rz: 0, o: 1 };
 const DASH = { cx: 280, cy: 650, s: .8, rx: 7, ry: 13, rz: -1.5, o: 1 };
 const BELOW = { cx: 300, cy: 1460, s: .82, rx: 30, ry: -22, rz: 9, o: 1 };
 
-const SETTINGS_TAG = { tl: 'Halimbawa · example screen', en: 'Example screen · made-up buses' };
+// The operators' cut labels every frame of the tracker; the riders' does not
+// (docs/ARCHITECTURE.md, "The demo videos", says why).
+const SETTINGS_TAG = { en: 'Example screen · made-up buses' };
 
 // What the saved-stop card is saying, read off the rider's phone.
 const CARD = `(function(){
@@ -85,8 +87,8 @@ function titleCard(P, o) {
       o.lines.map(l => '<div><span class="settle">' + l + '</span></div>').join('') + '</div>' +
     (o.lede ? '<p class="lede rise d5" style="text-align:center; margin:22px 40px 0">' + o.lede + '</p>' : '') +
     '<div style="flex:1"></div>' + scene(P, o.time, 'tcs') +
-    '<div class="eg rise d6" style="position:absolute; left:0; right:0; bottom:20px; text-align:center; font-size:12px; font-weight:700;' +
-      ' letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.85)">' + o.note + '</div>';
+    (o.note ? '<div class="eg rise d6" style="position:absolute; left:0; right:0; bottom:20px; text-align:center; font-size:12px; font-weight:700;' +
+      ' letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.85)">' + o.note + '</div>' : '');
 }
 
 // The four buses of the flyer's example screen, less any a phone is playing.
@@ -153,14 +155,13 @@ module.exports = {
 
       // -- 0. The cover: the flyer's question over the view from the ridge
       await d.card('title', titleCard(P, { time: 'dawn', size: 84,
-        lines: ['Nasaan na', '<em>ang bus?</em>'], note: 'Halimbawa lang ang mga bus' }), { theme: 'maroon', instant: true });
+        lines: ['Nasaan na', '<em>ang bus?</em>'] }), { theme: 'maroon', instant: true });
       d.cue('chord');
       await d.wait(3.3);
 
       // -- 1. The buses, without words: the two lines, then one bus live
       await d.wipeIn();
       await d.uncard('title');
-      await d.tag(SETTINGS_TAG.tl);
       await d.pose('rider', { cx: 270, cy: 560, s: .9, rx: 6, ry: -8, rz: 1.5 }, 1.3, 'back');
       await d.wipeOut();
       await d.wait(1.0);
@@ -329,7 +330,6 @@ module.exports = {
           'Kapag walang nag-share, walang bus sa mapa.</p>' +
         '<div class="coachbar">' + road() + coach(P, 'dawn') + '</div>', { theme: 'maroon' });
       d.cue('chord');
-      await d.tag(null);
       await d.wait(6.5);
     }
   },

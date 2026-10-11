@@ -373,10 +373,11 @@ taps, or a caption the screen no longer bears out, stops the render and names
 it. The motion graphics around the phones are `tools/demo-stage.html`; what
 happens when, and every word, is `tools/demo-cuts.js`, where a caption is a
 promise made in public and claims nothing the flyer or the briefing does not.
-Every frame that shows the tracker carries an example-screen label
-("Halimbawa · example screen" in the riders' cut), for the same reason the
-flyer's mock does, and nothing in the tool may ever send a request to the
-real database. `docs/ARCHITECTURE.md`, "The demo videos", has the rest.
+The operators' cut labels every frame of the tracker "Example screen ·
+made-up buses", as the flyer's mock is labelled; the riders' cut does not
+(October 2026, a deliberate decision: on a moving stage with sped-up chips
+it is plainly a demo, and the label was noise). Sped-up stretches say so in
+both, and nothing in the tool may ever send a request to the real database. `docs/ARCHITECTURE.md`, "The demo videos", has the rest.
 
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`
 each redraw the tracker's screen the same way, showing four buses live because

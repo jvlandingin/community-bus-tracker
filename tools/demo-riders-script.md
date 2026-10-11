@@ -16,8 +16,8 @@ How to read it:
 - **Graphics** are the moving parts drawn around the phone. Any words in
   them are labels of one to three words, never sentences.
 - Times are from the render, about 50 seconds in all.
-- Every frame that shows the tracker carries **"Halimbawa · example
-  screen"** at the foot. The buses are the flyer's made-up ones.
+- The buses are the flyer's made-up ones. There is no example-screen label
+  in this cut (a deliberate decision; the operators' cut keeps it).
 
 ## At a glance
 
@@ -48,7 +48,6 @@ A full-frame card in maroon, with no phone.
 
 - **Board:** the dot-matrix route board, MENDEZ / TAGAYTAY ⇄ ONE AYALA.
 - **Caption:** Nasaan na **ang bus?**
-- **Small print at the foot:** Halimbawa lang ang mga bus
 - **Graphics:** the dawn view over Taal. The sun comes up and the coach
   drives in.
 
@@ -146,8 +145,7 @@ The "I-scan ang QR o i-type ang link…" line is dropped.
 
 ## Rules the script still keeps
 
-- The example-screen label is on every frame that shows the tracker.
-- The skip says so.
+- Sped-up stretches carry the Pinabilis chip.
 - The disclaimer stays in the close.
 - No minutes or arrival times anywhere.
 - The four safety points left with the "Libre, walang ads" card. The

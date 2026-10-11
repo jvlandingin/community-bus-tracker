@@ -34,13 +34,12 @@
 // a step (a tap on something that moved), and then the render stops and
 // says which rather than recording the wrong thing.
 //
-// The buses are made up, and every frame that shows the tracker says so, the
-// way the flyer's example screen does: "Halimbawa · example screen" in the
-// riders' video and "Example screen · made-up buses" in the operators'. That
-// label is the one thing a demo of this app may never lose: a video of the
-// tracker that could be mistaken for a recording of live buses is exactly
-// what this project's rules would not forgive. Sped-up stretches say so too,
-// and the buses are the flyer's example ones, at the flyer's example places.
+// The buses are made up: the flyer's example ones, at the flyer's example
+// places. The operators' video says so on every frame that shows the
+// tracker ("Example screen · made-up buses"); the riders' video does not,
+// by the maintainer's decision, because a phone on a moving stage with
+// sped-up chips is plainly a demo (docs/ARCHITECTURE.md, "The demo videos").
+// Sped-up stretches say so in both.
 //
 // No request reaches the database. The pages' calls to Supabase are answered
 // by a stand-in inside the browser (prelude(), below), anything else

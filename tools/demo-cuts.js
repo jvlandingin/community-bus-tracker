@@ -276,20 +276,26 @@ module.exports = {
       await d.wait(1.8);
       await d.unmark('you');
 
-      // -- 5. The ticket, without words: two hours on, the last stretch
-      //    driven on the strip, then Stop
-      await d.ff('Makalipas ang 2 oras', 'time');
-      d.gps('rider', { road: ROADS.whole, km0: 44 });
-      await d.skip(2 * 3600e3 + 10 * 60e3);
-      await d.thanks('rider', 3);
-      await d.poll('rider');
-      await d.wait(.9);
-      const END = 420;
+      // -- 5. The ticket, without words: the whole trip driven along the
+      //    strip, sped up, Mendez to Ayala, then Stop. The pages' clock runs
+      //    the trip's real two-odd hours, so the bus keeps a bus's speed on
+      //    its own phone and the ticket says how long it really took.
+      const TRIP = 4.6, END = 1850;
       await d.ff('Pinabilis');
-      d.gps('rider', { road: ROADS.whole, km0: 44, km1: 59.8, secs: 2.4 * END });
+      d.gps('rider', { road: ROADS.whole, km0: 0.35, km1: 59.8, secs: TRIP * END });
+      // The strip's badges glide a second to each new place, and at this
+      // speed a new place comes before a glide ends, so for the drive they
+      // are put straight where the tracker draws them each time instead.
+      await d.app('rider', "var st = document.createElement('style'); st.id = 'demo-nojump'; " +
+        "st.textContent = '#onbusStrip .buspill{transition:none !important}'; document.head.appendChild(st); 1");
       d.rate = END;
-      await d.wait(2.7);
+      // three riders the video does not show say salamat on the way
+      let thanked = false;
+      await d.wait(TRIP + .3, async () => {
+        if (!thanked && d.gpsNow().rider.lat > 14.4) { thanked = true; await d.thanks('rider', 3); }
+      });
       d.rate = 1;
+      await d.app('rider', "document.getElementById('demo-nojump').remove(); 1");
       await d.ff(null);
       await d.untitle('t');
       await d.scrim(false);

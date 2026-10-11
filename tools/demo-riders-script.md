@@ -15,7 +15,7 @@ How to read it:
   renderer.
 - **Graphics** are the moving parts drawn around the phone. Any words in
   them are labels of one to three words, never sentences.
-- Times are from the render, about 51 seconds in all.
+- Times are from the render, about 48 seconds in all.
 - Every frame that shows the tracker carries **"Halimbawa · example
   screen"** at the foot. The buses are the flyer's made-up ones.
 
@@ -24,12 +24,12 @@ How to read it:
 | # | Time | Scene | Caption |
 |---|------|-------|---------|
 | 0 | 0:00–0:04 | Cover | Nasaan na ang bus? |
-| 1 | 0:04–0:13 | Where the buses are | *(no caption)* |
-| 2 | 0:13–0:27.5 | How far is it | Gaano kalayo pa? |
-| 3 | 0:27.5–0:31.5 | Salamat | *(no caption)* |
-| 4 | 0:31.5–0:39.5 | On a bus yourself | Share kung nasaan ang bus |
-| 5 | 0:39.5–0:44.5 | The ticket | *(no caption)* |
-| 6 | 0:44.5–0:50.6 | Close | Buksan ngayon |
+| 1 | 0:03.5–0:13 | Where the buses are | *(no caption)* |
+| 2 | 0:13–0:22 | How far is it | Gaano kalayo pa? |
+| 3 | 0:22–0:26 | Salamat | *(no caption)* |
+| 4 | 0:26–0:33.5 | On a bus yourself | Share kung nasaan ang bus |
+| 5 | 0:33.5–0:42 | The ticket | *(no caption)* |
+| 6 | 0:42–0:48.3 | Close | Buksan ngayon |
 
 Removed since draft 1:
 - "Live ang bawat bus". The buses scene now has no caption.
@@ -157,8 +157,8 @@ The "I-scan ang QR o i-type ang link…" line is dropped.
 
 ## Narration (draft 1)
 
-For a voice recorded over the rendered video. The times are the current
-cut's. They come from its own sound track: each tap, wipe and board-slam is a
+For a voice recorded over the rendered video. The times are those of the
+51-second cut before the buses moved, and need re-timing to the current one. They come from its own sound track: each tap, wipe and board-slam is a
 cue on the frame where it happens. Conversational Taglish runs about 2.3
 words a second, so each line is sized to leave room around the beats it
 lands on. ▶ marks a line to say exactly on a beat.

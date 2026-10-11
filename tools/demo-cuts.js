@@ -289,19 +289,24 @@ module.exports = {
       // are put straight where the tracker draws them each time instead.
       await d.app('rider', "var st = document.createElement('style'); st.id = 'demo-nojump'; " +
         "st.textContent = '#onbusStrip .buspill{transition:none !important}'; document.head.appendChild(st); 1");
-      // Everyone else on the road keeps going too: two more buses north,
-      // two south, at bus speeds of their own, while the camera stays on
-      // the green ring.
-      const trip = TRIP * END;
-      d.bus('d3m0b98104000000000000000000a002', { dir: 'north', label: '98104', road: ROADS.whole, km0: 14, km1: 52, secs: trip, phase: 4.5 });
-      d.bus('d3m0b98022000000000000000000a005', { dir: 'north', label: '98022', road: ROADS.whole, km0: 30, km1: 59.8, secs: trip * .8, phase: 2 });
-      d.bus('d3m0b00000000000000000000000a003', { dir: 'south', label: null, road: ROADS.whole, km0: 40, km1: 3, secs: trip, count: 2, phase: 3 });
-      d.bus('d3m0b98077000000000000000000a004', { dir: 'south', label: '98077', road: ROADS.whole, km0: 58, km1: 20, secs: trip, phase: 1 });
+      // Everyone else on the road keeps going too, at the same pace, so no
+      // one overtakes: two more buses north and two south, each dropping
+      // off the line when it reaches its end, while the camera stays on the
+      // green ring.
+      const pace = (59.8 - 0.35) / (TRIP * END);   // km per second of the pages' clock
+      const others = [
+        ['d3m0b98022000000000000000000a005', { dir: 'north', label: '98022', km0: 34, km1: 59.8, phase: 2 }],
+        ['d3m0b98104000000000000000000a002', { dir: 'north', label: '98104', km0: 16, km1: 59.8, phase: 4.5 }],
+        ['d3m0b00000000000000000000000a003', { dir: 'south', label: null, km0: 24, km1: 0.3, count: 2, phase: 3 }],
+        ['d3m0b98077000000000000000000a004', { dir: 'south', label: '98077', km0: 50, km1: 0.3, phase: 1 }]];
+      for (const [id, o] of others) d.bus(id, Object.assign({ road: ROADS.whole, secs: Math.abs(o.km1 - o.km0) / pace }, o));
       d.rate = END;
       // three riders the video does not show say salamat on the way
       let thanked = false;
       await d.wait(TRIP + .3, async () => {
         if (!thanked && d.gpsNow().rider.lat > 14.4) { thanked = true; await d.thanks('rider', 3); }
+        // a bus at the end of its line stops sharing, and is gone
+        for (const [id] of others) { const b = d.buses.get(id); if (b && d.vt >= b.v1) d.unbus(id); }
       });
       d.rate = 1;
       await d.app('rider', "document.getElementById('demo-nojump').remove(); 1");

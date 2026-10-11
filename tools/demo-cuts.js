@@ -147,7 +147,7 @@ module.exports = {
       await d.phone('crew', { pose: OFF_RIGHT });
       flyerBuses(d, '98018');
       await d.boot();
-      d.gps('crew', { road: ROADS.kawit, km0: 38.26 });
+      d.gps('crew', { road: ROADS.whole, km0: 22 });
       await startTripOffCamera(d, 'crew', '98018');
       await d.offCamera(7);
 
@@ -166,6 +166,17 @@ module.exports = {
       await d.wait(1.0);
       await d.hilite('rider');
       await d.wait(.6);
+      // From here the buses run, sped up, so they are seen moving on the
+      // strip and on the map: 98018 drives up to where the next scene
+      // needs it, five stops short of S&R Kawit.
+      // The strip is the whole route, 60 km, so the buses cover a lot of it
+      // while the camera is on it, then slow down for the map.
+      const RUN = 110, run = 5.7 * RUN;
+      d.gps('crew', { road: ROADS.whole, km0: 22, km1: 34, secs: 3.0 * RUN });
+      d.bus('d3m0b98104000000000000000000a002', { dir: 'north', label: '98104', road: ROADS.amadeo, km0: 5.0, km1: 15.5, secs: run, phase: 4.5 });
+      d.bus('d3m0b98077000000000000000000a004', { dir: 'south', label: '98077', road: ROADS.gentrias, km0: 35.5, km1: 21.0, secs: run, phase: 1 });
+      await d.ff('Pinabilis');
+      d.rate = RUN;
       await d.focus('rider', '#trackStrip', { s: 1.42, fx: 270, fy: 470, sec: 1.0 });
       await d.wait(1.0);
       // Each arrow points at a bus going that way, not just at its line.
@@ -174,12 +185,17 @@ module.exports = {
       await d.callout('sb', { phone: 'rider', target: await pill(d, 'rider', '98077'), ay: 1, text: '▼ Pa-Mendez', color: 'maroon', dx: 40, dy: 56 });
       await d.wait(1.6);
       await d.unmark('nb'); await d.unmark('sb');
+      // 98018 the rest of the way, there a little before the speed-up ends
+      d.gps('crew', { road: ROADS.whole, km0: 34, km1: 38.26, secs: 2.4 * RUN });
       await d.focus('rider', '.mapwrap', { s: 1.12, fx: 270, fy: 520, sec: 1.0 });
-      await d.app('rider', 'map.flyTo([14.395, 120.915], 12, { duration: 1.3 }); 1');
+      // Leaflet times its flight on the pages' clock, which is running fast
+      await d.app('rider', 'map.flyTo([14.405, 120.915], 12, { duration: ' + (1.3 * RUN) + ' }); 1');
       await d.wait(1.5);
       await d.callout('live', { phone: 'rider', target: await marker(d, 'rider', '98018'), text: 'Live · 98018', color: 'gold', dx: 70, dy: -54 });
       await d.wait(1.6);
       await d.unmark('live');
+      d.rate = 1;
+      await d.ff(null);
 
       // -- 2. How far: save the stop, then the bus counts down to it
       await d.pose('rider', HERO, .9);
@@ -190,21 +206,23 @@ module.exports = {
       await d.type('S&R');
       await d.wait(.3);
       await d.tap('rider', '#stopList button[data-name="S&R Kawit"]', { after: .5 });
+      await d.poll('rider');
+      await d.wait(.1);
       await d.expect('rider', '/about\\s*5\\s*stops before yours/.test(document.querySelector("#myStop .ride-big").textContent)',
         'the saved-stop card saying "about 5 stops before yours"');
       await d.scrim(true);
       await d.focus('rider', '#myStop .ride', { s: 1.3, fx: 270, fy: 690, sec: 1.0 });
       await d.title('t', T({ theme: 'dark', lines: ['Gaano <em>kalayo pa?</em>'], size: 50 }));
-      await d.wait(.5);
+      await d.wait(.3);
       await d.flap('f', { value: '5', unit: 'stops pa', sub: '3.0 km', x: 40, y: 132, theme: 'dark' });
-      await d.wait(1.5);
+      await d.wait(.7);
       // the crew phone drives the last three kilometres, sped up, and the
       // board above counts what the card counts
       await d.ff('Pinabilis');
-      d.gps('crew', { road: ROADS.kawit, km0: 38.26, km1: 41.2, secs: 7.4 * 56 });
-      d.rate = 56;
+      d.gps('crew', { road: ROADS.kawit, km0: 38.26, km1: 41.2, secs: 3.7 * 112 });
+      d.rate = 112;
       let last = { n: '5', km: '3.0 km', st: '' };
-      await d.wait(8.4, async () => {
+      await d.wait(4.3, async () => {
         const c = await d.app('rider', CARD);
         if (!c) return;
         if (c.st !== last.st && c.st) {
@@ -221,7 +239,7 @@ module.exports = {
       await d.ff(null);
       await d.expect('rider', '/Next stop is yours/.test(document.querySelector("#myStop .ride-big").textContent)',
         'the card saying "Next stop is yours" once the bus is one stop out');
-      await d.wait(1.2);
+      await d.wait(.9);
 
       // -- 3. Salamat, without words: one tap on the bus that came
       await d.unled('sign');
@@ -255,20 +273,28 @@ module.exports = {
       await d.focus('rider', '#onbusStripCard', { s: 1.25, fx: 270, fy: 660, sec: 1.0 });
       await d.wait(1.1);
       await d.callout('you', { phone: 'rider', target: '#onbusStrip .buspill.me', text: 'Ito ang bus mo', color: 'live', dx: 64, dy: -62 });
-      await d.wait(2.0);
+      await d.wait(1.8);
       await d.unmark('you');
 
-      // -- 5. The ticket, without words: two hours on, Stop
+      // -- 5. The ticket, without words: two hours on, the last stretch
+      //    driven on the strip, then Stop
+      await d.ff('Makalipas ang 2 oras', 'time');
+      d.gps('rider', { road: ROADS.whole, km0: 44 });
+      await d.skip(2 * 3600e3 + 10 * 60e3);
+      await d.thanks('rider', 3);
+      await d.poll('rider');
+      await d.wait(.9);
+      const END = 420;
+      await d.ff('Pinabilis');
+      d.gps('rider', { road: ROADS.whole, km0: 44, km1: 59.8, secs: 2.4 * END });
+      d.rate = END;
+      await d.wait(2.7);
+      d.rate = 1;
+      await d.ff(null);
       await d.untitle('t');
       await d.scrim(false);
       await d.pose('rider', HERO, .8);
-      await d.ff('Makalipas ang 2 oras', 'time');
-      d.gps('rider', { road: ROADS.whole, km0: 59.5, km1: 60.0, secs: 150 });
-      await d.skip(2 * 3600e3 + 26 * 60e3);
-      await d.thanks('rider', 3);
-      await d.poll('rider');
-      await d.wait(1.3);
-      await d.ff(null);
+      await d.wait(.85);
       await d.tap('rider', '#onbusActive .btn-stop', { after: .1 });
       d.cue('ticket');
       await d.wait(.2);

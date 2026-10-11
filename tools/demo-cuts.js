@@ -288,6 +288,14 @@ module.exports = {
       // are put straight where the tracker draws them each time instead.
       await d.app('rider', "var st = document.createElement('style'); st.id = 'demo-nojump'; " +
         "st.textContent = '#onbusStrip .buspill{transition:none !important}'; document.head.appendChild(st); 1");
+      // Everyone else on the road keeps going too: two more buses north,
+      // two south, at bus speeds of their own, while the camera stays on
+      // the green ring.
+      const trip = TRIP * END;
+      d.bus('d3m0b98104000000000000000000a002', { dir: 'north', label: '98104', road: ROADS.whole, km0: 14, km1: 52, secs: trip, phase: 4.5 });
+      d.bus('d3m0b98022000000000000000000a005', { dir: 'north', label: '98022', road: ROADS.whole, km0: 30, km1: 59.8, secs: trip * .8, phase: 2 });
+      d.bus('d3m0b00000000000000000000000a003', { dir: 'south', label: null, road: ROADS.whole, km0: 40, km1: 3, secs: trip, count: 2, phase: 3 });
+      d.bus('d3m0b98077000000000000000000a004', { dir: 'south', label: '98077', road: ROADS.whole, km0: 58, km1: 20, secs: trip, phase: 1 });
       d.rate = END;
       // three riders the video does not show say salamat on the way
       let thanked = false;

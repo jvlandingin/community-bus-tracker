@@ -25,6 +25,24 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-11 — A clearer guide, and a tour
+
+The maintainer asked for the guide to be very clear, with no long blocks of
+text and more pictures where they help, and floated an onboarding tutorial that
+people can easily open: an interactive way to explore what the app does, with
+the Arok app's tour as the inspiration.
+
+- **The guide** went from about twelve phone screens of paragraphs to a line and
+  a picture per idea, with the fine print in "More" folds, a list of links at the
+  top, and new drawings: a bus's popup, a key to the strip, the card's flags.
+- **The tour** is two practice runs on the real page, one per tab, about a
+  minute each. A practice bus stands in for the real ones while it runs, and
+  nothing in it can be sent or kept. It opens from the guide, from a button at
+  the foot of each tab, and once from a "New here?" note on a first visit.
+- **One decision taken without asking**, and worth revisiting if it reads wrong
+  in the group: the tour is offered on a first visit, not started, because the
+  page's first job is showing the bus. Arok starts its tour by itself.
+
 ## 2026-10-10 — Keeping the ticket
 
 The maintainer asked whether a sharer could collect the tickets of every ride,

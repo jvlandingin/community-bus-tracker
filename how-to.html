@@ -187,7 +187,7 @@
      the condensed one: the split the app makes. The drawings follow the app
      part by part, so its status line, its fields, its sighting rows, its
      prompts' words and the ticket's small print are in the normal width too. */
-  p, .hint, figcaption, .keyline .muted, .demo-sub, .demo-row, .demo-field, .promptcard p, .tkt-fine{font-family:var(--font-text);}
+  p, .hint, figcaption, .keyline .muted, .demo-sub, .demo-row, .demo-field, .tkt-fine{font-family:var(--font-text);}
 
   /* ---- Steps ------------------------------------------------------- */
   .step{display:flex; gap:12px; padding:14px 0; border-top:1px solid var(--line);}
@@ -487,28 +487,6 @@
   @keyframes fChipNb{0%,63%{opacity:1;} 67%,96%{opacity:.14;} 100%{opacity:1;}}
   @keyframes fChipSb{0%,30%{opacity:1;} 34%,63%{opacity:.14;} 67%,100%{opacity:1;}}
 
-  /* ---- The share flow (was a 33 second screen recording) ------------ */
-  /* Four states on a 24s clock, same stacking trick as .promptstack. */
-  .flowstack{display:grid;}
-  .flowcard{
-    grid-area:1/1; opacity:0;
-    border:1px solid var(--line); border-radius:14px; background:var(--surface);
-    padding:13px; animation:cycle4 24s ease-in-out infinite;
-  }
-  .flowcard:nth-child(2){animation-delay:6s;}
-  .flowcard:nth-child(3){animation-delay:12s;}
-  .flowcard:nth-child(4){animation-delay:18s;}
-  .flowstep{
-    font-size:8.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
-    color:var(--brand-ink); margin-bottom:7px;
-  }
-  @keyframes cycle4{
-    0%{opacity:0; transform:translateY(8px);}
-    3%{opacity:1; transform:none;}
-    22%{opacity:1; transform:none;}
-    25%{opacity:0; transform:translateY(-8px);}
-    100%{opacity:0; transform:translateY(-8px);}
-  }
 
   /* Numbered callout dots. They live in .demo.annotated's left gutter now,
      one per row of the recreation they mark. */
@@ -746,29 +724,6 @@
      needs the bus parked at a terminal, and the direction prompt needs a
      genuinely wrong-way trip. Everything else on the page is built the same
      way now, for the reasons in the recreations block above. */
-  /* One grid cell, every card in it: the stack is then exactly as tall as
-     its tallest card, at any width, with no hand-measured min-height to go
-     stale. It had one — 186px against cards up to 319px on a narrow phone —
-     and the overflow printed the prompt straight through the paragraph
-     underneath. */
-  .promptstack{display:grid;}
-  .promptcard{
-    grid-area:1/1;
-    background:var(--surface); border-radius:var(--r-l); padding:18px; border:1px solid var(--line);
-    box-shadow:var(--sh-2);
-    opacity:0; animation:cycle 21s ease-in-out infinite;
-  }
-  .promptcard:nth-child(2){animation-delay:7s;}
-  .promptcard:nth-child(3){animation-delay:14s;}
-  @keyframes cycle{
-    0%{opacity:0; transform:translateY(8px);}
-    3%{opacity:1; transform:none;}
-    30%{opacity:1; transform:none;}
-    34%{opacity:0; transform:translateY(-8px);}
-    100%{opacity:0; transform:translateY(-8px);}
-  }
-  .promptcard h3{font-size:15px; margin-bottom:6px; display:flex; align-items:center; gap:7px;}
-  .promptcard p{font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:12px;}
   .fakebtn{
     display:block; width:100%; padding:11px; border-radius:12px; text-align:center;
     font-size:13.5px; font-weight:800; margin-bottom:7px;
@@ -776,6 +731,155 @@
   .fakebtn.primary{background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); color:#fff; box-shadow:0 2px 10px -4px rgba(122,31,43,.5);}
   .fakebtn.stop{background:var(--lost); color:#fff;}
   .fakebtn.ghost{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
+
+  /* ---- Finding your way round this page (October 2026) -------------- */
+  /* The page was one long scroll of paragraphs. It is now a line and a
+     picture per idea, with the fine print folded under "More", a list of
+     links at the top, and a way into the tracker's own tour. */
+  html{scroll-behavior:smooth;}
+  .card[id]{scroll-margin-top:12px;}
+  h3.sub{margin:18px 0 8px;}
+
+  /* The way into the tour: two doors, one per tab. */
+  .try{
+    margin:14px 0 0; padding:14px; border-radius:var(--r-m);
+    background:var(--maroon-soft); border:1px solid var(--maroon-line);
+  }
+  .try h3{display:flex; align-items:center; gap:7px; margin:0 0 2px; color:var(--brand-ink);}
+  .try p{font-size:var(--fs-small); color:var(--muted); margin:0 0 10px;}
+  .trybtns{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .trybtn{
+    display:flex; flex-direction:column; justify-content:center; gap:1px; min-height:56px; padding:9px 12px;
+    border-radius:var(--r-m); text-decoration:none; color:#fff;
+    background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); box-shadow:var(--sh-2);
+  }
+  .trybtn b{display:flex; align-items:center; gap:6px; font-size:var(--fs-body); line-height:1.2;}
+  .trybtn span{font-size:var(--fs-label); font-weight:600; opacity:.85;}
+  .trybtn.alt{background:var(--surface); color:var(--brand-ink); border:1.5px solid var(--maroon-line); box-shadow:none;}
+  .trybtn.wide{margin-top:12px; align-items:center; text-align:center;}
+
+  /* What is on this page, as chips. */
+  .jump{display:flex; flex-wrap:wrap; gap:6px; margin:14px 0 10px;}
+  .jump a{
+    display:inline-flex; align-items:center; min-height:34px; padding:0 12px; border-radius:999px;
+    border:1.5px solid var(--line); background:var(--paper); color:var(--ink); text-decoration:none;
+    font-size:var(--fs-label); font-weight:800;
+  }
+
+  /* One fact with an icon, for the things worth stopping on. */
+  .note{
+    display:flex; gap:10px; align-items:flex-start; margin:10px 0 12px; padding:11px 13px;
+    border-radius:var(--r-m); background:var(--paper); border:1px solid var(--line);
+  }
+  .note > .gi{width:22px; height:22px; flex:0 0 auto; margin-top:1px; color:var(--brand-ink);}
+  .note b{display:block; font-size:var(--fs-body); line-height:1.3;}
+  .note span{display:block; font-family:var(--font-text); font-size:var(--fs-small); color:var(--muted); line-height:1.45;}
+  .note span b{display:inline; font-family:var(--font-ui); font-size:inherit; color:var(--ink);}
+  .note.warn{background:var(--gold-soft); border-color:var(--gold-line);}
+  .note.warn > .gi{color:var(--gold-deep);}
+
+  /* A key: a swatch or a number beside a few words. */
+  .keys{list-style:none; margin:12px 0 4px; padding:0; display:grid; gap:9px;}
+  .keys li{display:flex; align-items:center; gap:10px; font-family:var(--font-text); font-size:var(--fs-small); line-height:1.35;}
+  .keys li b{font-family:var(--font-ui);}
+  .keys .sw{flex:0 0 28px; display:flex; align-items:center; justify-content:center;}
+  .keys .num{
+    flex:0 0 22px; height:22px; border-radius:50%; background:var(--maroon); color:#fff;
+    font-family:var(--font-ui); font-size:var(--fs-cap); font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .keys.numbered{grid-template-columns:1fr 1fr; gap:8px 12px;}
+  @media (max-width:360px){ .keys.numbered{grid-template-columns:1fr;} }
+  /* The strip's marks, standing still, as swatches. */
+  .pip{
+    width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:var(--gold); border:2px solid var(--surface); box-shadow:0 1px 4px rgba(43,35,32,.25);
+  }
+  .pip svg{display:block; width:15px; height:15px; fill:#fff;}
+  .pip .sign{fill:#fff1c4;}
+  .pip.sb{background:var(--maroon);}
+  .pip.sb .sign{fill:#ffb22e;}
+  .pip.old{opacity:.45;}
+  .pip.ring{width:18px; height:18px; background:var(--surface); border:2px dashed var(--gold-deep); box-shadow:none;}
+  .pip.mine{width:17px; height:17px; background:var(--mine); border:3px solid var(--surface); box-shadow:0 0 0 1.5px var(--mine);}
+
+  /* Short numbered steps: one line each. */
+  ol.steps{list-style:none; margin:10px 0 14px; padding:0; counter-reset:s; display:grid; gap:9px;}
+  ol.steps li{counter-increment:s; display:flex; gap:10px; align-items:flex-start;}
+  ol.steps li::before{
+    content:counter(s); flex:0 0 24px; height:24px; border-radius:50%; margin-top:1px;
+    background:var(--maroon); color:#fff; font-size:var(--fs-label); font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .share ol.steps li::before{background:var(--gold); color:#3d2a05;}
+  ol.steps li span{font-family:var(--font-text); font-size:var(--fs-body); line-height:1.4;}
+  ol.steps li b{font-family:var(--font-ui);}
+
+  /* The saved-stop card's three flags, side by side. */
+  .flags{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:0 0 4px;}
+  .flag{padding:10px 6px; border-radius:var(--r-m); background:var(--paper); border:1px solid var(--line); text-align:center;}
+  .flag .ride-flag{margin:0 0 6px; padding:3px 8px; font-size:var(--fs-cap); letter-spacing:.06em; white-space:nowrap;}
+  .flag.here .ride-flag{background:var(--mine); color:#fff;}
+  .flag > span:last-child{display:block; font-family:var(--font-text); font-size:var(--fs-label); color:var(--muted); line-height:1.35;}
+
+  /* An icon beside a title and a line. */
+  .rows{list-style:none; margin:12px 0 4px; padding:0; display:grid; gap:12px;}
+  .rows li{display:flex; gap:12px; align-items:flex-start;}
+  .rows .ic{
+    flex:0 0 36px; height:36px; border-radius:var(--r-m); display:flex; align-items:center; justify-content:center;
+    background:var(--maroon-soft); color:var(--brand-ink);
+  }
+  .rows .ic .gi{width:20px; height:20px; vertical-align:0;}
+  .share .rows .ic{background:var(--gold-soft); color:var(--gold-deep);}
+  .rows b{display:block; font-size:var(--fs-body); line-height:1.3;}
+  .rows li > div > span{display:block; font-family:var(--font-text); font-size:var(--fs-small); color:var(--muted); line-height:1.45;}
+  .rows li > div > span b{display:inline; font-family:var(--font-ui); font-size:inherit; color:var(--ink);}
+
+  /* The fine print, folded. A second question, never the first. */
+  details.more{margin:10px 0 0; border-top:1px solid var(--line);}
+  details.more > summary{
+    list-style:none; cursor:pointer; display:flex; align-items:center; gap:6px; min-height:var(--tap);
+    font-size:var(--fs-small); font-weight:800; color:var(--brand-ink);
+  }
+  details.more > summary::-webkit-details-marker{display:none;}
+  details.more > summary .gi{transition:transform var(--dur-2) var(--ease);}
+  details.more[open] > summary .gi{transform:rotate(90deg);}
+  details.more ul{margin:0 0 6px; padding-left:18px; font-family:var(--font-text); font-size:var(--fs-small); color:var(--muted); line-height:1.5;}
+  details.more li{margin:0 0 7px;}
+  details.more li b{font-family:var(--font-ui); color:var(--ink);}
+
+  /* A bus's popup, as the map draws it (index.html's .buspop rules). */
+  .popdemo{
+    position:relative; display:flex; flex-direction:column; align-items:center; gap:12px;
+    padding:16px 14px 14px; border-radius:14px; border:1px solid var(--line); background:var(--mapbg);
+  }
+  .pop{
+    position:relative; width:min(240px, 100%); padding:9px 12px; border-radius:var(--r-m);
+    background:var(--surface); color:var(--ink); border:1px solid var(--line); box-shadow:var(--sh-2);
+    font-size:var(--fs-small); line-height:1.5;
+  }
+  .pop::after{
+    content:''; position:absolute; left:50%; bottom:-7px; width:12px; height:12px; margin-left:-6px;
+    background:var(--surface); border-right:1px solid var(--line); border-bottom:1px solid var(--line); transform:rotate(45deg);
+  }
+  .pop .pdir{font-size:var(--fs-cap); font-weight:800; letter-spacing:.06em; color:var(--gold-deep);}
+  .pop .pname{font-weight:800; font-size:var(--fs-body); margin-top:1px;}
+  .pop .page{color:var(--muted); font-weight:600;}
+  .pop .kw{
+    display:flex; align-items:flex-start; gap:8px; margin-top:6px; padding:7px 9px; border-radius:var(--r-s);
+    background:var(--gold-soft); font-size:var(--fs-label); line-height:1.35; font-weight:600;
+  }
+  .pop .kw .mark{flex:0 0 auto; width:28px; height:28px; margin-top:1px; color:var(--gold-deep);}
+  .pop .kw b{display:block; margin-bottom:1px; font-size:var(--fs-cap); font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-deep);}
+  .pop .tyrow{margin-top:7px; padding-top:6px; border-top:1px solid var(--line);}
+  .pop .tybtn, .pop .buslink{
+    display:flex; align-items:center; justify-content:center; gap:5px; min-height:34px; padding:6px 10px;
+    border-radius:var(--r-s); font-weight:800;
+  }
+  .pop .tybtn{border:1px solid var(--line); background:var(--paper);}
+  .pop .buslink{margin-top:6px; border:1.5px dashed var(--line); color:var(--brand-ink);}
+  .pip.popbus{width:30px; height:30px;}
+  .pip.popbus svg{width:18px; height:18px;}
 
   /* ---- Small pieces ------------------------------------------------ */
   .statusdot{
@@ -796,13 +900,6 @@
     .buspill{animation:none; left:34%;}
     .buspill.sb{left:66%;}
     .dot::after{animation:none;}
-    /* Back to a plain vertical list: one grid cell would otherwise keep all
-       the cards on top of each other with every one of them opaque. */
-    .promptstack, .flowstack{display:block;}
-    .promptcard{
-      animation:none; opacity:1; margin-bottom:10px;
-      transform:none; box-shadow:none;
-    }
     html.js .reveal{opacity:1; transform:none;}
     /* Every recreation needs a resting state here, not just no animation:
        an element whose keyframes were its only source of colour or opacity
@@ -811,7 +908,6 @@
     .filterdemo .demo-chip{animation:none;}
     .filterdemo .demo-seg span:nth-child(1){background:var(--ink); color:var(--surface);}
     .filterdemo .demo-chip{opacity:1;}
-    .flowcard{animation:none; opacity:1; margin-bottom:10px; transform:none;}
   }
 </style>
 <script>
@@ -841,6 +937,11 @@
     <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4"/><path d="M6 4.5h11.5l-2.6 4 2.6 4H6"/></symbol>
     <symbol id="i-tkt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 6.5h15a1 1 0 0 1 1 1v2.6a1.9 1.9 0 0 0 0 3.8v2.6a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-2.6a1.9 1.9 0 0 0 0-3.8V7.5a1 1 0 0 1 1-1z"/><path d="M15 9.2v.6M15 11.7v.6M15 14.2v.6"/></symbol>
     <symbol id="i-locate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10.2 8.4v7.2l5.6-3.6z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3M12 14.6v2"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s-6.5-6-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.3"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 13.5a4 4 0 0 0 5.7.3l3-3a4 4 0 0 0-5.7-5.7l-1.1 1.1"/><path d="M14 10.5a4 4 0 0 0-5.7-.3l-3 3a4 4 0 0 0 5.7 5.7l1.1-1.1"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.2M12 19v2.2M2.8 12h2.2M19 12h2.2M5.5 5.5l1.6 1.6M16.9 16.9l1.6 1.6M5.5 18.5l1.6-1.6M16.9 7.1l1.6-1.6"/></symbol>
   </defs>
 </svg>
 
@@ -852,14 +953,47 @@
 
 <div class="wrap">
 
-  <!-- ================= HERO ================= -->
+  <!-- ================= START ================= -->
+  <!-- Rewritten in October 2026 for one rule: say it in a line, show it in a
+       picture, and fold the fine print. Every claim the longer page made is
+       still here, in a "More" fold where it is a second question rather than
+       the first. The two buttons open the tracker's own tour (the WALK block
+       in index.html), which shows the same things on the real screen with a
+       practice bus, so a reader can learn either way. -->
   <div class="card reveal">
     <div class="cover" aria-hidden="true"><!-- scene time=dawn id=cover --><svg class="scene" viewBox="0 110 640 190" aria-hidden="true" focusable="false" style="--c-body:#f3ecdf;--c-roof:#e6dccb;--c-skirt:#d9cfbe;--c-band:#7a1f2b;--c-gold:#e39a1c;--c-glass:#5f7f93;--c-glint:rgba(255,255,255,.22);--c-head:#3e5566;--c-led:#ffb22e;--c-lamp:#fff3c4;--c-hub:#cfc7bb;--c-sign:#120d0b;--c-dark:#2b2320"><defs><radialGradient id="cover-cone" cx=".5" cy="0" r="1"><stop offset="0" stop-color="transparent"/><stop offset="1" stop-color="rgba(0,0,0,0)"/></radialGradient><linearGradient id="cover-beam"><stop offset="0" stop-color="#fff3c4" stop-opacity=".75"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></linearGradient></defs><circle cx="470" cy="150" r="22" fill="#fff4d6"/><path d="M0 178C60 166 110 172 160 162C220 150 262 160 300 154C360 146 420 162 470 152C530 140 580 152 640 148V205H0Z" fill="#c2a3a1"/><rect y="186" width="640" height="56" fill="#8bb8c7"/><path d="M452 198h36M458 206h24M448 214h44" stroke="#fff4d6" stroke-width="1.6" stroke-linecap="round" opacity=".45"/><path d="M352 204C380 198 404 186 428 174L442 178L452 172L464 178C488 186 512 196 540 204Z" fill="#9a8492"/><path d="M0 238C80 228 150 240 230 234C330 226 420 240 520 232C570 228 610 232 640 230V300H0Z" fill="#5a4039"/><path d="M0 270C200 263 440 263 640 268V284C440 279 200 279 0 286Z" fill="#86706a"/><g fill="#3f2c28"><circle cx="560" cy="232" r="16"/><circle cx="584" cy="226" r="20"/><circle cx="608" cy="236" r="14"/><circle cx="24" cy="234" r="15"/><path d="M499 204C486 198 474 202 466 210C480 204 491 205 499 206C494 194 486 188 475 188C487 194 494 199 499 205C502 192 512 186 524 188C513 192 505 198 501 206C512 202 524 204 532 212C520 206 508 205 500 207Z"/></g><path d="M502 262C506 242 506 222 499 204" fill="none" stroke="#3f2c28" stroke-width="4" stroke-linecap="round"/><path d="M78 272V206h14" stroke="#3f2c28" stroke-width="3" fill="none"/><path d="M306 251l70-12v28z" fill="url(#cover-beam)"/><svg x="110" y="196" width="200" height="75" viewBox="0 0 364 136"><ellipse cx="186" cy="127" rx="160" ry="5" fill="rgba(0,0,0,.2)"/><rect x="118" y="13" width="120" height="11" rx="5.5" fill="var(--c-roof)"/><path d="M24 34Q24 22 36 22H318Q331 22 336 33L346 72Q349 80 349 88V112Q349 120 341 120H32Q24 120 24 112Z" fill="var(--c-body)"/><path d="M24 100H349V112Q349 120 341 120H32Q24 120 24 112Z" fill="var(--c-skirt)"/><path d="M24 64C56 70 92 80 132 82H348.5L349 92H24Z" fill="var(--c-band)"/><rect x="24" y="94" width="325" height="3.5" fill="var(--c-gold)"/><rect x="38" y="31" width="262" height="42" rx="5" fill="var(--c-glass)"/><g fill="var(--c-head)"><circle cx="62" cy="58" r="5.5"/><circle cx="109" cy="56" r="5.5"/><circle cx="160" cy="59" r="5.5"/><circle cx="208" cy="57" r="5.5"/><circle cx="252" cy="58" r="5.5"/></g><g fill="var(--c-body)"><rect x="84" y="31" width="5" height="42"/><rect x="132" y="31" width="5" height="42"/><rect x="180" y="31" width="5" height="42"/><rect x="228" y="31" width="5" height="42"/></g><path d="M40 33H120L104 71H40Z" fill="var(--c-glint)"/><path d="M305 31H333L344 72H305Z" fill="var(--c-glass)"/><path d="M313 34L322 34L314 69L307 69Z" fill="var(--c-glint)"/><rect x="306" y="76" width="22" height="22" rx="2.5" fill="var(--c-glass)"/><path d="M305 75V116M329 75V116" stroke="rgba(0,0,0,.18)" stroke-width="1.2"/><rect x="301" y="24" width="34" height="6" rx="2" fill="var(--c-sign)"/><path d="M305 27h0m4 0h0m4 0h0m4 0h0m4 0h0m4 0h0m4 0h0" stroke="var(--c-led)" stroke-width="1.8" stroke-linecap="round"/><rect x="274" y="36" width="22" height="9" rx="1.5" fill="var(--c-sign)"/><path d="M278 40.5h0m3.5 0h0m3.5 0h0m3.5 0h0m3.5 0h0" stroke="var(--c-led)" stroke-width="1.6" stroke-linecap="round"/><path d="M120 100V116M168 100V116M216 100V116" stroke="rgba(0,0,0,.14)" stroke-width="1.2"/><path d="M68 120A20 20 0 0 1 108 120ZM262 120A20 20 0 0 1 302 120Z" fill="var(--c-dark)"/><g fill="var(--c-dark)"><circle cx="88" cy="120" r="14.5"/><circle cx="282" cy="120" r="14.5"/></g><g fill="var(--c-hub)"><circle cx="88" cy="120" r="6.5"/><circle cx="282" cy="120" r="6.5"/></g><g fill="var(--c-dark)"><circle cx="88" cy="120" r="2"/><circle cx="282" cy="120" r="2"/></g><rect x="338" y="100" width="10" height="5.5" rx="2.5" fill="var(--c-lamp)"/><rect x="331" y="110" width="20" height="6" rx="2.5" fill="var(--c-dark)"/><path d="M333 27C350 17 363 28 358 44" fill="none" stroke="var(--c-dark)" stroke-width="2.6" stroke-linecap="round"/><rect x="353.5" y="42" width="7.5" height="15" rx="3" fill="var(--c-dark)"/></svg></svg><!-- /scene --></div>
     <h1>Where's the bus?</h1>
-    <p class="lede">This page shows where the buses are right now, because someone
-      on board is sharing the position. No app to install, no account, no sign-up.
-      Open the link and look.</p>
+    <p class="lede">See where the buses are right now, shared by people on board.
+      No app, no account, no sign-up.</p>
 
+    <div class="try">
+      <h3><svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>Try it on the map</h3>
+      <p>A practice bus shows you around, one step at a time. Nothing is sent.</p>
+      <div class="trybtns">
+        <a class="trybtn" href="index.html#tour"><b>Waiting for a bus</b><span>1 minute</span></a>
+        <a class="trybtn alt" href="index.html#tour=share"><b>On the bus</b><span>1 minute</span></a>
+      </div>
+    </div>
+
+    <nav class="jump" aria-label="On this page">
+      <a href="#glance">The map</a>
+      <a href="#strip">The strip</a>
+      <a href="#stop">Your stop</a>
+      <a href="#bus">Tap a bus</a>
+      <a href="#sightingsGuide" id="sightingsJump">Sightings</a>
+      <a href="#share">Sharing</a>
+      <a href="#data">Your data</a>
+    </nav>
+
+    <p class="hint">Community-run and unofficial. It is not operated by or
+      connected to the bus company.</p>
+  </div>
+
+  <!-- ================= AT A GLANCE ================= -->
+  <div class="card reveal" id="glance">
+    <span class="badge">Watching · no key needed</span>
+    <h2>The map at a glance</h2>
+    <div class="note"><svg class="gi" aria-hidden="true"><use href="#i-locate"/></svg><div><b>Just open the link and look.</b><span>Watching never asks for your location.</span></div></div>
     <figure>
       <div class="demo annotated" aria-hidden="true">
         <!-- Same order as the app: the strip and the map, then the saved
@@ -941,44 +1075,21 @@
         <span class="dot" style="top:89.4%">4</span>
         <span class="dot" style="top:95.7%">5</span>
       </div>
-      <figcaption>
-        <b>1</b> the bus on the route strip · <b>2</b> the same bus on the map ·
-        <b>3</b> how far it still is from your own stop · <b>4</b> filter by
-        direction · <b>5</b> how fresh the position is
-      </figcaption>
+      
     </figure>
-
-    <p class="hint">Community-run and unofficial. It is not operated by or
-      connected to the bus company.</p>
+    <ol class="keys numbered" aria-label="What the numbers point at">
+      <li><span class="num">1</span><span>The bus on the route strip</span></li>
+      <li><span class="num">2</span><span>The same bus on the map</span></li>
+      <li><span class="num">3</span><span>How far it is from your stop</span></li>
+      <li><span class="num">4</span><span>Show one direction only</span></li>
+      <li><span class="num">5</span><span>How fresh the position is</span></li>
+    </ol>
   </div>
 
-  <!-- ================= WATCHING ================= -->
-  <div class="card reveal">
-    <span class="badge">Watching · no key needed</span>
-    <h2>Reading the map</h2>
-
-    <div class="step">
-      <div class="n">1</div>
-      <div class="body">
-        <h3>Open the link</h3>
-        <p>Nothing is asked of you. <b>Watching never uses your location</b> and
-          the browser never prompts for it.</p>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="n">2</div>
-      <div class="body">
-        <h3>Read the strip</h3>
-        <p>The strip is the whole route drawn as a line map, Mendez on the left
-          and One Ayala on the right, with a station at every checkpoint. Each
-          round badge is a bus. <b>Gold runs along the top line northbound,
-          maroon along the bottom line southbound.</b> Once you have saved a
-          stop (step 5), it is the purple station on both lines, so you can
-          watch a bus close in on it.</p>
-      </div>
-    </div>
-
+  <!-- ================= THE STRIP ================= -->
+  <div class="card reveal" id="strip">
+    <h2>Read the strip</h2>
+    <p>The whole route as a line, Mendez on the left and One Ayala on the right.</p>
     <div class="strip" aria-hidden="true">
       <div class="dirlabel nb">NORTHBOUND → ONE AYALA</div>
       <div class="track nb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:14.29%"></i><i class="stn" style="left:28.57%"></i><i class="stn" style="left:42.86%"></i><i class="stn" style="left:57.14%"></i><i class="stn" style="left:71.43%"></i><i class="stn" style="left:85.71%"></i><i class="stn end last" style="left:100%"></i><div class="buspill"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></div></div>
@@ -997,18 +1108,15 @@
       <div class="track sb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:14.29%"></i><i class="stn" style="left:28.57%"></i><i class="stn" style="left:42.86%"></i><i class="stn" style="left:57.14%"></i><i class="stn" style="left:71.43%"></i><i class="stn" style="left:85.71%"></i><i class="stn end last" style="left:100%"></i><div class="sightmk sb" id="stripRing" style="left:28.57%"></div><div class="buspill sb"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></div></div>
       <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
     </div>
-    <p class="hint" id="stripRingNote" style="margin:8px 0 0; text-align:center;">The solid badges are live GPS. The dashed ring is a
-      <b>reported sighting</b> — somebody saw a bus there and said so.</p>
+    <ul class="keys" aria-label="What the marks mean">
+      <li><span class="sw"><span class="pip"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></span></span><span><b>Gold, top line:</b> a bus going to One Ayala</span></li>
+      <li><span class="sw"><span class="pip sb"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></span></span><span><b>Maroon, bottom line:</b> a bus going to Mendez</span></li>
+      <li><span class="sw"><span class="pip old"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></span></span><span><b>Faded:</b> not updated lately. A guess, not a position</span></li>
+      <li id="stripRingNote"><span class="sw"><span class="pip ring"></span></span><span><b>Dashed ring:</b> a sighting. Someone saw a bus there</span></li>
+      <li><span class="sw"><span class="pip mine"></span></span><span><b>Purple:</b> your saved stop</span></li>
+    </ul>
 
-    <div class="step">
-      <div class="n">3</div>
-      <div class="body">
-        <h3>Filter by direction</h3>
-        <p>Only care about buses heading to Ayala? Tap <b>▲ Northbound</b> and the
-          rest drop away.</p>
-      </div>
-    </div>
-
+    <h3 class="sub">Only going one way?</h3>
     <figure>
       <div class="demo filterdemo" aria-hidden="true">
         <div class="demo-seg">
@@ -1020,108 +1128,88 @@
           <span class="demo-chip nb"><span class="ar">▲</span>12 km to PITX <span class="ag">1m ago</span></span>
         </div>
       </div>
-      <figcaption>Tapping a direction drops everything going the other way. The filter moves the strip, the list and the map together.</figcaption>
+      <figcaption>Pick a direction and buses going the other way hide, from the strip, the list and the map.</figcaption>
     </figure>
+  </div>
 
-    <div class="step">
-      <div class="n">4</div>
-      <div class="body">
-        <h3>Check how fresh it is</h3>
-        <p>Every bus says when it last moved: <b>updated 2 mins ago</b>. A bus that
-          has gone quiet fades out, and drops off entirely once it is clearly
-          stale. <b>A faded bus is a guess, not a position.</b></p>
-      </div>
+  <!-- ================= YOUR STOP ================= -->
+  <div class="card reveal" id="stop">
+    <h2>Save your stop</h2>
+    <ol class="steps">
+      <li><span>Tap <b>Set your stop</b>, under the map.</span></li>
+      <li><span>Pick it from the list, or drop a pin where you wait.</span></li>
+      <li><span>The card counts the stops until the next bus reaches you.</span></li>
+    </ol>
+    <!-- The card's three flags, as rideCardHtml() prints them: Malapit na at
+         two stops or fewer, Sakay na when yours is next and the bus is under
+         2 km away, Bababa na for the same moment on board. -->
+    <div class="flags" aria-hidden="true">
+      <div class="flag"><span class="ride-flag">Malapit na!</span><span>Two stops away</span></div>
+      <div class="flag here"><span class="ride-flag">Sakay na!</span><span>Yours is next. Wave it down</span></div>
+      <div class="flag here"><span class="ride-flag">Bababa na!</span><span>On board: get off next</span></div>
     </div>
+    <div class="note"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg><div><b>Already on the bus?</b><span>Tap it on the map, then <b>I’m on this bus</b>. The card counts the stops to where you get off.</span></div></div>
+    <details class="more">
+      <summary>More about your stop<svg class="gi" aria-hidden="true"><use href="#i-chev"/></svg></summary>
+      <ul>
+        <li><b>It stays on this phone.</b> It is not sent anywhere, and no other visitor can see it. “Remove my stop” deletes it.</li>
+        <li><b>Counted along the road,</b> not in a straight line, and only for buses still coming your way.</li>
+        <li><b>Distance and stops, never minutes.</b> Minutes would need a record of past trips, and this tool keeps none.</li>
+        <li><b>Buzz once:</b> on phones that can vibrate (most Androids, not iPhones), a switch on the card buzzes once when the bus is two stops away. It is forgotten when you close the page.</li>
+        <li><b>Where am I?</b> The <svg class="gi" aria-hidden="true"><use href="#i-locate"/></svg> button on the map shows where you are, worked out on your phone.</li>
+        <li><b>Which bus you’re on</b> is forgotten when you close the page, and never sent. Tap <b>I got off</b> when you’re off. Sharing from the bus yourself? The card already knows your bus.</li>
+      </ul>
+    </details>
+  </div>
 
-    <div class="step">
-      <div class="n">5</div>
-      <div class="body">
-        <h3>Tell it where you wait</h3>
-        <p>Tap <b>Set your stop</b> and pick your usual one from the list. From then
-          on the card under the map does the arithmetic for you. It draws the
-          next bus coming your way at one end of a line and your stop at the
-          other, a dot for every stop still between them, and says it in words:
-          <b>about 5 stops before yours · 3.0 km</b>. That is counted along the
-          road rather than across country, so a bus on the far side of a bend is
-          not reported as nearly here, and it only ever counts buses still coming
-          towards you — one that has already gone past is not an answer.</p>
-        <p>Two stops out, the card says <b>Malapit na!</b> When yours is the next
-          stop and the bus is close, it says <b>Sakay na!</b> Phones that can
-          vibrate (most Androids, not iPhones) also get a switch to <b>buzz once</b>
-          when it gets that close, so the phone can go in your pocket. The switch
-          is forgotten when you close the page.</p>
-        <p>If your stop is not on the list, <b>Drop a pin instead</b> and tap the map
-          where you wait. The <svg class="gi" aria-hidden="true"><use href="#i-locate"/></svg> button on the map shows where you are, if you want
-          it. <b>Your stop stays on this phone.</b> It is not sent anywhere, no other
-          visitor can see it, and “Remove my stop” deletes it.</p>
-        <p><b>Already on the bus?</b> Tap the bus on the map and then <b>I'm on
-          this bus</b>, and save the stop you're getting off at. The card then
-          follows that one bus, not whichever is nearest, and counts the stops
-          left: <b>Malapit na!</b> two stops out, <b>Bababa na!</b> when yours is
-          next. Tap <b>I got off</b> when you're off. If you're the one sharing
-          from the bus, you don't need to tap anything: the card already knows
-          which bus is yours, and it shows on the sharing tab too. Which bus
-          you're on is forgotten when you close the page, and never sent.</p>
-        <p class="hint">It tells you distance and stops, never minutes. Working out
-          how long a bus will take needs a record of how long past trips took, and
-          this tool deliberately keeps no such record — see below.</p>
+  <!-- ================= TAP A BUS ================= -->
+  <div class="card reveal" id="bus">
+    <h2>Tap a bus</h2>
+    <p>On the strip, in the list or on the map. Its details open.</p>
+    <!-- The popup, as busPopupHtml() draws it for the bus in the first
+         figure: 98018, northbound, 2 km short of Amadeo, so its town line is
+         Amadeo's from config.txt with the coffee mark markSvg() gives it. -->
+    <figure>
+      <div class="popdemo" aria-hidden="true">
+        <div class="pop">
+          <div class="pdir">▲ NORTHBOUND</div>
+          <div class="pname">98018</div>
+          <div>2 km to AMADEO</div>
+          <div class="page">live</div>
+          <div class="kw"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14h14v4a6 6 0 0 1-6 6h-2a6 6 0 0 1-6-6z"/><path d="M21 15.5h1.6a2.6 2.6 0 0 1 0 5.2H20.4"/><path d="M5 27h18"/><path d="M11 10.5c-1-1.5 1-2.5 0-4.2M15.5 10.5c-1-1.5 1-2.5 0-4.2"/></svg><span><b>Next up</b>Amadeo, the coffee capital of the Philippines</span></div>
+          <div class="tyrow"><span class="tybtn"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>Say salamat</span></div>
+          <span class="buslink"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg>I’m on this bus</span>
+          <span class="buslink"><svg class="gi" aria-hidden="true"><use href="#i-link"/></svg>Send a link to this bus</span>
+        </div>
+        <span class="pip popbus"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></span>
       </div>
-    </div>
-
-    <div class="step">
-      <div class="n">6</div>
-      <div class="body">
-        <h3>Say salamat</h3>
-        <p>Tap a bus — its badge on the strip, its card in the list, or its badge
-          on the map — and its details open, with <b><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg> Say salamat</b> near the
-          bottom. One tap tells whoever is carrying the phone on that bus that
-          somebody was glad it was there, and the bus on your map hops and says
-          <b>beep beep!</b> so you know it landed. They are giving up their
-          battery and data for the rest of us, and until you tap, nothing at all
-          comes back the other way.</p>
-        <p class="hint">Only that one person sees it, only while the trip is
-          running, and it disappears with the trip. There is no score and no
-          total — not for a bus, not for a driver, not anywhere.</p>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="n">7</div>
-      <div class="body">
-        <h3>Send someone the bus</h3>
-        <p>In the same popup, <b>Send a link to this bus</b> opens your phone's own
-          sending sheet with a link that opens the map following that one bus —
-          for whoever is fetching you, or waiting at the other end. On the bus
-          yourself and sharing? Tap your own bus and send it. The link carries
-          nothing about you, only the bus's public ID, which every map already
-          has, and it stops working when the trip ends.</p>
-        <p class="hint">The popup also has a line about the town the bus is
-          passing or heading for. Amadeo, for one, is the coffee capital of the
-          Philippines.</p>
-      </div>
-    </div>
+    </figure>
+    <ul class="rows">
+      <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg></span><div><b>Say salamat</b><span>Tells whoever is sharing that you’re glad. The bus hops and says <b>beep beep!</b></span></div></li>
+      <li><span class="ic" aria-hidden="true"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg></span><div><b>I’m on this bus</b><span>Your stop card follows this bus to where you get off.</span></div></li>
+      <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-link"/></svg></span><div><b>Send a link to this bus</b><span>Whoever opens it can follow this bus. It stops working when the trip ends.</span></div></li>
+    </ul>
+    <details class="more">
+      <summary>More about salamat and links<svg class="gi" aria-hidden="true"><use href="#i-chev"/></svg></summary>
+      <ul>
+        <li><b>Only the sharer sees a salamat,</b> only while the trip runs, and it goes with the trip. There is no score and no total, for a bus, a driver or anyone.</li>
+        <li>They give up battery and data for the rest of us, and until you tap, nothing comes back to them at all.</li>
+        <li><b>The link carries nothing about you,</b> only the bus’s public ID, which every map already has.</li>
+        <li>The popup also has a line about the town the bus is passing.</li>
+      </ul>
+    </details>
   </div>
 
   <!-- ================= SIGHTINGS ================= -->
   <!-- Hidden by the script at the foot of this page when the route has the
-       board switched off. Ids, because that is what the script hangs on;
-       test-boot.js checks they are still here. -->
+       board switched off, with its link in the list at the top. Ids, because
+       that is what the script hangs on; test-boot.js checks they are still
+       here. -->
   <div class="card reveal" id="sightingsGuide">
     <span class="badge">Sightings</span>
-    <h2>When nobody is sharing</h2>
-    <p>Early morning, late evening, or just a quiet stretch: often no one on board
-      is sharing. Post what you saw instead, and everyone else gets something to
-      go on.</p>
-    <p>Pick the direction and the nearest landmark — you do not type them, so a
-      sighting is always specific enough to be worth reading. Add a note if there
-      is something to add. <b>What you post appears on the route strip as a
-      dashed mark</b>, so the strip still shows something when nobody's GPS
-      does.</p>
-    <p class="hint">A dashed mark is never a live bus, and the strip does not
-      pretend otherwise: it is one person's word, already a few minutes old,
-      with no update coming after it. It clears itself after about one gap
-      between trips.</p>
-
+    <h2>Nobody sharing? Post a sighting</h2>
+    <p>Saw a bus? Pick the direction and the nearest place. It shows on the
+      strip as a <b>dashed ring</b>, so others have something to go on.</p>
     <figure>
       <div class="demo" aria-hidden="true">
         <div class="demo-fold">
@@ -1141,96 +1229,31 @@
           <div class="demo-row"><span>▼ Southbound at Kawit · heavy traffic</span><span class="t">40m ago</span></div>
         </div>
       </div>
-      <figcaption>Direction and landmark are picked, not typed. The board stays folded while buses are live and <b>opens itself when none are</b> — which is exactly when it is the only thing that can answer you.</figcaption>
+      <figcaption>Picked, not typed. The board opens by itself when <b>no bus is live</b>.</figcaption>
     </figure>
+    <p class="hint">A dashed ring is one person’s word, already a few minutes
+      old. It is never a live bus, and it clears itself after about one gap
+      between trips.</p>
   </div>
 
   <!-- ================= SHARING ================= -->
-  <div class="card reveal share">
+  <div class="card reveal share" id="share">
     <span class="badge gold">Sharing · needs the key</span>
     <h2>I'm on the bus</h2>
-    <p>If you are the driver, the conductor, or a rider willing to help, you can
-      put this bus on everyone's map for the trip.</p>
+    <p>Driver, conductor or rider: put this bus on everyone’s map for the trip.</p>
 
     <div class="keyline">
       <b><svg class="gi" aria-hidden="true"><use href="#i-key"/></svg> You need the community key</b>
-      <span class="muted">It is posted in the group chat, usually as a link that
-      already carries the key. Open that link and the key is already in.</span>
+      <span class="muted">It is in the group chat, usually as a link that
+      already carries the key. Open that link and you’re set.</span>
     </div>
 
-    <figure>
-      <div class="flowstack" aria-hidden="true">
-        <div class="flowcard">
-          <div class="flowstep">Step 1 · pick a direction</div>
-          <div class="demo-status"><span class="sd"></span><span class="txt">Not sharing</span></div>
-          <div class="demo-pick">
-            <div><div class="arw">▲</div><div class="nm">Northbound</div><div class="to">to One Ayala</div></div>
-            <div><div class="arw">▼</div><div class="nm">Southbound</div><div class="to">to Mendez</div></div>
-          </div>
-          <div class="demo-field">Bus number (optional)</div>
-        </div>
-        <div class="flowcard">
-          <div class="flowstep">Step 2 · add the number, start</div>
-          <div class="demo-status"><span class="sd"></span><span class="txt">Not sharing</span></div>
-          <div class="demo-pick">
-            <div class="sel-n"><div class="arw">▲</div><div class="nm">Northbound</div><div class="to">to One Ayala</div></div>
-            <div><div class="arw">▼</div><div class="nm">Southbound</div><div class="to">to Mendez</div></div>
-          </div>
-          <div class="demo-field filled">98019</div>
-          <div class="fakebtn primary" style="margin-top:9px">Start sharing my location</div>
-        </div>
-        <div class="flowcard">
-          <div class="flowstep">Step 3 · the bus is on the map</div>
-          <div class="demo-status"><span class="sd live"></span><span class="txt">Sharing live: ▲ northbound</span></div>
-          <div class="strip" style="padding:0 8px; margin:10px 0 0">
-            <div class="track nb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:28.6%"></i><i class="stn" style="left:66.7%"></i><i class="stn end last" style="left:100%"></i><div class="buspill me" style="left:34%; animation:none"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></div></div>
-            <div class="ticks">
-              <div class="tick first" style="left:0%"><span>MENDEZ</span></div>
-              <div class="tick" style="left:28.6%"><span>AMADEO</span></div>
-              <div class="tick" style="left:66.7%"><span>IMUS</span></div>
-              <div class="tick last" style="left:100%"><span>AYALA</span></div>
-            </div>
-          </div>
-          <div class="fakebtn stop" style="margin-top:10px">Stop sharing</div>
-        </div>
-        <div class="flowcard">
-          <div class="flowstep">Step 4 · you get off, you stop</div>
-          <div class="demo-status"><span class="sd"></span><span class="txt">Not sharing</span></div>
-          <p style="font-size:12px; color:var(--muted); margin:8px 0 0; line-height:1.5;">
-            The bus leaves everyone's map immediately. There was never a trail
-            of the trip to delete, because none was ever written.</p>
-        </div>
-      </div>
-      <figcaption>The whole thing: pick a direction, start, the bus appears, stop.</figcaption>
-    </figure>
-
-    <div class="step">
-      <div class="n">1</div>
-      <div class="body">
-        <h3>Tap “I'm on the bus”</h3>
-        <p>The second tab, next to the map.</p>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="n">2</div>
-      <div class="body">
-        <h3>Pick the direction</h3>
-        <p>Northbound to One Ayala, southbound to Mendez. <b>Get this right</b> —
-          it decides which rail your bus rides on, and a bus shown going the wrong
-          way is worse for someone waiting than no bus at all.</p>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="n">3</div>
-      <div class="body">
-        <h3>Add the bus number</h3>
-        <p>Optional, but it helps. If someone else on the same bus is also
-          sharing, the number lets the app show <b>one bus instead of two</b>.</p>
-      </div>
-    </div>
-
+    <ol class="steps">
+      <li><span>Open the <b>I’m on the bus</b> tab.</span></li>
+      <li><span>Pick the <b>direction</b>. Get it right, or people wait on the wrong side of the road.</span></li>
+      <li><span>Add the <b>bus number</b> if you can see it. Then two phones on one bus show as one bus.</span></li>
+      <li><span>Tap <b>Start</b> and allow your location.</span></li>
+    </ol>
     <figure>
       <div class="demo" aria-hidden="true">
         <div class="demo-pick">
@@ -1240,64 +1263,12 @@
         <div class="demo-field filled">98019</div>
         <div class="fakebtn primary" style="margin-top:10px">Start sharing my location</div>
       </div>
-      <figcaption>Direction picked — note the gold — and the bus number in. Ready to start.</figcaption>
+      <figcaption>Direction picked (it turns gold), the number in, ready to start.</figcaption>
     </figure>
 
-    <div class="step">
-      <div class="n">4</div>
-      <div class="body">
-        <h3>Start sharing</h3>
-        <p>The browser asks for location permission once. Say yes and the bus
-          appears on the map within seconds. The strip that opens under the
-          button is the one everyone watching is looking at, and your bus is
-          the one with the green ring around it, so you can find yourself on
-          it even when several buses are sharing.</p>
-      </div>
-    </div>
+    <div class="note warn"><svg class="gi" aria-hidden="true"><use href="#i-sun"/></svg><div><b>Keep the screen on.</b><span>Sharing stops if the phone locks or you switch apps. Mount it and plug it in.</span></div></div>
 
-    <div class="step">
-      <div class="n">5</div>
-      <div class="body">
-        <h3>Keep the screen on</h3>
-        <p><b>Sharing only runs while this page is open and the screen is on.</b>
-          Lock the phone or switch apps and the position stops updating. Mounted
-          on the dashboard and plugged in is the way to do it.</p>
-        <p>While you share, that tab goes dark and the strip glows: easier to
-          read at a glance from a dashboard mount, and on most phones' screens
-          black costs less battery than white. It goes back to normal the moment
-          you stop, or as soon as you switch to the map.</p>
-        <p>On Android there is also an app, which loads this same page but keeps
-          sharing with the screen locked or while you use another app, with a
-          notification showing for as long as it does. Ask the organizer for it.
-          Watching the map never needs it.</p>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="n">6</div>
-      <div class="body">
-        <h3>Stop when you get off</h3>
-        <p><span class="statusdot"></span>Tap <b>Stop sharing</b> and the bus
-          leaves everyone's map immediately. Nothing about the trip is kept by the
-          tracker.</p>
-        <p>What you get instead is a <b>ticket</b> for the trip: a picture of
-          where you got on and where you got off, with the view at the end of
-          your ride behind the bus (Taal Lake if you got off at Tagaytay, the
-          towers if you got off at One Ayala), how long your bus was on
-          everyone's map, how many riders said salamat, and a stamp or two for
-          the shape of the trip — the whole route, before 5 AM or after dark,
-          the first bus on the map. Your phone makes it from what it saw on the
-          way, and it is not sent anywhere. Close it and it is gone.</p>
-        <p>Tap <b>Keep</b> and a copy goes into <b>My tickets</b>, on the sharing
-          tab, on this phone only. Every kept ticket has its own picture, and the
-          album counts the places on the route your trips have passed and the
-          stamps you have collected. A kept copy keeps the day, the places, the
-          stamps and a flower if anyone said salamat. It leaves out the times,
-          how long the trip took, the bus number and the count, so nobody can use
-          a pile of them to time a trip or rank a driver.</p>
-      </div>
-    </div>
-
+    <h3 class="sub">While you ride</h3>
     <figure>
       <div class="tripdemo">
       <div class="demo" aria-hidden="true">
@@ -1350,14 +1321,12 @@
         <div class="ride-sub">▲ Northbound · next stop <b>Monterey</b> · updated 6s ago</div>
       </div>
       </div>
-      <figcaption>While it is running, the tab goes dark. Green dot, one button
-        to stop, and the same strip everyone watching sees. Your bus is the one
-        with the green ring, so you can tell it apart when several are sharing.
-        If riders thank you, that shows here too — for this trip, and only to
-        you. With a stop saved, its card follows your own bus here, counting
-        the stops to where you get off.</figcaption>
+      <figcaption>While you share, the tab goes dark. Your bus has the <b>green ring</b>. A salamat from a rider shows here, only to you.</figcaption>
     </figure>
 
+    <h3 class="sub">Stop when you get off</h3>
+    <p>Tap <b>Stop sharing</b>. The bus leaves the map at once, and you get a
+      ticket for the trip.</p>
     <!-- The ticket, as showTicket() fills it in for one example trip: boarded
          at Mendez at 4:40 AM, off at One Ayala at 7:31, nobody else on the map
          at the start. Every string is one the function prints for that trip —
@@ -1394,73 +1363,45 @@
           <div class="tkt-acts"><span class="tkt-keep"><svg class="gi" aria-hidden="true"><use href="#i-tkt"/></svg>Keep this ticket</span><span class="tkt-close">Close</span></div>
         </div>
       </div>
-      <figcaption>What you get when you tap Stop: a ticket for the trip, made on
-        your phone from what it saw, with a picture of where you got on and off.
-        <b>It is not sent anywhere</b>, and it is gone when you close it unless
-        you tap Keep.</figcaption>
+      <figcaption>Made on your phone and <b>sent nowhere</b>. Gone when you close it, unless you tap Keep.</figcaption>
     </figure>
+    <details class="more">
+      <summary>More about sharing<svg class="gi" aria-hidden="true"><use href="#i-chev"/></svg></summary>
+      <ul>
+        <li><b>The tab goes dark</b> while you share: easier to read on a dashboard mount, and lighter on most phones’ batteries. It goes back to normal when you stop.</li>
+        <li><b>On Android there is an app</b> that keeps sharing with the screen locked, with a notification for as long as it does. Ask the organizer for it. Watching never needs it.</li>
+        <li><b>The ticket</b> shows where you got on and off, how long your bus was on the map, how many said salamat, and a stamp or two.</li>
+        <li><b>A kept ticket</b> goes into <b>My tickets</b>, on this phone only. It keeps the day, the places, the stamps and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and the count, so nobody can time a trip or rank a driver.</li>
+      </ul>
+    </details>
+    <a class="trybtn wide" href="index.html#tour=share"><b><svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>Try sharing</b><span>On the real screen, with nothing shared</span></a>
   </div>
 
   <!-- ================= PROMPTS ================= -->
-  <div class="card reveal">
+  <div class="card reveal share">
     <span class="badge gold">While you're sharing</span>
     <h2>Questions it may ask</h2>
-    <p>The app watches for the few ways a share goes wrong on its own, and asks
-      rather than guessing. You will not see these often.</p>
-
-    <div class="promptstack" aria-hidden="true">
-      <div class="promptcard">
-        <h3><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg>Still on the bus?</h3>
-        <p>This bus has not moved for about 20 minutes. That can just be traffic or
-          a wait at the terminal, so nothing has changed. If you have already
-          gotten off, tap Stop sharing so it leaves everyone's map.</p>
-        <div class="fakebtn primary">Yes, still on the bus</div>
-        <div class="fakebtn ghost">Stop sharing</div>
-      </div>
-
-      <div class="promptcard">
-        <h3><svg class="gi" aria-hidden="true"><use href="#i-compass"/></svg>Which way is this bus going?</h3>
-        <p>This bus has moved about 4.2 km toward Mendez / Tagaytay, but the
-          direction picked was northbound. Nothing is being shared until you
-          answer.</p>
-        <div class="fakebtn primary">Switch to ▼ southbound</div>
-        <div class="fakebtn ghost">The direction is right, keep sharing</div>
-      </div>
-
-      <div class="promptcard">
-        <h3><svg class="gi" aria-hidden="true"><use href="#i-flag"/></svg>Is this trip finished?</h3>
-        <p>This bus has been parked at One Ayala for a few minutes, which usually
-          means the trip is over. Sharing will stop by itself in 5 minutes unless
-          you say it is still going.</p>
-        <div class="fakebtn stop">Stop sharing</div>
-        <div class="fakebtn ghost">Still going, keep sharing</div>
-      </div>
-    </div>
-
-    <p class="hint">There is one more: if someone near you is already sharing in
-      the same direction, you get asked whether it is the same bus, so one bus
-      does not show up as two.</p>
+    <p>The app asks rather than guessing. You won’t see these often.</p>
+    <ul class="rows">
+      <li><span class="ic" aria-hidden="true"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg></span><div><b>Still on the bus?</b><span>After about 20 minutes without moving. Tap <b>Stop sharing</b> if you got off.</span></div></li>
+      <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-compass"/></svg></span><div><b>Which way is this bus going?</b><span>If the bus moves the other way. Nothing is shared until you answer.</span></div></li>
+      <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-flag"/></svg></span><div><b>Is this trip finished?</b><span>Parked at the end of the line. Sharing stops by itself after 5 minutes.</span></div></li>
+      <li><span class="ic" aria-hidden="true"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg></span><div><b>Is this the same bus?</b><span>If someone near you already shares the same direction, so one bus doesn’t show as two.</span></div></li>
+    </ul>
   </div>
 
   <!-- ================= PRIVACY ================= -->
-  <div class="card reveal">
+  <div class="card reveal" id="data">
     <span class="badge">Your data</span>
     <h2>What this never keeps</h2>
-    <p>No accounts, no names, no phone numbers. <b>No location history at all</b> —
-      there is one row per active share, overwritten in place, and it is deleted
-      the moment you stop. There is no trail to look back through, so nobody can
-      review a driver's speed, breaks, or route. The data to do that does not
-      exist.</p>
-    <p><b>The one thing that can be kept is yours.</b> Tap Keep on a ticket and a
-      copy stays in My tickets, on your phone and never sent anywhere: the day,
-      the places and the stamps, with no times, no bus number and no count.</p>
-    <p><b>Nothing about the people watching, either.</b> The map never needs your
-      location, and the two places that can use it — the <svg class="gi" aria-hidden="true"><use href="#i-locate"/></svg> button and “Use my
-      current location” in the stop picker — work entirely inside your phone.
-      A saved stop is kept on your own device and never sent anywhere, so no
-      part of this system can see where anybody is waiting.</p>
-    <p class="hint">The full explanation lives in
-      <b>“How your data is handled”</b> on the map page.</p>
+    <p>No accounts, no names, no phone numbers.</p>
+    <ul class="rows">
+      <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-lock"/></svg></span><div><b>No trail</b><span>Each bus is one spot, written over every few seconds and deleted when sharing stops. Nobody can look back at a driver’s speed, breaks or route.</span></div></li>
+      <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-pin"/></svg></span><div><b>Your stop stays here</b><span>Your saved stop and your location never leave your phone. Nothing can see where anybody is waiting.</span></div></li>
+      <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-tkt"/></svg></span><div><b>Tickets are yours</b><span>Kept on your phone, only if you tap Keep. No times, no bus number, no count.</span></div></li>
+    </ul>
+    <p class="hint" style="margin-top:12px">The full explanation is in
+      <b>“How your data is handled”</b>, at the foot of the map page.</p>
   </div>
 
   <div class="backfoot">
@@ -1498,7 +1439,7 @@ document.documentElement.className = 'js';
 // too many is a much smaller problem than hiding one that is really there.
 (function(){
   var hide = function(){
-    ['sightingsGuide','stripRing','stripRingNote'].forEach(function(id){
+    ['sightingsGuide','sightingsJump','stripRing','stripRingNote'].forEach(function(id){
       var el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });

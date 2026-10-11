@@ -1570,6 +1570,100 @@
   #themeBtn .ico.flip{animation:icoflip var(--dur-3) var(--ease);}
   @keyframes icoflip{from{opacity:0; transform:rotate(-120deg) scale(.55);} to{opacity:1; transform:none;}}
 
+  /* ---- The tour -------------------------------------------------------
+     A practice run on the real screen (the WALK block). Everything but the
+     one thing being explained is dimmed by the ring's own shadow, so there
+     is no mask to keep in step with it, and a clear layer under the ring
+     takes every tap: nothing on the page behind can be pressed by accident.
+     Where a step asks for a tap, a clear button is laid over the real
+     control and pulses, and that button moves the tour on. The control
+     itself never hears the tap, so a practice salamat or a practice Start
+     cannot reach the server even in principle. Named walk-*, never tour,
+     intro or tooltip: filter lists carry rules for onboarding libraries by
+     those names, and a blocked tour would leave a dimmed page with no way
+     out. */
+  #walk{position:fixed; inset:0; z-index:5000;}
+  #walk .walk-shade{position:absolute; inset:0;}
+  #walk.open .walk-shade{background:rgba(20,14,12,.6);}
+  .walk-ring{
+    position:fixed; border-radius:var(--r-m); pointer-events:none;
+    box-shadow:0 0 0 9999px rgba(20,14,12,.6), 0 0 0 3px var(--gold);
+  }
+  .walk-patch{
+    position:fixed; border:none; background:transparent; border-radius:var(--r-m); cursor:pointer;
+    animation:walkpulse 1.4s ease-in-out infinite; -webkit-tap-highlight-color:transparent;
+  }
+  @keyframes walkpulse{0%,100%{box-shadow:0 0 0 0 rgba(227,154,28,.85);} 70%{box-shadow:0 0 0 14px rgba(227,154,28,0);}}
+  .walk-bubble{
+    position:fixed; width:min(340px, calc(100vw - 24px)); padding:14px 16px 14px;
+    background:var(--surface); color:var(--ink); border:1px solid var(--line);
+    border-radius:var(--r-l); box-shadow:var(--sh-3);
+  }
+  .walk-bubble.in{animation:cardin var(--dur-3) var(--ease-pop);}
+  .walk-top{display:flex; align-items:center; gap:8px; margin:0 0 8px;}
+  .walk-tag{
+    font-size:var(--fs-cap); font-weight:800; letter-spacing:.08em; padding:3px 8px;
+    border-radius:999px; background:var(--gold-soft); color:var(--gold-deep);
+  }
+  .walk-dots{display:flex; gap:4px;}
+  .walk-dots i{width:6px; height:6px; border-radius:50%; background:var(--line);}
+  .walk-dots i.on{background:var(--brand-ink);}
+  .walk-x{
+    width:var(--tap); height:var(--tap); margin:-10px -10px -10px auto;
+    border:none; background:transparent; color:var(--muted); cursor:pointer; border-radius:999px;
+  }
+  .walk-x .gi{width:18px; height:18px;}
+  .walk-title{font-size:var(--fs-title); font-weight:800; line-height:1.2; margin:0 0 4px; text-transform:uppercase;}
+  .walk-words{font-family:var(--font-text); font-size:var(--fs-body); line-height:1.45; margin:0;}
+  .walk-words b{font-weight:600; color:var(--brand-ink);}
+  .walk-hint{
+    display:flex; align-items:center; gap:6px; margin-top:8px;
+    font-size:var(--fs-small); font-weight:800; color:var(--gold-deep);
+  }
+  .walk-acts{display:flex; gap:8px; margin-top:12px;}
+  .walk-acts button{
+    min-height:var(--tap); padding:0 14px; border-radius:var(--r-m); cursor:pointer;
+    font-family:inherit; font-size:var(--fs-body); font-weight:800;
+  }
+  .walk-back{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
+  .walk-alt{background:var(--paper); color:var(--brand-ink); border:1.5px solid var(--maroon-line); flex:1;}
+  .walk-next{margin-left:auto; min-width:96px; border:none; color:#fff; background:linear-gradient(180deg,var(--maroon),var(--maroon-deep));}
+
+  /* The one-time "New here?" note, at the foot of the screen so it covers
+     nothing the page was opened for, and the two quiet ways back in. */
+  .walknew{
+    position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:4500;
+    max-width:440px; margin:0 auto; display:flex; align-items:center; gap:10px; padding:10px 6px 10px 12px;
+    background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:var(--r-l);
+    box-shadow:var(--sh-3); animation:rise var(--dur-3) var(--ease);
+  }
+  .walknew .ico{
+    flex:0 0 auto; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:var(--maroon); color:#fff;
+  }
+  .walknew .ico .gi{width:22px; height:22px; vertical-align:0;}
+  .walknew .txt{flex:1; min-width:0; font-size:var(--fs-small); line-height:1.35;}
+  .walknew .txt b{display:block; font-size:var(--fs-body);}
+  .walknew .txt span{font-family:var(--font-text); color:var(--muted);}
+  .walknew .go{
+    flex:0 0 auto; min-height:var(--tap); padding:0 14px; border:none; border-radius:var(--r-m); cursor:pointer;
+    font-family:inherit; font-size:var(--fs-small); font-weight:800; color:#fff;
+    background:linear-gradient(180deg,var(--maroon),var(--maroon-deep));
+  }
+  .walknew .x{
+    flex:0 0 auto; width:var(--tap); height:var(--tap); border:none; background:transparent;
+    color:var(--muted); cursor:pointer; border-radius:999px;
+  }
+  .walknew .x .gi{width:18px; height:18px;}
+  .walklink{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:var(--tap);
+    margin:0 0 12px; padding:10px 14px; border:1.5px dashed var(--maroon-line); border-radius:var(--r-m);
+    background:transparent; color:var(--brand-ink); cursor:pointer;
+    font-family:inherit; font-size:var(--fs-small); font-weight:800;
+  }
+  .walklink .gi{width:18px; height:18px;}
+  #onbusView .walklink{margin:12px 0 0;}
+
   /* The guide has honoured this since it was written; the app never did, even
      though it slides a bus pill along a rail for a full second every time a
      position lands. Blanket rule rather than a list, because the pieces that
@@ -1623,6 +1717,7 @@
     <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s-6.5-6-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.3"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
     <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6l6 6-6 6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10.2 8.4v7.2l5.6-3.6z"/></symbol>
     <symbol id="i-compass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.6 8.4l-2.1 5.1-5.1 2.1 2.1-5.1z"/></symbol>
     <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4"/><path d="M6 4.5h11.5l-2.6 4 2.6 4H6"/></symbol>
     <symbol id="i-ty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M10 9.25C8.73 1.29 15.27 1.29 14 9.25C21.17 5.58 23.2 11.8 15.23 13.05C20.94 18.74 15.65 22.59 12 15.4C8.35 22.59 3.06 18.74 8.77 13.05C.8 11.8 2.83 5.58 10 9.25Z"/><circle cx="12" cy="11.7" r="1.5" fill="currentColor" stroke="none"/></symbol>
@@ -1684,7 +1779,7 @@
 
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
-      <p>Four small things are remembered on your own device, and nowhere else: whether you have opened this guide before (so the dot on the guide button stops nagging), your light or dark theme choice, the stop you saved, if you saved one, and the tickets you chose to keep, if you kept any. All four stay in your browser, are never sent anywhere, and are not linked to anything. Clearing your browser data removes them, “Remove my stop” in the stop picker deletes the third one on its own, and “Remove all” in My tickets the fourth.</p>
+      <p>Four small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, and the tickets you chose to keep, if you kept any. All four stay in your browser, are never sent anywhere, and are not linked to anything. Clearing your browser data removes them, “Remove my stop” in the stop picker deletes the third one on its own, and “Remove all” in My tickets the fourth.</p>
     </div>
     <div class="modal-foot">
       <button class="big btn-ghost" onclick="closeModal('privModal')">Close</button>
@@ -1963,6 +2058,10 @@
         <span class="more">How your data is handled</span>
       </button>
     </div>
+
+    <!-- The tour's door on this tab, always here. The first visit is also
+         offered it once, at the foot of the screen (see the WALK block). -->
+    <button type="button" class="walklink" onclick="startWalk('watch')"><svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>New here? Take the 1-minute tour</button>
   </div>
 
   <!-- SHARE -->
@@ -2006,6 +2105,7 @@
         if it locks.</span> Only the bus's position and direction are shared, never
         anything about you.
       </div>
+      <button type="button" class="walklink" onclick="startWalk('share')"><svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>First time? Try a practice run. Nothing is shared</button>
     </div>
 
     <!-- The same progress strip the tracker shows, on the tab of the person
@@ -2051,6 +2151,38 @@
   </div>
 
   <div class="adminFoot"><a href="admin.html">Operating this route? Admin panel →</a></div>
+</div>
+
+<!-- The tour. Drawn over the real page by the WALK block; hidden until a
+     tour starts. The clear shade takes every tap, the ring dims everything
+     but the thing being explained, and the patch is a clear button over the
+     real control on the steps that ask for a tap. -->
+<div id="walk" class="hidden">
+  <div class="walk-shade" onclick="walkNudge()"></div>
+  <div class="walk-ring hidden" id="walkRing"></div>
+  <button type="button" class="walk-patch hidden" id="walkPatch" onclick="walkGo(1)"><span class="vh" id="walkPatchWords"></span></button>
+  <div class="walk-bubble" id="walkBubble" role="dialog" aria-modal="true" aria-labelledby="walkWords">
+    <div class="walk-top">
+      <span class="walk-tag">PRACTICE</span>
+      <span class="walk-dots" id="walkDots" aria-hidden="true"></span>
+      <span class="vh" id="walkCount"></span>
+      <button type="button" class="walk-x" onclick="endWalk()" aria-label="End the tour"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="walk-title hidden" id="walkTitle"></div>
+    <p class="walk-words" id="walkWords" aria-live="polite"></p>
+    <div class="walk-hint hidden" id="walkHint"></div>
+    <div class="walk-acts">
+      <button type="button" class="walk-back" id="walkBack" onclick="walkGo(-1)">Back</button>
+      <button type="button" class="walk-alt hidden" id="walkAlt"></button>
+      <button type="button" class="walk-next" id="walkNext" onclick="walkGo(1)">Next</button>
+    </div>
+  </div>
+</div>
+<div class="walknew hidden" id="walkNew" role="dialog" aria-labelledby="walkNewTitle">
+  <span class="ico" aria-hidden="true"><svg class="gi coachgi"><use href="#i-coach"/></svg></span>
+  <span class="txt"><b id="walkNewTitle">New here?</b><span>Take the 1-minute tour.</span></span>
+  <button type="button" class="go" onclick="takeWalkNew()">Show me</button>
+  <button type="button" class="x" onclick="dropWalkNew()" aria-label="No thanks"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>
 </div>
 
 <script>
@@ -3369,6 +3501,7 @@ function thanksTrouble(err){
   }catch(e){}
 }
 async function sayThanks(id){
+  if (WALK) return;   // the practice bus has nobody on it to thank
   // Let the tap finish before anything is redrawn. This runs inside the
   // button's own click, and the redraw below replaces the popup's contents,
   // which takes the button out of the page while the click is still on its
@@ -3891,6 +4024,7 @@ function loadMyStop(){
   }catch(e){}   // a corrupt value is just no saved stop, never a broken page
 }
 function persistMyStop(){
+  if (WALK) return;   // the tour's practice stop is never the reader's own
   try{
     if (MYSTOP) localStorage.setItem('wt-mystop', JSON.stringify(MYSTOP));
     else localStorage.removeItem('wt-mystop');
@@ -3954,6 +4088,7 @@ function setAboard(id){
   try{ if (ABOARD) sessionStorage.setItem('wt-aboard', ABOARD); else sessionStorage.removeItem('wt-aboard'); }catch(e){}
 }
 function boardBus(id){
+  if (WALK) return;   // nobody rides the practice bus
   setAboard(id);
   if (map) map.closePopup();
   renderBuses();
@@ -3963,6 +4098,7 @@ function boardBus(id){
   else showToast('Your stop card now follows this bus.');
 }
 function leaveBus(){
+  if (WALK) return;
   setAboard(null);
   renderBuses();
 }
@@ -4043,7 +4179,7 @@ function rideCardHtml(info, riding){
   const key = id + '|' + state;
   const fresh = state && key !== RIDE_LAST;
   RIDE_LAST = key;
-  if (state && buzzOn() && !BUZZED[id]){
+  if (state && buzzOn() && !BUZZED[id] && !WALK){
     BUZZED[id] = 1;
     try{ if (navigator.vibrate) navigator.vibrate([180, 90, 180]); }catch(e){}
   }
@@ -4473,7 +4609,7 @@ function setHeadline(el, words){
 let CHIPS_SEEN = null;
 function renderBuses() {
   const list=document.getElementById('busList');
-  const all = clusterBuses(BUSES);
+  const all = clusterBuses(busesNow());
   const shown = sortForList(all.filter(function(b){ return dirFilter==='all' || b.direction===dirFilter; }));
   // Which chips are genuinely new since the last draw. Tracked against the
   // unfiltered list so flipping the direction filter does not make every
@@ -4490,7 +4626,7 @@ function renderBuses() {
   // to the route's own headway means a route running every 10 minutes clears
   // them six times faster than one running hourly, with nothing to configure.
   const ghostWindow = (SET.headway_min || 30) * 60000;
-  const ghosts = (sightingsOn() ? SIGHTINGS : []).filter(function(s){
+  const ghosts = (sightingsOn() && !WALK ? SIGHTINGS : []).filter(function(s){
     return Date.now() - s.ts <= ghostWindow;
   });
   const trackGhosts = ghosts.filter(function(s){
@@ -4578,7 +4714,7 @@ function reducedMotion(){
   return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 }
 function focusBus(id){
-  const b = clusterBuses(BUSES).find(function(x){return x.id===id;});
+  const b = clusterBuses(busesNow()).find(function(x){return x.id===id;});
   if (!b || !map) return;
   // Tapping the chip and then hunting for which badge it meant is two steps
   // for one question, so the badge answers it on arrival — on arrival, not
@@ -4696,6 +4832,7 @@ function busLinkFor(id){
 // named for what they do and never "share": filter lists hide anything that
 // looks like a share widget, and this one would fail without a word.
 async function sendBusLink(id){
+  if (WALK) return;   // a link to the practice bus would lead nowhere
   const url = busLinkFor(id);
   if (navigator.share){
     try{ await navigator.share({ title:'Follow my bus', text:'Nasa bus na ako. Sundan mo dito:', url:url }); return; }
@@ -4869,6 +5006,7 @@ async function pollSightings() {
     : 'Bus spotted but nobody sharing? Post it here';
 }
 async function addSighting() {
+  if (WALK) return;   // nothing is posted from a practice run
   const input=document.getElementById('sightingInput');
   const where=document.getElementById('sightWhere').value;
   if (!sightDir){ sightError('Pick a direction first.'); return; }
@@ -5286,6 +5424,7 @@ function dupProceed(){
 }
 
 function startSharing(){
+  if (WALK) return;   // the practice Start starts nothing
   if (!accessKey){
     openModal('gate');
     return;
@@ -5541,6 +5680,7 @@ function tktMode(mode){
   TKT_DROP_ARMED = false;
 }
 function keepTicket(){
+  if (WALK) return;   // a practice ticket is never kept
   const keep = document.getElementById('tktKeep');
   // Kept already: the same button now goes to the album.
   if (!TKT_KEEP){ closeTicket(); openAlbum(); return; }
@@ -5681,6 +5821,366 @@ function renderAlbum(){
     if (b) showKeptTicket(+b.getAttribute('data-i'));
   });
 })();
+
+// ---- THE TOUR (unit tested) ---------------------------------------------
+// Two short practice runs on the real screen, one per tab: how to read the
+// map, and how to put a bus on it. Both are opened from the guide, from a
+// quiet button at the foot of each tab, from a link ending #tour=watch or
+// #tour=share, and once, on a first visit, from a note at the foot of the
+// screen.
+//
+// Steps are data, so a test can read them. `at` is what the ring goes round
+// (a selector, or @bus for the practice bus on the map), and `tap` lays a
+// clear button over it and asks for a tap; `patch` puts that button over
+// something smaller than the ring. The rest is the scene the step needs:
+// which tab, the practice bus's popup open, the direction picked, the
+// practice ticket open. Each step sets its whole scene instead of doing and
+// undoing things, so Back is the same code as Next and leaves nothing behind.
+//
+// The words keep to the app's register: one thing per step, short, plain,
+// and never a promise the page does not keep. {north} and {south} are the
+// two ends of the route, from config.txt, so a fork's tour speaks of its own.
+const WALKS = {
+  watch: [
+    { id:'hello', tab:'track', title:'How the map works',
+      words:'This is a practice bus, so nothing you do here is sent. Real buses come back when you finish.' },
+    { id:'strip', tab:'track', at:'#trackStrip',
+      words:'The whole route as a line. Each badge is a bus: top line to {north}, bottom line to {south}.' },
+    { id:'bus', tab:'track', at:'@bus', tap:'Tap the bus', view:'bus', need:'map',
+      words:'Here is the same bus on the map.' },
+    { id:'popup', tab:'track', at:'.buspop .leaflet-popup-content-wrapper', popup:true, view:'bus', need:'map',
+      words:'<b>Say salamat</b> thanks whoever is sharing from this bus. <b>Send a link</b> lets someone follow it.' },
+    { id:'stop', tab:'track', at:'#myStop',
+      words:'Save your stop, and this card counts the stops to it. <b>Malapit na!</b> means it’s close. This one is practice.' },
+    { id:'filter', tab:'track', at:'#dirSeg',
+      words:'Going one way only? Pick it, and buses going the other way hide.' },
+    { id:'fresh', tab:'track', at:'#busList',
+      words:'Each bus says when it last moved. An old one fades out, because it has moved on since.' },
+    { id:'next', tab:'track', at:'#tabOnbus', alt:'share',
+      words:'On a bus yourself? This tab puts it on the map for everyone.' }
+  ],
+  share: [
+    { id:'hello', tab:'track', title:'Sharing from the bus',
+      words:'This is practice, so nothing gets shared. To share for real, you need the key from the group chat.' },
+    { id:'tab', tab:'track', at:'#tabOnbus', tap:'Tap I’m on the bus',
+      words:'On a bus, open this tab.' },
+    { id:'dir', tab:'share', at:'.dirpick', patch:'#pickNorth', tap:'Tap Northbound',
+      words:'Pick where the bus is going. Get it right, or people wait on the wrong side of the road.' },
+    { id:'number', tab:'share', dir:'north', at:'#busLabel',
+      words:'Type the bus number if you can see it. Then two phones on one bus show as one bus.' },
+    { id:'start', tab:'share', dir:'north', at:'#onbusStartBtn',
+      words:'Tap Start and allow your location. <b>Keep the screen on</b>, or sharing stops.' },
+    { id:'ticket', tab:'share', dir:'north', at:'#tktCard', ticket:true,
+      words:'When you get off, tap Stop. You get a ticket for the trip, made on your phone and sent nowhere.' },
+    { id:'bye', tab:'share', alt:'watch',
+      words:'That’s all. Salamat for helping everyone waiting at the stops!' }
+  ]
+};
+// What the last step's second button opens: the other tour.
+const WALK_ALT = { share:'Try sharing', watch:'Try the map' };
+
+// The steps a run actually has. A page without its map (Leaflet missing)
+// drops the steps that point into it rather than ringing nothing.
+function walkSteps(name, hasMap){
+  return (WALKS[name] || []).filter(function(s){ return s.need !== 'map' || hasMap; });
+}
+
+// The words, with the route's own names in. Escaped here because the
+// steps' own words carry <b> and are written in as HTML.
+function walkWords(text, names, esc){
+  return String(text).replace(/\{(north|south)\}/g, function(_, k){
+    return esc(names && names[k] ? names[k] : '');
+  });
+}
+
+// The practice scene: a northbound bus most of the way along the second leg
+// of the route (on this route, between Tagaytay and Amadeo, where the guide's
+// own picture puts one), and the stop nearest the end of that leg as the
+// stop the practice is waiting at, so the card under the map has something
+// true to say about it. Ahead of the bus only: a stop it has passed would
+// make the card say nothing is coming. kmOf places a point on the route.
+function walkPractice(cps, stops, kmOf){
+  if (!cps || cps.length < 2) return null;
+  const k = Math.min(2, cps.length - 1), a = cps[k-1], b = cps[k];
+  const bus = { lat: a.lat + (b.lat - a.lat) * 0.64, lng: a.lng + (b.lng - a.lng) * 0.64 };
+  const busKm = kmOf(bus), end = kmOf(b);
+  let stop = null, best = Infinity;
+  (stops || []).forEach(function(s){
+    if (!s || isNaN(s.lat) || isNaN(s.lng)) return;
+    const km = kmOf(s);
+    if (km === null || isNaN(km) || !(km > busKm)) return;
+    const d = Math.abs(km - end);
+    if (d < best){ best = d; stop = s; }
+  });
+  if (!stop) stop = b;
+  return { bus: bus, stop: { name: stop.name, lat: stop.lat, lng: stop.lng } };
+}
+
+// Where the words go for a ring at r: under it if they fit, over it if that
+// fits, and otherwise along the foot of the screen, over the ring's lower
+// part, so a step whose ring fills the screen still has its words on it.
+// No ring at all is a step about the whole page: the words sit in the middle.
+function walkPlace(r, vw, vh, bw, bh){
+  const gap = 12, edge = 12;
+  const mid = Math.max(edge, (vw - bw) / 2);
+  if (!r) return { side:'middle', left:mid, top:Math.max(edge, (vh - bh) / 2) };
+  const left = Math.max(edge, Math.min(vw - bw - edge, r.left + r.width / 2 - bw / 2));
+  if (r.bottom + gap + bh <= vh - edge) return { side:'below', left:left, top:r.bottom + gap };
+  if (r.top - gap - bh >= edge) return { side:'above', left:left, top:r.top - gap - bh };
+  return { side:'foot', left:left, top:vh - bh - edge };
+}
+
+// How far to scroll so the ring is on screen with room for the words: not
+// at all if it already is, otherwise its top to just under the top of the
+// screen, or, for a ring too tall for that, its middle to the middle.
+function walkScroll(r, vh, bh){
+  const top = 16, gap = 12 + 12;
+  if (r.top >= top && r.bottom + gap + bh <= vh) return 0;
+  if (r.top - gap - bh >= 0 && r.bottom <= vh - top) return 0;
+  if (r.height + gap + bh <= vh - top) return Math.round(r.top - top);
+  return Math.round(r.top + r.height / 2 - vh / 2);
+}
+// ---- END TOUR -----------------------------------------------------------
+
+// ---- The tour on the page -------------------------------------------------
+// The run in progress, or null. While it is set, the page draws the practice
+// bus instead of the real ones (busesNow), the practice stop instead of the
+// reader's own, and none of the sightings; the reader's own stop, direction
+// filter, chosen bus, followed link, tab and map view are put aside on the
+// way in and put back on the way out. Nothing about any of it is stored:
+// the practice stop never reaches localStorage (persistMyStop refuses while
+// a run is on), and every control that sends something refuses too, though
+// the shade means none of them can be tapped in the first place.
+let WALK = null;
+// No real bus can have this id: the server's are 32 hex characters.
+const WALK_ID = 'practice';
+function busesNow(){
+  if (!WALK) return BUSES;
+  // Always nine seconds old: a practice bus left to age would fade out of
+  // the very step that is pointing at it.
+  WALK.buses.forEach(function(b){ b.ts = Date.now() - 9000; });
+  return WALK.buses;
+}
+
+function startWalk(name){
+  if (!WALKS[name] || !mapReady) return;
+  if (sharing){ showToast('Stop sharing first, then the tour can show you around.'); return; }
+  hideWalkNew();
+  const saved = WALK ? WALK.saved : walkSave();
+  if (WALK && WALK.ticket) closeTicket();
+  const kmOf = function(p){ return routeProgressKm({ lat:p.lat, lng:p.lng }, CHECKPOINTS, ROUTE_CHAIN); };
+  const prac = walkPractice(CHECKPOINTS, STOPS, kmOf);
+  const first = CHECKPOINTS[0], last = CHECKPOINTS[CHECKPOINTS.length - 1];
+  WALK = {
+    name:name, steps:walkSteps(name, !!map), i:0, saved:saved, ticket:false, el:null, key:'',
+    names:{ north: last ? last.name : '', south: first ? first.name : '' },
+    buses: prac ? [{ pub_id:WALK_ID, lat:prac.bus.lat, lng:prac.bus.lng, speed:null, self:false,
+                     direction:'north', bus_label:'Practice', ts:Date.now() - 9000 }] : [],
+    stop: prac ? prac.stop : null
+  };
+  MYSTOP = WALK.stop; ABOARD = null; FOLLOW = null;
+  syncMyStopMarker();
+  setFilter('all');
+  document.getElementById('walk').classList.remove('hidden');
+  walkShow(0);
+  requestAnimationFrame(walkFrame);
+}
+function walkSave(){
+  const onShare = !document.getElementById('onbusView').classList.contains('hidden');
+  return {
+    tab: onShare ? 'share' : 'track', filter: dirFilter, stop: MYSTOP, aboard: ABOARD, follow: FOLLOW,
+    dir: shareDir, label: document.getElementById('busLabel').value,
+    view: map ? { c: map.getCenter(), z: map.getZoom() } : null,
+    y: window.scrollY || 0, focus: document.activeElement
+  };
+}
+function endWalk(){
+  if (!WALK) return;
+  const s = WALK.saved, hadTicket = WALK.ticket;
+  WALK = null;
+  if (hadTicket) closeTicket();
+  if (map) map.closePopup();
+  MYSTOP = s.stop; MYSTOP_KM = null; ABOARD = s.aboard; FOLLOW = s.follow;
+  pickDir(s.dir);
+  document.getElementById('busLabel').value = s.label;
+  syncMyStopMarker();
+  setFilter(s.filter);
+  switchTab(s.tab);
+  if (map && s.view) map.setView(s.view.c, s.view.z, { animate:false });
+  document.getElementById('walk').classList.add('hidden');
+  if (/^#tour\b/.test(location.hash)){
+    try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+  }
+  window.scrollTo(0, s.y);
+  if (s.focus && s.focus.focus && s.focus.getClientRects().length) s.focus.focus();
+}
+function walkGo(d){
+  if (!WALK) return;
+  const j = WALK.i + d;
+  if (j < 0) return;
+  if (j >= WALK.steps.length){ endWalk(); return; }
+  walkShow(j);
+}
+function walkShow(i){
+  const st = WALK.steps[i];
+  WALK.i = i; WALK.el = null; WALK.key = '';
+  walkScene(st);
+  const n = WALK.steps.length, last = i === n - 1;
+  const title = document.getElementById('walkTitle');
+  title.textContent = st.title || '';
+  title.classList.toggle('hidden', !st.title);
+  document.getElementById('walkWords').innerHTML = walkWords(st.words, WALK.names, escapeHtml);
+  const hint = document.getElementById('walkHint');
+  hint.innerHTML = st.tap ? '<svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>' + escapeHtml(st.tap) : '';
+  hint.classList.toggle('hidden', !st.tap);
+  document.getElementById('walkPatchWords').textContent = st.tap || '';
+  document.getElementById('walkDots').innerHTML = WALK.steps.map(function(_, k){ return '<i' + (k === i ? ' class="on"' : '') + '></i>'; }).join('');
+  document.getElementById('walkCount').textContent = 'Step ' + (i + 1) + ' of ' + n;
+  document.getElementById('walkBack').classList.toggle('hidden', i === 0);
+  const next = document.getElementById('walkNext');
+  next.textContent = last ? 'Done' : i === 0 ? 'Start' : 'Next';
+  const alt = document.getElementById('walkAlt');
+  alt.classList.toggle('hidden', !(last && st.alt));
+  alt.textContent = st.alt ? WALK_ALT[st.alt] : '';
+  alt.onclick = st.alt ? function(){ startWalk(st.alt); } : null;
+  document.getElementById('walk').classList.toggle('open', !st.at);
+  const bubble = document.getElementById('walkBubble');
+  bubble.classList.remove('in'); void bubble.offsetWidth; bubble.classList.add('in');
+  // Once the scene has settled (a tab drawn, a popup opened and panned into
+  // view), bring the ring's subject on screen. Fixed things, like the
+  // ticket, are on screen already.
+  setTimeout(function(){
+    if (!WALK || WALK.i !== i || !st.at || st.ticket) return;
+    const el = walkTarget(st.at);
+    if (!el) return;
+    const dy = walkScroll(el.getBoundingClientRect(), window.innerHeight, bubble.offsetHeight);
+    if (dy) window.scrollBy({ top:dy, behavior: reducedMotion() ? 'auto' : 'smooth' });
+  }, st.popup ? 380 : 60);
+  next.focus();
+}
+// What a step needs the page to look like. Set whole every time, whichever
+// way the tour came from.
+function walkScene(st){
+  const onShare = !document.getElementById('onbusView').classList.contains('hidden');
+  if ((st.tab === 'share') !== onShare) switchTab(st.tab);
+  pickDir(st.dir || null);
+  renderBuses();
+  const m = map && busMarkers[WALK_ID];
+  if (map){
+    if (st.view === 'bus' && m) map.setView(m.getLatLng(), Math.max(map.getZoom(), 13), { animate:false });
+    if (st.popup && m){ if (!m.isPopupOpen()) m.openPopup(); }
+    else map.closePopup();
+  }
+  if (st.ticket && !WALK.ticket) walkTicket();
+  else if (!st.ticket && WALK.ticket){ WALK.ticket = false; closeTicket(); }
+}
+// The ticket a whole-route trip would get, drawn by the same showTicket()
+// a real Stop calls, and named a practice one on its face. Keep refuses
+// while the tour is on, so it cannot reach My tickets.
+function walkTicket(){
+  const last = CHECKPOINTS[CHECKPOINTS.length - 1];
+  if (!last) return;
+  showTicket({ start: Date.now() - 171 * 60000, startKm: 0, others: 0, writes: 5, maxThanks: 3, polled: true },
+             { latitude: last.lat, longitude: last.lng });
+  const kick = document.getElementById('tktKick');
+  if (kick) kick.textContent = 'PRACTICE TICKET';
+  WALK.ticket = true;
+}
+function walkTarget(at){
+  if (at === '@bus'){
+    const m = map && busMarkers[WALK_ID];
+    return m && m.getElement ? m.getElement() : null;
+  }
+  return document.querySelector(at);
+}
+// Every frame while a run is on, because what the ring goes round moves:
+// the page scrolls, the map pans a popup into view, a poll redraws a card.
+// The styles are written only when the box actually changed.
+function walkFrame(){
+  if (!WALK) return;
+  const st = WALK.steps[WALK.i];
+  const ring = document.getElementById('walkRing'), patch = document.getElementById('walkPatch');
+  const bubble = document.getElementById('walkBubble');
+  let el = st.at ? walkTarget(st.at) : null;
+  let r = el ? el.getBoundingClientRect() : null;
+  if (r && !r.width && !r.height) r = null;
+  const pad = r && r.height < 60 ? 6 : 4;
+  const box = r ? { left:r.left - pad, top:r.top - pad, width:r.width + pad * 2, height:r.height + pad * 2 } : null;
+  if (box){ box.right = box.left + box.width; box.bottom = box.top + box.height; }
+  let pr = null;
+  if (box && st.tap){
+    const pe = st.patch ? document.querySelector(st.patch) : el;
+    const q = pe ? pe.getBoundingClientRect() : null;
+    pr = q && (q.width || q.height) ? q : null;
+  }
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const bw = bubble.offsetWidth, bh = bubble.offsetHeight;
+  const pos = walkPlace(box, vw, vh, bw, bh);
+  const key = [box ? [box.left, box.top, box.width, box.height].map(Math.round).join(',') : '-',
+               pr ? [pr.left, pr.top, pr.width, pr.height].map(Math.round).join(',') : '-',
+               Math.round(pos.left), Math.round(pos.top), vw, vh].join('|');
+  if (key !== WALK.key){
+    WALK.key = key;
+    ring.classList.toggle('hidden', !box);
+    if (box) ring.setAttribute('style', 'left:' + box.left + 'px;top:' + box.top + 'px;width:' + box.width + 'px;height:' + box.height + 'px');
+    patch.classList.toggle('hidden', !pr);
+    if (pr) patch.setAttribute('style', 'left:' + (pr.left - 4) + 'px;top:' + (pr.top - 4) + 'px;width:' + (pr.width + 8) + 'px;height:' + (pr.height + 8) + 'px');
+    bubble.style.left = pos.left + 'px';
+    bubble.style.top = pos.top + 'px';
+  }
+  requestAnimationFrame(walkFrame);
+}
+// A tap on the dimmed page, outside the step: the words wave, so it is
+// plain the tour is still on and where to go on from.
+function walkNudge(){
+  const b = document.getElementById('walkBubble');
+  b.classList.remove('in'); void b.offsetWidth; b.classList.add('in');
+}
+// Keys while a run is on: Escape ends it, and Tab stays inside it. Taken
+// before the page's own handler, which would otherwise trap focus in the
+// practice ticket or close it.
+document.addEventListener('keydown', function(e){
+  if (!WALK) return;
+  if (e.key === 'Escape'){ e.preventDefault(); e.stopImmediatePropagation(); endWalk(); return; }
+  if (e.key !== 'Tab') return;
+  e.stopImmediatePropagation();
+  const f = focusables(document.getElementById('walk'));
+  if (!f.length) return;
+  const first = f[0], lastF = f[f.length - 1];
+  if (!document.getElementById('walk').contains(document.activeElement)){ e.preventDefault(); first.focus(); }
+  else if (e.shiftKey && document.activeElement === first){ e.preventDefault(); lastF.focus(); }
+  else if (!e.shiftKey && document.activeElement === lastF){ e.preventDefault(); first.focus(); }
+}, true);
+
+// The first visit is offered the tour once, at the foot of the screen, where
+// it covers nothing the page was opened for. Answering it either way is
+// remembered under the same key as the guide's dot, which is the first of
+// the four things the privacy panel names, so this adds nothing to that
+// list: both are "has this phone been shown around yet".
+function walkSeen(){
+  try{ localStorage.setItem('wt-guide-seen','1'); }catch(e){}
+  const link = document.getElementById('guideLink');
+  if (link) link.classList.add('seen');
+}
+function showWalkNew(){
+  let seen = null;
+  try{ seen = localStorage.getItem('wt-guide-seen'); }catch(e){ seen = '1'; }
+  if (seen || WALK || sharing) return;
+  document.getElementById('walkNew').classList.remove('hidden');
+}
+function hideWalkNew(){
+  document.getElementById('walkNew').classList.add('hidden');
+  walkSeen();
+}
+function takeWalkNew(){ startWalk('watch'); }
+function dropWalkNew(){ hideWalkNew(); }
+// #tour opens the map's tour, #tour=share the sharing one: the guide links
+// to both. Anything else gets the first-visit note, if it is due.
+function walkFromLink(){
+  const m = location.hash.match(/^#tour(?:=(watch|share))?$/);
+  if (m){ setTimeout(function(){ startWalk(m[1] || 'watch'); }, 300); return; }
+  setTimeout(showWalkNew, 1500);
+}
 
 // ---- Trip mode -------------------------------------------------------
 // The sharing tab goes dark while a trip is live and that tab is on screen
@@ -5916,6 +6416,7 @@ function start(){
   if (!mapReady){
     initMap(); buildTicks(); buildSightingPlaces(); renderHours();
     renderSourceLink(); renderContactLine(); showAppHints(); mapReady=true;
+    walkFromLink();
   }
   if (running) return;
   running=true;

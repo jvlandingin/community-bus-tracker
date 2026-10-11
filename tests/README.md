@@ -22,6 +22,7 @@ node test-thanks.js     # saying salamat: the words, who is offered it, what it 
 node test-signboard.js  # the dot-matrix route board: its letters, the boards drawn into other pages, the mark
 node test-pictures.js   # the coach and the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture
 node test-tokens.js     # the design system: every size, corner, shadow and speed a token; the copied fonts and icons
+node test-tour.js       # the tour: its steps and words, the practice scene, where the bubble goes, what a run may never do
 node test-boot.js       # loads both pages in a real DOM (needs jsdom)
 ```
 

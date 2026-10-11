@@ -79,8 +79,14 @@ company's name or initials, for the same reason.
   alike.
 - **Admin page:** operating hours, a pinned notice, live sharers, sighting
   moderation, and key rotation. Needs a separate admin key.
+- **A tour:** two one-minute practice runs on the real page, one for watching
+  and one for sharing, with a practice bus standing in for the real ones and
+  nothing sent or kept. Opened from the guide, from a button at the foot of
+  each tab, from a link ending `#tour` or `#tour=share`, and once from a
+  "New here?" note on a first visit.
 - **How-to page:** `how-to.html`, reached from the ⓘ in the header. Explains
-  watching and sharing. Its figures are drawn in HTML and CSS from the same
+  watching and sharing, a line and a picture per idea with the fine print
+  folded away, and opens the tour. Its figures are drawn in HTML and CSS from the same
   design tokens as the app, so it loads nothing over the network. The one
   exception is the map inside the first figure, a real cropped screenshot of
   this route embedded inline — a fork recrops that, and nothing else.

@@ -48,7 +48,7 @@ community-bus-tracker/
 ```
 
 Deploys come from git: Netlify builds the repository on a push to `main`, and
-`netlify.toml` runs the nine dependency-free JavaScript suites as the build
+`netlify.toml` runs the ten dependency-free JavaScript suites as the build
 command, so a failing one cancels the deploy. Nothing is compiled and nothing is
 installed. There is deliberately no `package.json` at the root, because it
 would make Netlify run `npm install` and publish `node_modules` alongside the
@@ -869,6 +869,67 @@ keystone's last line. The flyer's "Walang itinatagong history ng biyahe" was
 left as it is: it is about what the system stores, and its claim that no
 driver's route, speed or stops are recorded still holds.
 
+## The guide and the tour
+
+October 2026. The maintainer asked for the guide to be very clear, with no long
+blocks of text, more pictures where they help, and for an onboarding tutorial
+people can easily open: an interactive way to explore what the app does, with
+the Arok app's tour as the model.
+
+**The guide was ten thousand pixels of paragraphs on a phone.** About twelve
+screens, with four-paragraph steps for the saved stop and the ticket, and the
+same sharing screen drawn twice (once as a 24-second animated cycle, once
+still). Every claim it made is still on the page; what changed is where. Each
+idea is now one line and one picture, and anything a first reader does not
+need (the buzz switch, why there are no minutes, what a kept ticket leaves out)
+sits in a "More" fold under it, as a second question. New drawings were added
+where a line would otherwise have had to describe a screen: a bus's popup as
+`busPopupHtml()` prints it, a key to the strip's marks, the saved-stop card's
+three flags. The two animated stacks went: a cycle makes a reader wait for the
+step they wanted, and the prompts read better as a list of four.
+
+**The tour runs on the real page, not on a copy of it.** A demo page would be a
+fourth hand-maintained recreation of the tracker, and the guide already shows
+what those cost. Steps are data (`WALKS`): a selector for what the ring goes
+round, an optional tap, and the scene the step needs (which tab, the popup
+open, the direction picked, the ticket open). A step sets its whole scene
+rather than doing and undoing things, so Back is the same code as Next and a
+run left halfway leaves nothing behind. `test-tour.js` fails if a selector stops
+matching the page.
+
+**It shows a practice bus, because the real map is usually empty.** A tour that
+rings an empty strip and says "each badge is a bus" teaches nothing. So for the
+length of a run `busesNow()` hands the strip, map, chips and card one practice
+bus instead of the real ones, most of the way along the second leg, and the card
+waits at the stop just past it, so the app's own code has something true to say
+("Malapit na!"). Real buses and sightings are kept off the screen while it is up,
+so the two can never be confused: a mock that could be mistaken for live data is
+the one thing this project does not forgive. The practice bus is labelled
+Practice wherever a bus number would show, every bubble carries a PRACTICE tag,
+and the ticket says PRACTICE TICKET on its face.
+
+**Nothing in a run can be sent or kept.** As in Arok's tour, a clear layer takes
+every tap, and a step that asks for one lays a clear button over the real
+control: the control itself never hears it. On top of that, every function that
+sends or stores refuses while `WALK` is set (salamat, the bus link, "I'm on this
+bus", the saved stop, Keep, Start, a sighting, the buzz), so even a bug in the
+shade could not send a practice salamat to a stranger or replace the reader's
+stop with the practice one. The only key a run touches is `wt-guide-seen`.
+
+**A first visit is offered it; it does not start by itself.** Arok starts its
+tour on first run. Here the page has one job, which is the bus, and a tour over
+the map on arrival would stand between a rider at a roadside and the answer.
+So a first visit gets a small "New here?" note at the foot of the screen, where
+it covers nothing the page was opened for, and answering it either way is kept
+under the guide dot's key: both mean "this phone has been shown around", and the
+privacy panel's four things stay four. After that the tour is a quiet button at
+the foot of each tab and two buttons at the top of the guide.
+
+**Named `walk*`.** The content-blocker lesson again (see "Content blockers"):
+filter lists carry cosmetic rules for onboarding libraries (intro.js, Shepherd,
+Joyride and the generic tour and tooltip names), and a blocked bubble over a
+dimmed page is a page with no way out. `test-tour.js` scans for those names.
+
 ## The name, the icons and the link preview
 
 October 2026. The tracker had been called by the bus company's initials,
@@ -1181,7 +1242,7 @@ Nothing here is claimed without being checked. The suites live outside the
 deploy folder:
 
 - `test-guard.js`, `test-strip.js`, `test-prompts.js`, `test-hours.js`,
-  `test-mystop.js`, `test-thanks.js`, `test-signboard.js` and `test-pictures.js` extract the shipped code out of
+  `test-mystop.js`, `test-thanks.js`, `test-signboard.js`, `test-pictures.js` and `test-tour.js` extract the shipped code out of
   index.html by comment markers and run it, so a passing
   test cannot drift from the app. Since October 2026 they also hold the hours
   card and the parol season (`test-hours`), the stop-by-stop card and its two

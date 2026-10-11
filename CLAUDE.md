@@ -14,7 +14,7 @@ made in response to bugs that had already shipped.
 
 ## Commands
 
-The nine dependency-free JavaScript suites, run from the repository root:
+The ten dependency-free JavaScript suites, run from the repository root:
 
 ```
 node tests/test-hours.js      # split operating hours, the en-route allowance, the hours card, the parol season
@@ -26,11 +26,12 @@ node tests/test-thanks.js     # saying salamat: the words, who is offered it, wh
 node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the mark
 node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture
 node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
+node tests/test-tour.js       # the tour: steps and words, the practice scene, the bubble's place, what a run may never do
 ```
 
 These are also Netlify's build command, so a failure cancels the deploy.
 
-The seventh suite loads both pages in a real DOM and needs jsdom, which is
+The eleventh suite loads both pages in a real DOM and needs jsdom, which is
 installed nowhere in the repository (see "No package.json" below):
 
 ```
@@ -187,13 +188,33 @@ line about the town the bus is passing, from an optional fifth field on each
 `CHECKPOINT` in `config.txt`.
 
 **The app keeps exactly four things between visits**, all on the device and
-all named in the privacy panel: whether the guide has been opened, the
-light/dark/system theme choice, the reader's saved stop, and the tickets a
+all named in the privacy panel: whether this phone has been shown around (the
+guide or the tour), the light/dark/system theme choice, the reader's saved stop, and the tickets a
 sharer chose to keep. Adding a fifth means editing that panel in the same
 commit — the panel is the promise, not the code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
 `localStorage` keys the app writes stops matching the set the panel names.
 Per-visit switches go in `sessionStorage` for exactly this reason — the
 location dot, and the saved-stop card's "buzz once" switch.
+
+**There is a tour, one per tab** (October 2026): a minute each, on the real
+page, opened from the guide, from a quiet button at the foot of each tab, from
+`#tour` or `#tour=share`, and once from a "New here?" note on a first visit.
+The WALK block in `index.html` dims everything but one control, says one short
+thing about it, and draws a practice bus and a practice stop in place of the
+real ones through `busesNow()`; the reader's own stop, filter, tab, chosen bus
+and map view come back on the way out. A clear layer takes every tap, and every
+function that sends or stores refuses while `WALK` is set anyway, so a practice
+salamat or Start can never fire. The first-visit note is answered under the
+guide's own `wt-guide-seen` key, so the four remembered things stay four. DOM
+names are `walk*`, never `tour`, `tooltip` or `onboard`: filter lists hide
+onboarding libraries by those names, and a hidden bubble over a dimmed page has
+no way out. `test-tour.js` holds the steps, the words and the refusals;
+`test-boot.js` section 13 runs both tours on the booted page.
+
+**The guide says it in a line and shows it in a picture** (October 2026).
+`how-to.html` was paragraphs; it is now a line, a drawing and a "More" fold per
+idea, with the two tour buttons and a list of links at the top. A new feature
+gets the same: one line, one picture, its caveats folded.
 
 **The tracking tab reads picture first, words second.** Top to bottom: the
 progress strip, the map, the saved stop, then the headline, the direction
@@ -323,9 +344,9 @@ reported. `star` is deliberately absent — it is inside `start`.
 An earlier version ran a DELETE on every read and was documented as fixed long
 before it actually was.
 
-**Tests extract the shipped code.** Six of the JavaScript suites pull functions
+**Tests extract the shipped code.** Nine of the JavaScript suites pull functions
 out of `index.html` by comment markers and run them, so a passing test cannot
-drift from the app; the seventh, `test-tokens.js`, reads the shipped styles. Keep the markers intact when editing those regions.
+drift from the app; the tenth, `test-tokens.js`, reads the shipped styles. Keep the markers intact when editing those regions.
 
 ## Route-specific content
 
@@ -354,8 +375,12 @@ section 8 defends the two halves of this that a machine can check — that the
 page still loads nothing, and that its copied `:root` tokens still match
 `index.html`'s.
 
-The guide also redraws the sharing tab in trip mode and the salamat ticket, so
-changing either means changing `how-to.html` in the same commit.
+The guide also redraws the sharing tab in trip mode, the salamat ticket and a
+bus's popup (`busPopupHtml()`), so changing any of them means changing
+`how-to.html` in the same commit. The tour points at the real page instead of
+a copy, so it cannot go stale that way, but a step whose element is renamed or
+removed rings nothing: `test-tour.js` fails if a step's selector stops matching
+the page.
 
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`
 each redraw the tracker's screen the same way, showing four buses live because

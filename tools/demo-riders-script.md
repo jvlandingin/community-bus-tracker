@@ -152,3 +152,30 @@ The "I-scan ang QR o i-type ang link…" line is dropped.
 - The four safety points left with the "Libre, walang ads" card. The
   disclaimer is now the only reassurance in the video. That is allowed, but
   worth knowing.
+
+---
+
+## Narration (draft 1)
+
+For a voice recorded over the rendered video. The times are the current
+cut's. They come from its own sound track: each tap, wipe and board-slam is a
+cue on the frame where it happens. Conversational Taglish runs about 2.3
+words a second, so each line is sized to leave room around the beats it
+lands on. ▶ marks a line to say exactly on a beat.
+
+| Time | On screen | Narration |
+|------|-----------|-----------|
+| 0:00–0:03.4 | Cover: "Nasaan na ang bus?" | Nasaan na ang bus? *(beat)* Alamin bago ka pa lumabas ng bahay. |
+| 0:03.4–0:13 | Wipe; the phone flies in; Pa-Ayala and Pa-Mendez arrows (0:06.6); Live · 98018 (0:10) | Buksan lang ang link — walang app, walang account. Bawat bilog, isang bus, live — galing mismo sa mga nasa bus. |
+| 0:13–0:22.5 | Saving S&R Kawit, then "Gaano kalayo pa?" (0:15.8) and the counter starting (0:17.8) | I-save ang stop mo, at makikita mo kung ilang stop pa ang layo ng bus, at ilang kilometro. |
+| 0:22.5 | MALAPIT NA! slams in | ▶ Malapit na… |
+| 0:24.9 | SAKAY NA! slams in | ▶ Sakay na! |
+| 0:27.5–0:31.4 | Tap the bus (0:28.8), Say salamat (0:29.8), chime (0:30.1) | Isang tap: salamat sa nag-share. |
+| 0:31.4–0:39.3 | Night: "Share kung nasaan ang bus" (0:32.1); "Ito ang bus mo" (0:37.3) | Ikaw naman ang nasa bus? Isang tap lang, at kita na ng lahat ng naghihintay kung nasaan ang bus. |
+| 0:39.3–0:44 | "Makalipas ang 2 oras"; Stop (0:40.6); the ticket | Pagbaba mo, i-tap ang Stop — may ticket ka pa. |
+| 0:44–0:50.6 | Close: link, QR, "I-post sa group chat!" | I-scan o i-type ang link, at i-post sa group chat ninyo. Libre, at hindi ito opisyal na app ng kompanya. |
+
+Every line stays inside what the flyer already says. The narration never
+mentions minutes or arrival times; it says "ilang stop" and "ilang
+kilometro" because that is what the card counts. The disclaimer is in the
+last line as well as on screen.

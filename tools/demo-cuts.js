@@ -263,6 +263,15 @@ module.exports = {
       await d.pose('rider', HERO, 0);
       await d.call('scrollTo', 'rider', 0);
       await d.bg('night');
+      // Who else is on the road for the trip, set while the wipe covers the
+      // frame so nobody jumps: about 20 km apart, so the strip never
+      // crowds. They hold still until the trip drives them.
+      const others = [
+        ['d3m0b98022000000000000000000a005', { dir: 'north', label: '98022', km0: 40, km1: 59.8, phase: 2 }],
+        ['d3m0b98104000000000000000000a002', { dir: 'north', label: '98104', km0: 20, km1: 59.8, phase: 4.5 }],
+        ['d3m0b00000000000000000000000a003', { dir: 'south', label: null, km0: 22, km1: 0.3, count: 2, phase: 3 }],
+        ['d3m0b98077000000000000000000a004', { dir: 'south', label: '98077', km0: 52, km1: 0.3, phase: 1 }]];
+      for (const [id, o] of others) d.bus(id, Object.assign({ road: ROADS.whole }, o, { km1: o.km0 }));
       d.gps('rider', { road: ROADS.whole, km0: 0.3, km1: 1.6, secs: 300 });
       await d.title('t', T({ theme: 'night', lines: ['Share kung', '<em>nasaan ang bus</em>'], size: 54 }));
       await d.wipeOut();
@@ -294,19 +303,14 @@ module.exports = {
       // off the line when it reaches its end, while the camera stays on the
       // green ring.
       const pace = (59.8 - 0.35) / (TRIP * END);   // km per second of the pages' clock
-      const others = [
-        ['d3m0b98022000000000000000000a005', { dir: 'north', label: '98022', km0: 34, km1: 59.8, phase: 2 }],
-        ['d3m0b98104000000000000000000a002', { dir: 'north', label: '98104', km0: 16, km1: 59.8, phase: 4.5 }],
-        ['d3m0b00000000000000000000000a003', { dir: 'south', label: null, km0: 24, km1: 0.3, count: 2, phase: 3 }],
-        ['d3m0b98077000000000000000000a004', { dir: 'south', label: '98077', km0: 50, km1: 0.3, phase: 1 }]];
       for (const [id, o] of others) d.bus(id, Object.assign({ road: ROADS.whole, secs: Math.abs(o.km1 - o.km0) / pace }, o));
       d.rate = END;
       // three riders the video does not show say salamat on the way
       let thanked = false, joined = false;
       await d.wait(TRIP + .3, async () => {
         if (!thanked && d.gpsNow().rider.lat > 14.4) { thanked = true; await d.thanks('rider', 3); }
-        // a new bus starts sharing at Mendez once the green ring is past Amadeo
-        if (!joined && d.gpsNow().rider.lat > 14.2) {
+        // a new bus starts sharing at Mendez once the green ring is 20 km on
+        if (!joined && d.gpsNow().rider.lat > 14.27) {
           joined = true;
           d.bus('d3m0b98031000000000000000000a006', { dir: 'north', label: '98031', road: ROADS.whole, km0: 0.35, km1: 59.8, secs: (59.8 - 0.35) / pace, phase: 5 });
         }

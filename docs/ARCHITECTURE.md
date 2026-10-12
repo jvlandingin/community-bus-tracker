@@ -1067,16 +1067,26 @@ for a post.
 GPS move only when the renderer advances them, one video frame at a time, and
 every CSS animation, the stage's and the tracker's alike, is frozen when it
 first appears and placed by hand on each frame after. That is what keeps the
-videos smooth on a slow machine and the same on every run, what lets a bus
-cover three kilometres in eight seconds while its badge still takes its own
-second to glide, and what lets a trip jump two and a half hours to the ticket.
-A jump fires each timer that came due once, as a phone does when it wakes,
-which is why the script moves the GPS before jumping: the idle guard would
-otherwise wake to a bus that had not moved in two hours and ask whether
-anybody was still on it. Frozen means `playbackRate` 0, never `pause()`:
-Chromium does not cancel a CSS animation that script has paused when the class
-that started it is taken away, so a paused wipe stayed over the whole frame
-after its class came off.
+videos smooth on a slow machine and the same on every run, and what lets a
+stretch run the pages' clock a hundred times fast while the stage keeps its
+own speed. Two things follow from speeding the pages up, and both showed as
+glitches before they were handled. The tracker's badges glide a second to
+each new position, and a second sped up is kilometres, so a badge trails its
+bus and snaps forward the moment anything takes the glide off; for a
+sped-up stretch the script shortens the glides (`quickGlide()` in
+`tools/demo-cuts.js`). And Leaflet's flyTo scales the map's drawn marks with
+the zoom until it lands, which swelled the checkpoints into rings beside bus
+badges that stayed small; the script zooms the map itself instead, a frame
+at a time about the one point that stays put (`zoomMap()`). The operators'
+cut still jumps two and a half hours to the ticket. A jump fires each timer
+that came due once, as a phone does when it wakes, which is why the script
+moves the GPS before jumping: the idle guard would otherwise wake to a bus
+that had not moved in two hours and ask whether anybody was still on it.
+The riders' cut drives the whole trip instead, sped up, so no bus is seen
+to vanish at one end and reappear at the other. Frozen means `playbackRate`
+0, never `pause()`: Chromium does not cancel a CSS animation that script has
+paused when the class that started it is taken away, so a paused wipe stayed
+over the whole frame after its class came off.
 
 **Interface sounds, no music.** Taps, keys, the wipe, the counter flipping,
 the board slamming in, the salamat and the ticket each have a short sound,

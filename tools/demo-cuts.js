@@ -41,6 +41,10 @@ const OFF_LEFT = { cx: -330, cy: 620, s: .57, rx: 0, ry: 24, rz: 0, o: 1 };
 // The phone on the dashboard, alone and turned towards the viewer.
 const DASH = { cx: 280, cy: 650, s: .8, rx: 7, ry: 13, rz: -1.5, o: 1 };
 const BELOW = { cx: 300, cy: 1460, s: .82, rx: 30, ry: -22, rz: 9, o: 1 };
+// The whole phone, low in the frame, words above it: the map and the
+// saved-stop card both in view.
+const APPROACH = { cx: 270, cy: 592, s: .9, rx: 0, ry: 0, rz: 0, o: 1 };
+const PIN = '<svg class="gi" aria-hidden="true"><use href="#i-pin"/></svg> ';
 
 // The operators' cut labels every frame of the tracker; the riders' does not
 // (docs/ARCHITECTURE.md, "The demo videos", says why).
@@ -206,6 +210,10 @@ module.exports = {
       await d.wait(.95);
       await d.scroll('rider', { target: '#myStop', offset: 420 }, .7);
       await d.tap('rider', '#myStop .mystop-btn', { after: .6 });
+      // While the stop list covers the screen, the map is set in close on
+      // the last three kilometres: the bus at the bottom of it, the stop
+      // at the top. (Zooming in on camera would blow the stop dots up.)
+      await d.app('rider', 'map.setView([14.419, 120.902], 14, { animate: false }); 1');
       await d.tap('rider', '#stopSearch', { after: .2 });
       await d.type('S&R');
       await d.wait(.3);
@@ -214,26 +222,41 @@ module.exports = {
       await d.wait(.1);
       await d.expect('rider', '/about\\s*5\\s*stops before yours/.test(document.querySelector("#myStop .ride-big").textContent)',
         'the saved-stop card saying "about 5 stops before yours"');
-      await d.scrim(true);
-      await d.focus('rider', '#myStop .ride', { s: 1.3, fx: 270, fy: 690, sec: 1.0 });
+      // The whole phone now, the map over the card, and the bus is watched
+      // driving up the map to the saved stop.
+      d.cue('drift');
+      await d.pose('rider', APPROACH, .9);
       await d.title('t', T({ theme: 'dark', lines: ['Gaano <em>kalayo pa?</em>'], size: 50 }));
-      await d.wait(.3);
-      await d.flap('f', { value: '5', unit: 'stops pa', sub: '3.0 km', x: 40, y: 132, theme: 'dark' });
+      await d.wait(1.0);
+      const bus = await marker(d, 'rider', '98018');
+      await d.ring('stop', { phone: 'rider', target: '.mypin', color: 'mine', pad: 9, round: true, pulse: true });
+      await d.callout('stopc', { phone: 'rider', target: '.mypin', ay: .3, text: PIN + 'Stop mo', color: 'mine', dx: 86, dy: 16 });
+      await d.wait(.25);
+      await d.ring('bus', { phone: 'rider', target: bus, pad: 5, round: true, pulse: true });
+      await d.flap('f', { value: '5', unit: 'stops pa', sub: '3.0 km', x: 40, y: 124, theme: 'dark' });
       await d.wait(.7);
-      // the crew phone drives the last three kilometres, sped up, and the
-      // board above counts what the card counts
+      // Sped up, the bus drives the last three kilometres. Each stop it
+      // passes pings on the map and flips the board, which counts what the
+      // card counts. Its badge's one-second glide is shortened for the
+      // stretch, or at this speed it would trail the bus by a stop.
+      await d.app('rider', "var st = document.createElement('style'); st.id = 'demo-quickglide'; " +
+        "st.textContent = '.leaflet-marker-icon.busmk{transition:transform .12s linear !important}'; document.head.appendChild(st); 1");
       await d.ff('Pinabilis');
       d.gps('crew', { road: ROADS.kawit, km0: 38.26, km1: 41.2, secs: 3.7 * 112 });
       d.rate = 112;
       let last = { n: '5', km: '3.0 km', st: '' };
-      await d.wait(4.3, async () => {
+      await d.wait(4.0, async () => {
         const c = await d.app('rider', CARD);
         if (!c) return;
+        if (c.n !== last.n) await d.ping('rider', bus);
         if (c.st !== last.st && c.st) {
           await d.untitle('t');
           await d.led('sign', c.st === 'here' ? 'SAKAY NA!' : 'MALAPIT NA!', { x: 30, y: 46, w: 480, slam: true, pitch: 3 });
-          await d.burst(270, 104, {});
-          if (c.st === 'here') await d.unflap('f');
+          if (c.st === 'here') {
+            const pin = await d.rect('rider', '.mypin', 'the burst at the stop');
+            await d.burst(pin.x + pin.w / 2, pin.y + pin.h / 2, {});
+            await d.unflap('f');
+          }
         }
         if (c.st !== 'here' && /^\d$/.test(c.n) && c.n !== last.n) await d.setflap('f', c.n, { sub: c.km, unit: c.n === '1' ? 'stop pa' : 'stops pa' });
         else if (c.st !== 'here' && c.km && c.km !== last.km) await d.setflap('f', last.n, { sub: c.km });
@@ -241,18 +264,17 @@ module.exports = {
       });
       d.rate = 1;
       await d.ff(null);
+      await d.app('rider', "document.getElementById('demo-quickglide').remove(); 1");
       await d.expect('rider', '/Next stop is yours/.test(document.querySelector("#myStop .ride-big").textContent)',
         'the card saying "Next stop is yours" once the bus is one stop out');
-      await d.wait(.9);
+      await d.wait(.6);
 
-      // -- 3. Salamat, without words: one tap on the bus that came
+      // -- 3. Salamat, without words: the bus that came, tapped and thanked
+      await d.unmark('bus');
+      await d.unmark('stopc');
+      await d.unmark('stop');
+      await d.tap('rider', bus, { after: .8 });
       await d.unled('sign');
-      await d.unflap('f');
-      await d.scrim(false);
-      await d.pose('rider', HERO, .8);
-      await d.wait(.85);
-      await d.scroll('rider', { target: '.mapwrap', offset: 30 }, .6);
-      await d.tap('rider', await marker(d, 'rider', '98018'), { after: .8 });
       await d.tap('rider', '.buspop .tybtn', { after: .1 });
       d.cue('chime');
       await d.wait(1.3);

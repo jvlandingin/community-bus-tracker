@@ -132,6 +132,15 @@
   .rg.mine{border-color:#8f86ff; box-shadow:0 0 0 5px rgba(143,134,255,.2), 0 0 34px rgba(143,134,255,.55);}
   .rg.live{border-color:var(--live2); box-shadow:0 0 0 5px rgba(61,220,151,.18), 0 0 34px rgba(61,220,151,.5);}
   .rg.out{animation:rgout .35s var(--e-in) both;}
+  .rg.round{border-radius:50%;}
+  .rg.pulse{animation:rgin .45s var(--e-out) both, rgpulse 1.1s .45s ease-in-out infinite;}
+  .rg.pulse.out{animation:rgout .35s var(--e-in) both;}
+  @keyframes rgpulse{50%{transform:scale(1.14);}}
+  /* A ping where something passed: a ring that opens out and fades. */
+  .pg{position:absolute; width:0; height:0;}
+  .pg i{position:absolute; left:-22px; top:-22px; width:44px; height:44px; border-radius:50%; border:3px solid var(--amber);
+    animation:pgo .75s var(--e-out) both;}
+  @keyframes pgo{from{opacity:1; transform:scale(.5);} to{opacity:0; transform:scale(2.3);}}
   @keyframes rgin{from{opacity:0; transform:scale(1.08);} to{opacity:1; transform:none;}}
   @keyframes rgout{to{opacity:0; transform:scale(.97);}}
   .co{position:absolute; left:0; top:0; width:0; height:0;}
@@ -606,7 +615,7 @@
     ring(key, o){
       this.unmark(key);
       const el = document.createElement('div');
-      el.className = 'rg ' + (o.color || '');
+      el.className = 'rg ' + (o.color || '') + (o.round ? ' round' : '') + (o.pulse ? ' pulse' : '');
       $('marks').appendChild(el);
       tracked.set(key, { kind: 'ring', el, phone: o.phone, target: o.target, pad: o.pad === undefined ? 8 : o.pad });
       track();
@@ -620,6 +629,20 @@
       tracked.set(key, { kind: 'co', el, phone: o.phone, target: o.target, ax: o.ax === undefined ? .5 : o.ax,
         ay: o.ay === undefined ? .5 : o.ay, dx: o.dx || 0, dy: o.dy === undefined ? -70 : o.dy });
       track();
+    },
+    // A ping at something in a phone, where it is now: once, not followed.
+    ping(phone, target, color){
+      const ph = phones.get(phone);
+      const r = ph && local(ph, target);
+      if (!r) return false;
+      const st = onStage(ph, r);
+      const el = document.createElement('div');
+      el.className = 'pg';
+      el.style.left = (st.x + st.w / 2) + 'px'; el.style.top = (st.y + st.h / 2) + 'px';
+      el.innerHTML = '<i' + (color ? ' style="border-color:' + color + '"' : '') + '></i>';
+      $('marks').appendChild(el);
+      later(800, () => el.remove());
+      return true;
     },
     unmark(key){
       const m = tracked.get(key);

@@ -818,6 +818,7 @@ class Director {
   callout(key, o) { this.cue('pop'); return this.call('callout', key, o); }
   ring(key, o) { this.cue('pop'); return this.call('ring', key, o); }
   unmark(key) { return this.call('unmark', key); }
+  ping(pid, target, color) { return this.call('ping', pid, target, color || null); }
   // The route board's own dot matrix, for any words its font can draw.
   led(key, lines, o) {
     lines = [].concat(lines);
@@ -827,8 +828,13 @@ class Director {
     return this.call('led', key, svg, o);
   }
   unled(key) { return this.call('unled', key); }
-  flap(key, o) { this.cue('flap'); return this.call('flap', key, o); }
-  setflap(key, value, o) { this.cue('flap'); return this.call('setflap', key, value, o); }
+  // The counter clacks when a number flips, not when only its line changes.
+  flap(key, o) { (this.flaps = this.flaps || {})[key] = String(o.value); this.cue('flap'); return this.call('flap', key, o); }
+  setflap(key, value, o) {
+    this.flaps = this.flaps || {};
+    if (this.flaps[key] !== String(value)) { this.flaps[key] = String(value); this.cue('flap'); }
+    return this.call('setflap', key, value, o);
+  }
   unflap(key) { return this.call('unflap', key); }
   flowers(o) { return this.call('flowers', o); }
   burst(x, y, o) { this.cue('sparkle'); return this.call('burst', x, y, o || {}); }

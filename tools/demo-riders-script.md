@@ -15,7 +15,7 @@ How to read it:
   renderer.
 - **Graphics** are the moving parts drawn around the phone. Any words in
   them are labels of one to three words, never sentences.
-- Times are from the render, about 50 seconds in all.
+- Times are from the render, about 48 seconds in all.
 - The buses are the flyer's made-up ones. There is no example-screen label
   in this cut (a deliberate decision; the operators' cut keeps it).
 
@@ -23,13 +23,13 @@ How to read it:
 
 | # | Time | Scene | Caption |
 |---|------|-------|---------|
-| 0 | 0:00–0:04 | Cover | Nasaan na ang bus? |
-| 1 | 0:03.5–0:13 | Where the buses are | *(no caption)* |
-| 2 | 0:13–0:22 | How far is it | Gaano kalayo pa? |
-| 3 | 0:22–0:26 | Salamat | *(no caption)* |
-| 4 | 0:26–0:33.5 | On a bus yourself | Share kung nasaan ang bus |
-| 5 | 0:33.5–0:43.5 | The ticket | *(no caption)* |
-| 6 | 0:43.5–0:49.6 | Close | Buksan ngayon |
+| 0 | 0:00–0:03.5 | Cover | Nasaan na ang bus? |
+| 1 | 0:03.5–0:12.3 | Where the buses are | *(no caption)* |
+| 2 | 0:12.3–0:22.5 | How far is it | Gaano kalayo pa? |
+| 3 | 0:22.5–0:25 | Salamat | *(no caption)* |
+| 4 | 0:25–0:32.5 | On a bus yourself | Share kung nasaan ang bus |
+| 5 | 0:32.5–0:42 | The ticket | *(no caption)* |
+| 6 | 0:42–0:48.5 | Close | Buksan ngayon |
 
 Removed since draft 1:
 - "Live ang bawat bus". The buses scene now has no caption.
@@ -42,7 +42,7 @@ Removed since draft 1:
 
 ---
 
-## 0 · Cover (0:00–0:04)
+## 0 · Cover (0:00–0:03.5)
 
 A full-frame card in maroon, with no phone.
 
@@ -55,51 +55,57 @@ The longer lede line ("Tingnan kung nasaan ang bus ngayon…") is dropped.
 Frame 0 is the group chat's thumbnail, so the board and the caption are on
 screen from the first frame.
 
-## 1 · Where the buses are (0:03.5–0:13), shown without words
+## 1 · Where the buses are (0:03.5–0:12.3), shown without words
 
 - **Caption:** none.
 - **On the phone:**
   1. The livery stripes wipe the cover away and the phone flies in, tilted,
      and settles.
-  2. The map pans in to Imus and Kawit, where bus 98018 is.
+  2. Sped up, the buses run from where they are first seen: 98018 north
+     from Gen. Trias towards Kawit, 98104 behind it, 98077 south.
+  3. The map zooms in smoothly on Imus and Kawit, where 98018 is, the
+     checkpoints and the bus badges keeping their own sizes all the way in.
 - **Graphics:**
   - A gold line underlines the web address in the address bar.
-  - The camera zooms in on the line map at the top.
-  - A gold callout reads **▲ Pa-Ayala** on the top line, then a maroon one
-    reads **▼ Pa-Mendez** on the bottom line.
+  - The **Pinabilis** chip while the buses run.
+  - The camera zooms in on the line map at the top. A gold callout,
+    **▲ Pa-Ayala**, rides on 98018 on the top line, and a maroon one,
+    **▼ Pa-Mendez**, on 98077 on the bottom line.
   - The camera moves down to the map, and a callout reads **Live · 98018**
     on the bus.
 
-## 2 · How far is it (0:13–0:22)
+## 2 · How far is it (0:12.3–0:22.5)
 
 - **Caption:** Gaano **kalayo pa?**
 - **On the phone:**
   1. The phone scrolls to the saved-stop card, taps "Set your stop", types
-     "S&R" and picks **S&R Kawit**.
+     "S&R" and picks **S&R Kawit**. While the stop list covers the screen,
+     the map is set in close on the last three kilometres.
   2. The card reads "about 5 stops before yours · 3.0 km".
 - **Graphics:**
-  - The camera closes in on the card, and a flip counter appears:
-    **5 stops · 3.0 km**.
-  - A **Pinabilis** chip ("sped up") shows while the bus covers the last
-    three kilometres in about eight seconds.
-  - The counter flips down with the card: 4, 3, 2.
+  - The whole phone, low in the frame: the map above the card. A pulsing
+    purple ring and a **Stop mo** label on the saved stop at the top of the
+    map, a gold ring on bus 98018 at the bottom of it.
+  - A flip counter above the phone: **5 stops pa · 3.0 km**.
+  - The **Pinabilis** chip while the bus drives up the map to the stop in
+    about four seconds. A ping each time it passes a stop, and the counter
+    flips with the card: 4, 3, 2, 1.
   - At two stops the LED board slams in with **MALAPIT NA!**, and the card
     turns gold.
-  - At one stop the board slams in with **SAKAY NA!** and a burst. The card
-    says "Next stop is yours."
+  - At the stop, **SAKAY NA!** and a burst at the pin. The card says "Next
+    stop is yours."
 
+## 3 · Salamat (0:22.5–0:25), shown without words
 
-## 3 · Salamat (0:22–0:26), shown without words
-
-A quick beat on the same phone; no second phone.
+No cut from the scene before: the bus that just arrived is the one thanked.
 
 - **Caption:** none.
-- **On the phone:** the rider taps bus 98018 on the map. The popup opens,
+- **On the phone:** the rider taps bus 98018 at the stop. The popup opens,
   the rider taps **Say salamat**, and the button turns to "Salamat sent".
   The bus's own little "beep beep!" pops up on its badge *(app)*.
 - **Graphics:** the tap ripple, and nothing else.
 
-## 4 · On a bus yourself (0:26–0:33.5)
+## 4 · On a bus yourself (0:25–0:32.5)
 
 The background turns to night.
 
@@ -109,7 +115,7 @@ The background turns to night.
 - **Graphics:** the camera closes in on the line map, and a callout reads
   **Lalabas dito kapag nag-share ka** on the green-ringed bus.
 
-## 5 · The ticket (0:33.5–0:43.5), shown without words
+## 5 · The ticket (0:32.5–0:42), shown without words
 
 - **Caption:** none.
 - **Graphics:** the **Pinabilis** chip, and the whole trip driven along the
@@ -120,7 +126,7 @@ The background turns to night.
   salamat ticket: Mendez → Ayala, "3 riders said salamat", and the BUONG
   RUTA stamp.
 
-## 6 · Close (0:43.5–0:49.6)
+## 6 · Close (0:42–0:48.5)
 
 - **Board:** the route board, with a scanline passing over it.
 - **Caption:** Buksan ngayon
@@ -157,7 +163,8 @@ The "I-scan ang QR o i-type ang link…" line is dropped.
 ## Narration (draft 1)
 
 For a voice recorded over the rendered video. The times are those of the
-51-second cut before the buses moved, and need re-timing to the current one. They come from its own sound track: each tap, wipe and board-slam is a
+51-second cut before the buses moved, and need re-timing to the current one.
+They came from that cut's own sound track: each tap, wipe and board-slam is a
 cue on the frame where it happens. Conversational Taglish runs about 2.3
 words a second, so each line is sized to leave room around the beats it
 lands on. ▶ marks a line to say exactly on a beat.

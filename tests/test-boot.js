@@ -735,6 +735,106 @@ function run(page, include, label, configText, setup) {
     check(hidden(row) && hidden(album) && hidden(modal), 'with the album gone from the tab again');
   }
 
+  console.log('\n=== 13. the tour: a practice run on the real page ===');
+  // test-tour.js reads the steps and the words; this runs both tours on the
+  // booted page with every request counted, and checks the three promises a
+  // practice run makes: the reader sees a practice bus and nothing real is
+  // mixed in, nothing is sent but the reads the map makes anyway, and the
+  // reader's own stop, filter and tab come back exactly as they were.
+  {
+    const w = ok.w, d = ok.d;
+    const hidden = el => !el || el.className.includes('hidden');
+    const walking = () => w.eval('WALK ? WALK.name + "/" + WALK.steps[WALK.i].id : null');
+    w.switchTab('track'); w.pickDir(null); d.getElementById('busLabel').value = '';
+    const sent = [];
+    w.__sent = sent;
+    w.eval('window.__sbWas = sb; sb = { rpc: function(fn){ window.__sent.push(fn); return Promise.resolve({ data: [], error: null }); } }');
+    const own = cpAt(5);
+    w.setMyStop('My own stop', own.lat, own.lng);
+    w.setFilter('south');
+    const storedStop = w.localStorage.getItem('wt-mystop');
+    const storedKeys = () => Object.keys(w.localStorage).sort().join(',');
+    const keysBefore = storedKeys();
+
+    w.startWalk('watch');
+    check(!hidden(d.getElementById('walk')) && walking() === 'watch/hello', 'the map tour opens over the page', walking());
+    check(/PRACTICE/.test(d.getElementById('walkBubble').textContent), 'every bubble says PRACTICE');
+    const chips = d.getElementById('busList').textContent.replace(/\s+/g, ' ').trim();
+    check(/Practice/.test(chips) && d.querySelectorAll('#busList .buschip').length === 1, 'the list holds the practice bus and nothing else', chips);
+    check(d.querySelectorAll('#trackStrip .buspill').length === 1, 'and so does the strip');
+    check(w.eval('dirFilter') === 'all', 'with the reader\'s filter set aside, so the bus can be seen');
+    check(w.eval('MYSTOP.name') !== 'My own stop' && /Malapit na/i.test(d.getElementById('myStop').textContent),
+      'the card waits at the practice stop, and has something true to say about it', d.getElementById('myStop').textContent.replace(/\s+/g, ' ').trim().slice(0, 60));
+    check(w.localStorage.getItem('wt-mystop') === storedStop, 'while the reader\'s own stop stays saved as it was');
+
+    // Every step, forwards, by whatever the step offers: the patch where it
+    // asks for a tap, Next everywhere else.
+    const seen = [];
+    for (let i = 0; i < 12 && walking() && walking().startsWith('watch/'); i++) {
+      seen.push(walking().split('/')[1]);
+      const patch = d.getElementById('walkPatch');
+      // The patch is placed by measuring the page, which jsdom cannot do, so
+      // its click is made here the way the button's own onclick would be.
+      if (/^(bus|tab|dir)$/.test(seen[seen.length - 1]) && patch) w.walkGo(1);
+      else d.getElementById('walkNext').click();
+      if (walking() === 'watch/popup'){
+        // Whatever reaches the popup cannot send: a salamat and a link both refuse.
+        w.sayThanks(w.eval('WALK_ID'));
+        w.sendBusLink(w.eval('WALK_ID'));
+        w.boardBus(w.eval('WALK_ID'));
+      }
+    }
+    check(seen.join(' ') === w.eval('walkSteps("watch", !!map).map(function(s){ return s.id; }).join(" ")'),
+      'it steps through every step of the map tour in order', seen.join(' '));
+    check(walking() === null && hidden(d.getElementById('walk')), 'and Done on the last one closes it');
+    check(w.eval('MYSTOP && MYSTOP.name') === 'My own stop' && w.eval('dirFilter') === 'south',
+      'the reader\'s own stop and filter are back');
+    check(!/Practice/.test(d.getElementById('busList').textContent) && !d.querySelector('#trackStrip .buspill'),
+      'and the practice bus is gone from the list and the strip');
+    check(w.eval('ABOARD') === null && !w.sessionStorage.getItem('wt-aboard'), '"I\'m on this bus" on the practice bus chose nothing');
+
+    // The sharing tour, ended from its ticket with the close button.
+    w.startWalk('share');
+    for (let i = 0; i < 10 && walking() !== 'share/ticket'; i++) {
+      if (/\/(tab|dir)$/.test(walking())) w.walkGo(1); else d.getElementById('walkNext').click();
+    }
+    check(walking() === 'share/ticket' && !hidden(d.getElementById('tktModal')), 'the sharing tour shows the ticket a trip ends with');
+    check(/PRACTICE TICKET/.test(d.getElementById('tktCard').textContent), 'named a practice one on its face');
+    check(w.eval('sharing') === false && !hidden(d.getElementById('onbusSetup')), 'and nothing was started to get there');
+    w.keepTicket();
+    check(w.localStorage.getItem('wt-tickets') === null, 'Keep on a practice ticket keeps nothing');
+    d.querySelector('#walk .walk-x').click();
+    check(walking() === null && hidden(d.getElementById('tktModal')), 'the close button ends the tour and the ticket goes with it');
+    check(!hidden(d.getElementById('trackView')) && w.eval('shareDir') === null && d.getElementById('busLabel').value === '',
+      'back on the map tab, with no direction picked and no bus number left in the field');
+
+    check(sent.every(f => /^get_/.test(f)), 'the only requests made were the reads the map makes anyway',
+      [...new Set(sent)].join(' ') || 'none');
+    const added = storedKeys().split(',').filter(k => k && !keysBefore.split(',').includes(k));
+    check(added.every(k => k === 'wt-guide-seen') && w.localStorage.getItem('wt-mystop') === storedStop,
+      'and nothing was kept but the guide\'s own "shown around" flag', added.join(' ') || 'nothing new');
+
+    // The first visit's note: shown once, answered once, kept under the
+    // guide's own key so the privacy panel's four things stay four.
+    w.localStorage.removeItem('wt-guide-seen');
+    d.getElementById('guideLink').classList.remove('seen');
+    w.showWalkNew();
+    check(!hidden(d.getElementById('walkNew')), 'a first visit is offered the tour');
+    d.querySelector('#walkNew .x').click();
+    check(hidden(d.getElementById('walkNew')) && w.localStorage.getItem('wt-guide-seen') === '1' &&
+      d.getElementById('guideLink').classList.contains('seen'), 'No thanks puts it away, and the guide\'s dot with it');
+    w.showWalkNew();
+    check(hidden(d.getElementById('walkNew')), 'and it is not offered again');
+    w.eval('sharing = true');
+    w.startWalk('watch');
+    check(walking() === null, 'no tour starts over a live share');
+    w.eval('sharing = false');
+
+    w.clearMyStop();
+    w.setFilter('all');
+    w.eval('sb = window.__sbWas');
+  }
+
   console.log('\n=== 11. inside the Android app ===');
   // mobile/ loads this same page in a Capacitor shell, whose bridge puts the
   // native plugins on window.Capacitor.Plugins before the page's own script

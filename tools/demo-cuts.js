@@ -302,9 +302,14 @@ module.exports = {
       for (const [id, o] of others) d.bus(id, Object.assign({ road: ROADS.whole, secs: Math.abs(o.km1 - o.km0) / pace }, o));
       d.rate = END;
       // three riders the video does not show say salamat on the way
-      let thanked = false;
+      let thanked = false, joined = false;
       await d.wait(TRIP + .3, async () => {
         if (!thanked && d.gpsNow().rider.lat > 14.4) { thanked = true; await d.thanks('rider', 3); }
+        // a new bus starts sharing at Mendez once the green ring is past Amadeo
+        if (!joined && d.gpsNow().rider.lat > 14.2) {
+          joined = true;
+          d.bus('d3m0b98031000000000000000000a006', { dir: 'north', label: '98031', road: ROADS.whole, km0: 0.35, km1: 59.8, secs: (59.8 - 0.35) / pace, phase: 5 });
+        }
         // a bus at the end of its line stops sharing, and is gone
         for (const [id] of others) { const b = d.buses.get(id); if (b && d.vt >= b.v1) d.unbus(id); }
       });

@@ -114,6 +114,9 @@ function startTripOffCamera(d, pid, label) {
   return d.app(pid, "switchTab('share'); pickDir('north'); document.getElementById('busLabel').value = " +
     JSON.stringify(label) + "; startSharing(); 1");
 }
+// Every phone has been shown around before, as a returning rider's has, so
+// the first-visit "New here?" note is not drawn over the screen.
+const SEEN = { 'wt-guide-seen': '1' };
 const busOf = (label) => 'BUSES.find(function(b){ return b.bus_label === ' + JSON.stringify(label) + '; }).pub_id';
 async function marker(d, pid, label) {
   const pub = await d.app(pid, busOf(label));
@@ -145,8 +148,8 @@ module.exports = {
       // sharing since before the video starts, parked five stops short of
       // the rider's stop.
       await d.bg('maroon');
-      await d.phone('rider', { pose: BELOW });
-      await d.phone('crew', { pose: OFF_RIGHT });
+      await d.phone('rider', { pose: BELOW, store: { local: SEEN } });
+      await d.phone('crew', { pose: OFF_RIGHT, store: { local: SEEN } });
       flyerBuses(d, '98018');
       await d.boot();
       d.gps('crew', { road: ROADS.whole, km0: 22 });
@@ -358,9 +361,9 @@ module.exports = {
       // Off camera: a phone for someone on the bus, and a rider's phone with
       // the flyer's stop saved on it.
       await d.bg('maroon');
-      await d.phone('crew', { pose: OFF_LEFT });
+      await d.phone('crew', { pose: OFF_LEFT, store: { local: SEEN } });
       const stop = Object.assign({ name: 'S&R Kawit' }, d.kit.place('S&R Kawit'));
-      await d.phone('rider', { pose: OFF_RIGHT, store: { local: { 'wt-mystop': JSON.stringify(stop) } } });
+      await d.phone('rider', { pose: OFF_RIGHT, store: { local: Object.assign({ 'wt-mystop': JSON.stringify(stop) }, SEEN) } });
       flyerBuses(d);
       await d.boot();
       d.gps('crew', { road: ROADS.whole, km0: 0.3, km1: 1.6, secs: 300 });

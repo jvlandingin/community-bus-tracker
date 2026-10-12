@@ -107,7 +107,7 @@ The background turns to night.
 - **On the phone:** the rider taps "I'm on the bus", then Northbound, types
   98019 and taps Start. The sharing tab goes dark.
 - **Graphics:** the camera closes in on the line map, and a callout reads
-  **Ito ang bus mo** on the green-ringed bus.
+  **Lalabas dito kapag nag-share ka** on the green-ringed bus.
 
 ## 5 · The ticket (0:33.5–0:43.5), shown without words
 
@@ -170,7 +170,7 @@ lands on. ▶ marks a line to say exactly on a beat.
 | 0:22.5 | MALAPIT NA! slams in | ▶ Malapit na… |
 | 0:24.9 | SAKAY NA! slams in | ▶ Sakay na! |
 | 0:27.5–0:31.4 | Tap the bus (0:28.8), Say salamat (0:29.8), chime (0:30.1) | Isang tap: salamat sa nag-share. |
-| 0:31.4–0:39.3 | Night: "Share kung nasaan ang bus" (0:32.1); "Ito ang bus mo" (0:37.3) | Ikaw naman ang nasa bus? Isang tap lang, at kita na ng lahat ng naghihintay kung nasaan ang bus. |
+| 0:31.4–0:39.3 | Night: "Share kung nasaan ang bus" (0:32.1); "Lalabas dito kapag nag-share ka" (0:37.3) | Ikaw naman ang nasa bus? Isang tap lang, at kita na ng lahat ng naghihintay kung nasaan ang bus. |
 | 0:39.3–0:44 | "Makalipas ang 2 oras"; Stop (0:40.6); the ticket | Pagbaba mo, i-tap ang Stop — may ticket ka pa. |
 | 0:44–0:50.6 | Close: link, QR, "I-post sa group chat!" | I-scan o i-type ang link, at i-post sa group chat ninyo. Libre, at hindi ito opisyal na app ng kompanya. |
 

@@ -354,7 +354,7 @@ module.exports = {
       await d.scrim(true);
       await d.focus('rider', '#onbusStripCard', { s: 1.25, fx: 270, fy: 660, sec: 1.0 });
       await d.wait(1.1);
-      await d.callout('you', { phone: 'rider', target: '#onbusStrip .buspill.me', text: 'Ito ang bus mo', color: 'live', dx: 64, dy: -62 });
+      await d.callout('you', { phone: 'rider', target: '#onbusStrip .buspill.me', text: 'Lalabas dito kapag nag-share ka', color: 'live', dx: 64, dy: -62 });
       await d.wait(1.8);
       await d.unmark('you');
 

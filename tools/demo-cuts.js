@@ -130,6 +130,34 @@ async function pill(d, pid, label) {
   const pub = await d.app(pid, busOf(label));
   return '#trackStrip .buspill[onclick*="' + pub + '"]';
 }
+// The map zoomed by hand, one frame at a time, about the one point that
+// stays put on screen, the way a pinch zooms. Leaflet's own flight scales
+// the drawn checkpoints with the zoom until it lands, so they swell into
+// rings beside bus badges that do not; set frame by frame, every mark is
+// redrawn at its own size all the way in. Ends on a whole zoom level, so
+// the tiles land sharp.
+async function zoomMap(d, pid, lat, lng, zoom, sec) {
+  await d.app(pid, '(function(){' +
+    'var A = map.getCenter(), zA = map.getZoom(), sA = Math.pow(2, zA), sB = Math.pow(2, ' + zoom + ');' +
+    'var pa = map.project(A, 0), pb = map.project(L.latLng(' + lat + ',' + lng + '), 0);' +
+    'var P = pa.multiplyBy(sA).subtract(pb.multiplyBy(sB)).divideBy(sA - sB);' +
+    'map.options.zoomSnap = 0;' +
+    "var st = document.createElement('style'); st.id = 'demo-zoom';" +
+    // and tiles shown the moment they load, not faded in a frame late
+    "st.textContent = '.leaflet-marker-icon.busmk{transition:none !important} .leaflet-tile{opacity:1 !important}'; document.head.appendChild(st);" +
+    'window.__zoomStep = function(f){ var z = zA + (' + zoom + ' - zA) * f, s = Math.pow(2, z);' +
+    '  map.setView(map.unproject(P.subtract(P.subtract(pa).multiplyBy(sA / s)), 0), z, { animate: false }); };' +
+    'return 1; })()');
+  const n = Math.max(1, Math.round(sec * d.fps));
+  let i = 0;
+  await d.wait(sec, async () => {
+    const t = Math.min(1, ++i / n), e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    await d.app(pid, '__zoomStep(' + e + '); 1');
+  });
+  await d.app(pid, 'map.options.zoomSnap = 1; map.setView([' + lat + ',' + lng + '], ' + zoom + ', { animate: false });' +
+    "document.getElementById('demo-zoom').remove(); delete window.__zoomStep; 1");
+}
+
 // Flowers from one place on the stage to another: the rider's salamat
 // travelling to the phone of the person sharing.
 async function flowersBetween(d, a, b, n) {
@@ -196,9 +224,8 @@ module.exports = {
       // 98018 the rest of the way, there a little before the speed-up ends
       d.gps('crew', { road: ROADS.whole, km0: 34, km1: 38.26, secs: 2.4 * RUN });
       await d.focus('rider', '.mapwrap', { s: 1.12, fx: 270, fy: 520, sec: 1.0 });
-      // Leaflet times its flight on the pages' clock, which is running fast
-      await d.app('rider', 'map.flyTo([14.405, 120.915], 12, { duration: ' + (1.3 * RUN) + ' }); 1');
-      await d.wait(1.5);
+      await zoomMap(d, 'rider', 14.405, 120.915, 12, 1.3);
+      await d.wait(.2);
       await d.callout('live', { phone: 'rider', target: await marker(d, 'rider', '98018'), text: 'Live · 98018', color: 'gold', dx: 70, dy: -54 });
       await d.wait(1.6);
       await d.unmark('live');

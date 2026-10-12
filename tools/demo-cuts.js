@@ -130,6 +130,17 @@ async function pill(d, pid, label) {
   const pub = await d.app(pid, busOf(label));
   return '#trackStrip .buspill[onclick*="' + pub + '"]';
 }
+// Sped up, the tracker's one-second glides would leave every badge a
+// second, and so kilometres, behind its bus. For a sped-up stretch they
+// glide only between one position and the next.
+function quickGlide(d, pid, on) {
+  return d.app(pid, on
+    ? "var st = document.createElement('style'); st.id = 'demo-quickglide'; " +
+      "st.textContent = '.leaflet-marker-icon.busmk{transition:transform .12s linear !important} " +
+      ".strip .buspill{transition:left .12s linear !important}'; document.head.appendChild(st); 1"
+    : "var st = document.getElementById('demo-quickglide'); if (st) st.remove(); 1");
+}
+
 // The map zoomed by hand, one frame at a time, about the one point that
 // stays put on screen, the way a pinch zooms. Leaflet's own flight scales
 // the drawn checkpoints with the zoom until it lands, so they swell into
@@ -183,6 +194,10 @@ module.exports = {
       await d.phone('rider', { pose: BELOW, store: { local: SEEN } });
       await d.phone('crew', { pose: OFF_RIGHT, store: { local: SEEN } });
       flyerBuses(d, '98018');
+      // The two that run in the opening sit from the start on the road they
+      // will run along, so they set off from where they are seen.
+      d.bus('d3m0b98104000000000000000000a002', { dir: 'north', label: '98104', road: ROADS.whole, km0: 11.0, phase: 4.5 });
+      d.bus('d3m0b98077000000000000000000a004', { dir: 'south', label: '98077', road: ROADS.whole, km0: 33.5, phase: 1 });
       await d.boot();
       d.gps('crew', { road: ROADS.whole, km0: 22 });
       await startTripOffCamera(d, 'crew', '98018');
@@ -209,8 +224,13 @@ module.exports = {
       // while the camera is on it, then slow down for the map.
       const RUN = 110, run = 5.7 * RUN;
       d.gps('crew', { road: ROADS.whole, km0: 22, km1: 34, secs: 3.0 * RUN });
-      d.bus('d3m0b98104000000000000000000a002', { dir: 'north', label: '98104', road: ROADS.amadeo, km0: 5.0, km1: 15.5, secs: run, phase: 4.5 });
-      d.bus('d3m0b98077000000000000000000a004', { dir: 'south', label: '98077', road: ROADS.gentrias, km0: 35.5, km1: 21.0, secs: run, phase: 1 });
+      d.bus('d3m0b98104000000000000000000a002', { dir: 'north', label: '98104', road: ROADS.whole, km0: 11.0, km1: 24.0, secs: run, phase: 4.5 });
+      d.bus('d3m0b98077000000000000000000a004', { dir: 'south', label: '98077', road: ROADS.whole, km0: 33.5, km1: 20.0, secs: run, phase: 1 });
+      // The badges on the map and on the strip each glide a second to every
+      // new place. Sped up, a second is kilometres, so they would trail
+      // their buses and catch up with a jump; for the stretch they glide
+      // only between one place and the next.
+      await quickGlide(d, 'rider', true);
       await d.ff('Pinabilis');
       d.rate = RUN;
       await d.focus('rider', '#trackStrip', { s: 1.42, fx: 270, fy: 470, sec: 1.0 });
@@ -230,6 +250,7 @@ module.exports = {
       await d.wait(1.6);
       await d.unmark('live');
       d.rate = 1;
+      await quickGlide(d, 'rider', false);
       await d.ff(null);
 
       // -- 2. How far: save the stop, then the bus counts down to it
@@ -266,8 +287,7 @@ module.exports = {
       // passes pings on the map and flips the board, which counts what the
       // card counts. Its badge's one-second glide is shortened for the
       // stretch, or at this speed it would trail the bus by a stop.
-      await d.app('rider', "var st = document.createElement('style'); st.id = 'demo-quickglide'; " +
-        "st.textContent = '.leaflet-marker-icon.busmk{transition:transform .12s linear !important}'; document.head.appendChild(st); 1");
+      await quickGlide(d, 'rider', true);
       await d.ff('Pinabilis');
       d.gps('crew', { road: ROADS.kawit, km0: 38.26, km1: 41.2, secs: 3.7 * 112 });
       d.rate = 112;
@@ -291,7 +311,7 @@ module.exports = {
       });
       d.rate = 1;
       await d.ff(null);
-      await d.app('rider', "document.getElementById('demo-quickglide').remove(); 1");
+      await quickGlide(d, 'rider', false);
       await d.expect('rider', '/Next stop is yours/.test(document.querySelector("#myStop .ride-big").textContent)',
         'the card saying "Next stop is yours" once the bus is one stop out');
       await d.wait(.6);

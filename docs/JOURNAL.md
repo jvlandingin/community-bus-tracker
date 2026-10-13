@@ -25,6 +25,33 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-13 — A review, and the six fixes it put first
+
+The maintainer asked for a review of the whole codebase for security and bugs.
+It found nothing critical: the database functions are locked down, row level
+security holds, and every value from the database is escaped where the pages
+draw it. Six things were worth fixing first, and all six are fixed in the
+software. One needs a step outside it.
+
+- **Run `sql/08-position-checks.sql` in the Supabase SQL editor.** Until it
+  runs, the database still accepts a bus with no position from anyone holding
+  the share key, dead rows can still fill the sharer cap, and speed is still
+  kept if a page from before this sends it. It is safe before or after the
+  pages deploy.
+- **What the six were.** A bus with no position stopped every rider's list
+  drawing and hid from the admin page's Stop list. Dead rows could refuse every
+  new sharer while the map showed no buses. Every GPS fix was a read. A failed
+  write swapped Stop for Start, and that Start left a GPS watch running after
+  Stop. The session id, and so the bus's public id, outlived the trip. And speed
+  was kept and published, though nothing used it and the privacy panel never
+  said so.
+- **Wording that changed with them.** The privacy panel now says that anyone
+  watching could write down what they see, and the operators' briefing has a
+  short section saying the same; its PDF was re-rendered and is still seven
+  pages. The kick's honest limit was wrong: a reload never gave a new session,
+  a new tab does.
+- About fifty smaller findings remain open.
+
 ## 2026-10-11 — A clearer guide, and a tour
 
 The maintainer asked for the guide to be very clear, with no long blocks of

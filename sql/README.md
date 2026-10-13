@@ -13,6 +13,7 @@ retry.
 | `05-rotate-same-key.sql` | refuses a share key "rotation" to the key already in use, which used to leave that key working |
 | `06-watching-count.sql` | lets the admin page see how many devices have the map open right now, without recording who |
 | `07-thanks.sql` | lets a rider tap Salamat on a live bus, with no total kept for anyone |
+| `08-position-checks.sql` | refuses a bus with no position, stops dead rows filling the sharer cap, and stops keeping or publishing speed |
 
 If you are setting up fresh, run all of them. They are separate files because
 they were written in that order against a live deployment, and keeping the
@@ -32,6 +33,13 @@ pages catch up it is right again, but do not leave it in that state.
 `07` also adds a foreign key onto `bus_positions`, which is what makes a thank
 you impossible to keep after the trip that earned it. Run it against a database
 that already has `01` through `06`; it is safe to re-run.
+
+`08` changes the shape of `get_positions` too, but only by dropping `speed`,
+which no page has ever read, so it can run before or after the pages are
+deployed. It deletes any bus row with no position, which nothing should have
+written and which stopped the map drawing for everyone, and clears every stored
+speed. Run it against a database that already has `01` through `07`; it is safe
+to re-run.
 
 **If the salamat button appears but nothing reaches the sharer**, this
 migration has almost certainly not been run. The button is drawn by the page,

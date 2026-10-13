@@ -1751,7 +1751,7 @@
       <p>“Send a link to this bus”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do.</p>
 
       <h4 class="ok">If you share from the bus</h4>
-      <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID for your session. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
+      <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
       <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop.</p>
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and it goes when the trip does. Nothing keeps a total for you, so there is no score to go up or down.</p>
       <p>When you tap Stop, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>it is not sent anywhere</b>. Close it and it is gone.</p>
@@ -1765,7 +1765,7 @@
       <h4 class="hon">To be fully honest</h4>
       <p>• The map's background images load from CARTO, a map provider. Like any website you visit, they can see your device's IP address. Everything else (code, fonts) is served from this site itself.<br>
       • The database runs on Supabase, which keeps standard server logs like any hosting service.<br>
-      • Anyone who opens this site can see live bus positions, no key needed. That's the point of the tool, but worth saying plainly: while you share, anyone can watch.</p>
+      • Anyone who opens this site can see live bus positions, no key needed. That's the point of the tool, but worth saying plainly: while you share, anyone can watch, and could write down what they see as it happens. This site itself keeps only where the bus is now.</p>
 
       <h4 class="ok hidden" id="sourceHead">Open source</h4>
       <p class="hidden" id="sourceBody">This tool is free and open source under the AGPL-3.0 licence, which means anyone can read it, run it for their own route, and must keep their version open too. <a id="sourceLink" href="#" target="_blank" rel="noopener noreferrer">See the source code</a>.</p>
@@ -2825,8 +2825,23 @@ function resolveKey() {
   try { const s = sessionStorage.getItem('wt-key'); if (s){ accessKey = s; return true; } } catch(e){}
   return false;
 }
+// A key the server has refused will never work again, so it goes from every
+// place it was kept, the address bar included, or a reload would bring it
+// straight back. The next Start then asks for the new one.
+function forgetKey() {
+  accessKey = null;
+  try{ sessionStorage.removeItem('wt-key'); }catch(e){}
+  try{
+    const h = location.hash.replace(/(^#|&)k=[A-Za-z0-9_-]*/, '$1').replace(/^#&/, '#').replace(/&$/, '');
+    if (h !== location.hash) history.replaceState(null, '', location.pathname + location.search + (h === '#' ? '' : h));
+  }catch(e){}
+}
 async function submitKey() {
-  const v = document.getElementById('gateKey').value.trim();
+  let v = document.getElementById('gateKey').value.trim();
+  // The key only ever arrives inside a link, so a whole pasted link is taken
+  // for the key in it. In the Android app pasting is the only way to give it.
+  const m = v.match(/[#&?]k=([A-Za-z0-9_-]+)/);
+  if (m) v = m[1];
   if (!v) return;
   if (await tryKey(v)){
     closeModal('gate');
@@ -4869,6 +4884,16 @@ function shouldPoll(lastAt){
   return true;
 }
 
+// A row the map cannot place: no position, or no direction to file it under.
+// The database has refused them since sql/08-position-checks.sql, but before
+// that anyone with the share key could write one, and Leaflet throws on it,
+// which stopped the bus list drawing for everybody. So they are dropped here
+// too, for a database that has not had 08 yet.
+function drawableRow(v){
+  return Number.isFinite(v.lat) && Number.isFinite(v.lng) &&
+         (v.direction==='north' || v.direction==='south');
+}
+
 let lastPositionsAt = 0;
 async function pollPositions() {
   if (!shouldPoll(lastPositionsAt)) return;
@@ -4890,14 +4915,15 @@ async function pollPositions() {
   // pub_id, not the session id: see sql/04-session-id-privacy.sql. It is
   // stable for the length of a trip, which is all the map needs it for.
   positionsLoaded = true;
-  BUSES = (res.data||[]).map(function(v){
+  const rows = (res.data||[]).filter(drawableRow);
+  BUSES = rows.map(function(v){
     return { pub_id:v.pub_id, lat:v.lat, lng:v.lng, speed:v.speed, self:!!v.is_self,
              direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at) };
   });
   // Only ever set from our own row. The server sends null for every other
   // bus (sql/07-thanks.sql), so there is nothing here to put on the map even
   // by accident, and this is not carried into BUSES for the same reason.
-  const mine = (res.data||[]).find(function(v){ return v.is_self; });
+  const mine = rows.find(function(v){ return v.is_self; });
   // The other half of the same diagnosis, from the sharing side: an older
   // get_positions has no thanks column at all, which is not the same as a
   // trip nobody has thanked yet, and is worth saying once.
@@ -5079,6 +5105,15 @@ function getSessionId(){
   }
   return sessionId;
 }
+// One session id per trip, not per tab. The bus's public id on the map is a
+// hash of it, so keeping it would let a "follow this bus" link sent for the
+// morning ride find the same person's evening ride, and let anyone reading
+// the map tie one phone's trips together. The next getSessionId() makes a
+// new one.
+function endSession(){
+  sessionId=null;
+  try{ sessionStorage.removeItem('wt-session'); }catch(e){}
+}
 function pickDir(d){
   shareDir=d;
   const n=document.getElementById('pickNorth'), s=document.getElementById('pickSouth');
@@ -5230,29 +5265,52 @@ function showAppHints(){
   if (b) b.textContent='Keeps sharing with the screen off. Tap Stop sharing when you get off.';
 }
 
+// Set by a write that failed and cleared by the next one to land. While it is
+// set, a GPS fix does not put "Sharing live" back over the error: the fix is
+// not what reaches anybody, the write is.
+let writeFailing=false;
 async function writePosition(coords){
-  if (guardPaused) return;
+  // Nothing goes out for a trip that has ended, whatever asked.
+  if (guardPaused || !sharing) return;
   const res = await rpc('set_bus_position', {
     p_key:accessKey, p_session:getSessionId(),
     p_lat:coords.latitude, p_lng:coords.longitude,
-    p_speed: typeof coords.speed==='number'&&coords.speed>=0 ? coords.speed : 0,
+    // Always null. No page ever used it, and a bus's speed is the one thing
+    // this tool promises cannot be used to review a driver by. Since
+    // sql/08-position-checks.sql the server keeps none either way.
+    p_speed: null,
     p_direction:shareDir,
     p_label: document.getElementById('busLabel').value.trim() || null
   });
-  if (TRIP && !res.error) TRIP.writes++;
-  if (res.error){
-    const raw = ((res.error.message||'')+'').toLowerCase();
-    const msg = writeErrorMessage(res.error);
-    // A blocked session will never succeed by retrying, so stop rather than
-    // hammer the server and leave the person staring at a live-looking dot.
-    if (raw.indexOf('session blocked')>=0){
-      await stopSharing({ quiet:true });
-      setShareUI('error', msg);
-      return;
-    }
-    // 'rate limited' is harmless and self-correcting, so don't flip to an error state
-    if (msg.indexOf('Still sharing')<0) setShareUI('error', msg);
+  // The trip ended while this was on its way: nobody is left to tell.
+  if (!sharing) return;
+  if (!res.error){
+    // The first to land is the moment the server knows this bus, so the strip
+    // is fetched then rather than at the next slow poll.
+    if (TRIP){ TRIP.writes++; if (TRIP.writes===1) refreshOnbusStrip(); }
+    if (writeFailing){ writeFailing=false; if (!guardPaused) setShareUI('on', shareLabel()); }
+    return;
   }
+  const raw = ((res.error.message||'')+'').toLowerCase();
+  const msg = writeErrorMessage(res.error);
+  // Three answers never change by retrying, so stop rather than hammer the
+  // server and leave the person staring at a live-looking dot: a session an
+  // organizer stopped, a key that has been changed, and a route already full.
+  // A changed key is dropped as well, so the next Start asks for the new one
+  // instead of trying the dead one again.
+  if (raw.indexOf('session blocked')>=0){
+    await stopSharing({ quiet:true, blocked:true });
+    setShareUI('error', msg);
+    return;
+  }
+  if (raw.indexOf('invalid key')>=0 || raw.indexOf('too many active sessions')>=0){
+    await stopSharing({ quiet:true });
+    if (raw.indexOf('invalid key')>=0) forgetKey();
+    setShareUI('error', msg);
+    return;
+  }
+  // 'rate limited' is harmless and self-correcting, so don't flip to an error state
+  if (msg.indexOf('Still sharing')<0){ writeFailing=true; setShareUI('error', msg); }
 }
 
 
@@ -5383,6 +5441,7 @@ async function findNearbySharer(coords){
   let best=null;
   res.data.forEach(function(b){
     if (b.is_self) return;                             // that's us
+    if (!drawableRow(b)) return;                       // not a bus anyone can see
     if (b.direction!==shareDir) return;                // other direction, fine
     const theirLabel=(b.bus_label||'').trim().toLowerCase();
     // Different bus numbers both typed = definitely different buses.
@@ -5425,6 +5484,7 @@ function dupProceed(){
 
 function startSharing(){
   if (WALK) return;   // the practice Start starts nothing
+  if (sharing) return;   // one trip at a time: a second would bring its own GPS watch
   if (!accessKey){
     openModal('gate');
     return;
@@ -5485,11 +5545,14 @@ function endTripHello(){
   if (card) card.classList.remove('hello');
 }
 function beginWatch(firstCoords){
-  sharing=true;
+  // One trip, one watch: whatever led here, nothing from before may still be
+  // running beside it, because Stop only ends the one it can see.
+  if (stopWatch){ stopWatch(); stopWatch=null; }
+  if (hbTimer){ clearInterval(hbTimer); hbTimer=null; }
+  sharing=true; writeFailing=false;
   guardPaused=false; endAsked=false; dirGuard=makeDirGuard();
   tripBegin(firstCoords);
-  const label=shareLabel();
-  setShareUI('on', label);
+  setShareUI('on', shareLabel());
   showTripHello();
   if (firstCoords){
     lastCoords=firstCoords;
@@ -5501,16 +5564,17 @@ function beginWatch(firstCoords){
     lastCoords=pos.coords;
     checkTripGuards(pos.coords);
     if (!sharing || guardPaused) return;
-    setShareUI('on', label);
+    // Read fresh each time, since the direction can be switched mid-trip.
+    if (!writeFailing) setShareUI('on', shareLabel());
     if (Date.now()-lastWrite<5000) return;
     lastWrite=Date.now();
     writePosition(pos.coords);
   }, function(err){
-    sharing=false;
-    if (stopWatch){ stopWatch(); stopWatch=null; }
-    if (hbTimer){ clearInterval(hbTimer); hbTimer=null; }
-    releaseWakeLock();
-    setShareUI('error', gpsErrorMessage(err));
+    // GPS giving up ends the trip, so it ends the way Stop ends one: the bus
+    // leaves the map now rather than at expiry, any question still open is
+    // closed, and the next trip gets a session of its own.
+    const msg=gpsErrorMessage(err);
+    stopSharing({ quiet:true }).then(function(){ setShareUI('error', msg); });
   });
   // heartbeat: a bus idling at a stop doesn't fire watchPosition; re-send last fix
   hbTimer=setInterval(function(){
@@ -5548,7 +5612,12 @@ async function stopSharing(opts){
   if (stopWatch){ stopWatch(); stopWatch=null; }
   if (hbTimer){ clearInterval(hbTimer); hbTimer=null; }
   releaseWakeLock();
+  writeFailing=false;
   await rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:getSessionId() });
+  // The next trip gets a session id of its own, unless an organizer stopped
+  // this one: the block is on the session id, so keeping it is what makes
+  // the block hold on this phone.
+  if (!(opts && opts.blocked)) endSession();
   setShareUI('off','Not sharing');
   if (!(opts && opts.quiet)) showTicket(trip, endCoords);
 }
@@ -6232,27 +6301,35 @@ function checkControlsVisible(){
   note.classList.toggle('hidden', !gone);
 }
 function setShareUI(state,msg){
+  // Which controls show follows the trip, not the status line. A write that
+  // fails mid-trip is a message to read, not the end of the trip: the phone
+  // is still sending, so Stop stays within reach and the strip and the count
+  // stay with it. Showing Start there invited a second trip on top of the
+  // first, whose GPS watch Stop then never ended.
+  const live = state==='on' || sharing;
   document.getElementById('onbusDot').className='statusdot '+(state==='on'?'live':(state==='error'?'err':''));
   document.getElementById('onbusStatusText').textContent=msg;
-  document.getElementById('onbusSetup').classList.toggle('hidden', state==='on');
-  document.getElementById('onbusActive').classList.toggle('hidden', state!=='on');
+  document.getElementById('onbusSetup').classList.toggle('hidden', live);
+  document.getElementById('onbusActive').classList.toggle('hidden', !live);
   // The strip belongs to a live trip, not to the tab: before starting there
   // is nothing on it that this person put there, and after stopping it would
   // be showing other people's buses under a heading about theirs.
-  document.getElementById('onbusStripCard').classList.toggle('hidden', state!=='on');
-  document.getElementById('selfLegend').classList.toggle('hidden', state!=='on');
+  const stripCard=document.getElementById('onbusStripCard');
+  const stripWasHidden=stripCard.classList.contains('hidden');
+  stripCard.classList.toggle('hidden', !live);
+  document.getElementById('selfLegend').classList.toggle('hidden', !live);
   // A sharer's bus is the one the server flags as theirs, so a bus picked
   // from a popup before starting is superseded rather than kept to come back
   // after Stop and point at a trip this phone is no longer on.
   // Redrawn once as well, so the stop card joins the sharing tab the moment
   // the trip starts instead of at the first poll. Once: this runs on every
   // GPS fix, and the card's own copy being hidden is what says "not yet".
-  if (state==='on'){
+  if (live){
     if (ABOARD) setAboard(null);
     const ts=document.getElementById('tripStop');
     if (ts && ts.classList.contains('hidden')) renderBuses();
   }
-  if (state!=='on'){
+  if (!live){
     // The ring means "the bus you are sharing", and this phone is not sharing
     // any more. The rows in hand still say it is, so drop the flag and redraw
     // now rather than leave a ring on the tracker's strip until the next
@@ -6264,15 +6341,20 @@ function setShareUI(state,msg){
     endTripHello();
     renderBuses();
   }
-  refreshOnbusStrip();
+  // Only as the strip appears. This runs on every GPS fix, and
+  // refreshOnbusStrip() fetches past the throttle, so calling it each time
+  // turned every fix into a read: about one a second instead of one every
+  // 18, on the sharer's own mobile data.
+  if (live && stripWasHidden) refreshOnbusStrip();
   checkControlsVisible();
   syncTripMode();
 }
 // The strip is only worth anything if it is current, and the feed behind it
 // is paused or slowed whenever this tab is not the one on screen. So refetch
-// and re-measure at the two moments it becomes visible — sharing starting,
-// and the tab being opened mid-trip — rather than waiting out an interval
-// with a stale or unfitted strip on screen.
+// and re-measure at the moments it becomes visible or its own bus first
+// reaches the server — sharing starting, the tab being opened mid-trip, and
+// the trip's first write landing — rather than waiting out an interval with
+// a stale or unfitted strip on screen.
 function refreshOnbusStrip(){
   const card = document.getElementById('onbusStripCard');
   if (!card || card.classList.contains('hidden')) return;

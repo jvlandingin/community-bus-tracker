@@ -515,9 +515,13 @@ consequences worth knowing:
   once every 18 seconds instead of every 6, keeping two thirds of the saving.
   A sharer is watching for reassurance, not for a countdown. Both feeds pass
   their own last-fetch time, so each is throttled against itself, and the
-  strip is refetched and re-measured at the two moments it becomes visible
-  (`refreshOnbusStrip`) rather than waiting out an interval — a hidden strip
-  has no layout, so `fitTicks()` cannot size its labels until it is on screen.
+  strip is refetched and re-measured at the two moments it becomes visible,
+  and once more when the trip's first write lands (`refreshOnbusStrip`),
+  rather than waiting out an interval — a hidden strip has no layout, so
+  `fitTicks()` cannot size its labels until it is on screen. Only at those
+  moments: `setShareUI()` runs on every GPS fix, and for a while it called
+  `refreshOnbusStrip()` every time, which fetches past the throttle, so every
+  fix was a read — about one a second where the throttle meant one every 18.
 
 **The whole board can be switched off**, per route, from `admin.html`
 (`sightings_enabled` in the settings JSON). Off hides the card, the composer,
@@ -700,6 +704,11 @@ bus's public id and nothing else — the same id every map already receives,
 which `sql/04-session-id-privacy.sql` made something that cannot be turned
 back into a session id — so it adds nothing to what anyone can see, and it
 stops meaning anything when the trip ends, because the id dies with the row.
+That needs a new session id for every trip, which `stopSharing()` provides
+(`endSession()`). Until October 2026 the session id lasted as long as the tab,
+so a link sent for the morning ride found the same person's evening ride, and
+anyone reading the map could tie one phone's trips together. The one end that
+keeps it is an organiser's Stop, because the block is on that id.
 It goes to the phone's own sending sheet where there is one and to the
 clipboard everywhere else. The function is `sendBusLink` and the button
 `.buslink`, never anything with `share` in it, for the reason in "Content
@@ -739,6 +748,18 @@ rules above before it was built.
   battery. It is the token block redefined under `:root.trip-on`, so every card
   follows without a rule each, tied to `sharing` rather than to the status line
   so a passing error mid-trip does not flash it back to daylight.
+- **The controls follow the trip too** (October 2026). A write that failed
+  mid-trip used to swap Stop for Start while the trip ran on, and the next GPS
+  fix put "Sharing live" back over the error while the writes went on
+  failing. Tapping that Start opened a second GPS watch that Stop never ended,
+  which in the Android app left the foreground service and its notification
+  up after Stop. Now `setShareUI()` shows Stop for as long as `sharing` is
+  true, an error stays up until a write lands, `beginWatch()` ends any watch
+  it finds, and GPS giving up ends the trip through `stopSharing()` like any
+  other end. The three refusals that retrying cannot change end the trip as
+  well: a session an organiser stopped, a changed key and a full route. A
+  changed key is also forgotten, address bar included, so the next Start opens
+  the key box, which takes a whole pasted link as readily as the bare key.
 - **The salamat ticket.** Stop hands the sharer a ticket for the trip — where
   they got on and off, how long their bus was on the map, how many riders said
   salamat, and a stamp or two for the trip's shape — made on the phone from
@@ -1175,8 +1196,11 @@ be reversible.
 
 That table stores a random session id and an expiry, no location and nothing
 about a person, so the no-history property is intact. The honest limit, printed
-next to the button: someone can reload the page for a new session id, so this
-raises the effort from nothing to a deliberate act. Rotating the share key is
+next to the button: someone can open the tracker in a new tab for a new session
+id, so this raises the effort from nothing to a deliberate act. A reload is not
+enough, though this page said it was until October 2026: the id is kept in
+`sessionStorage`, which survives one, and the trip a block ends is the one trip
+that does not get a fresh id. Rotating the share key is
 still the only real expulsion, and it affects everyone. Per-sharer codes would
 be the proper fix if abuse ever becomes real; they are not worth the admin
 overhead before then.
@@ -1255,14 +1279,16 @@ deploy folder:
   and holds them to the design tokens (see "The look"). `test-boot.js`
   additionally loads both pages in a real DOM (jsdom)
   over a local HTTP server, including a deploy with `assets/` missing and a
-  config.txt that was never filled in.
+  config.txt that was never filled in, and drives a whole trip against a
+  stand-in for Supabase and the GPS (section 14).
 - `tests/db/00-legacy-baseline.sql` reconstructs the pre-migration database.
   `01-core-tests.sql` runs 55 behavioural checks against it, `02-rotation-tests`
   17 for key rotation, `03-kick-tests` 17 for stopping a sharer,
   `04-privacy-tests` 18 for session id privacy, `05-rotate-tests` 10 for the
-  rotation guard, `06-watching-tests` 32 for the watching count and
-  `07-thanks-tests` 38 for saying salamat — the last two almost entirely about
-  what they refuse to keep. Each runs against its own fresh database; see
+  rotation guard, `06-watching-tests` 32 for the watching count,
+  `07-thanks-tests` 38 for saying salamat — almost entirely about what they
+  refuse to keep, like the 06 suite — and `08-position-tests` 34 for what a
+  position write refuses: no position, a cap filled by dead rows, a speed. Each runs against its own fresh database; see
   `tests/README.md`, which is now accurate about that.
 
 Two lessons worth keeping. The reconstruction was built from a dump of function

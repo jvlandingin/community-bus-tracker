@@ -301,8 +301,10 @@ console.log('\n=== 14. the ticket: made on the phone, kept only if asked ===');
   check(/TKT_KEEP = albumEntry\(\{ when:now, dir:shareDir, fromShort:tktPlace\(fromIdx\), toShort:tktPlace\(toIdx\),\s*stamps:stamps, thanked:trip\.maxThanks > 0 \}\);/.test(show),
     'what Keep would keep is albumEntry() of the trip: the ends, the stamps, and only whether anyone thanked');
   check(/if \(!\(opts && opts\.quiet\)\) showTicket\(trip, endCoords\);/.test(html) &&
-        /await stopSharing\(\{ quiet:true \}\);\s*setShareUI\('error'/.test(html),
+        /await stopSharing\(\{ quiet:true, blocked:true \}\);\s*setShareUI\('error'/.test(html),
     'and a session the server has blocked ends on its error, not on a ticket');
+  check(/await stopSharing\(\{ quiet:true \}\);\s*if \(raw\.indexOf\('invalid key'\)>=0\) forgetKey\(\);\s*setShareUI\('error'/.test(html),
+    'as does a trip refused for a changed key or a full route');
 }
 
 console.log('\n=== 15. a kept ticket: the souvenir, not the stopwatch ===');

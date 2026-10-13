@@ -301,7 +301,7 @@
     <span class="badge">LIVE SHARERS</span>
     <div class="hint" style="margin-top:8px;">Everyone currently sharing a bus position. Stopping one removes the bus and blocks that phone from sharing for 6 hours, and their app tells them an organizer stopped it.</div>
     <div id="liveList" style="margin-top:6px;"></div>
-    <div class="hint warn" style="margin-top:10px;">Honest limit: someone determined can reload the page to get a new session and share again. Changing the share key below is the only real expulsion, and it affects everyone.</div>
+    <div class="hint warn" style="margin-top:10px;">Honest limit: someone determined can open the tracker in a new tab to get a new session and share again. Changing the share key below is the only real expulsion, and it affects everyone.</div>
   </div>
 
   <div class="card">
@@ -657,11 +657,18 @@ async function refreshSharers(){
   if (res.error) return;
   const list=document.getElementById('liveList');
   const data=res.data||[];
+  // A row with no position or direction got past the database until
+  // sql/08-position-checks.sql, and it is exactly the row an organiser needs
+  // a Stop button for, so it is listed as such rather than allowed to throw
+  // and take the whole list with it.
   list.innerHTML = data.length ? data.map(function(b){
-    const dir = b.direction==='north' ? '<span class="dir-n">▲ North</span>' : '<span class="dir-s">▼ South</span>';
+    const dir = b.direction==='north' ? '<span class="dir-n">▲ North</span>'
+              : b.direction==='south' ? '<span class="dir-s">▼ South</span>' : 'No direction';
+    const at = (Number.isFinite(b.lat) && Number.isFinite(b.lng))
+      ? b.lat.toFixed(4)+', '+b.lng.toFixed(4) : 'no position';
     return '<div class="item"><div>'+dir+
       (b.bus_label ? ' · <b>'+esc(b.bus_label)+'</b>' : ' · no bus number')+
-      '<div class="meta">'+b.lat.toFixed(4)+', '+b.lng.toFixed(4)+
+      '<div class="meta">'+at+
       ' · updated '+timeAgo(Date.parse(b.updated_at))+' ago · session '+esc(b.session_id.slice(0,8))+'...</div></div>'+
       '<button class="small btn-danger" onclick="kick(\''+esc(b.session_id)+'\')">Stop</button></div>';
   }).join('') : '<div class="hint">Nobody is sharing right now.</div>';

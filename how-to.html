@@ -588,17 +588,18 @@
      live dot's green. Gold and maroon are carrying the direction, so the
      mark had to be something other than a fill. */
   .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), 0 2px 6px rgba(43,35,32,.28); z-index:2;}
-  /* Copied from index.html: a reported sighting, hollow and dashed so it can
-     never be read as a live bus. */
-  .sightmk{
-    position:absolute; top:5px; transform:translateX(-50%);
-    width:16px; height:16px; border-radius:50%;
-    border:2px dashed var(--gold-deep); background:var(--surface);
-  }
-  .sightmk.sb{border-color:var(--brand-ink);}
-  /* Copied from index.html: the stretch a reported departure is probably on. */
-  .pip.band{width:22px; height:9px; border-radius:var(--r-s); opacity:.55;
-    background:repeating-linear-gradient(135deg, var(--gold-deep) 0 3px, transparent 3px 7px);}
+  /* Copied from index.html: a reported sighting, the stretch of the line the
+     bus is probably on by now, a soft wash of the line's colour. On the
+     real page it breathes slowly; here it holds still, a picture. */
+  .sightband{position:absolute; top:6px; height:14px; border-radius:var(--r-s); background:var(--gold); opacity:.5; pointer-events:none;
+    -webkit-mask-image:linear-gradient(90deg, transparent 0%, rgba(0,0,0,.45) 16%, #000 36%, #000 64%, rgba(0,0,0,.45) 84%, transparent 100%);
+    mask-image:linear-gradient(90deg, transparent 0%, rgba(0,0,0,.45) 16%, #000 36%, #000 64%, rgba(0,0,0,.45) 84%, transparent 100%);}
+  .sightband.sb{background:var(--maroon);}
+  /* The three ages of one sighting, in the sightings card. */
+  .ages{display:grid; gap:10px; margin-top:4px;}
+  .ages .row{display:grid; grid-template-columns:7.5em 1fr; align-items:center; gap:10px; font-size:var(--fs-label); color:var(--muted); font-weight:700; letter-spacing:.02em; text-transform:uppercase;}
+  .ages .track{position:relative; height:26px;}
+  .pip.band{width:22px; height:9px; border-radius:var(--r-s); opacity:.5; background:var(--gold);}
   /* The checkpoint names between the two lines. A tick is only its name now:
      the stations on the lines are the marks. */
   .ticks{position:relative; height:22px;}
@@ -803,7 +804,6 @@
   .pip.sb{background:var(--maroon);}
   .pip.sb .sign{fill:#ffb22e;}
   .pip.old{opacity:.45;}
-  .pip.ring{width:18px; height:18px; background:var(--surface); border:2px dashed var(--gold-deep); box-shadow:none;}
   .pip.mine{width:17px; height:17px; background:var(--mine); border:3px solid var(--surface); box-shadow:0 0 0 1.5px var(--mine);}
 
   /* Short numbered steps: one line each. */
@@ -1108,15 +1108,14 @@
         <div class="tick" style="left:85.71%"><span>PITX</span></div>
         <div class="tick last" style="left:100%"><span>AYALA</span></div>
       </div>
-      <div class="track sb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:14.29%"></i><i class="stn" style="left:28.57%"></i><i class="stn" style="left:42.86%"></i><i class="stn" style="left:57.14%"></i><i class="stn" style="left:71.43%"></i><i class="stn" style="left:85.71%"></i><i class="stn end last" style="left:100%"></i><div class="sightmk sb" id="stripRing" style="left:28.57%"></div><div class="buspill sb"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></div></div>
+      <div class="track sb"><div class="rail"></div><i class="stn end first" style="left:0%"></i><i class="stn" style="left:14.29%"></i><i class="stn" style="left:28.57%"></i><i class="stn" style="left:42.86%"></i><i class="stn" style="left:57.14%"></i><i class="stn" style="left:71.43%"></i><i class="stn" style="left:85.71%"></i><i class="stn end last" style="left:100%"></i><div class="sightband sb" id="stripRing" style="left:22%;width:14%"></div><div class="buspill sb"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></div></div>
       <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
     </div>
     <ul class="keys" aria-label="What the marks mean">
       <li><span class="sw"><span class="pip"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></span></span><span><b>Gold, top line:</b> a bus going to One Ayala</span></li>
       <li><span class="sw"><span class="pip sb"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></span></span><span><b>Maroon, bottom line:</b> a bus going to Mendez</span></li>
       <li><span class="sw"><span class="pip old"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></span></span><span><b>Faded:</b> not updated lately. A guess, not a position</span></li>
-      <li id="stripRingNote"><span class="sw"><span class="pip ring"></span></span><span><b>Dashed ring:</b> a sighting. Someone saw a bus there</span></li>
-      <li id="stripBandNote"><span class="sw"><span class="pip band"></span></span><span><b>Hatched stretch:</b> where a bus someone reported leaving the terminal probably is, going by past trips</span></li>
+      <li id="stripRingNote"><span class="sw"><span class="pip band"></span></span><span><b>Glowing stretch:</b> a sighting. Where a bus someone saw probably is by now, going by past trips</span></li>
       <li><span class="sw"><span class="pip mine"></span></span><span><b>Purple:</b> your saved stop</span></li>
     </ul>
 
@@ -1213,10 +1212,9 @@
     <span class="badge">Sightings</span>
     <h2>Nobody sharing? Post a sighting</h2>
     <p>Saw a bus? Pick the direction, the nearest place, and the time if it
-      was not just now. It shows on the strip as a <b>dashed ring</b>, so others
-      have something to go on. Did it just leave the terminal? Pick <b>Just
-      left</b> instead, and the strip shades the stretch it is probably on by
-      now.</p>
+      was not just now. The strip then shows a <b>glowing stretch</b> where
+      that bus probably is by now, moving along as the minutes pass. Did it
+      just leave the terminal? Pick <b>Just left</b>.</p>
     <figure>
       <div class="demo" aria-hidden="true">
         <div class="demo-fold">
@@ -1239,12 +1237,24 @@
       </div>
       <figcaption>Picked, not typed. The board opens by itself when <b>no bus is live</b>.</figcaption>
     </figure>
-    <p class="hint">A dashed ring is one person’s word, already a few minutes
-      old. It is never a live bus, and it clears itself after about one gap
-      between trips. The shaded stretch is a range read off how long past
-      trips took, from the slowest to the fastest: places, never an arrival
-      time, and it fades once even the slowest trip would be past the last
-      place it knows.</p>
+    <p>The glow is shaped like a bell. It is densest where the bus most
+      likely is and thins out towards where it would be only if the trip were
+      unusually fast or slow. The longer since the sighting, the wider and
+      fainter it gets, because the same one bus could be on more of the road.</p>
+    <figure>
+      <div class="demo ages" aria-hidden="true">
+        <div class="row"><span>Just seen</span><div class="track nb"><div class="rail"></div><div class="sightband" style="left:27%;width:10%;opacity:.72"></div></div></div>
+        <div class="row"><span>Half an hour on</span><div class="track nb"><div class="rail"></div><div class="sightband" style="left:36%;width:26%;opacity:.5"></div></div></div>
+        <div class="row"><span>Two hours on</span><div class="track nb"><div class="rail"></div><div class="sightband" style="left:48%;width:48%;opacity:.33"></div></div></div>
+      </div>
+      <figcaption>One sighting, three ages: further along, wider, fainter.</figcaption>
+    </figure>
+    <p class="hint">The glow is one person’s word, already minutes old, never
+      a live bus. Its stretch is a range read off how long past trips took,
+      from the slowest to the fastest: places, never an arrival time. It
+      fades once even the slowest trip would be past the last place it knows,
+      and where nothing is known about the road ahead it stays put for about
+      one gap between trips.</p>
   </div>
 
   <!-- ================= SHARING ================= -->
@@ -1450,7 +1460,7 @@ document.documentElement.className = 'js';
 // too many is a much smaller problem than hiding one that is really there.
 (function(){
   var hide = function(){
-    ['sightingsGuide','sightingsJump','stripRing','stripRingNote','stripBandNote'].forEach(function(id){
+    ['sightingsGuide','sightingsJump','stripRing','stripRingNote'].forEach(function(id){
       var el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });

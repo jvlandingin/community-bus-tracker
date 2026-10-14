@@ -587,10 +587,31 @@ writes one canonical shape (`▲ Northbound at Amadeo · optional note`) into th
 same free-text `body` column the board has always had. Deliberately not a
 schema change: no migration, the admin page still shows a readable sentence,
 and every sighting posted before this existed still renders as the text it is.
-`parseSighting()` reads the shape back so recent ones can be drawn on the strip
-as hollow dashed rings — never solid, never the bus glyph, because a sighting
-is one person's word with no update coming after it. They clear from the strip
-after one headway, which is when the next bus has overtaken the claim.
+`parseSighting()` reads the shape back so recent ones can be drawn on the
+strip. They were hollow dashed rings at the place seen; since October 2026
+every sighting is a **glowing stretch**: a soft wash of the line's colour that
+breathes slowly in the live badges' rhythm, never the bus glyph, because a sighting is one
+person's word with no update coming after it. With a travel-time row for its
+direction the stretch counts from the place the bus was seen and moves, the
+same way a departure's does (below); without one, or seen past the row's last
+place, it stays where it was seen and clears after one headway, which is when
+the next bus has overtaken the claim. One look for all sightings, because two
+marks meaning "someone saw a bus" was one more than a glance can learn. The
+stripes the stretch first had were replaced by a travelling sheen the same
+day, and the sheen by the breath the day after, chosen from seven treatments
+drawn side by side on the real strip (a sheen, a breath, a cloud of dots, a
+capsule with a roaming dot, a lit rail, a comet, a range bar with marks): the
+breath keeps one rhythm across the whole strip, and the bus pills already had
+it. **The glow is shaped like a bell**, at the maintainer's suggestion:
+a mask makes it densest through the middle of the measured stretch and thins
+it to nothing a quarter-stretch beyond each end, and `renderStrip()` lowers its
+opacity as the stretch widens, so the same one bus spread over more road is
+drawn as exactly that. Not a real distribution (the rows are a min and a max
+across trips, nothing in between), but the honest picture of one: a reader
+sees at once where the bus most likely is and how sure the page is. The guide
+shows one sighting at three ages. Live bus pills on the strip breathe like the
+map's live badges and their coach rocks at idle, so a bus that is reporting
+right now looks like it.
 
 **A sighting may say when** (October 2026, the day the departure report
 shipped, because its first reader asked the obvious question). The composer

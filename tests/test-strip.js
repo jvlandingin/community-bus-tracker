@@ -214,12 +214,40 @@ function alongLeg(i, km) {
   check(sS && !sS.north && near(sS.from, 5 - (50 - 40) / (90 - 40), 1e-6) && near(sS.to, 5 - (50 - 20) / (60 - 20), 1e-6),
      'southbound: the stretch runs down the indices from One Ayala', sS && `${sS.from.toFixed(2)} .. ${sS.to.toFixed(2)}`);
   check(S.spanWords(sS, CP) === 'between PITX and Imus', 'southbound words put the place behind first', S.spanWords(sS, CP));
+  // A plain sighting counts from the place it was seen, with the row's
+  // minutes from there on; each leg is the shorter and the longer of the
+  // two columns' differences, so the fastest edge stays ahead.
+  const iAm = CP.findIndex(c => c.short === 'AMADEO');
+  const s0 = S.departedSpan(early, CP, 0, iAm);
+  check(s0 && s0.from === iAm && s0.to === iAm, 'seen at Amadeo just now: the stretch is Amadeo');
+  const s20 = S.departedSpan(early, CP, 20, iAm);
+  // Amadeo to Gen. Trias: lo column 21 to 46 (25 min), hi column 46 to 68 (22 min): 22 for the fastest, 25 for the slowest.
+  check(s20 && near(s20.to, iAm + 20 / 22, 1e-6) && near(s20.from, iAm + 20 / 25, 1e-6) && s20.to > s20.from,
+     '20 min after Amadeo: between Amadeo and Gen. Trias, fastest edge ahead', s20 && `${s20.from.toFixed(2)} .. ${s20.to.toFixed(2)}`);
+  check(S.spanWords(s20, CP) === 'between Amadeo and Gen. Trias', 'and the words say so', S.spanWords(s20, CP));
+  // Gen. Trias to Imus: lo 46 to 67 (21), hi 68 to 100 (32): fastest 21, slowest 32; cumulative lo 43, hi 57.
+  const s50 = S.departedSpan(early, CP, 50, iAm);
+  check(s50 && s50.to === iAm + 2 && near(s50.from, iAm + 1 + (50 - 25) / 32, 1e-6),
+     '50 min after Amadeo: the fastest edge has reached Imus, the last place the row knows, and stops there; the slowest is past Gen. Trias', s50 && `${s50.from.toFixed(2)} .. ${s50.to.toFixed(2)}`);
+  check(S.departedSpan(early, CP, 58, iAm) === null, 'past the slowest trip\'s Imus from Amadeo (57 min): dropped');
+  const iPitx = CP.findIndex(c => c.short === 'PITX');
+  check(S.departedSpan(early, CP, 5, iPitx) === null, 'seen at a place the row has no column for: nothing to count from');
+  check(S.departedSpan(early, CP, 30, 0).to === sp(early, 30).to, 'from the terminal the columns are used exactly as measured');
+
   // Nothing here may ever turn into a time to come.
   const blk = html.slice(html.indexOf('// ---- A departure report'), html.indexOf('// ---- END ROUTE PROGRESS'));
   check(!/\b(eta|arriv\w+ in|minutes? (to|until|away)|mins? (to|until|away))\b/i.test(blk.replace(/\/\/.*$/gm, '')),
      'the span code never speaks of minutes to come');
   check(!/\d+ ?min/.test(html.slice(html.indexOf('function departedSentence('), html.indexOf('// The sightings board is folded'))),
      'nor does the sentence built from it');
+  // The glow is a bell that widens and fades with uncertainty, and the guide says so.
+  const strip = html.slice(html.indexOf('function renderStrip('), html.indexOf('function syncMineStation('));
+  check(/const alpha = \(0\.72 - 0\.4 \* Math\.min\(1, \(hi - lo\) \/ 40\)\)/.test(strip) && /tail = \(hi - lo\) \* 0\.25/.test(strip),
+     'the glow fades as the stretch widens and tails off a quarter beyond each end');
+  check(/\.sightband\{[^}]*mask-image:linear-gradient\(90deg, transparent 0%/.test(html), 'and is masked to a bell');
+  const guide = fs.readFileSync(path.join(ROOT, 'how-to.html'), 'utf8');
+  check(/shaped like a bell/.test(guide) && /wider and\s+fainter/.test(guide) && /class="demo ages"/.test(guide),
+     'the guide explains the bell and shows one sighting at three ages');
 }
 
 // 10. The two verbs a sighting can carry.

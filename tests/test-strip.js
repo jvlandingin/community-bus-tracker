@@ -14,7 +14,7 @@ new Function('S', hav + shipped +
 // parseSighting lives with the board, not in the block; it reads CHECKPOINTS.
 const sightSrc = html.slice(html.indexOf('const SIGHT_RE ='), html.indexOf('let SIGHTINGS = ['));
 const P = {};
-new Function('P', 'CHECKPOINTS', sightSrc + 'P.parseSighting=parseSighting;P.originName=originName;')(P, (function(){
+new Function('P', 'CHECKPOINTS', sightSrc + 'P.parseSighting=parseSighting;P.originName=originName;P.sightingTime=sightingTime;')(P, (function(){
   const t = fs.readFileSync(path.join(ROOT, 'config-template.txt'), 'utf8').split(/\r?\n/);
   return t.filter(l => l.trim().startsWith('CHECKPOINT =')).map(l => { const p = l.split('=')[1].split('|').map(x => x.trim()); return { name: p[0], short: p[1] }; });
 })());
@@ -236,6 +236,28 @@ function alongLeg(i, km) {
   check(wrongEnd && wrongEnd.kind === 'at', 'nor is "left" the far terminal a departure');
   check(P.parseSighting('bus coming') === null && P.parseSighting('▲ Northbound left Nowhere') === null, 'free text and unknown places still do not place');
   check(P.originName('north') === 'Mendez Crossing' && P.originName('south') === 'One Ayala', 'the composer names the right terminal');
+  check(at.at === null && left.at === null, 'without a stated time, none is read');
+  const timed = P.parseSighting('▲ Northbound at Amadeo, 3:05 PM · heavy traffic');
+  check(timed && timed.kind === 'at' && CP[timed.idx].short === 'AMADEO' && timed.at === 15 * 60 + 5, 'a stated time after the place is read as minutes of the day', timed && String(timed.at));
+  const timedLeft = P.parseSighting('▲ Northbound left Mendez Crossing, 12:40 am');
+  check(timedLeft && timedLeft.kind === 'left' && timedLeft.at === 40, 'a departure may carry one too; 12:40 am is forty minutes past midnight');
+  const noon = P.parseSighting('▼ Southbound at PITX, 12:00 PM');
+  check(noon && noon.at === 12 * 60, 'noon is 12:00 PM');
+  check(P.parseSighting('▲ Northbound at Amadeo, 25:00 PM') === null || P.parseSighting('▲ Northbound at Amadeo, 25:00 PM').at === null, 'a time that is not a time is ignored, not a crash');
+}
+
+// 11. When a sighting happened: the stated time against the post's time.
+{
+  const day = new Date(2026, 9, 16, 15, 25).getTime();   // posted Friday 3:25 PM
+  const M = (h, m) => h * 60 + m;
+  check(P.sightingTime(day, null) === day, 'no stated time: the post time');
+  check(P.sightingTime(day, M(15, 5)) === day - 20 * 60000, '3:05 PM stated at 3:25: twenty minutes back');
+  check(P.sightingTime(day, M(14, 25)) === day - 60 * 60000, 'an hour back is the limit and is allowed');
+  check(P.sightingTime(day, M(14, 24)) === day, 'older than an hour: history, so the post time stands');
+  check(P.sightingTime(day, M(16, 0)) === day, 'a time after the post: nobody saw a bus that has not left, the post time stands');
+  check(P.sightingTime(day, M(15, 25)) === day && P.sightingTime(day, M(15, 26)) === day, 'the same minute, or the next, is now');
+  const night = new Date(2026, 9, 17, 0, 10).getTime();  // posted 12:10 AM
+  check(P.sightingTime(night, M(23, 55)) === night - 15 * 60000, 'just after midnight, 11:55 PM is last night, fifteen minutes back');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

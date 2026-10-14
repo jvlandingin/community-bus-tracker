@@ -592,6 +592,18 @@ as hollow dashed rings — never solid, never the bus glyph, because a sighting
 is one person's word with no update coming after it. They clear from the strip
 after one headway, which is when the next bus has overtaken the claim.
 
+**A sighting may say when** (October 2026, the day the departure report
+shipped, because its first reader asked the obvious question). The composer
+has a "when" choice, just now to about an hour ago, and writes the clock time
+after the place: `▲ Northbound at Amadeo, 3:05 PM`. `sightingTime()` reads it
+against the post's own time and uses it for the ring's life and the band's
+start, so a rider relaying an operator's "paalis na" ten minutes later still
+starts the band at the departure. Two fences: a stated time after the post is
+ignored, and so is one more than an hour before it, since a claim that old is
+history and a departure that old would already shade most of the route. The
+first version stamped every sighting at the moment of posting, which was
+wrong for exactly the posts the board exists for.
+
 **A sighting can say the bus has just left** (October 2026). The operators'
 most common post is "paalis na" from the terminal and nothing after, and in
 the riders' chat "where is it now" is 43% of every question asked about a bus.

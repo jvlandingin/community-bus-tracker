@@ -2047,6 +2047,23 @@
           </div>
           <select id="sightWhere" aria-label="Where you saw the bus"></select>
           <div style="height:8px"></div>
+          <!-- When, because the post is often minutes behind the sighting:
+               someone relaying "paalis na" from the chat, or posting after
+               the bus has gone by. Written into the body as a clock time. -->
+          <select id="sightWhen" aria-label="When you saw it">
+            <option value="0">Just now</option>
+            <option value="5">About 5 minutes ago</option>
+            <option value="10">About 10 minutes ago</option>
+            <option value="15">About 15 minutes ago</option>
+            <option value="20">About 20 minutes ago</option>
+            <option value="30">About 30 minutes ago</option>
+            <option value="45">About 45 minutes ago</option>
+            <option value="60">About an hour ago</option>
+            <option value="90">About 1½ hours ago</option>
+            <option value="120">About 2 hours ago</option>
+            <option value="180">About 3 hours ago</option>
+          </select>
+          <div style="height:8px"></div>
           <input type="text" id="sightingInput" maxlength="80" placeholder="Anything else? (optional)">
           <div style="height:8px"></div>
           <button class="big btn-ghost" type="submit">Post sighting</button>
@@ -5210,7 +5227,12 @@ function applySightingsSetting(){
 // the strip draws where it probably is by now from the TRAVEL lines; it only
 // counts as a departure when the place really is that direction's terminal,
 // otherwise it is read as a plain sighting there.
-const SIGHT_RE = /^[▲▼]\s+(Northbound|Southbound)\s+(at|left)\s+([^·]+?)(?:\s+·\s+(.*))?$/;
+// A time, optionally, after the place: "▲ Northbound at Amadeo, 3:05 PM".
+// The person posting often saw the bus a while ago, or is relaying an
+// operator's "paalis na" from the chat, and a sighting stamped at the moment
+// of posting put the ring in the wrong minute and started a departure's band
+// late. Without a time, the post's own time stands, as it always did.
+const SIGHT_RE = /^[▲▼]\s+(Northbound|Southbound)\s+(at|left)\s+([^·,]+?)(?:,\s*(\d{1,2}:\d{2})\s*(AM|PM))?(?:\s+·\s+(.*))?$/i;
 function parseSighting(body){
   const m = SIGHT_RE.exec((body||'').trim());
   if (!m) return null;
@@ -5222,7 +5244,32 @@ function parseSighting(body){
   if (idx < 0) return null;                 // a checkpoint this route no longer has
   const direction = m[1]==='Northbound' ? 'north' : 'south';
   const origin = direction === 'north' ? 0 : CHECKPOINTS.length - 1;
-  return { direction: direction, idx: idx, kind: (m[2] === 'left' && idx === origin) ? 'left' : 'at' };
+  let at = null;
+  if (m[4]){
+    const hm = m[4].split(':'); const hh = parseInt(hm[0], 10), mi = parseInt(hm[1], 10);
+    if (hh >= 1 && hh <= 12 && mi >= 0 && mi < 60) at = (hh % 12 + (m[5].toUpperCase() === 'PM' ? 12 : 0)) * 60 + mi;
+  }
+  return { direction: direction, idx: idx, kind: (m[2].toLowerCase() === 'left' && idx === origin) ? 'left' : 'at', at: at };
+}
+// When the sighting happened, in ms: the stated clock time on the day it was
+// posted, read against the post's own time. The post time stands when there
+// is no stated time, when the stated time is after the post (nobody saw a
+// bus that has not left yet), or when it is more than four hours before it:
+// four hours is the longest trip on this route, the same figure as
+// EN_ROUTE_MIN, and a sighting older than a whole trip describes a bus that
+// has arrived. Inside that, the band and the ring do their own fading, so a
+// rider three hours down the road still gets the stretch a departure from
+// this morning is probably on. Just before midnight the stated time belongs
+// to the day before.
+const SIGHT_BACK_MS = 240 * 60000;
+function sightingTime(createdMs, atMins){
+  if (atMins === null || atMins === undefined || !(createdMs > 0)) return createdMs;
+  const d = new Date(createdMs);
+  d.setHours(Math.floor(atMins / 60), atMins % 60, 0, 0);
+  let t = d.getTime();
+  if (t > createdMs + 60000) t -= 24 * 3600000;
+  if (t > createdMs + 60000 || createdMs - t > SIGHT_BACK_MS) return createdMs;
+  return Math.min(t, createdMs);
 }
 // The terminal a direction leaves from, for the composer's "just left" line.
 function originName(direction){
@@ -5261,7 +5308,7 @@ async function pollSightings() {
   const n = (data && data.length) || 0;
   SIGHTINGS = (data||[]).map(function(s){
     const p = parseSighting(s.body);
-    return p ? { direction:p.direction, idx:p.idx, kind:p.kind, ts:Date.parse(s.created_at) } : null;
+    return p ? { direction:p.direction, idx:p.idx, kind:p.kind, ts:sightingTime(Date.parse(s.created_at), p.at) } : null;
   }).filter(Boolean);
   renderBuses();                             // the strip owns the ghost markers
   document.getElementById('sightingsList').innerHTML = n
@@ -5280,8 +5327,14 @@ async function addSighting() {
   if (!where){ sightError('Pick where you saw it.'); return; }
   sightError('');
   const note = input.value.trim();
+  const ago = parseInt(document.getElementById('sightWhen').value, 10) || 0;
+  let when = '';
+  if (ago > 0){
+    const d = new Date(Date.now() - ago * 60000);
+    when = ', ' + fmtHM((d.getHours()<10?'0':'')+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes());
+  }
   const val = (sightDir==='north' ? '▲ Northbound' : '▼ Southbound') +
-              (where === '__left' ? ' left ' + originName(sightDir) : ' at ' + where) +
+              (where === '__left' ? ' left ' + originName(sightDir) : ' at ' + where) + when +
               (note ? ' · ' + note : '');
   const res = await rpc('add_sighting', { p_slug:CFG.ROUTE_SLUG, p_body:val.slice(0,140) });
   if (res.error){
@@ -5295,6 +5348,7 @@ async function addSighting() {
   // place selected invites posting the same sighting twice.
   input.value='';
   document.getElementById('sightWhere').value='';
+  document.getElementById('sightWhen').value='0';
   pickSightDir(null);
   pollSightings();
 }

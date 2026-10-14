@@ -63,6 +63,12 @@ What they established is recorded here instead.
   times per checkpoint were read off each run's progress curve, not off the
   nearest report, so a report past Imus bounds Imus rather than standing in
   for it. `docs/ARCHITECTURE.md` has the fences.
+- **The first thing the maintainer asked on seeing the board:** what if the
+  sighting was twenty minutes ago? The composer stamped everything at the
+  moment of posting, which was wrong for exactly the posts the chat showed
+  are common, riders relaying an operator's "paalis na". Fixed the same day
+  with a "when" choice and a clock time in the body. Should have shipped
+  with the departure report.
 - **Operators already share live locations in the chat**, 319 of them plus
   pins, and riders complain that WhatsApp live locations freeze. That is the
   pitch for the tracker, which the chat never mentions in that period, even

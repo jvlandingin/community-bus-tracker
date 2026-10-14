@@ -157,6 +157,27 @@ begin
     format($q$ select public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42', %L::jsonb) $q$,
            jsonb_set(good, '{hours,north}', '[["10:00","06:00"]]'::jsonb)::text),
     'start must be before end', 'inverted window rejected');
+  -- October 2026: a window may name its own interval as a third field,
+  -- beside windows that do not; the route's headway_min covers those.
+  perform public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42',
+           jsonb_set(good, '{hours,north}', '[["03:00","06:30",30],["11:00","15:30"]]'::jsonb));
+  perform assert(
+    (select (public.get_settings('wonderful-mendez-ayala'))->'settings'->'hours'->'north'->0->>2) = '30'
+    and (select jsonb_array_length((public.get_settings('wonderful-mendez-ayala'))->'settings'->'hours'->'north'->1)) = 2,
+    'a window with its own interval saves and reads back beside one without');
+  perform assert_err(
+    format($q$ select public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42', %L::jsonb) $q$,
+           jsonb_set(good, '{hours,north}', '[["03:00","06:30","soon"]]'::jsonb)::text),
+    'number of minutes', 'an interval that is not a number rejected');
+  perform assert_err(
+    format($q$ select public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42', %L::jsonb) $q$,
+           jsonb_set(good, '{hours,north}', '[["03:00","06:30",0]]'::jsonb)::text),
+    'interval out of range', 'a zero interval rejected');
+  perform assert_err(
+    format($q$ select public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42', %L::jsonb) $q$,
+           jsonb_set(good, '{hours,north}', '[["03:00","06:30",30,1]]'::jsonb)::text),
+    '[start,end]', 'a fourth field rejected');
+  perform public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42', good);
   perform assert_err(
     format($q$ select public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42', %L::jsonb) $q$,
            jsonb_set(good, '{max_sessions}', '9999'::jsonb)::text),

@@ -11,7 +11,11 @@ new Function('S', 'let SET={hours:{north:[],south:[]}};' + block +
   'S.nextTrip=function(d,w,m){SET.hours[d]=w;return nextTrip(d,m);};' +
   'S.serviceState=serviceState;S.inParolSeason=inParolSeason;' +
   'S.firstNextTrip=function(n,s,m){SET.hours.north=n;SET.hours.south=s;return firstNextTrip(m);};' +
-  'S.routeState=function(n,s,m){SET.hours.north=n;SET.hours.south=s;return routeState(m);};')(S);
+  'S.routeState=function(n,s,m){SET.hours.north=n;SET.hours.south=s;return routeState(m);};' +
+  'S.windowHeadway=windowHeadway;' +
+  'S.headwayAt=function(d,w,hw,m){SET.hours[d]=w;SET.headway_min=hw;return headwayAt(d,m);};' +
+  'S.anyWindowHeadway=function(n,s){SET.hours.north=n;SET.hours.south=s;return anyWindowHeadway();};' +
+  'S.headwayNowLabel=function(n,s,hw,m){SET.hours.north=n;SET.hours.south=s;SET.headway_min=hw;return headwayNowLabel(m);};')(S);
 
 let fail = 0;
 const check = (c, label, note) => { console.log((c ? 'PASS  ' : 'FAIL  ') + label + (note?'   '+note:'')); if (!c) fail++; };
@@ -41,6 +45,39 @@ check(S.withinWindows(single, M(12,0)) === true && S.withinWindows(single, M(19,
 check(S.hoursLabel('north', poster) === '6:00 AM - 10:00 AM\n3:40 PM - 8:00 PM',
    'split hours display as two lines', JSON.stringify(S.hoursLabel('north', poster)));
 check(S.hoursLabel('south', []) === 'see schedule', 'missing hours degrade politely');
+
+// The October 2026 poster: the pre-dawn trips to Makati every 30 minutes,
+// the trips back every 40, and one window that names no interval at all.
+// A window's third field is its own interval; the route's headway_min
+// stands in wherever a window has none.
+const oct = { north: [['03:00','06:30',30], ['11:00','15:30']],
+              south: [['06:00','07:00',40], ['15:40','20:00',40]] };
+check(S.windowHeadway(['03:00','06:30',30]) === 30, 'a window may carry its own interval');
+check(S.windowHeadway(['11:00','15:30']) === null && S.windowHeadway(['11:00','15:30','soon']) === null
+   && S.windowHeadway(['11:00','15:30',0]) === null && S.windowHeadway(['11:00','15:30',721]) === null,
+   'none, junk, or an impossible number: no interval of its own');
+check(S.withinWindows(oct.north, M(4,0)) === true && S.serviceState(oct.south, M(16,0)) === 'departing'
+   && S.nextTrip('south', oct.south, M(12,0)) === '3:40 PM',
+   'a third field changes nothing about when the window is open');
+check(S.headwayAt('north', oct.north, 45, M(4,0)) === 30, '4:00am northbound: the pre-dawn window\'s own 30');
+check(S.headwayAt('south', oct.south, 45, M(17,0)) === 40, '5:00pm southbound: the afternoon window\'s own 40');
+check(S.headwayAt('north', oct.north, 45, M(12,0)) === 45, 'noon northbound: a window without one runs at the route\'s');
+check(S.headwayAt('north', oct.north, 45, M(8,0)) === 45, '8:00am, between windows with buses en route: the route\'s');
+check(S.headwayAt('north', [], 45, M(8,0)) === 45 && S.headwayAt('north', [['xx:yy','10:00',20]], 45, M(8,0)) === 45,
+   'no hours, or unreadable ones: the route\'s');
+check(S.hoursLabel('north', oct.north) === '3:00 AM - 6:30 AM · every 30 min\n11:00 AM - 3:30 PM',
+   'a window with its own interval says so on its line; one without stays as it was', JSON.stringify(S.hoursLabel('north', oct.north)));
+check(S.anyWindowHeadway(oct.north, oct.south) === true && S.anyWindowHeadway(poster, poster) === false,
+   'the words around the schedule know whether any window has its own');
+check(S.headwayNowLabel(oct.north, oct.south, 45, M(6,15)) === '▲ every 30 min · ▼ every 40 min',
+   '6:15am, both directions leaving at different intervals: both named', S.headwayNowLabel(oct.north, oct.south, 45, M(6,15)));
+check(S.headwayNowLabel(oct.north, oct.south, 45, M(4,0)) === 'every 30 min', '4:00am, only northbound leaving: one number');
+check(S.headwayNowLabel(poster, poster, 30, M(7,0)) === 'every 30 min', 'the March poster, no intervals of its own: the route\'s number');
+check(S.headwayNowLabel(poster, poster, 30, M(14,0)) === 'every 30 min', 'nothing departing: still a number, never blank');
+// Every reader of the interval goes through headwayAt, so a window's own
+// number reaches the headline, the sightings' life on the strip and the card.
+check(!/SET\.headway_min/.test(html.slice(html.indexOf('// ---- END operating hours'))),
+   'nothing outside the hours block reads the route-wide number directly');
 
 // The empty headline names the next departure. It used to name the day's
 // first window whatever the time, so every afternoon between the windows it

@@ -238,6 +238,21 @@ the sharer cap moved out of config.txt in July 2026. The company's own poster
 says information "may change anytime without prior notice", so a schedule change
 must not require a redeploy. The app re-reads settings every 60 seconds.
 
+**The interval belongs to the window, not the route** (October 2026). That
+month's poster runs the pre-dawn trips to Makati every 30 minutes and the
+afternoon trips back every 40, and the page had one number for both. A
+departure window may now carry its own interval as a third field; the route's
+`headway_min` stays as the interval for any window that names none, so nothing
+stored had to change. `headwayAt()` in the tested hours block is the only place
+that decides which number is in force at a given minute in a given direction,
+and `test-hours.js` fails if anything outside that block reads the route-wide
+number directly, because the first version of this had three readers and a
+window's own interval would have reached only one of them. What the schedule
+still cannot say is **which day of the week**: the same poster gives Saturday
+and Sunday their own windows, and the settings have one set for every day. That
+is a shape change to `hours`, not a third field, and is the next deliberate
+conversation about this object.
+
 **Reads do not write.** An earlier version ran a DELETE on every read. That was
 documented as fixed long before it actually was: the deployed SQL still swept on
 read until the July 2026 migration. It is now genuinely true. Cleanup happens

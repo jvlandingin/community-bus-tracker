@@ -2712,10 +2712,52 @@ function withinHours(dir) {
   const now = new Date();
   return withinWindows(SET.hours[dir], now.getHours()*60 + now.getMinutes());
 }
+// A window may carry its own interval as a third field, [start, end, mins]:
+// the October 2026 poster has the pre-dawn trips to Makati every 30 minutes
+// and the afternoon trips back every 40, which one number for the whole
+// route could not say. Null when the window has none, or has junk there, and
+// the route's headway_min then stands in for it everywhere below.
+function windowHeadway(w){
+  const n = w && w.length > 2 ? Number(w[2]) : NaN;
+  return isFinite(n) && n >= 1 && n <= 720 ? n : null;
+}
+function routeHeadway(){
+  return SET.headway_min || 30;
+}
+// The interval in force for one direction at nowMins: the departing window's
+// own if it has one, else the route's. Between windows, and after the last
+// departure while buses are still en route, it is the route's.
+function headwayAt(dir, nowMins){
+  const w = SET.hours[dir] || [];
+  for (let i = 0; i < w.length; i++){
+    const a = parseHM(w[i][0]), b = parseHM(w[i][1]);
+    if (a === null || b === null) continue;
+    if (nowMins >= a && nowMins <= b) return windowHeadway(w[i]) || routeHeadway();
+  }
+  return routeHeadway();
+}
+// Whether any window in either direction names its own interval, which is
+// when the words around the schedule stop quoting the route's one number.
+function anyWindowHeadway(){
+  return ['north','south'].some(function(d){
+    return (SET.hours[d] || []).some(function(w){ return windowHeadway(w) !== null; });
+  });
+}
+// "every 30 min" for the hours card while trips are leaving, or both
+// directions' when they are leaving at different intervals.
+function headwayNowLabel(nowMins){
+  const dirs = ['north','south'].filter(function(d){ return serviceState(SET.hours[d], nowMins) === 'departing'; });
+  const hs = dirs.map(function(d){ return headwayAt(d, nowMins); });
+  if (!hs.length || hs.every(function(h){ return h === hs[0]; })) return 'every ' + (hs[0] || routeHeadway()) + ' min';
+  return dirs.map(function(d, i){ return (d === 'north' ? '▲' : '▼') + ' every ' + hs[i] + ' min'; }).join(' · ');
+}
 function hoursLabel(dir){
   const w = SET.hours[dir]||[];
   if (!w.length) return 'see schedule';
-  return w.map(function(x){ return fmtHM(x[0])+' - '+fmtHM(x[1]); }).join('\n');
+  return w.map(function(x){
+    const h = windowHeadway(x);
+    return fmtHM(x[0])+' - '+fmtHM(x[1]) + (h ? ' · every ' + h + ' min' : '');
+  }).join('\n');
 }
 // The next departure from one end, looking forward from nowMins. This used
 // to be the day's first window whatever the time, which is right before dawn
@@ -4640,9 +4682,11 @@ function renderBuses() {
   // it on the strip would claim a currency it does not have. Tying the window
   // to the route's own headway means a route running every 10 minutes clears
   // them six times faster than one running hourly, with nothing to configure.
-  const ghostWindow = (SET.headway_min || 30) * 60000;
+  // The headway is the one in force in that direction when the sighting was
+  // posted, since a window may run at its own interval.
   const ghosts = (sightingsOn() && !WALK ? SIGHTINGS : []).filter(function(s){
-    return Date.now() - s.ts <= ghostWindow;
+    const at = new Date(s.ts);
+    return Date.now() - s.ts <= headwayAt(s.direction, at.getHours()*60 + at.getMinutes()) * 60000;
   });
   const trackGhosts = ghosts.filter(function(s){
     return dirFilter === 'all' || s.direction === dirFilter;
@@ -4679,7 +4723,7 @@ function renderBuses() {
     setHeadline(text, shown.length + (shown.length===1?' bus live':' buses live'));
     sub.textContent = (freshest.direction==='north'?'Northbound':'Southbound')+
       (pl ? ' '+pl.sentence : '')+' · updated '+timeAgo(freshest.ts)+
-      ' ago · trips every '+SET.headway_min+' mins';
+      ' ago · trips every '+headwayAt(freshest.direction, nowMins())+' mins';
   } else {
     const dirsOpen = withinHours('north')||withinHours('south');
     setHeadline(text, 'No buses live');
@@ -6426,7 +6470,7 @@ function renderContactLine(){
 function hoursStateLine(){
   const m = nowMins(), st = routeState(m);
   const next = nextTrip('north', m) || nextTrip('south', m);
-  if (st === 'departing') return ['Trips leaving now', 'every ' + SET.headway_min + ' min'];
+  if (st === 'departing') return ['Trips leaving now', headwayNowLabel(m)];
   if (st === 'enroute') return ['Last trips still on the road', next ? 'next trips ' + next : ''];
   if (st === 'closed') return ['Closed now', next ? 'next trips ' + next : ''];
   return ['Operating hours', 'see the schedule'];
@@ -6434,7 +6478,8 @@ function hoursStateLine(){
 function hoursSummaryLine(){
   const n = hoursLabel('north').replace(/\n/g, ', ');
   const s = hoursLabel('south').replace(/\n/g, ', ');
-  if (n === s) return n + ' · every ' + SET.headway_min + ' min';
+  // Each line already names its interval when a window carries one.
+  if (n === s) return n + (anyWindowHeadway() ? '' : ' · every ' + routeHeadway() + ' min');
   return '▲ ' + n + '  ▼ ' + s;
 }
 // "6a–10a", short enough to sit inside a two-hour slice of a phone-width bar.
@@ -6471,16 +6516,20 @@ function renderHours(){
     '<span class="vh">' + escapeHtml(hoursSummaryLine()) + '</span>';
   const band = document.getElementById('dayBand');
   if (band) band.innerHTML = dayBandHtml();
-  document.getElementById('headwayNote').textContent =
-    'Trips roughly every '+SET.headway_min+' minutes. Times above are departure windows from each end.';
+  // One number for the route, unless the windows carry their own: then each
+  // line above says its interval and this only covers the ones that do not.
+  document.getElementById('headwayNote').textContent = anyWindowHeadway()
+    ? 'Intervals are rough. A window without one runs about every '+routeHeadway()+' minutes. Times above are departure windows from each end.'
+    : 'Trips roughly every '+routeHeadway()+' minutes. Times above are departure windows from each end.';
   function humanMins(m){ m=parseInt(m,10)||0; return m>=60 ? (m/60)+(m===60?' hour':' hours') : m+' min'; }
   document.getElementById('busExpiryNote').textContent =
     'Buses show "live" under 45s, then their age; they disappear about '+humanMins(SET.bus_expiry_min)+' after their last update.';
   // The folded card's summary already asks the question; this line only adds
   // the mechanics.
   if (sightingsOn()) document.getElementById('sightingIntro').textContent =
-    'A sighting shows on the strip as a dashed mark for '+humanMins(SET.headway_min)+
-    ', and stays on this board for '+humanMins(SET.sighting_expiry_min)+'.';
+    'A sighting shows on the strip as a dashed mark for one trip interval ('+humanMins(routeHeadway())+
+    (anyWindowHeadway() ? ' unless its window says otherwise' : '')+
+    '), and stays on this board for '+humanMins(SET.sighting_expiry_min)+'.';
 }
 function start(){
   document.getElementById('gate').classList.add('hidden');

@@ -46,7 +46,7 @@ each moves the seeded rows the next would expect. From `tests/`:
 ```
 createdb bustest
 psql -d bustest -f db/00-legacy-baseline.sql
-psql -d bustest -f ../sql/01-base.sql          # then 02 through 08 in order
+psql -d bustest -f ../sql/01-base.sql          # then 02 through 09 in order
 psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 ```
 

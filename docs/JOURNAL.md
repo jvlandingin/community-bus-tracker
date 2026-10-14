@@ -25,6 +25,39 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-14 — A new poster, and the question of a bus nobody is on
+
+The company posted an updated schedule. Two things in it the tool could not
+say. The trips in each window now run at their own interval, every 30 minutes
+before dawn towards Makati and every 40 in the afternoon back, where the
+settings had one number for the whole route; a window can now carry its own,
+and the route's number stays for any that does not. And weekdays and weekends
+now have different windows, which the settings still cannot express: the
+tracker shows the same hours every day of the week. The weekend hours are
+narrower than the weekday ones, so until that is built the page will say
+"departing" on a Saturday morning at 3:30 when the poster says 4:00, and show
+the weekday windows on the days that run shorter ones. Flagged, not done; it
+changes the shape of `hours`.
+
+The poster also prompted a question worth recording the answer to: could the
+map show a faint bus where one *should* be, worked out from the timetable, for
+the days nobody is sharing, or when an operator just posts "umalis na" in the
+chat and nothing more? Decided against the timetable version. The schedule is
+departure windows with an interval, not departure times, so the position of a
+bus guessed from it is wrong by up to a whole interval before traffic is even
+considered, and a transparent bus on the same map as the real ones is exactly
+the thing the flyer's "example screen" label exists to prevent: a drawing that
+reads as data. The project already declined to draw a route line for the same
+reason, and the saved-stop card is tested never to imply an ETA. The "umalis
+na" case is a different thing, and a real one: it is a human report with a
+time, which is what a sighting already is. "Left Mendez at 3:40" posted as a
+sighting at the terminal would already draw the hollow dashed ring for one
+interval, and that is the honest shape for it. Whether that ring may drift
+along the strip at an assumed pace is the open question; it would need
+segment travel times, which nothing here records on purpose, so they would be
+a handful of hand-written minutes in `config.txt` from trips somebody rode,
+never a log. Left open.
+
 ## 2026-10-14 — The first 08 failed on the live database
 
 Run in the Supabase SQL editor, `sql/08-position-checks.sql` stopped on

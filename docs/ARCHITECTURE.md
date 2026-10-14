@@ -594,8 +594,11 @@ after one headway, which is when the next bus has overtaken the claim.
 
 **A sighting may say when** (October 2026, the day the departure report
 shipped, because its first reader asked the obvious question). The composer
-has a "when" choice, just now to about an hour ago, and writes the clock time
-after the place: `▲ Northbound at Amadeo, 3:05 PM`. `sightingTime()` reads it
+has a time field that opens at now and uses the phone's own clock picker, and
+writes the time after the place when it was changed: `▲ Northbound at Amadeo,
+3:05 PM`. A clock rather than "about 20 minutes ago", because the common case
+is copying an exact time an operator posted in the group chat. A time ahead
+of now is refused at the composer. `sightingTime()` reads it
 against the post's own time and uses it for the ring's life and the band's
 start, so a rider relaying an operator's "paalis na" ten minutes later still
 starts the band at the departure. Two fences: a stated time after the post is

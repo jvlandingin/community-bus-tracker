@@ -252,8 +252,13 @@ function alongLeg(i, km) {
   const M = (h, m) => h * 60 + m;
   check(P.sightingTime(day, null) === day, 'no stated time: the post time');
   check(P.sightingTime(day, M(15, 5)) === day - 20 * 60000, '3:05 PM stated at 3:25: twenty minutes back');
-  check(P.sightingTime(day, M(14, 25)) === day - 60 * 60000, 'an hour back is the limit and is allowed');
-  check(P.sightingTime(day, M(14, 24)) === day, 'older than an hour: history, so the post time stands');
+  check(P.sightingTime(day, M(14, 25)) === day - 60 * 60000, 'an hour back: allowed');
+  check(P.sightingTime(day, M(12, 25)) === day - 180 * 60000, 'three hours back: allowed, a rider far down the road still gets the stretch');
+  check(P.sightingTime(day, M(11, 25)) === day - 240 * 60000, 'four hours back, the length of a trip, is the limit and is allowed');
+  check(P.sightingTime(day, M(11, 24)) === day, 'older than a whole trip: that bus has arrived, so the post time stands');
+  // The limit is the trip's length, which the hours block owns.
+  const enRoute = /const EN_ROUTE_MIN = (\d+);/.exec(html), back = /const SIGHT_BACK_MS = (\d+) \* 60000;/.exec(html);
+  check(enRoute && back && enRoute[1] === back[1], 'and it is the same four hours the en-route allowance uses', (enRoute && enRoute[1]) + ' vs ' + (back && back[1]));
   check(P.sightingTime(day, M(16, 0)) === day, 'a time after the post: nobody saw a bus that has not left, the post time stands');
   check(P.sightingTime(day, M(15, 25)) === day && P.sightingTime(day, M(15, 26)) === day, 'the same minute, or the next, is now');
   const night = new Date(2026, 9, 17, 0, 10).getTime();  // posted 12:10 AM

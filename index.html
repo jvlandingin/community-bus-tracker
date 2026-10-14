@@ -2059,6 +2059,9 @@
             <option value="30">About 30 minutes ago</option>
             <option value="45">About 45 minutes ago</option>
             <option value="60">About an hour ago</option>
+            <option value="90">About 1½ hours ago</option>
+            <option value="120">About 2 hours ago</option>
+            <option value="180">About 3 hours ago</option>
           </select>
           <div style="height:8px"></div>
           <input type="text" id="sightingInput" maxlength="80" placeholder="Anything else? (optional)">
@@ -5251,11 +5254,14 @@ function parseSighting(body){
 // When the sighting happened, in ms: the stated clock time on the day it was
 // posted, read against the post's own time. The post time stands when there
 // is no stated time, when the stated time is after the post (nobody saw a
-// bus that has not left yet), or when it is more than an hour before it: an
-// older claim is history rather than a sighting, and a departure that old
-// would already shade most of the route. Just before midnight the stated
-// time belongs to the day before.
-const SIGHT_BACK_MS = 60 * 60000;
+// bus that has not left yet), or when it is more than four hours before it:
+// four hours is the longest trip on this route, the same figure as
+// EN_ROUTE_MIN, and a sighting older than a whole trip describes a bus that
+// has arrived. Inside that, the band and the ring do their own fading, so a
+// rider three hours down the road still gets the stretch a departure from
+// this morning is probably on. Just before midnight the stated time belongs
+// to the day before.
+const SIGHT_BACK_MS = 240 * 60000;
 function sightingTime(createdMs, atMins){
   if (atMins === null || atMins === undefined || !(createdMs > 0)) return createdMs;
   const d = new Date(createdMs);

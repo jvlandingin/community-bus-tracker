@@ -46,7 +46,7 @@ each moves the seeded rows the next would expect. From `tests/`:
 ```
 createdb bustest
 psql -d bustest -f db/00-legacy-baseline.sql
-psql -d bustest -f ../sql/01-base.sql          # then 02 through 08 in order
+psql -d bustest -f ../sql/01-base.sql          # then 02 through 10 in order
 psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 ```
 
@@ -127,8 +127,12 @@ changes, re-read every rationale that depended on the old one — opening reads
 silently invalidated the reasoning behind `clear_bus_position`, which had
 treated an unguessable session id as a credential.
 
-**Settings live in the database**, not config: operating hours, headway, expiry
-times, sharer cap, and whether the sightings board is shown at all. Edited in `admin.html`, re-read by the app every 60 seconds,
+**Settings live in the database**, not config: operating hours (a weekday set
+and, optionally, a weekend one; each window may carry its own interval),
+headway, expiry times, sharer cap, and whether the sightings board is shown at
+all. The hours block in `index.html` is the only reader of the hours object
+and the interval, through `hoursFor()` and `headwayAt()`; `test-hours.js`
+fails if anything outside it reads either directly. Edited in `admin.html`, re-read by the app every 60 seconds,
 so a schedule change never needs a redeploy.
 
 **The reader can save a stop**, and the card directly under the map then says
@@ -186,6 +190,15 @@ every map already has, so the link reveals nothing and dies with the trip. It is
 `sendBusLink`/`.buslink`, never anything called share. The same popup tells one
 line about the town the bus is passing, from an optional fifth field on each
 `CHECKPOINT` in `config.txt`.
+
+**A sighting can say a bus just left the terminal** (October 2026), and the
+strip then shades the stretch it is probably on, between where the slowest and
+the fastest past trip would be by now, from optional `TRAVEL` lines in
+`config.txt` (minutes to each checkpoint, measured from the riders' chat, never
+logged by the app). It is a range drawn under the pills, named in places and
+never in minutes; `test-strip.js` fails if that code speaks of a time to come.
+Northbound only until southbound has data. `docs/ARCHITECTURE.md` has why a
+band and not a ghost bus.
 
 **The app keeps exactly four things between visits**, all on the device and
 all named in the privacy panel: whether this phone has been shown around (the

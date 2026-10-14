@@ -238,6 +238,40 @@ the sharer cap moved out of config.txt in July 2026. The company's own poster
 says information "may change anytime without prior notice", so a schedule change
 must not require a redeploy. The app re-reads settings every 60 seconds.
 
+**The interval belongs to the window, not the route** (October 2026). That
+month's poster runs the pre-dawn trips to Makati every 30 minutes and the
+afternoon trips back every 40, and the page had one number for both. A
+departure window may now carry its own interval as a third field; the route's
+`headway_min` stays as the interval for any window that names none, so nothing
+stored had to change. `headwayAt()` in the tested hours block is the only place
+that decides which number is in force at a given minute in a given direction,
+and `test-hours.js` fails if anything outside that block reads the route-wide
+number directly, because the first version of this had three readers and a
+window's own interval would have reached only one of them.
+
+**Weekends have their own windows** (October 2026, the same week). The same
+poster gives Saturday and Sunday a narrower set, and the settings had one set
+for every day, so a Saturday page said "departing" at 3:30 for a 4:00 bus. The
+shape change was kept small: an optional `hours.weekend` object of the same
+shape as the weekday pair, absent meaning the same hours every day. The day is
+decided on the phone, in `hoursFor()`, which became the only reader of the
+hours object the way `headwayAt()` is the only reader of the interval, and for
+the same reason: six functions read `SET.hours` directly before, and a weekend
+set would have reached some of them. Two details were deliberate. Past the last
+window the next trip named is tomorrow's first, so on a Friday night it is
+Saturday's 4:00 and not the weekday 3:00. And a weekend set missing one
+direction falls back to that direction's weekday windows rather than to
+"unknown", because the organizer did write hours for that day. Public
+holidays are not a third set: the one in the chat ran a weekday-shaped
+schedule, and a set nobody can predict is a set nobody will keep current.
+
+**The en-route allowance is four hours**, not three and a half (October 2026).
+It was a guess until two months of the riders' group chat gave 61 timed trips:
+afternoon departures from Mendez reached One Ayala 208 to 238 minutes later,
+so at 210 the page called the last bus arrived while it was still on Chino
+Roces. `EN_ROUTE_MIN` in the hours block is the one place the number lives,
+and `docs/JOURNAL.md` has the trips it came from.
+
 **Reads do not write.** An earlier version ran a DELETE on every read. That was
 documented as fixed long before it actually was: the deployed SQL still swept on
 read until the July 2026 migration. It is now genuinely true. Cleanup happens
@@ -557,6 +591,35 @@ and every sighting posted before this existed still renders as the text it is.
 as hollow dashed rings — never solid, never the bus glyph, because a sighting
 is one person's word with no update coming after it. They clear from the strip
 after one headway, which is when the next bus has overtaken the claim.
+
+**A sighting can say the bus has just left** (October 2026). The operators'
+most common post is "paalis na" from the terminal and nothing after, and in
+the riders' chat "where is it now" is 43% of every question asked about a bus.
+So the composer has a second verb: `▲ Northbound left Mendez Crossing`, the
+same body column, the same parser with `kind: 'left'`, no migration. What it
+draws is not a bus. Two months of that chat gave 61 timed trips, and from
+them, for each checkpoint, the earliest and latest minute after departure a
+trip was seen to cross it, two rows because early buses and afternoon buses
+are different roads. Those are the `TRAVEL` lines in `config.txt`, hand-written
+numbers like the checkpoints, not a log (the trips themselves are not in the
+repository). `departedSpan()` reads them: at any moment the bus is between
+where the slowest past trip would be and where the fastest would, and the strip
+shades that stretch, hatched in the line's ink, translucent, no glyph, under
+the pills. The headline says it in places, "probably between Amadeo and Imus,
+going by past trips", and never in minutes: `test-strip.js` fails if the span
+code or the sentence ever speaks of a time to come, which is the same fence
+the saved-stop card lives behind. Three edges were deliberate. The fastest
+edge stops at the last checkpoint the row knows rather than extrapolating, and
+the whole report is dropped once even the slowest trip would be past it (the
+early row ends at Imus, because early runs were never reported arriving). A
+"left" at any place but that direction's terminal is a plain sighting there,
+because at One Ayala "paalis na" can precede departure by an hour of filling
+up, and at Mendez it is departure within minutes. And without a row for a
+direction, the report is a ring at the terminal like any other, which is what
+southbound is until it has more than five pairs. A band was chosen over a ghost
+bus because a bus drawn from a timetable is a drawing that reads as data; a
+band is honest about being a range, and from the schedule alone the honest
+range is the whole route. The journal has the full reasoning.
 
 **The tracker's pills are buttons; the sharing tab's are not.** Tapping a
 pill flies the map to that bus and opens its popup — one function draws both

@@ -25,6 +25,82 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-14 — What two months of the group chat said
+
+A second Claude session with the riders' group chat (mid-August to early
+October) was asked eight questions about departures, position reports, travel
+times, what riders ask, the schedule, the road and the tracker, under the rule
+that nothing in the answer names a person. The travel-time pairs it returned
+are kept out of this repository on purpose: they are timestamps from
+identifiable accounts, which is the history this tool promises not to hold.
+What they established is recorded here instead.
+
+- **61 timed trips, 124 departure-to-position pairs**, nearly all northbound
+  from Mendez, from operators posting from on board. Along the checkpoint
+  chain, early buses run 19 to 36 km/h after Tagaytay and afternoon buses 9 to
+  28, the afternoon's first leg slowest because buses sit at Olivarez filling
+  up. Afternoon full runs reached One Ayala in 208 to 238 minutes. The en-route
+  allowance was 210 and is now 240. Southbound gave five pairs, not enough to
+  draw anything from.
+- **"Paalis na" at Mendez is departure within two or three minutes**; stated
+  slots ran 0 to 13 minutes late. At One Ayala the same words can precede
+  departure by an hour of waiting to fill. Any band drawn from a report should
+  anchor on the message time, and southbound only on "has left".
+- **What riders ask**, of about 4,450 bus questions: where is it now 43%, is
+  there still a bus today 18%, what time 17%, has it passed a place 7%, has
+  it left 6%. The weekend hours and the hours card answer the middle third; a
+  "left Mendez" report with a band on the strip would answer the first and
+  last.
+- **Riders name stops, not checkpoint towns**: Manggahan, Olivarez, Monterey,
+  Open Canal, Sunny Brooke, Lancaster each outrank Gen. Trias, Imus and Kawit.
+  The sighting picker offers checkpoints only. Noted, not yet changed.
+- **Weekends are thin.** Three Sundays ran a single bus. Weekend departures
+  are announced the same way, only less. Hence the weekend hours set.
+- **Built from the pairs the same day:** a "just left the terminal" sighting
+  and a hatched stretch on the strip between where the slowest and the
+  fastest past trip would be, northbound only, from `TRAVEL` lines in
+  `config.txt` (early row to Imus, afternoon row to One Ayala). The crossing
+  times per checkpoint were read off each run's progress curve, not off the
+  nearest report, so a report past Imus bounds Imus rather than standing in
+  for it. `docs/ARCHITECTURE.md` has the fences.
+- **Operators already share live locations in the chat**, 319 of them plus
+  pins, and riders complain that WhatsApp live locations freeze. That is the
+  pitch for the tracker, which the chat never mentions in that period, even
+  though the 28 July entry below records an announcement to the commuter
+  group. Either a different group or an export that starts later; to check.
+
+## 2026-10-14 — A new poster, and the question of a bus nobody is on
+
+The company posted an updated schedule. Two things in it the tool could not
+say. The trips in each window now run at their own interval, every 30 minutes
+before dawn towards Makati and every 40 in the afternoon back, where the
+settings had one number for the whole route; a window can now carry its own,
+and the route's number stays for any that does not. And weekdays and weekends
+now have different windows, which the settings still cannot express: the
+tracker shows the same hours every day of the week. The weekend hours are
+narrower than the weekday ones, so until that was built the page said
+"departing" on a Saturday morning at 3:30 when the poster says 4:00. Built the
+same day as an optional `hours.weekend` set; the entry above has why.
+
+The poster also prompted a question worth recording the answer to: could the
+map show a faint bus where one *should* be, worked out from the timetable, for
+the days nobody is sharing, or when an operator just posts "umalis na" in the
+chat and nothing more? Decided against the timetable version. The schedule is
+departure windows with an interval, not departure times, so the position of a
+bus guessed from it is wrong by up to a whole interval before traffic is even
+considered, and a transparent bus on the same map as the real ones is exactly
+the thing the flyer's "example screen" label exists to prevent: a drawing that
+reads as data. The project already declined to draw a route line for the same
+reason, and the saved-stop card is tested never to imply an ETA. The "umalis
+na" case is a different thing, and a real one: it is a human report with a
+time, which is what a sighting already is. "Left Mendez at 3:40" posted as a
+sighting at the terminal would already draw the hollow dashed ring for one
+interval, and that is the honest shape for it. Whether that ring may drift
+along the strip at an assumed pace is the open question; it would need
+segment travel times, which nothing here records on purpose, so they would be
+a handful of hand-written minutes in `config.txt` from trips somebody rode,
+never a log. Left open.
+
 ## 2026-10-14 — The first 08 failed on the live database
 
 Run in the Supabase SQL editor, `sql/08-position-checks.sql` stopped on

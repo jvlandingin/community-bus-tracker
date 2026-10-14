@@ -168,6 +168,7 @@
   label.f{font-size:var(--fs-label); font-weight:800; color:var(--muted); display:block; margin:10px 0 4px; letter-spacing:.03em;}
   .win{display:flex; gap:6px; align-items:center; margin-bottom:6px;}
   .win input[type=time]{flex:1;}
+  .win input[type=number]{flex:0 0 4.5em; min-width:0;}
   .win .to{flex:0 0 auto; font-size:var(--fs-label); color:var(--muted); font-weight:700;}
   .win button{flex:0 0 auto;}
   .item{display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:var(--fs-small); align-items:center;}
@@ -275,15 +276,34 @@
       <span class="chev" aria-hidden="true"><svg class="gi"><use href="#i-chev"/></svg></span>
     </summary>
     <div class="foldbody">
-      <div class="hint" style="margin-top:0;">Departure windows from each end. Add a second window for split schedules like the March 2026 poster. The app treats buses as possibly en route for 3.5 hours after each window closes.</div>
+      <div class="hint" style="margin-top:0;">Departure windows from each end. Add a second window for split schedules like the March 2026 poster. The app treats buses as possibly en route for 4 hours after each window closes. A window can name its own interval, as the October 2026 poster does (every 30 minutes before dawn, every 40 in the afternoon); leave it blank to use the route's number below.</div>
       <label class="f">▲ NORTHBOUND (Mendez to One Ayala)</label>
       <div id="winNorth"></div>
       <button class="small btn-ghost" onclick="addWin('north')"><svg class="gi" aria-hidden="true"><use href="#i-plus"/></svg>Add window</button>
       <label class="f">▼ SOUTHBOUND (One Ayala to Mendez)</label>
       <div id="winSouth"></div>
       <button class="small btn-ghost" onclick="addWin('south')"><svg class="gi" aria-hidden="true"><use href="#i-plus"/></svg>Add window</button>
-      <label class="f">TRIPS ROUGHLY EVERY (MINUTES)</label>
-      <input type="number" id="headway" min="1" max="720">
+      <!-- Weekends. The October 2026 poster gives Saturday and Sunday their
+           own, narrower windows. Off, the windows above apply every day, and
+           nothing is stored, so a route that never had a weekend set is
+           exactly what it was. -->
+      <label class="check" for="weekendOn" style="margin-top:14px;">
+        <input type="checkbox" id="weekendOn" onchange="toggleWeekend()">
+        <span>
+          <b>Saturdays and Sundays run different hours</b>
+          <span class="sub">Off, the windows above apply every day. On, the tracker shows these on weekends and names the day's set on its hours card.</span>
+        </span>
+      </label>
+      <div id="weekendBox" class="hidden">
+        <label class="f">▲ NORTHBOUND, SATURDAY AND SUNDAY</label>
+        <div id="winNorthWe"></div>
+        <button class="small btn-ghost" onclick="addWin('north','We')"><svg class="gi" aria-hidden="true"><use href="#i-plus"/></svg>Add window</button>
+        <label class="f">▼ SOUTHBOUND, SATURDAY AND SUNDAY</label>
+        <div id="winSouthWe"></div>
+        <button class="small btn-ghost" onclick="addWin('south','We')"><svg class="gi" aria-hidden="true"><use href="#i-plus"/></svg>Add window</button>
+      </div>
+      <label class="f">TRIPS ROUGHLY EVERY (MINUTES), UNLESS A WINDOW SAYS OTHERWISE</label>
+      <input type="number" id="headway" min="1" max="720" oninput="syncHeadwayHints()">
       <div style="height:12px"></div>
       <button class="big btn-primary" onclick="saveSettings()">Save hours + settings</button>
       <div id="hoursStatus"></div>
@@ -553,36 +573,70 @@ async function clearNotice(){
 // Hours + settings
 // ============================================================
 let SETTINGS=null;
-function winRow(dir, a, b){
+// A window is start, end and, since October 2026, an optional interval of
+// its own: the poster runs the pre-dawn trips every 30 minutes and the
+// afternoon ones every 40. Blank means the route's number, which the field
+// shows as its placeholder so the form reads as the saved settings will.
+function winRow(dir, a, b, h){
   return '<div class="win">'+
     '<input type="time" value="'+esc(a||'')+'" data-dir="'+dir+'" data-role="a">'+
     '<span class="to">to</span>'+
     '<input type="time" value="'+esc(b||'')+'" data-dir="'+dir+'" data-role="b">'+
+    '<span class="to">every</span>'+
+    '<input type="number" min="1" max="720" inputmode="numeric" value="'+(h ? esc(String(h)) : '')+'" placeholder="'+esc(String(routeHeadwayValue()))+'" data-dir="'+dir+'" data-role="h" aria-label="Minutes between trips in this window; blank uses the route\'s number">'+
+    '<span class="to">min</span>'+
     '<button class="small btn-ghost" onclick="this.parentElement.remove()" aria-label="Remove this window"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>'+
     '</div>';
 }
-function addWin(dir){
-  const box = document.getElementById(dir==='north'?'winNorth':'winSouth');
-  if (box.querySelectorAll('.win').length >= 6) return;
-  box.insertAdjacentHTML('beforeend', winRow(dir,'',''));
+function routeHeadwayValue(){
+  const v = parseInt((document.getElementById('headway')||{}).value, 10);
+  return v >= 1 && v <= 720 ? v : ((SETTINGS||{}).headway_min ?? 30);
 }
-function readWins(dir){
-  const box = document.getElementById(dir==='north'?'winNorth':'winSouth');
+function syncHeadwayHints(){
+  document.querySelectorAll('.win [data-role=h]').forEach(function(i){ i.placeholder = routeHeadwayValue(); });
+}
+// set is '' for the weekday editors and 'We' for the weekend ones.
+function winBox(dir, set){
+  return document.getElementById('win'+(dir==='north'?'North':'South')+(set||''));
+}
+function addWin(dir, set){
+  const box = winBox(dir, set);
+  if (box.querySelectorAll('.win').length >= 6) return;
+  box.insertAdjacentHTML('beforeend', winRow(dir,'','',null));
+}
+function toggleWeekend(){
+  document.getElementById('weekendBox').classList.toggle('hidden', !document.getElementById('weekendOn').checked);
+}
+function readWins(dir, set){
+  const box = winBox(dir, set);
   const out=[];
   box.querySelectorAll('.win').forEach(function(w){
     const a=w.querySelector('[data-role=a]').value, b=w.querySelector('[data-role=b]').value;
-    if (a && b) out.push([a,b]);
+    const hv=w.querySelector('[data-role=h]').value.trim();
+    if (!(a && b)) return;
+    if (!hv){ out.push([a,b]); return; }
+    const h=Number(hv);
+    // Junk in the interval is refused here rather than silently saved as
+    // "use the route's number": the organizer typed something on purpose.
+    if (!(Number.isInteger(h) && h >= 1 && h <= 720)){ out.bad = true; return; }
+    out.push([a,b,h]);
   });
   return out;
 }
 function fillSettingsForm(st){
+  const we = (st.hours && st.hours.weekend) || null;
   ['north','south'].forEach(function(dir){
-    const box=document.getElementById(dir==='north'?'winNorth':'winSouth');
-    box.innerHTML='';
-    ((st.hours&&st.hours[dir])||[]).forEach(function(w){ box.insertAdjacentHTML('beforeend', winRow(dir,w[0],w[1])); });
-    if (!box.children.length) box.insertAdjacentHTML('beforeend', winRow(dir,'',''));
+    [['', (st.hours&&st.hours[dir])||[]], ['We', (we&&we[dir])||[]]].forEach(function(pair){
+      const box=winBox(dir, pair[0]);
+      box.innerHTML='';
+      pair[1].forEach(function(w){ box.insertAdjacentHTML('beforeend', winRow(dir,w[0],w[1],w[2])); });
+      if (!box.children.length) box.insertAdjacentHTML('beforeend', winRow(dir,'','',null));
+    });
   });
+  document.getElementById('weekendOn').checked = !!(we && ((we.north&&we.north.length) || (we.south&&we.south.length)));
+  toggleWeekend();
   document.getElementById('headway').value = st.headway_min ?? 30;
+  syncHeadwayHints();
   document.getElementById('busExpiry').value = st.bus_expiry_min ?? 10;
   document.getElementById('sightingExpiry').value = st.sighting_expiry_min ?? 120;
   document.getElementById('maxSessions').value = st.max_sessions ?? 25;
@@ -602,12 +656,24 @@ async function refreshSettings(){
 }
 async function saveSettings(){
   const north=readWins('north'), south=readWins('south');
+  const weekendOn = document.getElementById('weekendOn').checked;
+  const weN = weekendOn ? readWins('north','We') : [], weS = weekendOn ? readWins('south','We') : [];
+  if (north.bad || south.bad || weN.bad || weS.bad){
+    noteSettings('A window\'s interval must be a whole number of minutes from 1 to 720, or blank.','err');
+    return;
+  }
   if (!north.length || !south.length){
     noteSettings('Each direction needs at least one complete window.','err');
     return;
   }
+  if (weekendOn && (!weN.length || !weS.length)){
+    noteSettings('Weekends need at least one complete window in each direction, or switch the weekend hours off.','err');
+    return;
+  }
+  const hours = { north:north, south:south };
+  if (weekendOn) hours.weekend = { north:weN, south:weS };
   const st = {
-    hours:{ north:north, south:south },
+    hours:hours,
     headway_min: parseInt(document.getElementById('headway').value,10),
     bus_expiry_min: parseInt(document.getElementById('busExpiry').value,10),
     sighting_expiry_min: parseInt(document.getElementById('sightingExpiry').value,10),

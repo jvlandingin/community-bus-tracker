@@ -480,6 +480,17 @@
     border:2px dashed var(--gold-deep); background:var(--surface);
   }
   .sightmk.sb{border-color:var(--brand-ink);}
+  /* Where a bus someone reported leaving the terminal probably is by now:
+     the stretch between the slowest and the fastest past trip, from the
+     TRAVEL lines in config.txt. Hatched in the line's own ink, translucent,
+     with no glyph on it, so it reads as a range and never as a position;
+     and it sits under the pills, so a real bus always paints over it. */
+  .sightband{
+    position:absolute; top:8px; height:10px; border-radius:var(--r-s);
+    background:repeating-linear-gradient(135deg, var(--gold-deep) 0 3px, transparent 3px 7px);
+    opacity:.45; min-width:6px; pointer-events:none;
+  }
+  .sightband.sb{background:repeating-linear-gradient(135deg, var(--brand-ink) 0 3px, transparent 3px 7px);}
   /* Keep .ticks taller than a .tick. It was once pinned at 26px against 29px
      of mark and label, and every label overflowed into the southbound track
      below, so the southbound bus badges rendered on top of the words. The
@@ -963,8 +974,8 @@
   .headway{font-size:var(--fs-label); color:var(--muted); margin-top:8px; font-weight:600;}
   /* The folded hours card answers before it is opened: a status line, then
      the day drawn as a bar per direction, the departure windows solid, a
-     dotted tail for the three and a half hours the last buses are still on
-     the road, and a marker for now. Drawn from the hours set in the admin
+     dotted tail for the four hours the last buses may still be on the
+     road, and a marker for now. Drawn from the hours set in the admin
      page; the exact times stay one tap away in the boxes above. */
   .dayband{display:block; position:relative; margin-top:9px; padding-top:13px;}
   .dayband .row{display:flex; align-items:center; gap:7px; margin-bottom:5px;}
@@ -1974,7 +1985,7 @@
             <span><span class="sw" style="background:var(--gold)"></span>Northbound ▲</span>
             <span><span class="sw" style="background:var(--maroon)"></span>Southbound ▼</span>
             <span><span class="sw" style="background:var(--paper); border:1.5px solid var(--maroon); width:8px; height:8px;"></span>Stops (zoom in, tap for name)</span>
-            <span id="sightLegend"><span class="sw" style="background:transparent; border:2px dashed var(--gold-deep); width:11px; height:11px;"></span>Dashed on the strip = reported sighting, not GPS</span>
+            <span id="sightLegend"><span class="sw" style="background:transparent; border:2px dashed var(--gold-deep); width:11px; height:11px;"></span>Dashed on the strip = reported sighting, not GPS; a hatched stretch = where a bus someone reported leaving probably is, from past trips</span>
             <!-- The ring is marked on this strip too, so it is explained on
                  this tab too. Shown only while sharing, by setShareUI(): a
                  legend line for a mark nobody can see is noise. -->
@@ -2005,6 +2016,7 @@
           <div class="hourbox nb"><div class="dirname">▲ MENDEZ → ONE AYALA</div><div class="times" id="nbHours">–</div></div>
           <div class="hourbox sb"><div class="dirname">▼ ONE AYALA → MENDEZ</div><div class="times" id="sbHours">–</div></div>
         </div>
+        <div class="headway hidden" id="otherDaysNote"></div>
         <div class="headway" id="headwayNote"></div>
       </div>
     </details>
@@ -2625,6 +2637,7 @@ let SET = { hours:{ north:[], south:[] }, headway_min:30,
 let NOTICE = null;
 let CHECKPOINTS = [];
 let STOPS = [];
+let TRAVEL = [];      // TRAVEL lines: how long past trips took to each checkpoint
 
 // ---- CHECKPOINT LINES (unit tested) -------------------------------------
 // CHECKPOINT = Full Name | SHORT | latitude | longitude | about | mark
@@ -2659,6 +2672,9 @@ async function loadConfig() {
     } else if (key === 'STOP') {
       const p = val.split('|').map(function(s){ return s.trim(); });
       if (p.length >= 3) STOPS.push({ name:p[0], lat:parseFloat(p[1]), lng:parseFloat(p[2]), conf:(p[3]||'M').toUpperCase() });
+    } else if (key === 'TRAVEL') {
+      const t = parseTravel(val);
+      if (t) TRAVEL.push(t);
     } else if (key in CFG) {
       CFG[key] = val;
     }
@@ -2697,38 +2713,112 @@ function fmtHM(s){
   h = h%12; if (h===0) h=12;
   return h + ':' + (mm<10?'0':'') + mm + ' ' + ap;
 }
-// Buses that depart at a window's last minute are still on the road for
-// about 3.5 hours after, so each window extends by 210 minutes.
+// Buses that depart at a window's last minute are still on the road for up
+// to four hours after, so each window extends by this many minutes. It was
+// three and a half until October 2026, when two months of the riders' group
+// chat gave 61 timed trips: afternoon departures from Mendez reached One
+// Ayala 208 to 238 minutes later, so a page that stopped counting at 210
+// called the last bus arrived while it was still on Chino Roces.
+const EN_ROUTE_MIN = 240;
 function withinWindows(windows, nowMins){
   if (!windows || !windows.length) return true;   // unknown -> don't claim closed
   for (let i=0;i<windows.length;i++){
     const a = parseHM(windows[i][0]), b = parseHM(windows[i][1]);
     if (a===null || b===null) return true;
-    if (nowMins >= a && nowMins <= b + 210) return true;
+    if (nowMins >= a && nowMins <= b + EN_ROUTE_MIN) return true;
   }
   return false;
 }
+// Which day's windows apply. The October 2026 poster gives Saturday and
+// Sunday their own, narrower windows ("limited bus operating on these
+// days"), kept as hours.weekend in the same shape as the weekday pair. A
+// route without a weekend set runs the same hours every day, which is every
+// settings object stored before this; and a weekend set missing one
+// direction falls back to that direction's weekday windows rather than to
+// "unknown", because the organizer did write hours for that day.
+let DAY_OVERRIDE = null;   // a weekday number for the tests; null reads the clock
+function dayNow(){ return DAY_OVERRIDE === null ? new Date().getDay() : DAY_OVERRIDE; }
+function isWeekendDay(k){ return k === 0 || k === 6; }
+function weekendNow(){ return isWeekendDay(dayNow()); }
+function hasWeekendHours(){
+  const we = SET.hours.weekend;
+  return !!(we && ((we.north && we.north.length) || (we.south && we.south.length)));
+}
+function hoursFor(dir, weekend){
+  if (weekend === undefined) weekend = weekendNow();
+  const we = SET.hours.weekend;
+  if (weekend && we && we[dir] && we[dir].length) return we[dir];
+  return SET.hours[dir] || [];
+}
 function withinHours(dir) {
   const now = new Date();
-  return withinWindows(SET.hours[dir], now.getHours()*60 + now.getMinutes());
+  return withinWindows(hoursFor(dir), now.getHours()*60 + now.getMinutes());
 }
-function hoursLabel(dir){
-  const w = SET.hours[dir]||[];
+// A window may carry its own interval as a third field, [start, end, mins]:
+// the October 2026 poster has the pre-dawn trips to Makati every 30 minutes
+// and the afternoon trips back every 40, which one number for the whole
+// route could not say. Null when the window has none, or has junk there, and
+// the route's headway_min then stands in for it everywhere below.
+function windowHeadway(w){
+  const n = w && w.length > 2 ? Number(w[2]) : NaN;
+  return isFinite(n) && n >= 1 && n <= 720 ? n : null;
+}
+function routeHeadway(){
+  return SET.headway_min || 30;
+}
+// The interval in force for one direction at nowMins: the departing window's
+// own if it has one, else the route's. Between windows, and after the last
+// departure while buses are still en route, it is the route's.
+function headwayAt(dir, nowMins){
+  const w = hoursFor(dir);
+  for (let i = 0; i < w.length; i++){
+    const a = parseHM(w[i][0]), b = parseHM(w[i][1]);
+    if (a === null || b === null) continue;
+    if (nowMins >= a && nowMins <= b) return windowHeadway(w[i]) || routeHeadway();
+  }
+  return routeHeadway();
+}
+// Whether any window in either direction names its own interval, which is
+// when the words around the schedule stop quoting the route's one number.
+function anyWindowHeadway(){
+  return ['north','south'].some(function(d){
+    return hoursFor(d).some(function(w){ return windowHeadway(w) !== null; });
+  });
+}
+// "every 30 min" for the hours card while trips are leaving, or both
+// directions' when they are leaving at different intervals.
+function headwayNowLabel(nowMins){
+  const dirs = ['north','south'].filter(function(d){ return serviceState(hoursFor(d), nowMins) === 'departing'; });
+  const hs = dirs.map(function(d){ return headwayAt(d, nowMins); });
+  if (!hs.length || hs.every(function(h){ return h === hs[0]; })) return 'every ' + (hs[0] || routeHeadway()) + ' min';
+  return dirs.map(function(d, i){ return (d === 'north' ? '▲' : '▼') + ' every ' + hs[i] + ' min'; }).join(' · ');
+}
+// Today's windows unless a day is asked for: true for the weekend set.
+function hoursLabel(dir, weekend){
+  const w = hoursFor(dir, weekend);
   if (!w.length) return 'see schedule';
-  return w.map(function(x){ return fmtHM(x[0])+' - '+fmtHM(x[1]); }).join('\n');
+  return w.map(function(x){
+    const h = windowHeadway(x);
+    return fmtHM(x[0])+' - '+fmtHM(x[1]) + (h ? ' · every ' + h + ' min' : '');
+  }).join('\n');
 }
 // The next departure from one end, looking forward from nowMins. This used
 // to be the day's first window whatever the time, which is right before dawn
 // and wrong every afternoon between the windows: at 2 PM the page told riders
 // the next trip was tomorrow's 6:00 AM when the 3:40 PM one was next. Past
-// the last window of the day it wraps to tomorrow's first.
-function nextTripMins(dir, nowMins){
-  const w = (SET.hours[dir]||[]).map(function(x){ return parseHM(x[0]); })
+// the last window of the day it wraps to tomorrow's first, which on a Friday
+// night is Saturday's later one.
+function sortedStarts(windows){
+  return windows.map(function(x){ return parseHM(x[0]); })
     .filter(function(x){ return x !== null; })
     .sort(function(a,b){ return a-b; });
-  if (!w.length) return null;
-  for (let i=0;i<w.length;i++){ if (w[i] > nowMins) return w[i]; }
-  return w[0];
+}
+function nextTripMins(dir, nowMins){
+  const today = sortedStarts(hoursFor(dir));
+  for (let i=0;i<today.length;i++){ if (today[i] > nowMins) return today[i]; }
+  const tomorrow = sortedStarts(hoursFor(dir, isWeekendDay((dayNow() + 1) % 7)));
+  if (tomorrow.length) return tomorrow[0];
+  return today.length ? today[0] : null;
 }
 function nextTrip(dir, nowMins){
   const t = nextTripMins(dir, nowMins);
@@ -2755,8 +2845,8 @@ function firstNextTrip(nowMins){
   return best;
 }
 // What one direction's service is doing at nowMins, for the hours card:
-// 'departing' inside a departure window, 'enroute' in the three and a half
-// hours after one closes while its last buses are still on the road, and
+// 'departing' inside a departure window, 'enroute' in the four hours after
+// one closes while its last buses may still be on the road, and
 // 'closed' otherwise. Hours that are missing or unreadable are 'unknown',
 // never 'closed', for the same reason withinWindows will not claim closed.
 function serviceState(windows, nowMins){
@@ -2766,15 +2856,25 @@ function serviceState(windows, nowMins){
     const a = parseHM(windows[i][0]), b = parseHM(windows[i][1]);
     if (a===null || b===null) return 'unknown';
     if (nowMins >= a && nowMins <= b) return 'departing';
-    if (nowMins > b && nowMins <= b + 210) enroute = true;
+    if (nowMins > b && nowMins <= b + EN_ROUTE_MIN) enroute = true;
   }
   return enroute ? 'enroute' : 'closed';
 }
 // Both directions at once: the busier of the two wins.
 function routeState(nowMins){
-  const n = serviceState(SET.hours.north, nowMins), s = serviceState(SET.hours.south, nowMins);
+  const n = serviceState(hoursFor('north'), nowMins), s = serviceState(hoursFor('south'), nowMins);
   const order = ['departing','unknown','enroute','closed'];
   return order[Math.min(order.indexOf(n), order.indexOf(s))];
+}
+// The hours card shows today's windows in its boxes; this is its one line
+// about the other days, when a weekend set exists: on a weekday what the
+// weekend runs, on a weekend what Monday brings. Empty without one.
+function otherDaysLine(){
+  if (!hasWeekendHours()) return '';
+  const other = !weekendNow();
+  const n = hoursLabel('north', other).replace(/\n/g, ', ');
+  const s = hoursLabel('south', other).replace(/\n/g, ', ');
+  return (other ? 'Saturdays and Sundays: ' : 'Monday to Friday: ') + (n === s ? n : '▲ ' + n + ' · ▼ ' + s);
 }
 // Pasko. From the first of September, when the "ber" months start and the
 // country starts decorating, to Three Kings on the sixth of January.
@@ -3839,6 +3939,96 @@ function dirGuardUpdate(g, p, tsMs, dir, chainPts, chainCum, K){
   dirGuardReset(g);
   return { km: Math.abs(delta) };
 }
+
+// ---- A departure report, and the stretch the bus is probably on ---------
+// A sighting can say a bus has just left a terminal ("umalis na"). From then
+// on the bus is somewhere between where the slowest past trip would be by now
+// and where the fastest would, read off TRAVEL lines in config.txt: for each
+// checkpoint, the earliest and latest minute after departure that trips were
+// seen to cross it. The numbers came from two months of the riders' group
+// chat (October 2026, 61 timed trips, docs/JOURNAL.md); the trips themselves
+// stay out of the repository. The span is drawn on the strip and named by the
+// places at its ends, never in minutes: a range read off old trips is not an
+// arrival time, and this code never produces one. Past the last checkpoint
+// the table knows, the report is simply dropped rather than extended.
+//   TRAVEL = north | 00:00-10:59 | TGY 10-25 | AMADEO 21-46 | GEN.T 46-68
+// The second field is the departure times the row applies to: the chat
+// showed early buses and afternoon buses are two different roads.
+function hmOf(s){
+  const m = /^([01][0-9]|2[0-3]):([0-5][0-9])$/.exec(s || '');
+  return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : null;
+}
+function parseTravel(val){
+  const p = String(val).split('|').map(function(x){ return x.trim(); });
+  if (p.length < 3) return null;
+  const dir = p[0].toLowerCase();
+  if (dir !== 'north' && dir !== 'south') return null;
+  const m = /^(\d\d:\d\d)-(\d\d:\d\d)$/.exec(p[1]);
+  const from = m ? hmOf(m[1]) : null, to = m ? hmOf(m[2]) : null;
+  if (from === null || to === null || from > to) return null;
+  const cols = [];
+  for (let i = 2; i < p.length; i++){
+    const c = /^(\S+)\s+(\d+)-(\d+)$/.exec(p[i]);
+    if (!c) return null;
+    const lo = parseInt(c[2], 10), hi = parseInt(c[3], 10);
+    if (hi < lo) return null;
+    // Each checkpoint is further along, so neither bound may go backwards.
+    if (cols.length && (lo < cols[cols.length - 1].lo || hi < cols[cols.length - 1].hi)) return null;
+    cols.push({ short: c[1].toUpperCase(), lo: lo, hi: hi });
+  }
+  return { direction: dir, from: from, to: to, cols: cols };
+}
+// The row for a departure in this direction at depMins past midnight.
+function travelRowFor(rows, direction, depMins){
+  for (let i = 0; i < (rows || []).length; i++){
+    const r = rows[i];
+    if (r.direction === direction && depMins >= r.from && depMins <= r.to) return r;
+  }
+  return null;
+}
+// Where a bus that left `elapsed` minutes ago probably is, as fractional
+// checkpoint indices along pts: `from` is the slowest past trip's position
+// (read off the hi column), `to` the fastest (the lo column), each
+// interpolated between the checkpoints either side. Null once even the
+// slowest trip would be past the last checkpoint the row knows, and null for
+// a row none of whose checkpoints this route has. The fastest edge stops at
+// that last checkpoint rather than guessing beyond it.
+function departedSpan(row, pts, elapsed){
+  if (!row || !pts || pts.length < 2 || !(elapsed >= 0)) return null;
+  const north = row.direction === 'north';
+  const steps = [{ idx: north ? 0 : pts.length - 1, lo: 0, hi: 0 }];
+  row.cols.forEach(function(c){
+    for (let i = 0; i < pts.length; i++){
+      if ((pts[i].short || '').toUpperCase() === c.short){ steps.push({ idx: i, lo: c.lo, hi: c.hi }); return; }
+    }
+  });
+  if (steps.length < 2) return null;
+  const last = steps[steps.length - 1];
+  if (elapsed > last.hi) return null;
+  const at = function(key){
+    if (elapsed >= last[key]) return last.idx;
+    for (let i = 1; i < steps.length; i++){
+      const a = steps[i - 1], b = steps[i];
+      if (elapsed <= b[key]){
+        const t = b[key] === a[key] ? 1 : (elapsed - a[key]) / (b[key] - a[key]);
+        return a.idx + (b.idx - a.idx) * t;
+      }
+    }
+    return last.idx;
+  };
+  return { from: at('hi'), to: at('lo'), north: north };
+}
+// "between Tagaytay and Gen. Trias": the checkpoint the slowest trip has
+// passed and the one the fastest has not reached. Places only.
+function spanWords(span, pts){
+  if (!span) return '';
+  const lo = Math.min(span.from, span.to), hi = Math.max(span.from, span.to);
+  let a = Math.floor(lo + 1e-9), b = Math.ceil(hi - 1e-9);
+  if (b <= a) b = Math.min(a + 1, pts.length - 1);
+  if (b <= a) a = b - 1;
+  const behind = span.north ? pts[a] : pts[b], ahead = span.north ? pts[b] : pts[a];
+  return 'between ' + behind.name + ' and ' + ahead.name;
+}
 // ---- END ROUTE PROGRESS -----------------------------------------------
 
 // ---- THE READER'S OWN STOP (unit tested) ------------------------------
@@ -4520,7 +4710,12 @@ function renderStrip(box, buses, sightings, tappable) {
   const nbGhosts=[], sbGhosts=[];
   sightings.forEach(function(s){
     if (CHECKPOINTS.length < 2) return;
-    const g = { sb: s.direction==='south', left: (s.idx/(CHECKPOINTS.length-1))*100+'%' };
+    const pct = function(i){ return (i/(CHECKPOINTS.length-1))*100; };
+    const g = s.span
+      ? { sb: s.direction==='south', band: true,
+          left: Math.min(pct(s.span.from), pct(s.span.to))+'%',
+          width: Math.abs(pct(s.span.to) - pct(s.span.from))+'%' }
+      : { sb: s.direction==='south', left: pct(s.idx)+'%' };
     if (s.direction==='north') nbGhosts.push(g); else sbGhosts.push(g);
   });
   syncPills(nbBox, nbGhosts, nbPills);
@@ -4566,13 +4761,13 @@ function syncPills(container, ghosts, pills){
     if (k !== null && !(k in old)) old[k] = el;
     else container.removeChild(el);
   });
-  [].slice.call(container.querySelectorAll('.sightmk')).forEach(function(el){
+  [].slice.call(container.querySelectorAll('.sightmk, .sightband')).forEach(function(el){
     container.removeChild(el);
   });
   ghosts.forEach(function(g){
     const el = document.createElement('div');
-    el.className = 'sightmk' + (g.sb ? ' sb' : '');
-    el.setAttribute('style', 'left:'+g.left);
+    el.className = (g.band ? 'sightband' : 'sightmk') + (g.sb ? ' sb' : '');
+    el.setAttribute('style', 'left:'+g.left + (g.band ? ';width:'+g.width : ''));
     container.appendChild(el);
   });
   pills.forEach(function(p){
@@ -4640,13 +4835,32 @@ function renderBuses() {
   // it on the strip would claim a currency it does not have. Tying the window
   // to the route's own headway means a route running every 10 minutes clears
   // them six times faster than one running hourly, with nothing to configure.
-  const ghostWindow = (SET.headway_min || 30) * 60000;
-  const ghosts = (sightingsOn() && !WALK ? SIGHTINGS : []).filter(function(s){
-    return Date.now() - s.ts <= ghostWindow;
-  });
+  // The headway is the one in force in that direction when the sighting was
+  // posted, since a window may run at its own interval.
+  // A "just left the terminal" report is different: while the TRAVEL table
+  // can place it, it is a stretch of the strip rather than a ring, and it
+  // lives until even the slowest past trip would be past the last checkpoint
+  // the table knows. Without a table for that direction it is a ring at the
+  // terminal like any other sighting. Two reports of the same departure
+  // within five minutes are one bus; the first is kept.
+  const seenLeft = {};
+  const ghosts = (sightingsOn() && !WALK ? SIGHTINGS : []).slice().reverse().filter(function(s){
+    const at = new Date(s.ts), mins = at.getHours()*60 + at.getMinutes();
+    const row = s.kind === 'left' ? travelRowFor(TRAVEL, s.direction, mins) : null;
+    if (row){
+      const k = s.direction, prev = seenLeft[k];
+      if (prev && s.ts - prev < 5 * 60000) return false;
+      seenLeft[k] = s.ts;
+      s.span = departedSpan(row, CHECKPOINTS, (Date.now() - s.ts) / 60000);
+      return !!s.span;
+    }
+    s.span = null;
+    return Date.now() - s.ts <= headwayAt(s.direction, mins) * 60000;
+  }).reverse();
   const trackGhosts = ghosts.filter(function(s){
     return dirFilter === 'all' || s.direction === dirFilter;
   });
+  const bands = trackGhosts.filter(function(s){ return s.span; });
   renderStrip(document.getElementById('trackStrip'), shown, trackGhosts, true);
   // Unfiltered, and sorted only so the two strips draw their pills in the
   // same order: nothing on the sharing tab sets a filter.
@@ -4679,7 +4893,7 @@ function renderBuses() {
     setHeadline(text, shown.length + (shown.length===1?' bus live':' buses live'));
     sub.textContent = (freshest.direction==='north'?'Northbound':'Southbound')+
       (pl ? ' '+pl.sentence : '')+' · updated '+timeAgo(freshest.ts)+
-      ' ago · trips every '+SET.headway_min+' mins';
+      ' ago · trips every '+headwayAt(freshest.direction, nowMins())+' mins';
   } else {
     const dirsOpen = withinHours('north')||withinHours('south');
     setHeadline(text, 'No buses live');
@@ -4687,11 +4901,23 @@ function renderBuses() {
       ? 'Outside operating hours. Next departures: '+(nextTrip('north', nowMins())||'see schedule')+' from Mendez, '+(nextTrip('south', nowMins())||'see schedule')+' from One Ayala.'
       : !sightingsOn()
       ? 'Nobody is sharing GPS right now. Ask in the group chat, or check the operating hours below.'
+      : bands.length
+      ? 'Nobody is sharing GPS. ' + departedSentence(bands[0])
       : trackGhosts.length
       ? 'Nobody is sharing GPS. The dashed marks on the strip are buses people reported seeing.'
       : 'Nobody is sharing GPS right now. Post a sighting below if you see one, or ask in the group.';
   }
   revealSightings(shown.length === 0);
+}
+
+// "A bus reported leaving Mendez Crossing at 3:40 PM is probably between
+// Amadeo and Imus, going by past trips." Places and the reported time, never
+// a time to come.
+function departedSentence(s){
+  const at = new Date(s.ts), hh = at.getHours(), mm = at.getMinutes();
+  const when = fmtHM((hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm);
+  return 'A bus reported leaving ' + originName(s.direction) + ' at ' + when +
+    ' is probably ' + spanWords(s.span, CHECKPOINTS) + ', going by past trips.';
 }
 
 // The sightings board is folded away while buses are live and opens itself
@@ -4979,17 +5205,29 @@ function applySightingsSetting(){
 // change: no migration, the admin page still shows a readable sentence, and
 // every sighting posted before this existed still renders as the text it is.
 // Anything that fails to parse is simply not placed on the strip.
-const SIGHT_RE = /^[▲▼]\s+(Northbound|Southbound)\s+at\s+([^·]+?)(?:\s+·\s+(.*))?$/;
+// Two verbs. "at" is a bus seen at a place. "left" (October 2026) is a bus
+// that has just left its terminal, the "umalis na" the operators post, and
+// the strip draws where it probably is by now from the TRAVEL lines; it only
+// counts as a departure when the place really is that direction's terminal,
+// otherwise it is read as a plain sighting there.
+const SIGHT_RE = /^[▲▼]\s+(Northbound|Southbound)\s+(at|left)\s+([^·]+?)(?:\s+·\s+(.*))?$/;
 function parseSighting(body){
   const m = SIGHT_RE.exec((body||'').trim());
   if (!m) return null;
-  const name = m[2].trim().toLowerCase();
+  const name = m[3].trim().toLowerCase();
   let idx = -1;
   for (let i=0;i<CHECKPOINTS.length;i++){
     if (CHECKPOINTS[i].name.trim().toLowerCase() === name){ idx = i; break; }
   }
   if (idx < 0) return null;                 // a checkpoint this route no longer has
-  return { direction: m[1]==='Northbound' ? 'north' : 'south', idx: idx };
+  const direction = m[1]==='Northbound' ? 'north' : 'south';
+  const origin = direction === 'north' ? 0 : CHECKPOINTS.length - 1;
+  return { direction: direction, idx: idx, kind: (m[2] === 'left' && idx === origin) ? 'left' : 'at' };
+}
+// The terminal a direction leaves from, for the composer's "just left" line.
+function originName(direction){
+  if (!CHECKPOINTS.length) return 'the terminal';
+  return CHECKPOINTS[direction === 'north' ? 0 : CHECKPOINTS.length - 1].name;
 }
 let SIGHTINGS = [];                          // parsed and placeable, freshest first
 let sightDir = null;
@@ -4997,11 +5235,14 @@ function pickSightDir(d){
   sightDir = d;
   document.getElementById('sightNorth').className = d==='north' ? 'on-north' : '';
   document.getElementById('sightSouth').className = d==='south' ? 'on-south' : '';
+  const left = document.getElementById('sightLeftOpt');
+  if (left) left.textContent = 'Just left ' + originName(d) + ' (umalis na)';
 }
 function buildSightingPlaces(){
   const sel = document.getElementById('sightWhere');
   if (!sel || !sightingsOn()) return;
   sel.innerHTML = '<option value="">Where did you see it?</option>' +
+    '<option value="__left" id="sightLeftOpt">Just left the terminal (umalis na)</option>' +
     CHECKPOINTS.map(function(c){ return '<option>'+escapeHtml(c.name)+'</option>'; }).join('');
 }
 function sightError(msg){
@@ -5020,7 +5261,7 @@ async function pollSightings() {
   const n = (data && data.length) || 0;
   SIGHTINGS = (data||[]).map(function(s){
     const p = parseSighting(s.body);
-    return p ? { direction:p.direction, idx:p.idx, ts:Date.parse(s.created_at) } : null;
+    return p ? { direction:p.direction, idx:p.idx, kind:p.kind, ts:Date.parse(s.created_at) } : null;
   }).filter(Boolean);
   renderBuses();                             // the strip owns the ghost markers
   document.getElementById('sightingsList').innerHTML = n
@@ -5040,7 +5281,8 @@ async function addSighting() {
   sightError('');
   const note = input.value.trim();
   const val = (sightDir==='north' ? '▲ Northbound' : '▼ Southbound') +
-              ' at ' + where + (note ? ' · ' + note : '');
+              (where === '__left' ? ' left ' + originName(sightDir) : ' at ' + where) +
+              (note ? ' · ' + note : '');
   const res = await rpc('add_sighting', { p_slug:CFG.ROUTE_SLUG, p_body:val.slice(0,140) });
   if (res.error){
     const m = ((res.error.message||'')+'').toLowerCase();
@@ -6426,7 +6668,7 @@ function renderContactLine(){
 function hoursStateLine(){
   const m = nowMins(), st = routeState(m);
   const next = nextTrip('north', m) || nextTrip('south', m);
-  if (st === 'departing') return ['Trips leaving now', 'every ' + SET.headway_min + ' min'];
+  if (st === 'departing') return ['Trips leaving now', headwayNowLabel(m)];
   if (st === 'enroute') return ['Last trips still on the road', next ? 'next trips ' + next : ''];
   if (st === 'closed') return ['Closed now', next ? 'next trips ' + next : ''];
   return ['Operating hours', 'see the schedule'];
@@ -6434,7 +6676,8 @@ function hoursStateLine(){
 function hoursSummaryLine(){
   const n = hoursLabel('north').replace(/\n/g, ', ');
   const s = hoursLabel('south').replace(/\n/g, ', ');
-  if (n === s) return n + ' · every ' + SET.headway_min + ' min';
+  // Each line already names its interval when a window carries one.
+  if (n === s) return n + (anyWindowHeadway() ? '' : ' · every ' + routeHeadway() + ' min');
   return '▲ ' + n + '  ▼ ' + s;
 }
 // "6a–10a", short enough to sit inside a two-hour slice of a phone-width bar.
@@ -6444,10 +6687,10 @@ function shortHM(s){
 function dayBandHtml(){
   const row = function(dir, arrow){
     let out = '';
-    (SET.hours[dir]||[]).forEach(function(w){
+    hoursFor(dir).forEach(function(w){
       const a = parseHM(w[0]), b = parseHM(w[1]);
       if (a === null || b === null || b <= a) return;
-      const L = a/1440*100, W = (b-a)/1440*100, T = Math.min(210, 1440-b)/1440*100;
+      const L = a/1440*100, W = (b-a)/1440*100, T = Math.min(EN_ROUTE_MIN, 1440-b)/1440*100;
       out += '<span class="tail" style="left:'+(L+W)+'%;width:'+T+'%"></span>' +
              '<span class="w" style="left:'+L+'%;width:'+W+'%">'+(W > 7 ? shortHM(w[0])+'–'+shortHM(w[1]) : '')+'</span>';
     });
@@ -6462,25 +6705,35 @@ function dayBandHtml(){
     '<span class="now" style="left:calc(17px + (100% - 17px) * '+(m/1440).toFixed(4)+')"><span>now '+t+'</span></span>';
 }
 function renderHours(){
-  // multiple windows stack as lines inside the hour boxes
+  // multiple windows stack as lines inside the hour boxes; the boxes are
+  // today's, and the card's title says which set that is once there are two
   document.getElementById('nbHours').textContent = hoursLabel('north');
   document.getElementById('sbHours').textContent = hoursLabel('south');
+  const cap = document.querySelector('#hoursFold .cap');
+  if (cap) cap.textContent = hasWeekendHours() ? (weekendNow() ? 'Weekend hours' : 'Weekday hours') : 'Operating hours';
+  const other = document.getElementById('otherDaysNote');
+  if (other){ other.textContent = otherDaysLine(); other.classList.toggle('hidden', !other.textContent); }
   const st = hoursStateLine();
   document.getElementById('hoursSummary').innerHTML =
     '<span class="hoursstate">' + escapeHtml(st[0]) + (st[1] ? ' <span class="q">· ' + escapeHtml(st[1]) + '</span>' : '') + '</span>' +
     '<span class="vh">' + escapeHtml(hoursSummaryLine()) + '</span>';
   const band = document.getElementById('dayBand');
   if (band) band.innerHTML = dayBandHtml();
-  document.getElementById('headwayNote').textContent =
-    'Trips roughly every '+SET.headway_min+' minutes. Times above are departure windows from each end.';
+  // One number for the route, unless the windows carry their own: then each
+  // line above says its interval and this only covers the ones that do not.
+  document.getElementById('headwayNote').textContent = anyWindowHeadway()
+    ? 'Intervals are rough. A window without one runs about every '+routeHeadway()+' minutes. Times above are departure windows from each end.'
+    : 'Trips roughly every '+routeHeadway()+' minutes. Times above are departure windows from each end.';
   function humanMins(m){ m=parseInt(m,10)||0; return m>=60 ? (m/60)+(m===60?' hour':' hours') : m+' min'; }
   document.getElementById('busExpiryNote').textContent =
     'Buses show "live" under 45s, then their age; they disappear about '+humanMins(SET.bus_expiry_min)+' after their last update.';
   // The folded card's summary already asks the question; this line only adds
   // the mechanics.
   if (sightingsOn()) document.getElementById('sightingIntro').textContent =
-    'A sighting shows on the strip as a dashed mark for '+humanMins(SET.headway_min)+
-    ', and stays on this board for '+humanMins(SET.sighting_expiry_min)+'.';
+    'A sighting shows on the strip as a dashed mark for one trip interval ('+humanMins(routeHeadway())+
+    (anyWindowHeadway() ? ' unless its window says otherwise' : '')+
+    '), and stays on this board for '+humanMins(SET.sighting_expiry_min)+'.' +
+    (TRAVEL.length ? ' "Just left the terminal" shades the stretch of the strip the bus is probably on, from how long past trips took.' : '');
 }
 function start(){
   document.getElementById('gate').classList.add('hidden');

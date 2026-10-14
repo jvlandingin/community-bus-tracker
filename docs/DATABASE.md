@@ -86,8 +86,12 @@ continuity only.
 ```json
 {
   "hours": {
-    "north": [["06:00","10:00"], ["15:40","20:00"]],
-    "south": [["06:00","10:00"], ["15:40","20:00"]]
+    "north": [["03:00","06:30",30], ["11:00","15:30"]],
+    "south": [["06:00","07:00",40], ["15:40","20:00",40]],
+    "weekend": {
+      "north": [["04:00","06:00"], ["11:00","15:00"]],
+      "south": [["06:00","07:00"], ["16:30","20:00"]]
+    }
   },
   "headway_min": 30,
   "bus_expiry_min": 10,
@@ -100,11 +104,41 @@ continuity only.
 
 Hours are **lists of departure windows** per direction, 24 hour `HH:MM`, 1 to 6
 windows each, start before end. The list shape exists because the March 2026
-poster splits the day. The app treats buses as possibly en route for 3.5 hours
-after a window closes, so it only says "closed" once that has elapsed.
+poster splits the day. The app treats buses as possibly en route for 4 hours
+after a window closes, so it only says "closed" once that has elapsed. It was
+3.5 until October 2026, when two months of the riders' group chat gave 61
+timed trips: afternoon departures from Mendez reached One Ayala 208 to 238
+minutes later. The constant is `EN_ROUTE_MIN` in `index.html`'s hours block.
 
-Ranges enforced server-side by `_check_settings`: headway 1 to 720, bus expiry 1
-to 120, sighting expiry 5 to 1440, max sessions 1 to 200.
+**Saturday and Sunday may have their own windows** (October 2026,
+`sql/10-weekend-hours.sql`), under an optional `hours.weekend` object of the
+same shape as the weekday pair. That month's poster gives weekends narrower
+hours ("limited bus operating on these days"), and three Sundays in the chat
+ran a single bus. Absent means the weekday windows apply every day, which is
+every settings object stored before this, so nothing migrated. Present, it is
+held to exactly the weekday rules: both directions, 1 to 6 windows each. The
+app decides the day on the phone (`hoursFor(dir)` in the hours block, the only
+place that reads the object, and `test-hours.js` fails if anything else does),
+so Friday night's "next trip" is Saturday's first, and the hours card names
+which set it is showing with the other set in a line beneath.
+
+**A window may carry its own interval** as an optional third field, in minutes
+(October 2026, `sql/09-window-headway.sql`). The poster of that month runs the
+pre-dawn trips to Makati every 30 minutes and the afternoon trips back every
+40, which one `headway_min` for the route could not say. `headway_min` stays,
+as the interval for every window that names none, so settings stored before
+the field existed pass unchanged and an older page reads the first two fields
+as it always did. The app reads it through `headwayAt(dir, mins)`, the one
+place that decides which number is in force: it reaches the headline's "trips
+every", the hours card, and how long a sighting stays drawn on the strip (one
+interval, in the direction and at the time it was posted). Nothing else about
+the shape changed; a window is `[start, end]` or `[start, end, minutes]` and a
+fourth field is refused.
+
+Ranges enforced server-side by `_check_settings`: headway 1 to 720 (a window's
+own too), bus expiry 1 to 120, sighting expiry 5 to 1440, max sessions 1 to 200.
+Both window sets go through the same loop, so a weekend error names
+`hours.weekend.north` rather than failing silently.
 
 The two booleans are display switches, set from `admin.html`, and **absent
 means on** for both, so a route whose stored settings predate a switch keeps

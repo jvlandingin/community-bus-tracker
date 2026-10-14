@@ -596,6 +596,9 @@
     border:2px dashed var(--gold-deep); background:var(--surface);
   }
   .sightmk.sb{border-color:var(--brand-ink);}
+  /* Copied from index.html: the stretch a reported departure is probably on. */
+  .pip.band{width:22px; height:9px; border-radius:var(--r-s); opacity:.55;
+    background:repeating-linear-gradient(135deg, var(--gold-deep) 0 3px, transparent 3px 7px);}
   /* The checkpoint names between the two lines. A tick is only its name now:
      the stations on the lines are the marks. */
   .ticks{position:relative; height:22px;}
@@ -1113,6 +1116,7 @@
       <li><span class="sw"><span class="pip sb"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></span></span><span><b>Maroon, bottom line:</b> a bus going to Mendez</span></li>
       <li><span class="sw"><span class="pip old"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></span></span><span><b>Faded:</b> not updated lately. A guess, not a position</span></li>
       <li id="stripRingNote"><span class="sw"><span class="pip ring"></span></span><span><b>Dashed ring:</b> a sighting. Someone saw a bus there</span></li>
+      <li id="stripBandNote"><span class="sw"><span class="pip band"></span></span><span><b>Hatched stretch:</b> where a bus someone reported leaving the terminal probably is, going by past trips</span></li>
       <li><span class="sw"><span class="pip mine"></span></span><span><b>Purple:</b> your saved stop</span></li>
     </ul>
 
@@ -1209,7 +1213,9 @@
     <span class="badge">Sightings</span>
     <h2>Nobody sharing? Post a sighting</h2>
     <p>Saw a bus? Pick the direction and the nearest place. It shows on the
-      strip as a <b>dashed ring</b>, so others have something to go on.</p>
+      strip as a <b>dashed ring</b>, so others have something to go on. Did it
+      just leave the terminal? Pick <b>Just left</b> instead, and the strip
+      shades the stretch it is probably on by now.</p>
     <figure>
       <div class="demo" aria-hidden="true">
         <div class="demo-fold">
@@ -1233,7 +1239,10 @@
     </figure>
     <p class="hint">A dashed ring is one person’s word, already a few minutes
       old. It is never a live bus, and it clears itself after about one gap
-      between trips.</p>
+      between trips. The shaded stretch is a range read off how long past
+      trips took, from the slowest to the fastest: places, never an arrival
+      time, and it fades once even the slowest trip would be past the last
+      place it knows.</p>
   </div>
 
   <!-- ================= SHARING ================= -->
@@ -1439,7 +1448,7 @@ document.documentElement.className = 'js';
 // too many is a much smaller problem than hiding one that is really there.
 (function(){
   var hide = function(){
-    ['sightingsGuide','sightingsJump','stripRing','stripRingNote'].forEach(function(id){
+    ['sightingsGuide','sightingsJump','stripRing','stripRingNote','stripBandNote'].forEach(function(id){
       var el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });

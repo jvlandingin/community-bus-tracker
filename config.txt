@@ -170,3 +170,30 @@ STOP = Makati Ave.               | 14.5614 | 121.0222 | M
 STOP = Makati Shangri-La         | 14.5537 | 121.0247 | H
 STOP = Glorietta / Rustan's      | 14.5512 | 121.0243 | H
 STOP = One Ayala Terminal        | 14.5505 | 121.0279 | H
+
+# ============================================================
+#  TRAVEL TIMES (optional): how long past trips took to reach each
+#  checkpoint, so that when someone posts a sighting saying a bus
+#  has just left a terminal, the strip can shade the stretch the
+#  bus is probably on by now: from where the slowest past trip
+#  would be to where the fastest would. Without these lines that
+#  sighting is a dashed ring at the terminal like any other.
+#
+#  Format:  TRAVEL = direction | departures HH:MM-HH:MM | SHORT min-max | SHORT min-max ...
+#
+#  direction is north or south; "departures" is the range of
+#  departure times the row applies to, because early buses and
+#  afternoon buses run on different roads; then, for each
+#  checkpoint by its SHORT name in route order, the earliest and
+#  latest minute after departure that trips were seen to cross it.
+#  Stop at the last checkpoint you have numbers for: the band ends
+#  there rather than guessing further. Only places are ever shown,
+#  never minutes to come, and nothing here is an arrival time.
+#
+#  These rows were read from two months of the riders' group chat
+#  (October 2026, 61 timed trips; see docs/JOURNAL.md). Early runs
+#  were never reported arriving, so that row ends at Imus.
+#  Southbound had five trips, too few for a row.
+# ============================================================
+TRAVEL = north | 00:00-10:59 | TGY 10-25 | AMADEO 21-46 | GEN.T 46-68 | IMUS 67-100
+TRAVEL = north | 11:00-23:59 | TGY 14-36 | AMADEO 34-71 | GEN.T 54-107 | IMUS 83-142 | KAWIT 108-165 | PITX 134-198 | AYALA 208-231

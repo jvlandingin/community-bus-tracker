@@ -587,10 +587,20 @@ writes one canonical shape (`▲ Northbound at Amadeo · optional note`) into th
 same free-text `body` column the board has always had. Deliberately not a
 schema change: no migration, the admin page still shows a readable sentence,
 and every sighting posted before this existed still renders as the text it is.
-`parseSighting()` reads the shape back so recent ones can be drawn on the strip
-as hollow dashed rings — never solid, never the bus glyph, because a sighting
-is one person's word with no update coming after it. They clear from the strip
-after one headway, which is when the next bus has overtaken the claim.
+`parseSighting()` reads the shape back so recent ones can be drawn on the
+strip. They were hollow dashed rings at the place seen; since October 2026
+every sighting is a **glowing stretch**: a soft wash of the line's colour with
+a sheen travelling along it, never the bus glyph, because a sighting is one
+person's word with no update coming after it. With a travel-time row for its
+direction the stretch counts from the place the bus was seen and moves, the
+same way a departure's does (below); without one, or seen past the row's last
+place, it stays where it was seen and clears after one headway, which is when
+the next bus has overtaken the claim. One look for all sightings, because two
+marks meaning "someone saw a bus" was one more than a glance can learn. The
+stripes the stretch first had were replaced by the sheen the same day; the
+maintainer did not like them, and a moving light says "moving" better than a
+hatch does. Live bus pills on the strip breathe like the map's live badges and
+their coach rocks at idle, so a bus that is reporting right now looks like it.
 
 **A sighting may say when** (October 2026, the day the departure report
 shipped, because its first reader asked the obvious question). The composer

@@ -191,14 +191,16 @@ every map already has, so the link reveals nothing and dies with the trip. It is
 line about the town the bus is passing, from an optional fifth field on each
 `CHECKPOINT` in `config.txt`.
 
-**A sighting can say a bus just left the terminal** (October 2026), and the
-strip then shades the stretch it is probably on, between where the slowest and
-the fastest past trip would be by now, from optional `TRAVEL` lines in
-`config.txt` (minutes to each checkpoint, measured from the riders' chat, never
-logged by the app). It is a range drawn under the pills, named in places and
-never in minutes; `test-strip.js` fails if that code speaks of a time to come.
-Northbound only until southbound has data. `docs/ARCHITECTURE.md` has why a
-band and not a ghost bus.
+**Every sighting is a glowing stretch on the strip** (October 2026): where
+the bus someone saw probably is by now, between where the slowest and the
+fastest past trip would be, counted from the place it was seen (the terminal,
+for a "just left" post) using optional `TRAVEL` lines in `config.txt` (minutes
+to each checkpoint, measured from the riders' chat, never logged by the app).
+Without a row it stays where it was seen for one interval. It is a range drawn
+under the pills, named in places and never in minutes; `test-strip.js` fails if
+that code speaks of a time to come. Rows exist northbound only until southbound
+has data. Live pills breathe. `docs/ARCHITECTURE.md` has why a stretch and not
+a ghost bus.
 
 **The app keeps exactly four things between visits**, all on the device and
 all named in the privacy panel: whether this phone has been shown around (the

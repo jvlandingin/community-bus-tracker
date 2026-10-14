@@ -69,6 +69,10 @@ What they established is recorded here instead.
   are common, riders relaying an operator's "paalis na". Fixed the same day
   with a "when" choice and a clock time in the body. Should have shipped
   with the departure report.
+- **One mark for every sighting.** The maintainer, looking at the first
+  live band: what is the difference between the ring and the band, and why
+  stripes? Now every sighting is the same glowing stretch, moving where the
+  travel-time rows allow and still where they do not, and live buses pulse.
 - **Operators already share live locations in the chat**, 319 of them plus
   pins, and riders complain that WhatsApp live locations freeze. That is the
   pitch for the tracker, which the chat never mentions in that period, even

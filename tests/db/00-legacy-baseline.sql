@@ -26,7 +26,10 @@ create table public.bus_positions (
   session_id text not null,
   lat        double precision,
   lng        double precision,
-  speed      double precision,
+  -- NOT NULL in production. Not inferable from the functions, which always
+  -- wrote a number; learned in October 2026 when the first version of
+  -- sql/08-position-checks.sql failed against the live database on it.
+  speed      double precision not null,
   direction  text,
   bus_label  text,
   updated_at timestamptz not null default now(),

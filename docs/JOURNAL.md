@@ -25,6 +25,20 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-14 — The first 08 failed on the live database
+
+Run in the Supabase SQL editor, `sql/08-position-checks.sql` stopped on
+`null value in column "speed" ... violates not-null constraint`. The live
+`speed` column refuses NULL, which the repository's reconstruction of the
+database did not record, so every test here passed. The file is one
+transaction, so nothing was applied. The fixed version lets that constraint go
+before clearing the values, and the reconstruction now has it, so the suites
+fail the way the live database did if it ever comes back. Run the new version
+of the file; the old one cannot succeed there.
+
+The error's detail line printed a whole row, share key included. Worth knowing
+before pasting one anywhere public.
+
 ## 2026-10-13 — A review, and the six fixes it put first
 
 The maintainer asked for a review of the whole codebase for security and bugs.

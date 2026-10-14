@@ -123,6 +123,12 @@ begin
   perform public.set_bus_position(k, 'session-speed-001', 14.41, 120.9, 30.1, 'north', '98019');
   perform assert((select speed from public.bus_positions where session_id='session-speed-001') is null,
                  'nor is the next one, on the update path');
+  -- The live database had the column refusing NULL, which the first version
+  -- of 08 did not know and failed on there; the baseline now starts that way.
+  perform assert((select is_nullable from information_schema.columns
+                   where table_schema='public' and table_name='bus_positions'
+                     and column_name='speed') = 'YES',
+                 'the speed column no longer refuses the NULL it now holds');
   perform public.set_bus_position(k, 'session-speed-002', 14.4, 120.9, null, 'south', null);
   perform assert(exists (select 1 from public.bus_positions where session_id='session-speed-002'),
                  'a page that sends no speed at all is accepted');
@@ -163,8 +169,9 @@ begin
 end $$;
 
 -- ============================================================
--- Run the migration again over the rows the old checks let in: it has to
--- clear them, and it has to be safe to run twice.
+-- Run the migration again over the database as the live one stood: rows
+-- the old checks let in, a speed on every row, and a speed column that
+-- refuses NULL. It has to clear them, and it has to be safe to run twice.
 -- ============================================================
 do $$ begin raise notice '== a second run clears what the old function let in =='; end $$;
 alter table public.bus_positions
@@ -176,9 +183,11 @@ declare k text;
 begin
   select key into k from public.routes;
   insert into public.bus_positions (route_key, route_slug, session_id, lat, lng, speed, direction)
-  values (k, 'wonderful-mendez-ayala', 'session-old-nulls', null, null, null, null);
+  values (k, 'wonderful-mendez-ayala', 'session-old-nulls', null, null, 0, null);
   update public.bus_positions set speed = 12.5 where session_id = 'session-speed-002';
+  update public.bus_positions set speed = 0 where speed is null;
 end $$;
+alter table public.bus_positions alter column speed set not null;
 
 \ir ../../sql/08-position-checks.sql
 
@@ -194,6 +203,10 @@ begin
                    where table_schema='public' and table_name='bus_positions'
                      and column_name in ('lat','lng','direction') and is_nullable='NO') = 3,
                  'the columns refuse NULL again');
+  perform assert((select is_nullable from information_schema.columns
+                   where table_schema='public' and table_name='bus_positions'
+                     and column_name='speed') = 'YES',
+                 'and speed takes NULL, as it did not on the live database');
 end $$;
 
 do $$ begin raise notice 'ALL 08 CHECKS PASSED'; end $$;

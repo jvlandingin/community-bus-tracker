@@ -51,7 +51,8 @@ design.** Unique on `(route_slug, session_id)`.
 and handed to anyone with the slug, though no page ever read it and neither the
 privacy panel nor the operators' briefing mentioned it, and it is the one field
 the promise that this tool cannot be used to review a driver is about. The
-column is left in place; nothing writes it and nothing returns it.
+column is left in place, and takes NULL now, which on the live database it did
+not; nothing writes anything else to it and nothing returns it.
 
 ### sightings
 `sid` (identity, used by admin delete), `route_key`, `route_slug`, `body`,

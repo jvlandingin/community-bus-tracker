@@ -93,7 +93,7 @@ psql -d bustest -f db/04-privacy-tests.sql     # 18 checks, session id privacy
 psql -d bustest -f db/05-rotate-tests.sql      # 10 checks, rotation guard
 psql -d bustest -f db/06-watching-tests.sql    # 32 checks, the watching count
 psql -d bustest -f db/07-thanks-tests.sql      # 38 checks, saying salamat
-psql -d bustest -f db/08-position-tests.sql    # 34 checks, what a position write refuses
+psql -d bustest -f db/08-position-tests.sql    # 36 checks, what a position write refuses
 ```
 
 `dropdb bustest` and build it again between suites. Apply **all** the migration

@@ -1287,15 +1287,20 @@ deploy folder:
   `04-privacy-tests` 18 for session id privacy, `05-rotate-tests` 10 for the
   rotation guard, `06-watching-tests` 32 for the watching count,
   `07-thanks-tests` 38 for saying salamat — almost entirely about what they
-  refuse to keep, like the 06 suite — and `08-position-tests` 34 for what a
-  position write refuses: no position, a cap filled by dead rows, a speed. Each runs against its own fresh database; see
-  `tests/README.md`, which is now accurate about that.
+  refuse to keep, like the 06 suite — and `08-position-tests` 36 for what a
+  position write refuses: no position, a cap filled by dead rows, a speed.
+  Each runs against its own fresh database; see `tests/README.md`, which is
+  now accurate about that.
 
 Two lessons worth keeping. The reconstruction was built from a dump of function
 definitions only, so it had no foreign keys, and 55 passing checks still missed
 that `bus_positions.route_key` referenced `routes.key` and blocked every key
 rotation. **Before writing a migration, get the table constraints, not just the
-function definitions.**
+function definitions.** It happened again in October 2026: `bus_positions.speed`
+refused NULL on the live database, nothing in the repository said so, and the
+first `08-position-checks.sql` passed every suite here and failed there on the
+statement that cleared it. One transaction meant it changed nothing. The
+reconstruction now records the constraint.
 
 And `tests/README.md` spent months describing a sequence for the database
 suites that could not work: two of the three suites had no runnable order at

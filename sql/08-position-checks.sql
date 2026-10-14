@@ -35,9 +35,12 @@
 --     stays, because pages already on phones send it, and an
 --     impossible value is still refused, since a phone reporting
 --     one is probably reporting a bad position too. But nothing
---     keeps it: existing values are cleared, the column is never
---     written again, and get_positions and admin_list_sharers no
---     longer return it.
+--     keeps it: existing values are cleared, the column holds NULL
+--     from now on, and get_positions and admin_list_sharers no
+--     longer return it. On the live database the column refused
+--     NULL, which nothing in these files had recorded, so the
+--     first version of this file failed there and changed nothing;
+--     the constraint is let go below, before the values are cleared.
 --
 --  Neither page reads speed, so this can be applied before or
 --  after the pages that stop sending it are deployed.
@@ -58,7 +61,8 @@ delete from public.bus_positions
 alter table public.bus_positions
   alter column lat set not null,
   alter column lng set not null,
-  alter column direction set not null;
+  alter column direction set not null,
+  alter column speed drop not null;
 
 update public.bus_positions set speed = null where speed is not null;
 
@@ -132,12 +136,14 @@ begin
     raise exception 'too many active sessions';
   end if;
 
+  -- speed is written as NULL by name rather than left out, so no default
+  -- on the column can put a number back in it.
   insert into public.bus_positions
-    (route_key, route_slug, session_id, lat, lng, direction, bus_label, updated_at)
-  values (r.key, r.slug, p_session, p_lat, p_lng, p_direction,
+    (route_key, route_slug, session_id, lat, lng, speed, direction, bus_label, updated_at)
+  values (r.key, r.slug, p_session, p_lat, p_lng, null, p_direction,
           nullif(trim(p_label), ''), now())
   on conflict (route_slug, session_id) do update
-    set lat = excluded.lat, lng = excluded.lng,
+    set lat = excluded.lat, lng = excluded.lng, speed = null,
         direction = excluded.direction, bus_label = excluded.bus_label,
         route_key = excluded.route_key, updated_at = now();
 

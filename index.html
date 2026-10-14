@@ -1028,11 +1028,11 @@
   }
   .btn-stop{background:var(--lost); color:#fff;}
   .btn-ghost{background:var(--paper); color:var(--ink); border:1.5px solid var(--line);}
-  input[type=text], select{
+  input[type=text], input[type=time], select{
     width:100%; min-height:var(--tap); padding:12px; border-radius:var(--r-m); border:1.5px solid var(--line);
     background:var(--surface); color:var(--ink); font-size:var(--fs-body); font-family:inherit;
   }
-  input[type=text]:focus, select:focus{outline:none; border-color:var(--brand-ink);}
+  input[type=text]:focus, input[type=time]:focus, select:focus{outline:none; border-color:var(--brand-ink);}
   .fielderr{font-size:var(--fs-label); color:var(--lost-ink); font-weight:700; margin-top:8px;}
   .hint{font-size:var(--fs-label); color:var(--muted); margin-top:10px; line-height:1.55;}
   .badge{
@@ -1382,7 +1382,7 @@
      set in the normal width, which is easier going over a few lines. */
   .privacy-detail p, .modal-card p, .hint, .headway, .gate p, .sighting, .fielderr,
   #noticeText, .stoplist .empty, .mapnote .s, .tkt-fine, .privacybar button, .status-sub,
-  input[type=text], select{font-family:var(--font-text);}
+  input[type=text], input[type=time], select{font-family:var(--font-text);}
 
   /* ---- Motion ----------------------------------------------------------
      Everything in this section is decorative. Nothing here says anything
@@ -2047,22 +2047,14 @@
           </div>
           <select id="sightWhere" aria-label="Where you saw the bus"></select>
           <div style="height:8px"></div>
-          <!-- When, because the post is often minutes behind the sighting:
-               someone relaying "paalis na" from the chat, or posting after
-               the bus has gone by. Written into the body as a clock time. -->
-          <select id="sightWhen" aria-label="When you saw it">
-            <option value="0">Just now</option>
-            <option value="5">About 5 minutes ago</option>
-            <option value="10">About 10 minutes ago</option>
-            <option value="15">About 15 minutes ago</option>
-            <option value="20">About 20 minutes ago</option>
-            <option value="30">About 30 minutes ago</option>
-            <option value="45">About 45 minutes ago</option>
-            <option value="60">About an hour ago</option>
-            <option value="90">About 1½ hours ago</option>
-            <option value="120">About 2 hours ago</option>
-            <option value="180">About 3 hours ago</option>
-          </select>
+          <!-- When, as a clock time, because the post is often behind the
+               sighting: someone copying an operator's "umalis na 3:05" from
+               the group chat, or posting after the bus has gone by. The
+               field starts at now and is written into the body only if it
+               was changed, so an untouched field never stamps a stale
+               minute on a post made a while after the card was opened. -->
+          <div class="hint" style="margin:0 0 4px;">Time you saw it. Leave it for just now.</div>
+          <input type="time" id="sightWhen" aria-label="Time you saw the bus" onchange="this.setAttribute('data-set','1')">
           <div style="height:8px"></div>
           <input type="text" id="sightingInput" maxlength="80" placeholder="Anything else? (optional)">
           <div style="height:8px"></div>
@@ -5285,8 +5277,17 @@ function pickSightDir(d){
   const left = document.getElementById('sightLeftOpt');
   if (left) left.textContent = 'Just left ' + originName(d) + ' (umalis na)';
 }
+// The time field opens at now, and forgets that it was ever changed.
+function resetSightWhen(){
+  const el = document.getElementById('sightWhen');
+  if (!el) return;
+  const d = new Date();
+  el.value = (d.getHours()<10?'0':'')+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+  el.removeAttribute('data-set');
+}
 function buildSightingPlaces(){
   const sel = document.getElementById('sightWhere');
+  resetSightWhen();
   if (!sel || !sightingsOn()) return;
   sel.innerHTML = '<option value="">Where did you see it?</option>' +
     '<option value="__left" id="sightLeftOpt">Just left the terminal (umalis na)</option>' +
@@ -5327,11 +5328,16 @@ async function addSighting() {
   if (!where){ sightError('Pick where you saw it.'); return; }
   sightError('');
   const note = input.value.trim();
-  const ago = parseInt(document.getElementById('sightWhen').value, 10) || 0;
+  // A time only when the field was changed from the "now" it opened with.
+  // Ahead of now is refused: nobody saw a bus that has not left. Behind it
+  // is written as stated however far back; the strip stops drawing a
+  // sighting older than a trip by itself, and the board keeps the words.
+  const whenEl = document.getElementById('sightWhen');
   let when = '';
-  if (ago > 0){
-    const d = new Date(Date.now() - ago * 60000);
-    when = ', ' + fmtHM((d.getHours()<10?'0':'')+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes());
+  if (whenEl.getAttribute('data-set') && parseHM(whenEl.value) !== null){
+    const stated = parseHM(whenEl.value), nowM = nowMins();
+    if (stated > nowM + 1 && stated - nowM < 12 * 60){ sightError('That time is still ahead of now.'); return; }
+    if (stated !== nowM) when = ', ' + fmtHM(whenEl.value);
   }
   const val = (sightDir==='north' ? '▲ Northbound' : '▼ Southbound') +
               (where === '__left' ? ' left ' + originName(sightDir) : ' at ' + where) + when +
@@ -5348,7 +5354,7 @@ async function addSighting() {
   // place selected invites posting the same sighting twice.
   input.value='';
   document.getElementById('sightWhere').value='';
-  document.getElementById('sightWhen').value='0';
+  resetSightWhen();
   pickSightDir(null);
   pollSightings();
 }

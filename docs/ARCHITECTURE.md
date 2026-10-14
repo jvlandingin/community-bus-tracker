@@ -247,11 +247,30 @@ stored had to change. `headwayAt()` in the tested hours block is the only place
 that decides which number is in force at a given minute in a given direction,
 and `test-hours.js` fails if anything outside that block reads the route-wide
 number directly, because the first version of this had three readers and a
-window's own interval would have reached only one of them. What the schedule
-still cannot say is **which day of the week**: the same poster gives Saturday
-and Sunday their own windows, and the settings have one set for every day. That
-is a shape change to `hours`, not a third field, and is the next deliberate
-conversation about this object.
+window's own interval would have reached only one of them.
+
+**Weekends have their own windows** (October 2026, the same week). The same
+poster gives Saturday and Sunday a narrower set, and the settings had one set
+for every day, so a Saturday page said "departing" at 3:30 for a 4:00 bus. The
+shape change was kept small: an optional `hours.weekend` object of the same
+shape as the weekday pair, absent meaning the same hours every day. The day is
+decided on the phone, in `hoursFor()`, which became the only reader of the
+hours object the way `headwayAt()` is the only reader of the interval, and for
+the same reason: six functions read `SET.hours` directly before, and a weekend
+set would have reached some of them. Two details were deliberate. Past the last
+window the next trip named is tomorrow's first, so on a Friday night it is
+Saturday's 4:00 and not the weekday 3:00. And a weekend set missing one
+direction falls back to that direction's weekday windows rather than to
+"unknown", because the organizer did write hours for that day. Public
+holidays are not a third set: the one in the chat ran a weekday-shaped
+schedule, and a set nobody can predict is a set nobody will keep current.
+
+**The en-route allowance is four hours**, not three and a half (October 2026).
+It was a guess until two months of the riders' group chat gave 61 timed trips:
+afternoon departures from Mendez reached One Ayala 208 to 238 minutes later,
+so at 210 the page called the last bus arrived while it was still on Chino
+Roces. `EN_ROUTE_MIN` in the hours block is the one place the number lives,
+and `docs/JOURNAL.md` has the trips it came from.
 
 **Reads do not write.** An earlier version ran a DELETE on every read. That was
 documented as fixed long before it actually was: the deployed SQL still swept on

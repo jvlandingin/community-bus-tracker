@@ -82,12 +82,13 @@ psql -d bustest -f ../sql/06-watching-count.sql
 psql -d bustest -f ../sql/07-thanks.sql
 psql -d bustest -f ../sql/08-position-checks.sql
 psql -d bustest -f ../sql/09-window-headway.sql
+psql -d bustest -f ../sql/10-weekend-hours.sql
 ```
 
 Then run one suite against it:
 
 ```
-psql -d bustest -f db/01-core-tests.sql        # 59 checks
+psql -d bustest -f db/01-core-tests.sql        # 64 checks
 psql -d bustest -f db/02-rotation-tests.sql    # 17 checks, key rotation
 psql -d bustest -f db/03-kick-tests.sql        # 17 checks, stopping a sharer
 psql -d bustest -f db/04-privacy-tests.sql     # 18 checks, session id privacy

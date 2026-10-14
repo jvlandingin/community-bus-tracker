@@ -15,7 +15,13 @@ new Function('S', 'let SET={hours:{north:[],south:[]}};' + block +
   'S.windowHeadway=windowHeadway;' +
   'S.headwayAt=function(d,w,hw,m){SET.hours[d]=w;SET.headway_min=hw;return headwayAt(d,m);};' +
   'S.anyWindowHeadway=function(n,s){SET.hours.north=n;SET.hours.south=s;return anyWindowHeadway();};' +
-  'S.headwayNowLabel=function(n,s,hw,m){SET.hours.north=n;SET.hours.south=s;SET.headway_min=hw;return headwayNowLabel(m);};')(S);
+  'S.headwayNowLabel=function(n,s,hw,m){SET.hours.north=n;SET.hours.south=s;SET.headway_min=hw;return headwayNowLabel(m);};' +
+  // The weekend set: these take the whole hours object and a weekday number.
+  'S.setDay=function(k){DAY_OVERRIDE=k;};S.setHours=function(h){SET.hours=h;};S.setHeadway=function(h){SET.headway_min=h;};' +
+  'S.hoursFor=hoursFor;S.hasWeekendHours=hasWeekendHours;S.otherDaysLine=otherDaysLine;' +
+  'S.nextTripNow=function(d,m){return nextTrip(d,m);};S.routeStateNow=routeState;S.headwayAtNow=headwayAt;' +
+  'S.hoursLabelNow=hoursLabel;S.EN_ROUTE_MIN=EN_ROUTE_MIN;' +
+  'DAY_OVERRIDE=3;')(S);   // a Wednesday, so nothing below depends on the day the suite runs
 
 let fail = 0;
 const check = (c, label, note) => { console.log((c ? 'PASS  ' : 'FAIL  ') + label + (note?'   '+note:'')); if (!c) fail++; };
@@ -29,17 +35,23 @@ check(S.fmtHM('06:00') === '6:00 AM' && S.fmtHM('15:40') === '3:40 PM'
    'fmtHM displays 12h with correct noon and midnight');
 
 check(S.withinWindows(poster, M(7,0)) === true,  'inside the morning window: open');
-check(S.withinWindows(poster, M(12,0)) === true, 'noon: still open (10am departure is en route until 1:30pm)');
-check(S.withinWindows(poster, M(14,0)) === false, '2:00pm: genuinely closed between the windows');
+// The allowance is four hours: two months of the riders' group chat gave
+// afternoon runs from Mendez reaching One Ayala 208 to 238 minutes after
+// leaving, so the three and a half it used to be called the last bus arrived
+// while it was still in Makati.
+check(S.EN_ROUTE_MIN === 240, 'the en-route allowance is four hours');
+check(S.withinWindows(poster, M(12,0)) === true, 'noon: still open (10am departure is en route until 2:00pm)');
+check(S.withinWindows(poster, M(14,0)) === true, '2:00pm: the 10am bus may be arriving this minute');
+check(S.withinWindows(poster, M(14,1)) === false, '2:01pm: genuinely closed between the windows');
 check(S.withinWindows(poster, M(15,40)) === true, '3:40pm: the afternoon window opens');
 check(S.withinWindows(poster, M(23,0)) === true,  '11:00pm: last 8pm departure still en route');
-check(S.withinWindows(poster, M(23,31)) === false, '11:31pm: everything has arrived, closed');
+check(S.withinWindows(poster, M(0,1)) === false, '12:01am: everything has arrived, closed');
 check(S.withinWindows(poster, M(3,0)) === false,  '3:00am: closed before first trip');
 check(S.withinWindows([], M(12,0)) === true, 'no data: never claims closed');
 check(S.withinWindows([['xx:yy','10:00']], M(2,0)) === true, 'malformed data: never claims closed');
 
 const single = [['03:00','16:00']];  // the seeded old schedule
-check(S.withinWindows(single, M(12,0)) === true && S.withinWindows(single, M(19,31)) === false,
+check(S.withinWindows(single, M(12,0)) === true && S.withinWindows(single, M(20,1)) === false,
    'the old single-window schedule behaves exactly as before');
 
 check(S.hoursLabel('north', poster) === '6:00 AM - 10:00 AM\n3:40 PM - 8:00 PM',
@@ -98,10 +110,10 @@ check(S.nextTrip('north', [], M(14,0)) === '', 'no hours: says nothing rather th
 check(S.serviceState(poster, M(7,0)) === 'departing', '7:00am: buses are leaving');
 check(S.serviceState(poster, M(10,0)) === 'departing', '10:00am: the last departure of the window still counts');
 check(S.serviceState(poster, M(10,1)) === 'enroute', '10:01am: no more departures, the last ones are on the road');
-check(S.serviceState(poster, M(13,30)) === 'enroute', '1:30pm: the 10am bus may still be arriving');
-check(S.serviceState(poster, M(13,31)) === 'closed', '1:31pm: closed until the afternoon');
+check(S.serviceState(poster, M(14,0)) === 'enroute', '2:00pm: the 10am bus may still be arriving');
+check(S.serviceState(poster, M(14,1)) === 'closed', '2:01pm: closed until the afternoon');
 check(S.serviceState(poster, M(15,40)) === 'departing', '3:40pm: departing again');
-check(S.serviceState(poster, M(23,31)) === 'closed', '11:31pm: closed for the night');
+check(S.serviceState(poster, M(0,1)) === 'closed', '12:01am: closed for the night');
 check(S.serviceState([], M(12,0)) === 'unknown', 'no hours: unknown, never closed');
 check(S.serviceState([['xx:yy','10:00']], M(2,0)) === 'unknown', 'unreadable hours: unknown, never closed');
 for (const [name, w] of [['the poster', poster], ['the old single window', single]]) {
@@ -115,8 +127,8 @@ for (const [name, w] of [['the poster', poster], ['the old single window', singl
 // Both directions in one line: whichever is busier speaks for the route.
 check(S.routeState(poster, [['04:00','05:00']], M(7,0)) === 'departing', 'one direction departing: the route is departing');
 check(S.routeState([['04:00','05:00']], [['05:00','06:00']], M(7,0)) === 'enroute', 'only buses still on the road: en route');
-check(S.routeState(poster, poster, M(14,0)) === 'closed', 'both closed: closed');
-check(S.routeState([], poster, M(14,0)) === 'unknown', 'one direction unknown: the route does not claim closed');
+check(S.routeState(poster, poster, M(14,30)) === 'closed', 'both closed: closed');
+check(S.routeState([], poster, M(14,30)) === 'unknown', 'one direction unknown: the route does not claim closed');
 
 // The empty map names one time, so it has to be the earlier of the two
 // directions'. It used to take northbound's whatever southbound said.
@@ -133,6 +145,53 @@ check(S.routeState([], poster, M(14,0)) === 'unknown', 'one direction unknown: t
   const note = html.slice(html.indexOf('function renderMapNote('), html.indexOf('// ---- Follow my bus'));
   check(/const first = firstNextTrip\(m\);/.test(note) && /No buses until ' \+ escapeHtml\(first \? first\.label/.test(note),
     'and the empty map really does ask it, rather than picking a direction itself');
+}
+
+// Weekends. The October 2026 poster: Monday to Friday one set of windows,
+// Saturday and Sunday a narrower one, kept as hours.weekend in the same
+// shape. Absent, the weekday windows apply every day, as they always did.
+{
+  const wk = { north: [['03:00','06:30',30], ['11:00','15:30']], south: [['06:00','07:00',40], ['15:40','20:00',40]] };
+  const we = { north: [['04:00','06:00'], ['11:00','15:00']], south: [['06:00','07:00'], ['16:30','20:00']] };
+  S.setHeadway(30);
+  S.setHours({ north: wk.north, south: wk.south });
+  S.setDay(6);
+  check(S.hoursFor('north') === wk.north && !S.hasWeekendHours(), 'no weekend set: Saturday runs the weekday windows');
+  check(S.routeStateNow(M(3,30)) === 'departing', 'and departs at 3:30 on a Saturday, as before');
+  S.setHours({ north: wk.north, south: wk.south, weekend: we });
+  check(S.hasWeekendHours(), 'a weekend set is recognised');
+  S.setDay(3);
+  check(S.hoursFor('north') === wk.north && S.hoursFor('south') === wk.south, 'Wednesday: the weekday windows');
+  check(S.routeStateNow(M(3,30)) === 'departing', 'Wednesday 3:30am: departing');
+  S.setDay(6);
+  check(S.hoursFor('north') === we.north && S.hoursFor('south') === we.south, 'Saturday: the weekend windows');
+  check(S.routeStateNow(M(3,30)) === 'closed', 'Saturday 3:30am: closed, the first weekend bus is at 4:00');
+  check(S.nextTripNow('north', M(3,30)) === '4:00 AM', 'and the next trip named is the 4:00');
+  check(S.routeStateNow(M(15,45)) === 'enroute', 'Saturday 3:45pm: nothing departing, the 3:00 bus still on the road');
+  S.setDay(5);
+  check(S.routeStateNow(M(15,45)) === 'departing', 'Friday 3:45pm: the weekday southbound window is open');
+  check(S.nextTripNow('north', M(23,0)) === '4:00 AM', 'Friday night: the next trip is Saturday\'s 4:00, not the weekday 3:00',
+    S.nextTripNow('north', M(23,0)));
+  S.setDay(0);
+  check(S.hoursFor('north') === we.north, 'Sunday: the weekend windows too');
+  check(S.nextTripNow('north', M(23,0)) === '3:00 AM', 'Sunday night: the next trip is Monday\'s 3:00');
+  check(S.headwayAtNow('north', M(5,0)) === 30, 'a weekend window without an interval runs at the route\'s');
+  check(S.hoursLabelNow('north') === '4:00 AM - 6:00 AM\n11:00 AM - 3:00 PM' && S.hoursLabelNow('north', false) === '3:00 AM - 6:30 AM · every 30 min\n11:00 AM - 3:30 PM',
+    'the label is today\'s set, or the one asked for');
+  check(S.otherDaysLine().indexOf('Monday to Friday: ') === 0 && S.otherDaysLine().indexOf('3:00 AM - 6:30 AM') > 0,
+    'on a weekend the card\'s other-days line is the weekday set', S.otherDaysLine());
+  S.setDay(3);
+  check(S.otherDaysLine().indexOf('Saturdays and Sundays: ') === 0 && S.otherDaysLine().indexOf('4:00 AM - 6:00 AM') > 0,
+    'on a weekday it is the weekend set', S.otherDaysLine());
+  S.setHours({ north: wk.north, south: wk.south, weekend: { north: [], south: we.south } });
+  S.setDay(6);
+  check(S.hoursFor('north') === wk.north && S.hoursFor('south') === we.south,
+    'a weekend set missing one direction falls back to that direction\'s weekday windows');
+  S.setHours({ north: wk.north, south: wk.south });
+  check(S.otherDaysLine() === '', 'no weekend set: no other-days line');
+  S.setDay(3);
+  check(!/SET\.hours\s*[.\[]/.test(html.slice(html.indexOf('// ---- END operating hours'))),
+    'nothing outside the hours block reads the hours object directly, so every reader gets the right day');
 }
 
 // Pasko season, which the admin page can switch off: the ber months, to

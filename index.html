@@ -963,8 +963,8 @@
   .headway{font-size:var(--fs-label); color:var(--muted); margin-top:8px; font-weight:600;}
   /* The folded hours card answers before it is opened: a status line, then
      the day drawn as a bar per direction, the departure windows solid, a
-     dotted tail for the three and a half hours the last buses are still on
-     the road, and a marker for now. Drawn from the hours set in the admin
+     dotted tail for the four hours the last buses may still be on the
+     road, and a marker for now. Drawn from the hours set in the admin
      page; the exact times stay one tap away in the boxes above. */
   .dayband{display:block; position:relative; margin-top:9px; padding-top:13px;}
   .dayband .row{display:flex; align-items:center; gap:7px; margin-bottom:5px;}
@@ -2005,6 +2005,7 @@
           <div class="hourbox nb"><div class="dirname">▲ MENDEZ → ONE AYALA</div><div class="times" id="nbHours">–</div></div>
           <div class="hourbox sb"><div class="dirname">▼ ONE AYALA → MENDEZ</div><div class="times" id="sbHours">–</div></div>
         </div>
+        <div class="headway hidden" id="otherDaysNote"></div>
         <div class="headway" id="headwayNote"></div>
       </div>
     </details>
@@ -2697,20 +2698,46 @@ function fmtHM(s){
   h = h%12; if (h===0) h=12;
   return h + ':' + (mm<10?'0':'') + mm + ' ' + ap;
 }
-// Buses that depart at a window's last minute are still on the road for
-// about 3.5 hours after, so each window extends by 210 minutes.
+// Buses that depart at a window's last minute are still on the road for up
+// to four hours after, so each window extends by this many minutes. It was
+// three and a half until October 2026, when two months of the riders' group
+// chat gave 61 timed trips: afternoon departures from Mendez reached One
+// Ayala 208 to 238 minutes later, so a page that stopped counting at 210
+// called the last bus arrived while it was still on Chino Roces.
+const EN_ROUTE_MIN = 240;
 function withinWindows(windows, nowMins){
   if (!windows || !windows.length) return true;   // unknown -> don't claim closed
   for (let i=0;i<windows.length;i++){
     const a = parseHM(windows[i][0]), b = parseHM(windows[i][1]);
     if (a===null || b===null) return true;
-    if (nowMins >= a && nowMins <= b + 210) return true;
+    if (nowMins >= a && nowMins <= b + EN_ROUTE_MIN) return true;
   }
   return false;
 }
+// Which day's windows apply. The October 2026 poster gives Saturday and
+// Sunday their own, narrower windows ("limited bus operating on these
+// days"), kept as hours.weekend in the same shape as the weekday pair. A
+// route without a weekend set runs the same hours every day, which is every
+// settings object stored before this; and a weekend set missing one
+// direction falls back to that direction's weekday windows rather than to
+// "unknown", because the organizer did write hours for that day.
+let DAY_OVERRIDE = null;   // a weekday number for the tests; null reads the clock
+function dayNow(){ return DAY_OVERRIDE === null ? new Date().getDay() : DAY_OVERRIDE; }
+function isWeekendDay(k){ return k === 0 || k === 6; }
+function weekendNow(){ return isWeekendDay(dayNow()); }
+function hasWeekendHours(){
+  const we = SET.hours.weekend;
+  return !!(we && ((we.north && we.north.length) || (we.south && we.south.length)));
+}
+function hoursFor(dir, weekend){
+  if (weekend === undefined) weekend = weekendNow();
+  const we = SET.hours.weekend;
+  if (weekend && we && we[dir] && we[dir].length) return we[dir];
+  return SET.hours[dir] || [];
+}
 function withinHours(dir) {
   const now = new Date();
-  return withinWindows(SET.hours[dir], now.getHours()*60 + now.getMinutes());
+  return withinWindows(hoursFor(dir), now.getHours()*60 + now.getMinutes());
 }
 // A window may carry its own interval as a third field, [start, end, mins]:
 // the October 2026 poster has the pre-dawn trips to Makati every 30 minutes
@@ -2728,7 +2755,7 @@ function routeHeadway(){
 // own if it has one, else the route's. Between windows, and after the last
 // departure while buses are still en route, it is the route's.
 function headwayAt(dir, nowMins){
-  const w = SET.hours[dir] || [];
+  const w = hoursFor(dir);
   for (let i = 0; i < w.length; i++){
     const a = parseHM(w[i][0]), b = parseHM(w[i][1]);
     if (a === null || b === null) continue;
@@ -2740,19 +2767,20 @@ function headwayAt(dir, nowMins){
 // when the words around the schedule stop quoting the route's one number.
 function anyWindowHeadway(){
   return ['north','south'].some(function(d){
-    return (SET.hours[d] || []).some(function(w){ return windowHeadway(w) !== null; });
+    return hoursFor(d).some(function(w){ return windowHeadway(w) !== null; });
   });
 }
 // "every 30 min" for the hours card while trips are leaving, or both
 // directions' when they are leaving at different intervals.
 function headwayNowLabel(nowMins){
-  const dirs = ['north','south'].filter(function(d){ return serviceState(SET.hours[d], nowMins) === 'departing'; });
+  const dirs = ['north','south'].filter(function(d){ return serviceState(hoursFor(d), nowMins) === 'departing'; });
   const hs = dirs.map(function(d){ return headwayAt(d, nowMins); });
   if (!hs.length || hs.every(function(h){ return h === hs[0]; })) return 'every ' + (hs[0] || routeHeadway()) + ' min';
   return dirs.map(function(d, i){ return (d === 'north' ? '▲' : '▼') + ' every ' + hs[i] + ' min'; }).join(' · ');
 }
-function hoursLabel(dir){
-  const w = SET.hours[dir]||[];
+// Today's windows unless a day is asked for: true for the weekend set.
+function hoursLabel(dir, weekend){
+  const w = hoursFor(dir, weekend);
   if (!w.length) return 'see schedule';
   return w.map(function(x){
     const h = windowHeadway(x);
@@ -2763,14 +2791,19 @@ function hoursLabel(dir){
 // to be the day's first window whatever the time, which is right before dawn
 // and wrong every afternoon between the windows: at 2 PM the page told riders
 // the next trip was tomorrow's 6:00 AM when the 3:40 PM one was next. Past
-// the last window of the day it wraps to tomorrow's first.
-function nextTripMins(dir, nowMins){
-  const w = (SET.hours[dir]||[]).map(function(x){ return parseHM(x[0]); })
+// the last window of the day it wraps to tomorrow's first, which on a Friday
+// night is Saturday's later one.
+function sortedStarts(windows){
+  return windows.map(function(x){ return parseHM(x[0]); })
     .filter(function(x){ return x !== null; })
     .sort(function(a,b){ return a-b; });
-  if (!w.length) return null;
-  for (let i=0;i<w.length;i++){ if (w[i] > nowMins) return w[i]; }
-  return w[0];
+}
+function nextTripMins(dir, nowMins){
+  const today = sortedStarts(hoursFor(dir));
+  for (let i=0;i<today.length;i++){ if (today[i] > nowMins) return today[i]; }
+  const tomorrow = sortedStarts(hoursFor(dir, isWeekendDay((dayNow() + 1) % 7)));
+  if (tomorrow.length) return tomorrow[0];
+  return today.length ? today[0] : null;
 }
 function nextTrip(dir, nowMins){
   const t = nextTripMins(dir, nowMins);
@@ -2797,8 +2830,8 @@ function firstNextTrip(nowMins){
   return best;
 }
 // What one direction's service is doing at nowMins, for the hours card:
-// 'departing' inside a departure window, 'enroute' in the three and a half
-// hours after one closes while its last buses are still on the road, and
+// 'departing' inside a departure window, 'enroute' in the four hours after
+// one closes while its last buses may still be on the road, and
 // 'closed' otherwise. Hours that are missing or unreadable are 'unknown',
 // never 'closed', for the same reason withinWindows will not claim closed.
 function serviceState(windows, nowMins){
@@ -2808,15 +2841,25 @@ function serviceState(windows, nowMins){
     const a = parseHM(windows[i][0]), b = parseHM(windows[i][1]);
     if (a===null || b===null) return 'unknown';
     if (nowMins >= a && nowMins <= b) return 'departing';
-    if (nowMins > b && nowMins <= b + 210) enroute = true;
+    if (nowMins > b && nowMins <= b + EN_ROUTE_MIN) enroute = true;
   }
   return enroute ? 'enroute' : 'closed';
 }
 // Both directions at once: the busier of the two wins.
 function routeState(nowMins){
-  const n = serviceState(SET.hours.north, nowMins), s = serviceState(SET.hours.south, nowMins);
+  const n = serviceState(hoursFor('north'), nowMins), s = serviceState(hoursFor('south'), nowMins);
   const order = ['departing','unknown','enroute','closed'];
   return order[Math.min(order.indexOf(n), order.indexOf(s))];
+}
+// The hours card shows today's windows in its boxes; this is its one line
+// about the other days, when a weekend set exists: on a weekday what the
+// weekend runs, on a weekend what Monday brings. Empty without one.
+function otherDaysLine(){
+  if (!hasWeekendHours()) return '';
+  const other = !weekendNow();
+  const n = hoursLabel('north', other).replace(/\n/g, ', ');
+  const s = hoursLabel('south', other).replace(/\n/g, ', ');
+  return (other ? 'Saturdays and Sundays: ' : 'Monday to Friday: ') + (n === s ? n : '▲ ' + n + ' · ▼ ' + s);
 }
 // Pasko. From the first of September, when the "ber" months start and the
 // country starts decorating, to Three Kings on the sixth of January.
@@ -6489,10 +6532,10 @@ function shortHM(s){
 function dayBandHtml(){
   const row = function(dir, arrow){
     let out = '';
-    (SET.hours[dir]||[]).forEach(function(w){
+    hoursFor(dir).forEach(function(w){
       const a = parseHM(w[0]), b = parseHM(w[1]);
       if (a === null || b === null || b <= a) return;
-      const L = a/1440*100, W = (b-a)/1440*100, T = Math.min(210, 1440-b)/1440*100;
+      const L = a/1440*100, W = (b-a)/1440*100, T = Math.min(EN_ROUTE_MIN, 1440-b)/1440*100;
       out += '<span class="tail" style="left:'+(L+W)+'%;width:'+T+'%"></span>' +
              '<span class="w" style="left:'+L+'%;width:'+W+'%">'+(W > 7 ? shortHM(w[0])+'–'+shortHM(w[1]) : '')+'</span>';
     });
@@ -6507,9 +6550,14 @@ function dayBandHtml(){
     '<span class="now" style="left:calc(17px + (100% - 17px) * '+(m/1440).toFixed(4)+')"><span>now '+t+'</span></span>';
 }
 function renderHours(){
-  // multiple windows stack as lines inside the hour boxes
+  // multiple windows stack as lines inside the hour boxes; the boxes are
+  // today's, and the card's title says which set that is once there are two
   document.getElementById('nbHours').textContent = hoursLabel('north');
   document.getElementById('sbHours').textContent = hoursLabel('south');
+  const cap = document.querySelector('#hoursFold .cap');
+  if (cap) cap.textContent = hasWeekendHours() ? (weekendNow() ? 'Weekend hours' : 'Weekday hours') : 'Operating hours';
+  const other = document.getElementById('otherDaysNote');
+  if (other){ other.textContent = otherDaysLine(); other.classList.toggle('hidden', !other.textContent); }
   const st = hoursStateLine();
   document.getElementById('hoursSummary').innerHTML =
     '<span class="hoursstate">' + escapeHtml(st[0]) + (st[1] ? ' <span class="q">· ' + escapeHtml(st[1]) + '</span>' : '') + '</span>' +

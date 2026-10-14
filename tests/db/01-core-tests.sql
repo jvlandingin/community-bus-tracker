@@ -177,7 +177,29 @@ begin
     format($q$ select public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42', %L::jsonb) $q$,
            jsonb_set(good, '{hours,north}', '[["03:00","06:30",30,1]]'::jsonb)::text),
     '[start,end]', 'a fourth field rejected');
+  -- October 2026: Saturday and Sunday may have their own windows, under
+  -- hours.weekend, held to the weekday rules; absent means the same every day.
+  perform public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42',
+           jsonb_set(good, '{hours,weekend}', '{"north":[["04:00","06:00"]],"south":[["06:00","07:00"],["16:30","20:00"]]}'::jsonb));
+  perform assert(
+    (select (public.get_settings('wonderful-mendez-ayala'))->'settings'->'hours'->'weekend'->'south'->1->>0) = '16:30',
+    'a weekend set saves and reads back');
+  perform assert_err(
+    format($q$ select public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42', %L::jsonb) $q$,
+           jsonb_set(good, '{hours,weekend}', '{"north":[["06:00","04:00"]],"south":[["06:00","07:00"]]}'::jsonb)::text),
+    'hours.weekend.north window 1: start must be before end', 'a weekend window is checked like a weekday one, and named');
+  perform assert_err(
+    format($q$ select public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42', %L::jsonb) $q$,
+           jsonb_set(good, '{hours,weekend}', '{"north":[["04:00","06:00"]]}'::jsonb)::text),
+    'hours.weekend.south must be a list', 'a weekend set needs both directions');
+  perform assert_err(
+    format($q$ select public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42', %L::jsonb) $q$,
+           jsonb_set(good, '{hours,weekend}', '"saturday"'::jsonb)::text),
+    'hours.weekend must be an object', 'a weekend set that is not an object rejected');
   perform public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42', good);
+  perform assert(
+    (select (public.get_settings('wonderful-mendez-ayala'))->'settings'->'hours' ? 'weekend') = false,
+    'saving without a weekend set removes it: absent means the same hours every day');
   perform assert_err(
     format($q$ select public.admin_set_settings('wonderful-mendez-ayala','my-long-admin-key-42', %L::jsonb) $q$,
            jsonb_set(good, '{max_sessions}', '9999'::jsonb)::text),

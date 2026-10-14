@@ -191,6 +191,15 @@ every map already has, so the link reveals nothing and dies with the trip. It is
 line about the town the bus is passing, from an optional fifth field on each
 `CHECKPOINT` in `config.txt`.
 
+**A sighting can say a bus just left the terminal** (October 2026), and the
+strip then shades the stretch it is probably on, between where the slowest and
+the fastest past trip would be by now, from optional `TRAVEL` lines in
+`config.txt` (minutes to each checkpoint, measured from the riders' chat, never
+logged by the app). It is a range drawn under the pills, named in places and
+never in minutes; `test-strip.js` fails if that code speaks of a time to come.
+Northbound only until southbound has data. `docs/ARCHITECTURE.md` has why a
+band and not a ghost bus.
+
 **The app keeps exactly four things between visits**, all on the device and
 all named in the privacy panel: whether this phone has been shown around (the
 guide or the tour), the light/dark/system theme choice, the reader's saved stop, and the tickets a

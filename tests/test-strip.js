@@ -10,7 +10,14 @@ const hav = html.slice(html.indexOf('function haversineKm(a,b){'), html.indexOf(
 const S = {};
 new Function('S', hav + shipped +
   'S.buildRouteChain=buildRouteChain;S.chainPosition=chainPosition;S.busPlace=busPlace;S.haversineKm=haversineKm;' +
-  'S.storyFor=storyFor;')(S);
+  'S.storyFor=storyFor;S.parseTravel=parseTravel;S.travelRowFor=travelRowFor;S.departedSpan=departedSpan;S.spanWords=spanWords;')(S);
+// parseSighting lives with the board, not in the block; it reads CHECKPOINTS.
+const sightSrc = html.slice(html.indexOf('const SIGHT_RE ='), html.indexOf('let SIGHTINGS = ['));
+const P = {};
+new Function('P', 'CHECKPOINTS', sightSrc + 'P.parseSighting=parseSighting;P.originName=originName;')(P, (function(){
+  const t = fs.readFileSync(path.join(ROOT, 'config-template.txt'), 'utf8').split(/\r?\n/);
+  return t.filter(l => l.trim().startsWith('CHECKPOINT =')).map(l => { const p = l.split('=')[1].split('|').map(x => x.trim()); return { name: p[0], short: p[1] }; });
+})());
 
 const txt = fs.readFileSync(path.join(ROOT, 'config-template.txt'), 'utf8').split(/\r?\n/);
 const CP = txt.filter(l => l.trim().startsWith('CHECKPOINT =')).map(l => {
@@ -165,6 +172,70 @@ function alongLeg(i, km) {
     check(lines.length > 0 && bad.length === 0, `${file}: every line continues the sentence and fits a popup`,
       bad.length ? 'BAD: ' + bad.join(' / ') : lines.length + ' lines');
   }
+}
+
+// 9. A departure report and the stretch the bus is probably on. The
+// numbers below are the template's seven checkpoints with made-up minutes;
+// the real rows live in config.txt and came from the riders' chat.
+{
+  const early = S.parseTravel('north | 00:00-10:59 | TGY 10-25 | AMADEO 21-46 | GEN.T 46-68 | IMUS 67-100');
+  const late = S.parseTravel('north | 11:00-23:59 | TGY 14-36 | AMADEO 34-71 | GEN.T 54-107 | IMUS 83-142 | KAWIT 108-165 | PITX 134-198 | AYALA 208-231');
+  check(early && early.direction === 'north' && early.from === 0 && early.to === 659 && early.cols.length === 4
+     && early.cols[3].short === 'IMUS' && early.cols[3].lo === 67 && early.cols[3].hi === 100, 'a TRAVEL line parses');
+  check(S.parseTravel('east | 00:00-10:59 | TGY 10-25') === null && S.parseTravel('north | morning | TGY 10-25') === null
+     && S.parseTravel('north | 00:00-10:59') === null && S.parseTravel('north | 00:00-10:59 | TGY ten') === null,
+     'a bad direction, time range, no columns or bad minutes: not a row');
+  check(S.parseTravel('north | 00:00-10:59 | TGY 10-25 | AMADEO 8-46') === null && S.parseTravel('north | 00:00-10:59 | TGY 30-25') === null,
+     'minutes that go backwards along the route, or max before min: not a row');
+  check(S.travelRowFor([early, late], 'north', 4 * 60) === early && S.travelRowFor([early, late], 'north', 15 * 60 + 40) === late
+     && S.travelRowFor([early, late], 'south', 4 * 60) === null, 'the row is picked by direction and departure time');
+
+  const sp = (row, mins) => S.departedSpan(row, CP, mins);
+  const z = sp(early, 0);
+  check(z && z.from === 0 && z.to === 0, 'the moment it leaves, the stretch is the terminal itself');
+  const a = sp(early, 30);
+  check(a && near(a.from, 1 + (30 - 25) / (46 - 25), 1e-6) && near(a.to, 2 + (30 - 21) / (46 - 21), 1e-6),
+     '30 min into an early run: the slowest trip is past Tagaytay, the fastest past Amadeo', a && `${a.from.toFixed(2)} .. ${a.to.toFixed(2)}`);
+  check(S.spanWords(a, CP) === 'between Tagaytay and Gen. Trias', 'and the words name the places either side', S.spanWords(a, CP));
+  const b = sp(early, 70);
+  check(b && b.to === 4 && near(b.from, 3 + (70 - 68) / (100 - 68), 1e-6),
+     '70 min: the fastest edge stops at Imus, the last checkpoint the row knows, rather than guessing on');
+  check(S.spanWords(b, CP) === 'between Gen. Trias and Imus', 'words at the end of the table', S.spanWords(b, CP));
+  check(sp(early, 100) !== null && sp(early, 101) === null, 'past the slowest trip\'s Imus the report is dropped, not stretched');
+  check(sp(early, -5) === null && S.departedSpan(null, CP, 10) === null, 'nonsense elapsed or no row: nothing');
+  const unknown = S.parseTravel('north | 00:00-23:59 | NOWHERE 10-20 | ELSEWHERE 30-40');
+  check(S.departedSpan(unknown, CP, 15) === null, 'a row naming checkpoints this route does not have draws nothing');
+  const late2 = sp(late, 220);
+  check(late2 && late2.to === 6 && late2.from > 5 && late2.from < 6, 'an afternoon run at 220 min: between PITX and One Ayala by the slowest, arrived by the fastest');
+  check(S.spanWords(late2, CP) === 'between PITX and One Ayala', 'words at the far end', S.spanWords(late2, CP));
+  // Southbound mirrors: the origin is the last checkpoint and the indices run down.
+  const south = S.parseTravel('south | 00:00-23:59 | PITX 20-40 | IMUS 60-90');
+  const sS = sp(south, 50);
+  check(sS && !sS.north && near(sS.from, 5 - (50 - 40) / (90 - 40), 1e-6) && near(sS.to, 5 - (50 - 20) / (60 - 20), 1e-6),
+     'southbound: the stretch runs down the indices from One Ayala', sS && `${sS.from.toFixed(2)} .. ${sS.to.toFixed(2)}`);
+  check(S.spanWords(sS, CP) === 'between PITX and Imus', 'southbound words put the place behind first', S.spanWords(sS, CP));
+  // Nothing here may ever turn into a time to come.
+  const blk = html.slice(html.indexOf('// ---- A departure report'), html.indexOf('// ---- END ROUTE PROGRESS'));
+  check(!/\b(eta|arriv\w+ in|minutes? (to|until|away)|mins? (to|until|away))\b/i.test(blk.replace(/\/\/.*$/gm, '')),
+     'the span code never speaks of minutes to come');
+  check(!/\d+ ?min/.test(html.slice(html.indexOf('function departedSentence('), html.indexOf('// The sightings board is folded'))),
+     'nor does the sentence built from it');
+}
+
+// 10. The two verbs a sighting can carry.
+{
+  const at = P.parseSighting('▲ Northbound at Amadeo · heavy traffic');
+  check(at && at.direction === 'north' && at.kind === 'at' && CP[at.idx].short === 'AMADEO', 'a plain sighting reads as before, now with a kind');
+  const left = P.parseSighting('▲ Northbound left Mendez Crossing');
+  check(left && left.kind === 'left' && left.idx === 0, '"left Mendez Crossing" northbound is a departure');
+  const leftS = P.parseSighting('▼ Southbound left One Ayala · 2nd trip');
+  check(leftS && leftS.kind === 'left' && leftS.idx === CP.length - 1, '"left One Ayala" southbound is a departure');
+  const notOrigin = P.parseSighting('▲ Northbound left Amadeo');
+  check(notOrigin && notOrigin.kind === 'at' && CP[notOrigin.idx].short === 'AMADEO', '"left" a place that is not the terminal is a plain sighting there');
+  const wrongEnd = P.parseSighting('▼ Southbound left Mendez Crossing');
+  check(wrongEnd && wrongEnd.kind === 'at', 'nor is "left" the far terminal a departure');
+  check(P.parseSighting('bus coming') === null && P.parseSighting('▲ Northbound left Nowhere') === null, 'free text and unknown places still do not place');
+  check(P.originName('north') === 'Mendez Crossing' && P.originName('south') === 'One Ayala', 'the composer names the right terminal');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

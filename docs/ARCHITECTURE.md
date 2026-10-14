@@ -592,6 +592,35 @@ as hollow dashed rings — never solid, never the bus glyph, because a sighting
 is one person's word with no update coming after it. They clear from the strip
 after one headway, which is when the next bus has overtaken the claim.
 
+**A sighting can say the bus has just left** (October 2026). The operators'
+most common post is "paalis na" from the terminal and nothing after, and in
+the riders' chat "where is it now" is 43% of every question asked about a bus.
+So the composer has a second verb: `▲ Northbound left Mendez Crossing`, the
+same body column, the same parser with `kind: 'left'`, no migration. What it
+draws is not a bus. Two months of that chat gave 61 timed trips, and from
+them, for each checkpoint, the earliest and latest minute after departure a
+trip was seen to cross it, two rows because early buses and afternoon buses
+are different roads. Those are the `TRAVEL` lines in `config.txt`, hand-written
+numbers like the checkpoints, not a log (the trips themselves are not in the
+repository). `departedSpan()` reads them: at any moment the bus is between
+where the slowest past trip would be and where the fastest would, and the strip
+shades that stretch, hatched in the line's ink, translucent, no glyph, under
+the pills. The headline says it in places, "probably between Amadeo and Imus,
+going by past trips", and never in minutes: `test-strip.js` fails if the span
+code or the sentence ever speaks of a time to come, which is the same fence
+the saved-stop card lives behind. Three edges were deliberate. The fastest
+edge stops at the last checkpoint the row knows rather than extrapolating, and
+the whole report is dropped once even the slowest trip would be past it (the
+early row ends at Imus, because early runs were never reported arriving). A
+"left" at any place but that direction's terminal is a plain sighting there,
+because at One Ayala "paalis na" can precede departure by an hour of filling
+up, and at Mendez it is departure within minutes. And without a row for a
+direction, the report is a ring at the terminal like any other, which is what
+southbound is until it has more than five pairs. A band was chosen over a ghost
+bus because a bus drawn from a timetable is a drawing that reads as data; a
+band is honest about being a range, and from the schedule alone the honest
+range is the whole route. The journal has the full reasoning.
+
 **The tracker's pills are buttons; the sharing tab's are not.** Tapping a
 pill flies the map to that bus and opens its popup — one function draws both
 strips, and a fourth argument separates them, because on the sharing tab the

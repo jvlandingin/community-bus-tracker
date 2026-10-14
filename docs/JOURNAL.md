@@ -56,6 +56,13 @@ What they established is recorded here instead.
   The sighting picker offers checkpoints only. Noted, not yet changed.
 - **Weekends are thin.** Three Sundays ran a single bus. Weekend departures
   are announced the same way, only less. Hence the weekend hours set.
+- **Built from the pairs the same day:** a "just left the terminal" sighting
+  and a hatched stretch on the strip between where the slowest and the
+  fastest past trip would be, northbound only, from `TRAVEL` lines in
+  `config.txt` (early row to Imus, afternoon row to One Ayala). The crossing
+  times per checkpoint were read off each run's progress curve, not off the
+  nearest report, so a report past Imus bounds Imus rather than standing in
+  for it. `docs/ARCHITECTURE.md` has the fences.
 - **Operators already share live locations in the chat**, 319 of them plus
   pins, and riders complain that WhatsApp live locations freeze. That is the
   pitch for the tracker, which the chat never mentions in that period, even

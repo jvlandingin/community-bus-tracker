@@ -474,13 +474,17 @@
      someone saw is probably on by now, between the slowest and the fastest
      past trip (TRAVEL lines in config.txt), or a short glow where it was
      seen when nothing more is known. A soft wash of the line's own colour
-     with a sheen travelling along it the way the bus is: it reads as a
-     range and never as a position, carries no glyph, and sits under the
-     pills so a real bus always paints over it. The reduced-motion blanket
-     at the foot of the sheet stops the sheen. */
+     that breathes slowly, in the live badges' rhythm: it reads as a range
+     and never as a position, carries no glyph, and sits under the pills so
+     a real bus always paints over it. The breath is brightness and height,
+     not opacity, because renderStrip sets the opacity by how wide the
+     stretch has grown. The reduced-motion blanket at the foot of the sheet
+     stills it. Chosen from seven treatments drawn side by side; the
+     travelling sheen it had for a day lost to this calmer one. */
   .sightband{
     position:absolute; top:6px; height:14px; border-radius:var(--r-s); overflow:hidden;
     background:var(--gold); opacity:.5; pointer-events:none;
+    animation:glowbreath 2.6s ease-in-out infinite;
     /* The bell: solid through the middle, fading out through the quarter
        at each end that lies beyond the measured stretch. renderStrip sets
        the opacity, lower the wider the stretch. */
@@ -488,12 +492,7 @@
     mask-image:linear-gradient(90deg, transparent 0%, rgba(0,0,0,.45) 16%, #000 36%, #000 64%, rgba(0,0,0,.45) 84%, transparent 100%);
   }
   .sightband.sb{background:var(--maroon);}
-  .sightband::after{
-    content:''; position:absolute; top:0; bottom:0; left:-60%; width:60%;
-    background:linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.95) 50%, rgba(255,255,255,0) 100%);
-    animation:sheen 2.4s ease-in-out infinite;
-  }
-  @keyframes sheen{0%{left:-60%;} 100%{left:100%;}}
+  @keyframes glowbreath{0%,100%{filter:brightness(1); transform:scaleY(.82);} 50%{filter:brightness(1.22); transform:scaleY(1);}}
   /* A live pill breathes like a live badge on the map, and its coach rocks
      a little, the way a bus does at idle: this one is reporting right now.
      Your own pill keeps its green ring instead of the breath, which owns the

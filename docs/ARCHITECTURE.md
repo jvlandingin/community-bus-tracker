@@ -599,8 +599,16 @@ the next bus has overtaken the claim. One look for all sightings, because two
 marks meaning "someone saw a bus" was one more than a glance can learn. The
 stripes the stretch first had were replaced by the sheen the same day; the
 maintainer did not like them, and a moving light says "moving" better than a
-hatch does. Live bus pills on the strip breathe like the map's live badges and
-their coach rocks at idle, so a bus that is reporting right now looks like it.
+hatch does. **The glow is shaped like a bell**, at the maintainer's suggestion:
+a mask makes it densest through the middle of the measured stretch and thins
+it to nothing a quarter-stretch beyond each end, and `renderStrip()` lowers its
+opacity as the stretch widens, so the same one bus spread over more road is
+drawn as exactly that. Not a real distribution (the rows are a min and a max
+across trips, nothing in between), but the honest picture of one: a reader
+sees at once where the bus most likely is and how sure the page is. The guide
+shows one sighting at three ages. Live bus pills on the strip breathe like the
+map's live badges and their coach rocks at idle, so a bus that is reporting
+right now looks like it.
 
 **A sighting may say when** (October 2026, the day the departure report
 shipped, because its first reader asked the obvious question). The composer

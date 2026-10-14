@@ -240,6 +240,14 @@ function alongLeg(i, km) {
      'the span code never speaks of minutes to come');
   check(!/\d+ ?min/.test(html.slice(html.indexOf('function departedSentence('), html.indexOf('// The sightings board is folded'))),
      'nor does the sentence built from it');
+  // The glow is a bell that widens and fades with uncertainty, and the guide says so.
+  const strip = html.slice(html.indexOf('function renderStrip('), html.indexOf('function syncMineStation('));
+  check(/const alpha = \(0\.72 - 0\.4 \* Math\.min\(1, \(hi - lo\) \/ 40\)\)/.test(strip) && /tail = \(hi - lo\) \* 0\.25/.test(strip),
+     'the glow fades as the stretch widens and tails off a quarter beyond each end');
+  check(/\.sightband\{[^}]*mask-image:linear-gradient\(90deg, transparent 0%/.test(html), 'and is masked to a bell');
+  const guide = fs.readFileSync(path.join(ROOT, 'how-to.html'), 'utf8');
+  check(/shaped like a bell/.test(guide) && /wider and\s+fainter/.test(guide) && /class="demo ages"/.test(guide),
+     'the guide explains the bell and shows one sighting at three ages');
 }
 
 // 10. The two verbs a sighting can carry.

@@ -592,8 +592,14 @@
      bus is probably on by now, a soft wash of the line's colour. The sheen
      that travels along it on the real page is left off here: this is a
      still picture. */
-  .sightband{position:absolute; top:7px; height:12px; border-radius:var(--r-s); background:var(--gold); opacity:.42; pointer-events:none;}
+  .sightband{position:absolute; top:6px; height:14px; border-radius:var(--r-s); background:var(--gold); opacity:.5; pointer-events:none;
+    -webkit-mask-image:linear-gradient(90deg, transparent 0%, rgba(0,0,0,.45) 16%, #000 36%, #000 64%, rgba(0,0,0,.45) 84%, transparent 100%);
+    mask-image:linear-gradient(90deg, transparent 0%, rgba(0,0,0,.45) 16%, #000 36%, #000 64%, rgba(0,0,0,.45) 84%, transparent 100%);}
   .sightband.sb{background:var(--maroon);}
+  /* The three ages of one sighting, in the sightings card. */
+  .ages{display:grid; gap:10px; margin-top:4px;}
+  .ages .row{display:grid; grid-template-columns:7.5em 1fr; align-items:center; gap:10px; font-size:var(--fs-label); color:var(--muted); font-weight:700; letter-spacing:.02em; text-transform:uppercase;}
+  .ages .track{position:relative; height:26px;}
   .pip.band{width:22px; height:9px; border-radius:var(--r-s); opacity:.5; background:var(--gold);}
   /* The checkpoint names between the two lines. A tick is only its name now:
      the stations on the lines are the marks. */
@@ -1231,6 +1237,18 @@
         </div>
       </div>
       <figcaption>Picked, not typed. The board opens by itself when <b>no bus is live</b>.</figcaption>
+    </figure>
+    <p>The glow is shaped like a bell. It is densest where the bus most
+      likely is and thins out towards where it would be only if the trip were
+      unusually fast or slow. The longer since the sighting, the wider and
+      fainter it gets, because the same one bus could be on more of the road.</p>
+    <figure>
+      <div class="demo ages" aria-hidden="true">
+        <div class="row"><span>Just seen</span><div class="track nb"><div class="rail"></div><div class="sightband" style="left:27%;width:10%;opacity:.72"></div></div></div>
+        <div class="row"><span>Half an hour on</span><div class="track nb"><div class="rail"></div><div class="sightband" style="left:36%;width:26%;opacity:.5"></div></div></div>
+        <div class="row"><span>Two hours on</span><div class="track nb"><div class="rail"></div><div class="sightband" style="left:48%;width:48%;opacity:.33"></div></div></div>
+      </div>
+      <figcaption>One sighting, three ages: further along, wider, fainter.</figcaption>
     </figure>
     <p class="hint">The glow is one person’s word, already minutes old, never
       a live bus. Its stretch is a range read off how long past trips took,

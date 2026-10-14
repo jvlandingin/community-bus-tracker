@@ -479,8 +479,13 @@
      pills so a real bus always paints over it. The reduced-motion blanket
      at the foot of the sheet stops the sheen. */
   .sightband{
-    position:absolute; top:7px; height:12px; border-radius:var(--r-s); overflow:hidden;
-    background:var(--gold); opacity:.42; pointer-events:none;
+    position:absolute; top:6px; height:14px; border-radius:var(--r-s); overflow:hidden;
+    background:var(--gold); opacity:.5; pointer-events:none;
+    /* The bell: solid through the middle, fading out through the quarter
+       at each end that lies beyond the measured stretch. renderStrip sets
+       the opacity, lower the wider the stretch. */
+    -webkit-mask-image:linear-gradient(90deg, transparent 0%, rgba(0,0,0,.45) 16%, #000 36%, #000 64%, rgba(0,0,0,.45) 84%, transparent 100%);
+    mask-image:linear-gradient(90deg, transparent 0%, rgba(0,0,0,.45) 16%, #000 36%, #000 64%, rgba(0,0,0,.45) 84%, transparent 100%);
   }
   .sightband.sb{background:var(--maroon);}
   .sightband::after{
@@ -488,7 +493,6 @@
     background:linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.95) 50%, rgba(255,255,255,0) 100%);
     animation:sheen 2.4s ease-in-out infinite;
   }
-  .sightband.still{opacity:.55;}
   @keyframes sheen{0%{left:-60%;} 100%{left:100%;}}
   /* A live pill breathes like a live badge on the map, and its coach rocks
      a little, the way a bus does at idle: this one is reporting right now.
@@ -1992,7 +1996,7 @@
             <span><span class="sw" style="background:var(--gold)"></span>Northbound ▲</span>
             <span><span class="sw" style="background:var(--maroon)"></span>Southbound ▼</span>
             <span><span class="sw" style="background:var(--paper); border:1.5px solid var(--maroon); width:8px; height:8px;"></span>Stops (zoom in, tap for name)</span>
-            <span id="sightLegend"><span class="sw" style="background:var(--gold); opacity:.5; width:18px; height:9px; border-radius:var(--r-s);"></span>A glowing stretch on the strip = a reported sighting, not GPS: where that bus probably is by now, from past trips</span>
+            <span id="sightLegend"><span class="sw" style="background:var(--gold); opacity:.5; width:18px; height:9px; border-radius:var(--r-s);"></span>A glow on the strip = a reported sighting, not GPS: where that bus probably is by now, from past trips. Densest where it most likely is; wider and fainter the longer ago it was seen</span>
             <!-- The ring is marked on this strip too, so it is explained on
                  this tab too. Shown only while sharing, by setShareUI(): a
                  legend line for a mark nobody can see is noise. -->
@@ -4750,10 +4754,17 @@ function renderStrip(box, buses, sightings, tappable) {
     if (CHECKPOINTS.length < 2) return;
     const pct = function(i){ return (i/(CHECKPOINTS.length-1))*100; };
     const sp = s.span || { from: s.idx, to: s.idx, still: true };
-    // A stretch with no length yet is drawn as a short glow about the place.
+    // The glow is shaped like a bell: densest in the middle of the stretch,
+    // where most past trips would put the bus, thinning to nothing a little
+    // beyond its two ends, where only an unusually fast or slow trip would.
+    // The wider the stretch, the fainter the whole glow: the same one bus
+    // spread over more road. A stretch with no length yet is a short glow
+    // about the place.
     let lo = Math.min(pct(sp.from), pct(sp.to)), hi = Math.max(pct(sp.from), pct(sp.to));
     if (hi - lo < 6){ const c = (lo + hi) / 2; lo = Math.max(0, c - 3); hi = Math.min(100, c + 3); }
-    const g = { sb: s.direction==='south', still: !!sp.still, left: lo+'%', width: (hi - lo)+'%' };
+    const tail = (hi - lo) * 0.25, L = Math.max(0, lo - tail), R = Math.min(100, hi + tail);
+    const alpha = (0.72 - 0.4 * Math.min(1, (hi - lo) / 40)).toFixed(2);
+    const g = { sb: s.direction==='south', still: !!sp.still, left: L+'%', width: (R - L)+'%', alpha: alpha };
     if (s.direction==='north') nbGhosts.push(g); else sbGhosts.push(g);
   });
   syncPills(nbBox, nbGhosts, nbPills);
@@ -4805,7 +4816,7 @@ function syncPills(container, ghosts, pills){
   ghosts.forEach(function(g){
     const el = document.createElement('div');
     el.className = 'sightband' + (g.sb ? ' sb' : '') + (g.still ? ' still' : '');
-    el.setAttribute('style', 'left:'+g.left + ';width:'+g.width);
+    el.setAttribute('style', 'left:'+g.left + ';width:'+g.width + ';opacity:'+g.alpha);
     container.appendChild(el);
   });
   pills.forEach(function(p){
@@ -6826,7 +6837,7 @@ function renderHours(){
   // the mechanics.
   if (sightingsOn()) document.getElementById('sightingIntro').textContent =
     (TRAVEL.length
-      ? 'A sighting shows on the strip as a glowing stretch where that bus probably is by now, from how long past trips took, and moves along until the slowest past trip would have arrived. '
+      ? 'A sighting shows on the strip as a glow where that bus probably is by now, from how long past trips took: densest where it most likely is, and wider and fainter the longer ago it was seen. It moves along until the slowest past trip would have arrived. '
       : 'A sighting shows on the strip as a glow where the bus was seen, for one trip interval ('+humanMins(routeHeadway())+
         (anyWindowHeadway() ? ' unless its window says otherwise' : '')+'). ') +
     'It stays on this board for '+humanMins(SET.sighting_expiry_min)+'.';

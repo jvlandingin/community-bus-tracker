@@ -174,6 +174,10 @@
   .win .iv{flex:0 0 100%; display:flex; gap:6px; align-items:center;}
   .win .iv input[type=number]{flex:0 0 4.5em; min-width:0;}
   .win .iv .to{font-weight:600;}
+  /* Remove is a word, at the far end of the second line: an icon beside the
+     times was tapped to find out what it was, and the window was gone. */
+  .win .iv .rm{margin-left:auto;}
+  .win.bad input[type=time]{border-color:var(--lost-ink); border-width:2px;}
   .win .to{flex:0 0 auto; font-size:var(--fs-label); color:var(--muted); font-weight:700;}
   .win button{flex:0 0 auto;}
   .item{display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:var(--fs-small); align-items:center;}
@@ -587,10 +591,10 @@ function winRow(dir, a, b, h){
     '<input type="time" value="'+esc(a||'')+'" data-dir="'+dir+'" data-role="a">'+
     '<span class="to">to</span>'+
     '<input type="time" value="'+esc(b||'')+'" data-dir="'+dir+'" data-role="b">'+
-    '<button class="small btn-ghost" onclick="this.parentElement.remove()" aria-label="Remove this window"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>'+
     '<span class="iv"><span class="to">trips every</span>'+
     '<input type="number" min="1" max="720" inputmode="numeric" value="'+(h ? esc(String(h)) : '')+'" placeholder="'+esc(String(routeHeadwayValue()))+'" data-dir="'+dir+'" data-role="h" aria-label="Minutes between trips in this window; blank uses the route\'s number">'+
-    '<span class="to">min · blank = the route\'s number</span></span>'+
+    '<span class="to">min</span>'+
+    '<button class="small btn-ghost rm" onclick="removeWin(this)"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg>Remove</button></span>'+
     '</div>';
 }
 function routeHeadwayValue(){
@@ -609,21 +613,47 @@ function addWin(dir, set){
   if (box.querySelectorAll('.win').length >= 6) return;
   box.insertAdjacentHTML('beforeend', winRow(dir,'','',null));
 }
+// A blank row goes without asking; one with times in it asks first.
+function removeWin(btn){
+  const w = btn.closest('.win');
+  const a = w.querySelector('[data-role=a]').value, b = w.querySelector('[data-role=b]').value;
+  if ((a || b) && !confirm('Remove the window ' + (a ? fmt12(a) : '…') + ' to ' + (b ? fmt12(b) : '…') + '? Nothing is saved until you tap Save.')) return;
+  w.remove();
+}
+function fmt12(t){
+  const m = /^(\d\d):(\d\d)$/.exec(t); if (!m) return t;
+  let h = parseInt(m[1], 10); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+  return h + ':' + m[2] + ' ' + ap;
+}
+function setName(dir, set){
+  return (dir === 'north' ? 'Northbound' : 'Southbound') + (set === 'We' ? ', Saturday and Sunday' : '');
+}
 function toggleWeekend(){
   document.getElementById('weekendBox').classList.toggle('hidden', !document.getElementById('weekendOn').checked);
 }
+// The windows of one editor, or out.err naming the first row that is wrong
+// and which editor it is in, with that row marked. The server checks all of
+// this again, but its answer cannot point at a row, and "each window needs a
+// start before its end" over eight windows sent one organizer hunting.
 function readWins(dir, set){
   const box = winBox(dir, set);
   const out=[];
-  box.querySelectorAll('.win').forEach(function(w){
+  const rows = box.querySelectorAll('.win');
+  rows.forEach(function(w, i){
+    w.classList.remove('bad');
+    if (out.err) return;
     const a=w.querySelector('[data-role=a]').value, b=w.querySelector('[data-role=b]').value;
     const hv=w.querySelector('[data-role=h]').value.trim();
-    if (!(a && b)) return;
+    const where = setName(dir, set) + ', window ' + (i + 1) + ': ';
+    if (!a && !b && !hv) return;                       // an untouched blank row
+    const fail = function(msg){ w.classList.add('bad'); out.err = where + msg; };
+    if (!(a && b)) return fail(a ? 'it has a start but no end time.' : 'it has an end but no start time.');
+    if (a >= b) return fail('it ends (' + fmt12(b) + ') before it starts (' + fmt12(a) + '). For a window past midnight, add it as two.');
     if (!hv){ out.push([a,b]); return; }
     const h=Number(hv);
     // Junk in the interval is refused here rather than silently saved as
     // "use the route's number": the organizer typed something on purpose.
-    if (!(Number.isInteger(h) && h >= 1 && h <= 720)){ out.bad = true; return; }
+    if (!(Number.isInteger(h) && h >= 1 && h <= 720)) return fail('the interval must be a whole number of minutes from 1 to 720, or blank for the route\'s number.');
     out.push([a,b,h]);
   });
   return out;
@@ -663,10 +693,8 @@ async function saveSettings(){
   const north=readWins('north'), south=readWins('south');
   const weekendOn = document.getElementById('weekendOn').checked;
   const weN = weekendOn ? readWins('north','We') : [], weS = weekendOn ? readWins('south','We') : [];
-  if (north.bad || south.bad || weN.bad || weS.bad){
-    noteSettings('A window\'s interval must be a whole number of minutes from 1 to 720, or blank.','err');
-    return;
-  }
+  const err = north.err || south.err || weN.err || weS.err;
+  if (err){ noteSettings(err, 'err'); return; }
   if (!north.length || !south.length){
     noteSettings('Each direction needs at least one complete window.','err');
     return;

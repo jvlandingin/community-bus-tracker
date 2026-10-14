@@ -49,6 +49,15 @@ check used to be the opposite, verifying that every screenshot the guide named
 was present, because a 404 on a screenshot is silent and nobody would report
 it. Now there is nothing to 404.
 
+Its section 14 drives a whole trip on the real page, against a stand-in for
+Supabase and for the GPS: what a write sends (no speed), what the sharing tab
+shows when one fails (Stop stays, and the error is not painted over), that no
+fix costs a read, and every way a trip ends — Stop, a block, a full route, a
+changed key, GPS giving up — with the session id that goes with each. Run
+against the page as it was before the October 2026 fixes, most of them fail,
+and the page throws on the row with no position; the rest pin down what was
+already right.
+
 ## Database
 
 Needs a local PostgreSQL. These never touch your live database.
@@ -71,6 +80,7 @@ psql -d bustest -f ../sql/04-session-id-privacy.sql
 psql -d bustest -f ../sql/05-rotate-same-key.sql
 psql -d bustest -f ../sql/06-watching-count.sql
 psql -d bustest -f ../sql/07-thanks.sql
+psql -d bustest -f ../sql/08-position-checks.sql
 ```
 
 Then run one suite against it:
@@ -83,6 +93,7 @@ psql -d bustest -f db/04-privacy-tests.sql     # 18 checks, session id privacy
 psql -d bustest -f db/05-rotate-tests.sql      # 10 checks, rotation guard
 psql -d bustest -f db/06-watching-tests.sql    # 32 checks, the watching count
 psql -d bustest -f db/07-thanks-tests.sql      # 38 checks, saying salamat
+psql -d bustest -f db/08-position-tests.sql    # 36 checks, what a position write refuses
 ```
 
 `dropdb bustest` and build it again between suites. Apply **all** the migration
@@ -103,7 +114,7 @@ check in a way that looks like a schema bug rather than a missing role.
 ## Continuous integration
 
 `.github/workflows/tests.yml` runs everything on every pull request and every
-push to `main`: the six JavaScript suites in one job, and the seven database
+push to `main`: the six JavaScript suites in one job, and the eight database
 suites against a `postgres:16` service container in another. The database job
 deliberately repeats the steps above rather than calling a script, so the
 runbook on this page is re-proven on every commit instead of being taken on

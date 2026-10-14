@@ -888,6 +888,213 @@ function run(page, include, label, configText, setup) {
     native.removed.join(',') || 'none removed');
   inApp.w.close();
 
+  console.log('\n=== 14. a trip: what it sends, what it shows, and every way it ends ===');
+  // The real sharing code, driven with a stand-in for the GPS and for
+  // Supabase, and held to what a review in October 2026 found: speed was
+  // sent though nothing used it; every GPS fix was a read; a failed write
+  // swapped Stop for Start, and that Start leaked a GPS watch Stop never
+  // ended; a changed key was retried for ever; the session id, and so the
+  // bus's public id, outlived the trip; and one row with no position stopped
+  // the bus list drawing for everybody.
+  {
+    const sim = { calls: [], reply: {}, watches: [], cleared: [] };
+    const here = { coords: { latitude: 14.2912, longitude: 120.9068, speed: 12.3, accuracy: 8 } };
+    const pause = ms => new Promise(r => setTimeout(r, ms));
+    const waitFor = async (f, ms = 5000) => {
+      const end = Date.now() + ms;
+      while (!f() && Date.now() < end) await pause(20);
+      return f();
+    };
+    const json = (body, status) => new Response(JSON.stringify(body),
+      { status: status || 200, headers: { 'content-type': 'application/json' } });
+    sim.reply.get_settings = () => ({ data: { settings: {}, notice: null } });
+    sim.reply.get_positions = () => ({ data: [] });
+    sim.reply.get_sightings = () => ({ data: [] });
+    const t = await run('/index.html#k=TESTKEY', () => true, 'trip', null, window => {
+      const passOn = window.fetch;
+      window.fetch = function(u, o){
+        const m = String(u).match(/\/rest\/v1\/rpc\/([a-z_]+)/);
+        if (!m) return passOn(u, o);
+        let args = {};
+        try { args = JSON.parse((o && o.body) || '{}'); } catch (e) {}
+        sim.calls.push({ fn: m[1], args });
+        const r = sim.reply[m[1]] ? sim.reply[m[1]](args) : null;
+        if (r && r.error) return Promise.resolve(json({ code: 'P0001', message: r.error, details: null, hint: null }, 400));
+        return Promise.resolve(r && 'data' in r ? json(r.data) : new Response(null, { status: 204 }));
+      };
+      Object.defineProperty(window.navigator, 'geolocation', { value: {
+        getCurrentPosition(ok){ setTimeout(() => ok(here), 0); },
+        watchPosition(onPos, onErr){ sim.watches.push({ onPos, onErr }); return sim.watches.length; },
+        clearWatch(id){ sim.cleared.push(id); }
+      } });
+      Object.defineProperty(window.navigator, 'wakeLock', { value: {
+        request(){ return Promise.resolve({ addEventListener(){}, release(){} }); }
+      } });
+    });
+    const { w, d } = t;
+    const of = fn => sim.calls.filter(c => c.fn === fn);
+    const isHidden = id => d.getElementById(id).classList.contains('hidden');
+    const status = () => d.getElementById('onbusStatusText').textContent;
+    const watchesOpen = () => sim.watches.length - sim.cleared.length;
+    // A trip: Start, then wait for the first write to land.
+    const startTrip = async () => {
+      const before = of('set_bus_position').length;
+      w.startSharing();
+      await waitFor(() => of('set_bus_position').length > before);
+      await pause(60);
+      return of('set_bus_position')[before];
+    };
+    // A fix that is written straight away, rather than after the 5 seconds
+    // the page waits between writes.
+    const writeNow = async () => {
+      const before = of('set_bus_position').length;
+      w.eval('lastWrite = 0');
+      sim.watches[sim.watches.length - 1].onPos(here);
+      await waitFor(() => of('set_bus_position').length > before);
+      await pause(60);
+    };
+
+    w.pickDir('north');
+    w.switchTab('share');
+    const first = await startTrip();
+    check(!!first && watchesOpen() === 1, 'a trip starts with one write and one GPS watch',
+      `${of('set_bus_position').length} writes, ${watchesOpen()} watches`);
+    // Sent as null rather than left out: PostgREST finds the function by its
+    // argument names, so a missing p_speed would match nothing.
+    check(!!first && first.args.p_speed === null,
+      'the GPS reported a speed, and none was sent', first && JSON.stringify(first.args.p_speed));
+
+    // Every fix used to fetch get_positions, past the 18 second throttle.
+    const readsBefore = of('get_positions').length;
+    for (let i = 0; i < 10; i++) sim.watches[0].onPos(here);
+    await pause(150);
+    check(of('get_positions').length - readsBefore <= 1, 'ten GPS fixes cost no extra reads',
+      `${of('get_positions').length - readsBefore} reads for 10 fixes`);
+
+    // A write that fails mid-trip: an error to read, not the end of the trip.
+    sim.reply.set_bus_position = () => ({ error: 'upstream timed out' });
+    await writeNow();
+    check(w.eval('sharing') === true, 'a failed write does not end the trip');
+    check(!isHidden('onbusActive') && isHidden('onbusSetup'),
+      'and Stop stays on screen, with no Start beside it');
+    check(/Couldn't send/.test(status()), 'the status says the write failed', status());
+    sim.watches[0].onPos(here);
+    check(/Couldn't send/.test(status()), 'and the next GPS fix does not paper over it with "Sharing live"', status());
+    w.startSharing();
+    await pause(80);
+    check(watchesOpen() === 1 && sim.watches.length === 1, 'a second Start mid-trip opens no second GPS watch',
+      `${sim.watches.length} started, ${sim.cleared.length} ended`);
+    delete sim.reply.set_bus_position;
+    await writeNow();
+    check(/^Sharing live: ▲ northbound$/.test(status()), 'the first write to land puts "Sharing live" back', status());
+
+    // Stop: the watch ends, the bus is cleared, and the session goes with the trip.
+    const trip1 = first.args.p_session;
+    await w.stopSharing({ quiet: true });
+    check(watchesOpen() === 0, 'Stop ends the only GPS watch there was', `${watchesOpen()} still open`);
+    check(of('clear_bus_position').some(c => c.args.p_session === trip1), 'and clears that trip\'s bus');
+    check(w.sessionStorage.getItem('wt-session') === null, 'and forgets its session id');
+    const second = await startTrip();
+    check(!!second && second.args.p_session !== trip1,
+      'so the next trip is a different session, and a different bus on the map');
+    await w.stopSharing({ quiet: true });
+
+    // An organiser's Stop is the one end that keeps the session, because the
+    // block is on it.
+    sim.reply.set_bus_position = () => ({ error: 'session blocked' });
+    const blocked = await startTrip();
+    await waitFor(() => w.eval('sharing') === false);
+    check(!w.eval('sharing') && watchesOpen() === 0, 'a blocked session ends the trip and its watch');
+    check(w.sessionStorage.getItem('wt-session') === blocked.args.p_session,
+      'and keeps its session id, so the block holds on this phone');
+    const again = await startTrip();
+    check(!!again && again.args.p_session === blocked.args.p_session, 'the next Start is still that session');
+    await waitFor(() => w.eval('sharing') === false);
+
+    // A route already full: the trip ends rather than failing every 5 seconds.
+    sim.reply.set_bus_position = () => ({ error: 'too many active sessions' });
+    await startTrip();
+    await waitFor(() => w.eval('sharing') === false);
+    check(!w.eval('sharing') && watchesOpen() === 0 && isHidden('onbusActive') && !isHidden('onbusSetup'),
+      'a full route ends the trip, and Start comes back for trying later');
+    check(/Too many people/.test(status()), 'saying why', status());
+    check(w.eval('accessKey') === 'TESTKEY', 'and the key is kept, since nothing is wrong with it');
+
+    // A changed key: dropped everywhere it was kept, so the next Start asks.
+    sim.reply.set_bus_position = () => ({ error: 'invalid key' });
+    await startTrip();
+    await waitFor(() => w.eval('sharing') === false);
+    check(!w.eval('sharing') && watchesOpen() === 0, 'a key the server has refused ends the trip');
+    check(w.eval('accessKey') === null && w.sessionStorage.getItem('wt-key') === null && !/k=/.test(w.location.hash),
+      'and is forgotten, from memory, the tab\'s storage and the address bar',
+      `accessKey=${w.eval('accessKey')} hash=${w.location.hash}`);
+    check(/no longer valid/.test(status()), 'saying so', status());
+    w.startSharing();
+    check(!isHidden('gate'), 'the next Start asks for the new key');
+    // The key only ever arrives inside a link, so a pasted link has to work.
+    sim.reply.route_exists = () => ({ data: true });
+    d.getElementById('gateKey').value = 'https://community-bus-tracker.netlify.app/#k=NEW-KEY-456';
+    await w.submitKey();
+    check(of('route_exists').slice(-1)[0].args.p_key === 'NEW-KEY-456' && w.eval('accessKey') === 'NEW-KEY-456',
+      'and a whole pasted link is taken for the key in it', of('route_exists').slice(-1)[0].args.p_key);
+    delete sim.reply.set_bus_position;
+
+    // GPS giving up ends the trip the way Stop does: the bus is cleared now,
+    // not left on everyone's map until it expires.
+    const lost = await startTrip();
+    const clearsBefore = of('clear_bus_position').length;
+    const clearedSince = () => of('clear_bus_position').slice(clearsBefore)
+      .some(c => c.args.p_session === lost.args.p_session);
+    sim.watches[sim.watches.length - 1].onErr({ code: 3 });
+    await waitFor(clearedSince);
+    await pause(60);
+    check(clearedSince(), 'a GPS error clears the bus from the map');
+    check(!w.eval('sharing') && watchesOpen() === 0 && /GPS timed out/.test(status()),
+      'ends the trip, and says why', status());
+    check(w.sessionStorage.getItem('wt-session') === null, 'and the next trip gets a session of its own');
+
+    // One row with no position stopped the whole list drawing.
+    const cp = CONFIG.split(/\r?\n/).filter(l => l.trim().startsWith('CHECKPOINT ='))[2]
+      .split('=')[1].split('|').map(x => x.trim());
+    const row = (lat, lng, dir) => ({ pub_id: 'ab'.repeat(16), is_self: false, thanks: null,
+      lat, lng, direction: dir, bus_label: '98019', updated_at: new Date().toISOString() });
+    sim.reply.get_positions = () => ({ data: [
+      Object.assign(row(null, null, null), { pub_id: 'cd'.repeat(16) }),
+      Object.assign(row(+cp[2], null, 'south'), { pub_id: 'ef'.repeat(16) }),
+      row(+cp[2], +cp[3], 'north')
+    ] });
+    w.switchTab('track');
+    await waitFor(() => d.querySelectorAll('#busList .buschip').length > 0);
+    check(w.eval('BUSES.length') === 1 && d.querySelectorAll('#busList .buschip').length === 1,
+      'a row with no position is left out, and the real bus beside it is still drawn',
+      `${w.eval('BUSES.length')} buses, ${d.querySelectorAll('#busList .buschip').length} chips`);
+    w.close();
+
+    // The admin page lists such a row instead of throwing on it, because it
+    // is exactly the one an organiser needs a Stop button for.
+    const adm = await run('/admin.html', () => true, 'admin rows', null, window => {
+      const passOn = window.fetch;
+      window.fetch = function(u, o){
+        if (!/\/rest\/v1\/rpc\/admin_list_sharers/.test(String(u))) return passOn(u, o);
+        return Promise.resolve(json([
+          { session_id: 'nullrow-0001', lat: null, lng: null, direction: null, bus_label: null,
+            updated_at: new Date().toISOString() },
+          { session_id: 'realrow-0002', lat: 14.4, lng: 120.9, direction: 'north', bus_label: '98019',
+            updated_at: new Date().toISOString() }
+        ]));
+      };
+    });
+    adm.w.eval("adminKey = 'my-long-admin-key-42'");
+    let threw = null;
+    try { await adm.w.refreshSharers(); } catch (e) { threw = e.message; }
+    const items = adm.d.querySelectorAll('#liveList .item');
+    check(!threw && items.length === 2 && /no position/.test(items[0].textContent)
+        && items[0].querySelector('button.btn-danger'),
+      'the admin page lists a sharer with no position, with a Stop button for it',
+      threw || `${items.length} listed`);
+    adm.w.close();
+  }
+
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');
   process.exit(fail ? 1 : 0);
 })();

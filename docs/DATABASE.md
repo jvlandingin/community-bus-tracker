@@ -45,7 +45,14 @@ One row per sharing session, upserted in place. **No history table exists, by
 design.** Unique on `(route_slug, session_id)`.
 
 `route_key`, `route_slug`, `session_id`, `lat`, `lng`, `speed`, `direction`,
-`bus_label`, `updated_at`.
+`bus_label`, `updated_at`. `lat`, `lng` and `direction` refuse NULL.
+
+`speed` has been NULL in every row since `08-position-checks.sql`. It was kept
+and handed to anyone with the slug, though no page ever read it and neither the
+privacy panel nor the operators' briefing mentioned it, and it is the one field
+the promise that this tool cannot be used to review a driver is about. The
+column is left in place, and takes NULL now, which on the live database it did
+not; nothing writes anything else to it and nothing returns it.
 
 ### sightings
 `sid` (identity, used by admin delete), `route_key`, `route_slug`, `body`,
@@ -115,7 +122,7 @@ passes the rest through, and `get_settings` returns the whole object.
 | function | notes |
 |---|---|
 | `get_settings(p_slug)` | returns `{settings, notice}`. Notice is null when unset or expired. |
-| `get_positions(p_slug, p_self)` | filters stale rows, deletes nothing. Returns `pub_id`, **not** the session id, see below. `p_self` is optional: pass your own session id and your own row comes back with `is_self` set, which is how the duplicate-sharer warning skips itself. It also carries `thanks` on that row and `null` on every other, see "Saying salamat". |
+| `get_positions(p_slug, p_self)` | filters stale rows, deletes nothing. Returns `pub_id`, **not** the session id, see below, and no speed. `p_self` is optional: pass your own session id and your own row comes back with `is_self` set, which is how the duplicate-sharer warning skips itself. It also carries `thanks` on that row and `null` on every other, see "Saying salamat". |
 | `get_sightings(p_slug)` | newest 8 within the expiry window |
 | `add_sighting(p_slug, p_body)` | 1 to 140 chars; refuses a 6th post inside 60 seconds route-wide |
 | `clear_bus_position(p_slug, p_session)` | takes the real session id, which only the sharer's own phone holds; keeps working across a rotation and from sendBeacon |
@@ -159,10 +166,22 @@ did was invalidate a sentence in this file about a different function.
 
 `set_bus_position` rejects, with these exact messages the client turns into
 plain words: `invalid key`, `invalid session` (must match
-`^[A-Za-z0-9\-]{8,64}$`), `invalid direction`, `label too long` (over 12),
-`position off route` (outside lat 13.90 to 14.75, lng 120.70 to 121.15),
-`implausible speed` (outside 0 to 60 m/s), `rate limited` (under 2 seconds since
-that session's last write), `too many active sessions` (at `max_sessions`).
+`^[A-Za-z0-9\-]{8,64}$`), `invalid direction` (anything but `north` or `south`,
+missing included), `label too long` (over 12), `position off route` (missing,
+or outside lat 13.90 to 14.75, lng 120.70 to 121.15), `implausible speed`
+(outside 0 to 60 m/s; checked, never stored), `rate limited` (under 2 seconds
+since that session's last write), `too many active sessions` (`max_sessions`
+buses already on the map).
+
+Two of those were holes until `08-position-checks.sql`. The checks did not name
+NULL, a comparison with NULL is NULL, and plpgsql's IF reads that as false, so
+a write with no position or direction got through every one of them. Leaflet
+throws on such a row, which stopped every rider's bus list drawing, and the
+admin page's live list threw on it too, so there was no Stop button to remove
+it. And the cap counted every row however old, while a refusal rolls back the
+sweep at the end of the function, so dead rows could refuse every new sharer
+indefinitely with nothing on the map. The cap now counts only rows inside
+`bus_expiry_min`, the same window `get_positions` draws.
 
 It also runs `_sweep()` afterwards, which is where all cleanup happens.
 
@@ -348,6 +367,8 @@ Expired rows are cleared by `_sweep`.
 `admin_list_blocked` and `admin_unblock` let an admin see and undo blocks, since
 a mis-tap should be reversible.
 
-Honest limit: a blocked person can reload the page for a new session id. This
-raises the effort from nothing to a deliberate act. Rotating the share key is
+Honest limit: a blocked person can open the tracker in a new tab for a new
+session id. A reload keeps the old one, which lives in `sessionStorage`, and a
+trip ended by a block is the one trip that does not get a fresh id at Stop.
+This raises the effort from nothing to a deliberate act. Rotating the share key is
 still the only real expulsion, and it affects everyone.

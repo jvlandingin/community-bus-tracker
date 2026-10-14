@@ -166,9 +166,14 @@
   .row > *{flex:1;}
   .row .tight{flex:0 0 auto;}
   label.f{font-size:var(--fs-label); font-weight:800; color:var(--muted); display:block; margin:10px 0 4px; letter-spacing:.03em;}
-  .win{display:flex; gap:6px; align-items:center; margin-bottom:6px;}
+  /* Two lines per window: the times and the remove button, then the
+     interval. Beside the times it ran off a phone's edge, and a native time
+     field squeezed to make room shows two digits of a clock. */
+  .win{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:10px;}
   .win input[type=time]{flex:1;}
-  .win input[type=number]{flex:0 0 4.5em; min-width:0;}
+  .win .iv{flex:0 0 100%; display:flex; gap:6px; align-items:center;}
+  .win .iv input[type=number]{flex:0 0 4.5em; min-width:0;}
+  .win .iv .to{font-weight:600;}
   .win .to{flex:0 0 auto; font-size:var(--fs-label); color:var(--muted); font-weight:700;}
   .win button{flex:0 0 auto;}
   .item{display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:var(--fs-small); align-items:center;}
@@ -582,10 +587,10 @@ function winRow(dir, a, b, h){
     '<input type="time" value="'+esc(a||'')+'" data-dir="'+dir+'" data-role="a">'+
     '<span class="to">to</span>'+
     '<input type="time" value="'+esc(b||'')+'" data-dir="'+dir+'" data-role="b">'+
-    '<span class="to">every</span>'+
-    '<input type="number" min="1" max="720" inputmode="numeric" value="'+(h ? esc(String(h)) : '')+'" placeholder="'+esc(String(routeHeadwayValue()))+'" data-dir="'+dir+'" data-role="h" aria-label="Minutes between trips in this window; blank uses the route\'s number">'+
-    '<span class="to">min</span>'+
     '<button class="small btn-ghost" onclick="this.parentElement.remove()" aria-label="Remove this window"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>'+
+    '<span class="iv"><span class="to">trips every</span>'+
+    '<input type="number" min="1" max="720" inputmode="numeric" value="'+(h ? esc(String(h)) : '')+'" placeholder="'+esc(String(routeHeadwayValue()))+'" data-dir="'+dir+'" data-role="h" aria-label="Minutes between trips in this window; blank uses the route\'s number">'+
+    '<span class="to">min · blank = the route\'s number</span></span>'+
     '</div>';
 }
 function routeHeadwayValue(){

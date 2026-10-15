@@ -184,12 +184,63 @@ check(S.ticketArtSvg({ from: 'volcano', to: 'towers', sky: 'noon' }) === S.ticke
     'with the white triangle at the hoist, on a flag twice as long as it is high');
 }
 const tktCode = slice('function showTicket(', '// ---- Trip mode');
-check(/tktArt\(fromIdx, toIdx, TKT_KEEP\.st\) \+ tktGrid\(fromIdx, toIdx\)/.test(tktCode),
+check(/tktArt\(fromIdx, toIdx, TKT_KEEP\) \+ tktGrid\(fromIdx, toIdx\)/.test(tktCode),
   'the ticket at Stop draws it above its punched stops');
-check(/tktArt\(a, b, e\.st\) \+ tktGrid\(a, b\)/.test(tktCode) && /tktArt\(a, b, e\.st\) \+\s*'<span class="tm-date">/.test(tktCode),
+check(/tktArt\(a, b, e\) \+ tktGrid\(a, b\)/.test(tktCode) && /tktArt\(a, b, e\) \+\s*'<span class="tm-date">/.test(tktCode),
   'and so do a kept ticket and its card in the album, from what was kept');
-check(/sky:ticketSky\(st\)/.test(tktCode) && /mark\(fromIdx\), to:mark\(toIdx\)/.test(tktCode),
-  'from the marks config.txt gives the two ends, and the sky the stamps give');
+check(/sky:ticketSky\(e\.st\)/.test(tktCode) && /mark\(fromIdx\), to:mark\(toIdx\)/.test(tktCode) && /look:look \}/.test(tktCode),
+  'from the marks config.txt gives the two ends, the sky the stamps give, and the ticket\'s luck');
+
+console.log('\n=== 6b. a ticket\'s luck, drawn ===');
+// What ticketLook (the album block, tested in test-thanks.js) chooses, this
+// block draws: the sights in their places, the moon of the night, gold for a
+// rare one, and each sight on its own as the album's sticker.
+{
+  const keys = Object.keys(S.TICKET_SIGHTS);
+  const plain = { from: 'volcano', to: 'towers', sky: 'day' };
+  check(S.ticketArtSvg(plain) === S.ticketArtSvg(Object.assign({ look: null }, plain)),
+    'with no luck the picture is the plain one, as it always was');
+  const lookWith = (o) => Object.assign({ paper: 'cream', punch: 'round', road: '', air: '', weather: '', season: '', moon: -1, rare: false, meteor: false, sights: [] }, o);
+  const where = { road: ['jeepney', 'tricycle', 'carabao', 'sorbetes', 'stall'], air: ['kites', 'birds'], weather: ['rain', 'fog', 'rainbow', 'double'],
+                  season: ['parol', 'banderitas', 'flags'] };
+  const drawn = [];
+  for (const [field, names] of Object.entries(where)) for (const k of names) {
+    const sky = k === 'parol' ? 'night' : 'day';
+    const svg = S.ticketArtSvg(Object.assign({ look: lookWith({ [field]: k }) }, plain, { sky }));
+    const c = k === 'rain' ? Object.assign({}, S.TICKET_SKIES.day, { sky: '#d3dde3' }) : S.TICKET_SKIES[sky];
+    if (svg.includes(S.TICKET_SIGHTS[k].draw(c, sky)) && svg !== S.ticketArtSvg(Object.assign({}, plain, { sky }))) drawn.push(k);
+  }
+  const meteor = S.ticketArtSvg(Object.assign({ look: lookWith({ meteor: true, moon: 2 }) }, plain, { sky: 'night' }));
+  if (meteor.includes(S.TICKET_SIGHTS.meteor.draw(S.TICKET_SKIES.night, 'night'))) drawn.push('meteor');
+  const full = S.ticketArtSvg(Object.assign({ look: lookWith({ moon: 4 }) }, plain, { sky: 'night' }));
+  if (full.includes(S.moonSvg(4, S.TICKET_SKIES.night))) drawn.push('fullmoon');
+  check(drawn.sort().join(',') === keys.slice().sort().join(','), 'every sight is drawn into the picture when its ticket has it', drawn.length + ' of ' + keys.length);
+  const moons = [0, 1, 2, 3, 4, 5, 6, 7].map(p => S.moonSvg(p, S.TICKET_SKIES.night));
+  check(moons[0] === '' && new Set(moons).size === 8 && /<circle cx="112" cy="15" r="8"/.test(moons[4]),
+    'the moon has its eight shapes: none at the new moon, round at the full');
+  const gold = S.ticketArtSvg(Object.assign({ look: lookWith({ rare: true }) }, plain));
+  check(/stroke="#d4a017"/.test(gold) && !/stroke="#d4a017"/.test(S.ticketArtSvg(Object.assign({ look: lookWith({}) }, plain))),
+    'a rare ticket has a gold edge, and no other does');
+  const lucky = Object.keys(where).flatMap(f => where[f].map(k => S.ticketArtSvg(Object.assign({ look: lookWith({ [f]: k, rare: true, moon: 3 }) }, plain, { sky: 'night' }))));
+  check(lucky.every(v => !/ id="|<text|https?:|href=/.test(v)), 'with luck too, no ids, no words and nothing loaded');
+  const tiles = keys.map(k => S.sightTile(k));
+  check(tiles.every(t => /^<svg class="sight" viewBox="[\d. ]+" aria-hidden="true"/.test(t) && !/ id="|<text|https?:|href=/.test(t)),
+    'each sight has its sticker, hidden from screen readers, with no ids, words or links');
+  check(tiles.every((t, i) => { const b = S.TICKET_SIGHTS[keys[i]].box.split(' ').map(Number); return Math.abs(b[2] / b[3] - 5 / 3) < .01; }),
+    'all cut to the same shape, so the album\'s stickers line up');
+  check(S.sightTile('nothing-like-it') === '', 'and an unknown sight draws nothing');
+  // The coach flies two flags on the flag days. Held to the same rules as
+  // the monument's: blue above red, the triangle at the hoist, 2:1.
+  const flags = S.TICKET_SIGHTS.flags.draw();
+  const pairs = [...flags.matchAll(/<rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)" fill="(#0038a8|#ce1126)"\/>/g)].map(m => ({ x: +m[1], y: +m[2], w: +m[3], h: +m[4], c: m[5] }));
+  const tris = [...flags.matchAll(/<path d="M([\d.]+) ([\d.]+)L([\d.]+) ([\d.]+)L([\d.]+) ([\d.]+)Z" fill="#fff"\/>/g)].map(m => m.slice(1).map(Number));
+  const ok = pairs.length === 4 && tris.length === 2 && [0, 2].every((i, j) => {
+    const blue = pairs[i], red = pairs[i + 1], t = tris[j], hoist = blue.x + blue.w;
+    return blue.c === '#0038a8' && red.c === '#ce1126' && blue.y < red.y && blue.w === 2 * (blue.h + red.h) &&
+      t[0] === hoist && t[4] === hoist && t[2] < hoist;
+  });
+  check(ok, 'the flags on the coach fly blue above red, the triangle at the hoist, twice as long as high');
+}
 
 console.log('\n=== 7. the copies in other pages are current ===');
 const expect = { 'how-to.html': 1, 'flyer.html': 1, 'for-operators.html': 1, 'tools/app-icons.html': 0 };
@@ -220,6 +271,12 @@ const guideStamps = [...guide.matchAll(/<span class="stamp [a-z]+ s\d" aria-hidd
 const skyFor = guideStamps.includes('Madaling araw') ? 'dawn' : guideStamps.includes('Gabi na') ? 'night' : 'day';
 check(art.length === 1 && punched.join(',') === [art[0].from, art[0].to].join(',') && art[0].sky === skyFor,
   'and it shows the two stops the ticket punches, under the sky its stamps give', art.length ? `${art[0].from} → ${art[0].to}, ${art[0].sky}` : '');
+
+// The guide's picture of your bus is busSvg() itself, drawn in by the tool.
+const bus = tool.buses(guide, S);
+check(bus.length === 1 && bus[0].current === bus[0].wanted && bus[0].keys.length > 0,
+  'how-to.html: its picture of your bus is drawn by the tracker\'s own code, as it is now',
+  bus.length !== 1 ? bus.length + ' pictures' : bus[0].current === bus[0].wanted ? bus[0].keys.join(' ') : 'stale (run node tools/make-pictures.js)');
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);

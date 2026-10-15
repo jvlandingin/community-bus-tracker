@@ -641,6 +641,12 @@
   .tripdemo .strip .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), 0 0 18px 4px rgba(61,220,151,.45);}
   .tripdemo .demo-ty{color:#ffd27a;}
 
+  /* ---- Your bus ----------------------------------------------------- */
+  /* busSvg() from index.html, drawn into this page by tools/make-pictures.js
+     with the decorations named in its marker. */
+  .busdemo{padding:12px; border-radius:14px; background:#fbf4e4;}
+  .busdemo .mybus{display:block; width:100%; height:auto; border-radius:8px;}
+
   /* ---- The salamat ticket ------------------------------------------- */
   /* Copied from index.html, the paper ticket a sharer gets at Stop. On a
      dark panel standing in for the modal's dimmed page. */
@@ -1395,6 +1401,30 @@
         <li><b>On Android there is an app</b> that keeps sharing with the screen locked, with a notification for as long as it does. Ask the organizer for it. Watching never needs it.</li>
         <li><b>The ticket</b> shows where you got on and off, how long your bus was on the map, how many said salamat, and a stamp or two.</li>
         <li><b>A kept ticket</b> goes into <b>My tickets</b>, on this phone only. It keeps the day, the places, the stamps and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and the count, so nobody can time a trip or rank a driver.</li>
+        <li><b>However the trip ends</b>, Stop, the end of the line, or GPS that never came back, the ticket comes. If the page closes mid-trip, opening it again asks whether you are still on the bus: carry on with the same trip, or get its ticket.</li>
+      </ul>
+    </details>
+
+    <h3 class="sub">Collect them</h3>
+    <p>No two tickets are quite alike: the paper, what is on the road, the
+      weather, the moon that night, and now and then a <b>gold</b> one. And every
+      trip you share dresses <b>your bus</b> in My tickets.</p>
+    <!-- Your bus as busSvg() draws it with the first decorations a sharer
+         earns (DECOR in index.html): the garland for a first trip, mud flaps
+         at 3, horns at 5, the rooster for being first on the map 3 times, the
+         stripe for a trip end to end and the bumpers for both directions.
+         Drawn into this page by tools/make-pictures.js. -->
+    <figure>
+      <div class="busdemo" aria-hidden="true"><!-- mybus keys=sampaguita,flaps,horns,rooster,stripe,bumpers --><svg class="mybus" viewBox="0 0 400 170" aria-hidden="true" focusable="false" style="--c-body:#f3ecdf;--c-roof:#e6dccb;--c-skirt:#d9cfbe;--c-band:#7a1f2b;--c-gold:#e39a1c;--c-glass:#3b5566;--c-glint:rgba(255,255,255,.3);--c-head:transparent;--c-led:#3a2a12;--c-lamp:#e8dfc8;--c-hub:#cfc7bb;--c-sign:#120d0b;--c-dark:#2b2320"><rect width="400" height="170" fill="#e3f2f7"/><path d="M0 118C60 104 120 112 190 104C260 96 330 110 400 102V170H0Z" fill="#c9dfd0"/><rect y="146" width="400" height="12" fill="#8f8579"/><rect y="158" width="400" height="12" fill="#d3e0bf"/><path d="M6 152H394" stroke="#fbf4e4" stroke-width="1.6" stroke-dasharray="9 8" opacity=".55"/><svg x="18" y="12.5" width="364" height="136" viewBox="0 0 364 136"><ellipse cx="186" cy="127" rx="160" ry="5" fill="rgba(0,0,0,.2)"/><rect x="118" y="13" width="120" height="11" rx="5.5" fill="var(--c-roof)"/><path d="M24 34Q24 22 36 22H318Q331 22 336 33L346 72Q349 80 349 88V112Q349 120 341 120H32Q24 120 24 112Z" fill="var(--c-body)"/><path d="M24 100H349V112Q349 120 341 120H32Q24 120 24 112Z" fill="var(--c-skirt)"/><path d="M24 64C56 70 92 80 132 82H348.5L349 92H24Z" fill="var(--c-band)"/><rect x="24" y="94" width="325" height="3.5" fill="var(--c-gold)"/><rect x="38" y="31" width="262" height="42" rx="5" fill="var(--c-glass)"/><g fill="var(--c-head)"><circle cx="62" cy="58" r="5.5"/><circle cx="109" cy="56" r="5.5"/><circle cx="160" cy="59" r="5.5"/><circle cx="208" cy="57" r="5.5"/><circle cx="252" cy="58" r="5.5"/></g><g fill="var(--c-body)"><rect x="84" y="31" width="5" height="42"/><rect x="132" y="31" width="5" height="42"/><rect x="180" y="31" width="5" height="42"/><rect x="228" y="31" width="5" height="42"/></g><path d="M40 33H120L104 71H40Z" fill="var(--c-glint)"/><path d="M305 31H333L344 72H305Z" fill="var(--c-glass)"/><path d="M313 34L322 34L314 69L307 69Z" fill="var(--c-glint)"/><rect x="306" y="76" width="22" height="22" rx="2.5" fill="var(--c-glass)"/><path d="M305 75V116M329 75V116" stroke="rgba(0,0,0,.18)" stroke-width="1.2"/><rect x="301" y="24" width="34" height="6" rx="2" fill="var(--c-sign)"/><path d="M305 27h0m4 0h0m4 0h0m4 0h0m4 0h0m4 0h0m4 0h0" stroke="var(--c-led)" stroke-width="1.8" stroke-linecap="round"/><rect x="274" y="36" width="22" height="9" rx="1.5" fill="var(--c-sign)"/><path d="M278 40.5h0m3.5 0h0m3.5 0h0m3.5 0h0m3.5 0h0" stroke="var(--c-led)" stroke-width="1.6" stroke-linecap="round"/><path d="M120 100V116M168 100V116M216 100V116" stroke="rgba(0,0,0,.14)" stroke-width="1.2"/><path d="M68 120A20 20 0 0 1 108 120ZM262 120A20 20 0 0 1 302 120Z" fill="var(--c-dark)"/><g fill="var(--c-dark)"><circle cx="88" cy="120" r="14.5"/><circle cx="282" cy="120" r="14.5"/></g><g fill="var(--c-hub)"><circle cx="88" cy="120" r="6.5"/><circle cx="282" cy="120" r="6.5"/></g><g fill="var(--c-dark)"><circle cx="88" cy="120" r="2"/><circle cx="282" cy="120" r="2"/></g><rect x="338" y="100" width="10" height="5.5" rx="2.5" fill="var(--c-lamp)"/><rect x="331" y="110" width="20" height="6" rx="2.5" fill="var(--c-dark)"/><path d="M333 27C350 17 363 28 358 44" fill="none" stroke="var(--c-dark)" stroke-width="2.6" stroke-linecap="round"/><rect x="353.5" y="42" width="7.5" height="15" rx="3" fill="var(--c-dark)"/><path d="M309 36Q323.5 52 338 36M323.5 44V55" fill="none" stroke="#5f8f68" stroke-width="1.1"/><g fill="#fff" stroke="#d9cfbe" stroke-width=".5"><circle cx="310.7" cy="37.8" r="2"/><circle cx="313.3" cy="40" r="2"/><circle cx="315.8" cy="41.8" r="2"/><circle cx="318.4" cy="43" r="2"/><circle cx="320.9" cy="43.8" r="2"/><circle cx="323.5" cy="44" r="2"/><circle cx="326.1" cy="43.8" r="2"/><circle cx="328.6" cy="43" r="2"/><circle cx="331.2" cy="41.8" r="2"/><circle cx="333.7" cy="40" r="2"/><circle cx="336.3" cy="37.8" r="2"/><circle cx="323.5" cy="48.5" r="1.8"/><circle cx="323.5" cy="52" r="1.8"/></g><path d="M322 55h3l-1.5 4z" fill="#d7262c"/><g fill="#b8322a"><rect x="60" y="106" width="9" height="26" rx="1.5"/><rect x="254" y="106" width="9" height="26" rx="1.5"/></g><g fill="#fff"><rect x="60" y="123" width="9" height="2.6"/><rect x="254" y="123" width="9" height="2.6"/></g><g fill="#f2c230"><circle cx="64.5" cy="113" r="1.8"/><circle cx="258.5" cy="113" r="1.8"/></g><rect x="246" y="17" width="32" height="5" rx="2" fill="#8a929a"/><g fill="#e3e7eb" stroke="#8a929a" stroke-width=".8" stroke-linejoin="round"><path d="M248 13H266L279 8.5V17.5L266 13Z"/><path d="M254 8H270L283 3.5V12.5L270 8Z"/></g><g transform="translate(-6 30)"><path d="M156 84Q148 74 154 70Q152 77 159 80Z" fill="#2e8b57"/><path d="M157 83Q151 71 158 68Q156 75 161 79Z" fill="#3d7cc9"/><path d="M158 84Q158 77 166 77Q172 77 173 72L176 71Q178 76 175 81Q172 87 164 87Q159 87 158 84Z" fill="#e39a1c"/><circle cx="175.5" cy="70" r="2.8" fill="#e39a1c"/><path d="M173.5 67.6Q174 65 175.4 66.4Q176 64.4 177.4 66.2Q178.6 65.6 178 68Z" fill="#d7262c"/><path d="M178 69.6L181 70.6L178 71.4Z" fill="#f2c230"/><path d="M177.4 72Q178 74.4 176.6 74Z" fill="#d7262c"/><path d="M165 87V91M168 87V91" stroke="#c98a1c" stroke-width="1.2"/></g><path d="M30 74C80 80 120 88 170 88.5C230 89 300 86 346 84" fill="none" stroke="#f2c230" stroke-width="2.2"/><path d="M44 81C90 86 128 91.4 170 91.6C230 91.8 300 89.4 346 88" fill="none" stroke="#fbf4e4" stroke-width=".9" opacity=".8"/><g fill="#e3e7eb" stroke="#8a929a" stroke-width=".8"><rect x="329" y="109" width="23" height="7" rx="3"/><rect x="16" y="109" width="16" height="7" rx="3"/></g></svg></svg><!-- /mybus --></div>
+      <figcaption>A garland for your first trip, mud flaps at 3, horns at 5, a rooster for being the first bus on the map. <b>On your phone only.</b></figcaption>
+    </figure>
+    <details class="more">
+      <summary>More about collecting<svg class="gi" aria-hidden="true"><use href="#i-chev"/></svg></summary>
+      <ul>
+        <li><b>What is in a ticket's picture</b> follows from its day, its direction and its two ends, so a kept ticket always looks the same, and stopping and starting again does not change your luck.</li>
+        <li><b>Your bus counts trips that went somewhere</b>, kept or not, as numbers only: no days, no times, no bus number and nothing about salamat.</li>
+        <li><b>No streaks</b> and nothing to lose by missing a day. Nothing in either is about how the bus was driven or how long it took.</li>
+        <li><b>Only you see it.</b> Other riders' maps show a plain bus: a decorated one would tell the road whose phone has shared the most.</li>
       </ul>
     </details>
     <a class="trybtn wide" href="index.html#tour=share"><b><svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>Try sharing</b><span>On the real screen, with nothing shared</span></a>
@@ -1406,7 +1436,7 @@
     <h2>Questions it may ask</h2>
     <p>The app asks rather than guessing. You won’t see these often.</p>
     <ul class="rows">
-      <li><span class="ic" aria-hidden="true"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg></span><div><b>Still on the bus?</b><span>After about 20 minutes without moving. Tap <b>Stop sharing</b> if you got off.</span></div></li>
+      <li><span class="ic" aria-hidden="true"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg></span><div><b>Still on the bus?</b><span>After about 20 minutes without moving, or when the page opens again mid-trip. Tap <b>Stop sharing</b> or <b>I got off</b> if you did.</span></div></li>
       <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-compass"/></svg></span><div><b>Which way is this bus going?</b><span>If the bus moves the other way. Nothing is shared until you answer.</span></div></li>
       <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-flag"/></svg></span><div><b>Is this trip finished?</b><span>Parked at the end of the line. Sharing stops by itself after 5 minutes.</span></div></li>
       <li><span class="ic" aria-hidden="true"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg></span><div><b>Is this the same bus?</b><span>If someone near you already shares the same direction, so one bus doesn’t show as two.</span></div></li>
@@ -1421,7 +1451,7 @@
     <ul class="rows">
       <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-lock"/></svg></span><div><b>No trail</b><span>Each bus is one spot, written over every few seconds and deleted when sharing stops. Nobody can look back at a driver’s speed, breaks or route.</span></div></li>
       <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-pin"/></svg></span><div><b>Your stop stays here</b><span>Your saved stop and your location never leave your phone. Nothing can see where anybody is waiting.</span></div></li>
-      <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-tkt"/></svg></span><div><b>Tickets are yours</b><span>Kept on your phone, only if you tap Keep. No times, no bus number, no count.</span></div></li>
+      <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-tkt"/></svg></span><div><b>Tickets are yours</b><span>Kept on your phone, only if you tap Keep. Your bus is numbers only. No times, no bus number, no count.</span></div></li>
     </ul>
     <p class="hint" style="margin-top:12px">The full explanation is in
       <b>“How your data is handled”</b>, at the foot of the map page.</p>

@@ -53,7 +53,8 @@ function renderer() {
     block(html, '// ---- THE PICTURES (unit tested)', '// ---- END PICTURES') +
     'S.SIGN_FONT=SIGN_FONT;S.signGlyph=signGlyph;S.signLayout=signLayout;S.signboardSvg=signboardSvg;' +
     'S.COACH_SIDE=COACH_SIDE;S.SCENE_TIMES=SCENE_TIMES;S.sceneSvg=sceneSvg;S.MARKS=MARKS;S.markSvg=markSvg;' +
-    'S.TICKET_SKIES=TICKET_SKIES;S.TICKET_VIEWS=TICKET_VIEWS;S.ticketArtSvg=ticketArtSvg;')(S);
+    'S.TICKET_SKIES=TICKET_SKIES;S.TICKET_VIEWS=TICKET_VIEWS;S.ticketArtSvg=ticketArtSvg;' +
+    'S.TICKET_SIGHTS=TICKET_SIGHTS;S.sightTile=sightTile;S.moonSvg=moonSvg;S.BUS_DECOR=BUS_DECOR;S.busSvg=busSvg;')(S);
   return S;
 }
 
@@ -117,9 +118,24 @@ function arts(src, S) {
   return out;
 }
 
+// Every picture of your bus in one file, with the decorations its marker names.
+function buses(src, S) {
+  const out = [];
+  const re = /<!-- mybus([^>]*?) -->([\s\S]*?)<!-- \/mybus -->/g;
+  let m;
+  while ((m = re.exec(src))) {
+    const keys = ((/keys=([a-z,]*)/.exec(m[1]) || [])[1] || '').split(',').filter(Boolean);
+    const unknown = keys.filter(k => !(k in S.BUS_DECOR));
+    if (unknown.length) throw new Error('no decoration called ' + unknown.join(', '));
+    out.push({ start: m.index, end: m.index + m[0].length, open: '<!-- mybus' + m[1] + ' -->', close: '<!-- /mybus -->',
+      keys, current: m[2], wanted: S.busSvg(keys) });
+  }
+  return out;
+}
+
 // The file as it should be, with every picture redrawn.
 function redraw(src, S) {
-  const all = boards(src, S).map(b => Object.assign({ close: '<!-- /signboard -->' }, b)).concat(scenes(src, S), arts(src, S))
+  const all = boards(src, S).map(b => Object.assign({ close: '<!-- /signboard -->' }, b)).concat(scenes(src, S), arts(src, S), buses(src, S))
     .sort((a, b) => a.start - b.start);
   let res = '', at = 0;
   for (const p of all) {
@@ -129,14 +145,14 @@ function redraw(src, S) {
   return res + src.slice(at);
 }
 
-module.exports = { renderer, boards, scenes, arts, redraw, FILES, ROOT };
+module.exports = { renderer, boards, scenes, arts, buses, redraw, FILES, ROOT };
 
 if (require.main === module) {
   const S = renderer();
   for (const f of FILES) {
     const file = path.join(ROOT, f);
     const src = fs.readFileSync(file, 'utf8');
-    const n = boards(src, S).length + scenes(src, S).length + arts(src, S).length;
+    const n = boards(src, S).length + scenes(src, S).length + arts(src, S).length + buses(src, S).length;
     const next = redraw(src, S);
     if (next === src) { console.log(`${f}: ${n} picture${n === 1 ? '' : 's'}, already current`); continue; }
     fs.writeFileSync(file, next);

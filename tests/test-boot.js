@@ -699,7 +699,18 @@ function run(page, include, label, configText, setup) {
     const hidden = el => !el || el.className.includes('hidden');
     w.localStorage.removeItem('wt-tickets');
     w.syncAlbumRow();
-    check(hidden(row), 'with nothing kept, the sharing tab offers no album at all');
+    w.localStorage.removeItem('wt-bus');
+    w.syncAlbumRow();
+    check(!hidden(row) && /first trip starts them/.test(row.textContent) && !/\b0\b/.test(row.textContent),
+      'with nothing kept or earned, the sharing tab still offers My tickets, saying what starts it, with no zero', row.textContent.replace(/\s+/g, ' ').trim());
+    w.openAlbum();
+    const empty = d.getElementById('albumBody');
+    check(/starts with your first trip/.test(empty.textContent) && empty.querySelectorAll('.alb-decor li').length === 13 &&
+          empty.querySelectorAll('.alb-decor li.on').length === 0 && empty.querySelectorAll('.alb-sight.yet').length === 16 &&
+          empty.querySelectorAll('.alb-stamp.yet').length === 4 && !/×0|\b0 of\b|\b0 tickets?\b/.test(empty.textContent) &&
+          hidden(d.getElementById('albumClear')),
+      'and opened, it shows the plain bus, every decoration, stamp and sight still to come, no zero, and nothing to remove');
+    w.closeModal('albumModal');
     w.switchTab('share');
     w.pickDir('north');
     d.getElementById('busLabel').value = '98019';
@@ -712,7 +723,7 @@ function run(page, include, label, configText, setup) {
     check(!hidden(keepBtn) && hidden(dropBtn), 'and Keep under it, not Remove');
     check(w.localStorage.getItem('wt-tickets') === null, 'showing it keeps nothing');
     w.closeTicket();
-    check(w.localStorage.getItem('wt-tickets') === null && hidden(row), 'and closing it without Keep leaves nothing behind');
+    check(w.localStorage.getItem('wt-tickets') === null && /first trip starts them/.test(row.textContent), 'and closing it without Keep leaves nothing behind');
 
     w.showTicket(trip(), end);
     keepBtn.click();
@@ -740,7 +751,9 @@ function run(page, include, label, configText, setup) {
     check(w.localStorage.getItem('wt-tickets') !== null && /again/.test(dropBtn.textContent), 'Remove asks twice');
     dropBtn.click();
     check(w.localStorage.getItem('wt-tickets') === null, 'and the second tap removes it, leaving no key behind');
-    check(hidden(row) && hidden(album) && hidden(modal), 'with the album gone from the tab again');
+    check(/first trip starts them/.test(row.textContent) && /No tickets kept yet/.test(d.getElementById('albumBody').textContent) && hidden(modal),
+      'with the album back to what there is still to collect');
+    w.closeModal('albumModal');
   }
 
   console.log('\n=== 13. the tour: a practice run on the real page ===');

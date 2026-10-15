@@ -408,9 +408,8 @@ console.log('\n=== 16. the album adds up nothing that ranks anybody ===');
   check(/n \? '×' \+ n : 'not yet'/.test(render) && !/×0/.test(render),
     'a stamp not collected yet says so, never ×0');
   const sync = fn('syncAlbumRow');
-  check(/const list = loadAlbum\(\), dec = busEarned\(loadBus\(\), CHECKPOINTS\)\.length;/.test(sync) &&
-        /row\.classList\.toggle\('hidden', !list\.length && !dec\)/.test(sync),
-    'and the album is not offered at all until something has been kept, or put on your bus');
+  check(/row\.classList\.remove\('hidden'\);/.test(sync) && /if \(!list\.length && !dec\)\{\s*document\.getElementById\('albumRowVal'\)\.textContent = '[^'0-9]+';\s*return;/.test(sync),
+    'My tickets is always offered, so what there is to collect can be found, and with nothing yet it says so without a number');
   check(!/streak|ranking|leader|best trip|fastest|average|total time|hours on/i.test(render + sync + albumSrc.replace(/^\s*\/\/.*$/gm, '')),
     'no streak, no ranking, no best or average anywhere in it');
 }

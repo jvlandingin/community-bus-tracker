@@ -2210,9 +2210,9 @@
          following this phone's own bus to the stop its sharer gets off at. -->
     <div class="mystop tripstop hidden" id="tripStop"></div>
 
-    <!-- The tickets this phone has kept, and its bus. Drawn by syncAlbumRow()
-         only once there is one or the other, so nobody is offered an empty
-         album or a zero. -->
+    <!-- The tickets this phone has kept, and its bus. Always offered, so a
+         sharer can see what there is to collect before the first trip;
+         syncAlbumRow() words it without a zero while there is nothing yet. -->
     <button type="button" class="card albumrow hidden" id="albumRow" onclick="openAlbum()">
       <span class="ico" aria-hidden="true"><svg class="gi"><use href="#i-tkt"/></svg></span>
       <span class="lbl"><span class="cap">My tickets</span><span class="val" id="albumRowVal"></span></span>
@@ -6874,16 +6874,21 @@ function dropKeptTicket(){
   if (at >= 0){ list.splice(at, 1); saveAlbum(list); }
   closeTicket();
   syncAlbumRow();
-  if (list.length) renderAlbum(); else closeModal('albumModal');
+  renderAlbum();
 }
 // The row on the sharing tab. Drawn only once a ticket has been kept: an
 // empty album is not something anyone needs to be shown.
+// Always there, so a sharer can find what there is to collect before the
+// first trip; with nothing yet it says what starts it, never a zero.
 function syncAlbumRow(){
   const row = document.getElementById('albumRow');
   if (!row) return;
   const list = loadAlbum(), dec = busEarned(loadBus(), CHECKPOINTS).length;
-  row.classList.toggle('hidden', !list.length && !dec);
-  if (!list.length && !dec) return;
+  row.classList.remove('hidden');
+  if (!list.length && !dec){
+    document.getElementById('albumRowVal').textContent = 'Your bus, your tickets, and what there is to collect. Your first trip starts them.';
+    return;
+  }
   const st = albumStats(list, CHECKPOINTS), parts = [];
   if (list.length) parts.push(st.tickets + (st.tickets === 1 ? ' ticket' : ' tickets') + ' · ' + st.places + ' of ' + st.of + ' places on the route');
   if (dec) parts.push(dec + (dec === 1 ? ' decoration' : ' decorations') + ' on your bus');
@@ -6957,16 +6962,28 @@ function renderAlbum(){
   }).join('');
   // Your bus first: the coach as it is dressed now, and every decoration
   // with what earns it, the ones still to come faint with how far along.
+  // Shown before the first trip too, plain, with everything still to come:
+  // this is where a sharer finds out what there is to earn.
   const bus = loadBus(), earned = busEarned(bus, CHECKPOINTS);
-  const busPart = bus.n ? '<div class="alb-h">Your bus<span>' + bus.n + (bus.n === 1 ? ' trip' : ' trips') + ' shared</span></div>' +
+  const busPart = '<div class="alb-h">Your bus<span>' + (bus.n ? bus.n + (bus.n === 1 ? ' trip' : ' trips') + ' shared' : 'starts with your first trip') + '</span></div>' +
     '<div class="alb-paper alb-bus">' + busSvg(earned) + '<ul class="alb-decor">' + DECOR.map(function(d){
       const g = busGoal(d, CHECKPOINTS), n = busCount(bus, d, CHECKPOINTS), on = g > 0 && n >= g;
       return '<li' + (on ? ' class="on"' : '') + '><b>' + escapeHtml(d.t) + '</b><span>' + escapeHtml(d.s) + '</span>' +
         '<i>' + (on ? 'on your bus' : n ? n + ' of ' + g : 'not yet') + '</i></li>';
-    }).join('') + '</ul></div>' : '';
+    }).join('') + '</ul></div>';
+  const clear = document.getElementById('albumClear');
+  if (clear) clear.classList.toggle('hidden', !list.length && !bus.n);
+  // Nothing kept yet: what a kept ticket can collect, all of it faint, and
+  // how to start. No counts, so no zeros.
   if (!list.length){
     document.getElementById('albumBody').innerHTML = busPart +
-      '<p class="hint alb-none">No tickets kept yet. Tap Keep on the ticket at the end of a trip to start collecting them here.</p>';
+      '<p class="hint alb-none">No tickets kept yet. Tap Keep on the ticket at the end of a trip, and it collects what it passed and what was in its picture:</p>' +
+      '<div class="alb-h">Places on the route</div>' +
+      '<div class="alb-paper"><div class="tkt-grid">' + places + '</div></div>' +
+      '<div class="alb-h">Stamps</div>' +
+      '<div class="alb-paper alb-stamps">' + stamps + '</div>' +
+      '<div class="alb-h">Sights<span>what was in the picture</span></div>' +
+      '<div class="alb-paper alb-sights">' + sights + '</div>';
     return;
   }
   document.getElementById('albumBody').innerHTML = busPart +

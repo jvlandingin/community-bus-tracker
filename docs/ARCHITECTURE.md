@@ -975,8 +975,10 @@ punish a missed day and on a crew member's phone are an attendance sheet. The
 flower is drawn on each thanked ticket and never added up: decided over a
 per-ticket count (summable by hand) and over a running total, which is exactly
 the figure the salamat design exists not to keep. A stamp not yet collected is
-printed faint with "not yet", never "×0", and the album is not offered at all
-until something has been kept, which is the no-zero rule again.
+printed faint with "not yet", never "×0". The album used to be offered only
+once something had been kept, the no-zero rule again; since your bus arrived
+it is always offered (see "Collecting"), worded without a number until there
+is something in it.
 
 **Every ticket has its own picture**, so the album reads as a collection rather
 than a pile of the same card. `ticketArtSvg()` draws the two ends as roadside
@@ -1113,6 +1115,13 @@ first on the map three times, a stripe for a trip end to end, bumpers for both
 directions; `BUS_DECOR` draws them over `COACH_SIDE` and `busSvg()` draws the
 bus. A trip that earns one says so on its ticket, with the bus. Decided, each
 for a reason:
+
+- *Findable before the first trip.* My tickets, the row at the foot of the
+  sharing tab, used to appear only once a ticket was kept, so a new sharer
+  had no way to see what there was to earn. It is always there now. With
+  nothing yet it says "Your first trip starts them", and opened it shows the
+  plain bus with every decoration, and every place, stamp and sight, faint
+  with "not yet": what is possible, shown without a single zero.
 
 - *Numbers, no dates.* A count of trips cannot say when anyone worked; a list
   of dated trips could, which is why kept tickets never held times and this

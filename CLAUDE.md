@@ -167,9 +167,10 @@ is returned only on the sharer's own row, because a count beside every bus would
 rank the buses on the road in front of the riders choosing between them; a zero
 is never drawn, because "0" on the sharing screen for forty minutes turns
 silence into a verdict; and nothing stored identifies the rider who tapped. A
-running total per sharer is the driver metric `for-operators.html` promises
-cannot be produced — if one is ever wanted, that is the deliberate conversation,
-not a follow-up. `test-thanks.js` and `db/07-thanks-tests.sql` hold all of it.
+running total per sharer was refused as the driver metric until the
+maintainer had that deliberate conversation (October 2026): the server still
+keeps none, and the sharer's own phone now keeps theirs for their bus
+(`wt-bus`), which never leaves it. `test-thanks.js` and `db/07-thanks-tests.sql` hold all of it.
 
 **The sharer gets a ticket at Stop** (October 2026): a picture of where they got
 on and off (the two places' marks as roadside signs, the coach between, the view
@@ -208,8 +209,11 @@ trip that drew a ticket and went somewhere, kept or not, is counted in
 `BUS_DECOR`) are earned from those counts, two of them for finishing the two
 tours, so a new user's bus starts with something on it: shown in My tickets,
 always offered on the sharing tab with the ones still to come as outlines,
-and on the ticket that earns one, never on the live map, and never for
-streaks or salamat (rules 14 to 16). `docs/ARCHITECTURE.md`, "Collecting", and "Rules
+and on the ticket that earns one, never on the live map (rules 14 to 16).
+Since the maintainer's later decision the bus also keeps the salamat
+received, the time on the map and a streak of weeks, each a single number
+with no dates, and eight of the decorations come from them; the kept
+tickets still add up none of it. `docs/ARCHITECTURE.md`, "Collecting", and "Rules
 revisited" for what was changed to allow it and what was kept.
 
 **A request nobody waits for is never sent.** supabase-js sends an `rpc()`

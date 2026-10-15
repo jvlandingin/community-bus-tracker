@@ -974,7 +974,9 @@ map (summed, that is working hours), anything per bus, or streaks, which
 punish a missed day and on a crew member's phone are an attendance sheet. The
 flower is drawn on each thanked ticket and never added up: decided over a
 per-ticket count (summable by hand) and over a running total, which is exactly
-the figure the salamat design exists not to keep. A stamp not yet collected is
+the figure the salamat design existed not to keep. (The sharer's bus now
+keeps one, on their phone only, by a later decision: see "Collecting". The
+album still adds up no flowers.) A stamp not yet collected is
 printed faint with "not yet", never "×0". The album used to be offered only
 once something had been kept, the no-zero rule again; since your bus arrived
 it is always offered (see "Collecting"), worded without a number until there
@@ -1148,9 +1150,24 @@ for a reason:
 - *Only trips that went somewhere.* Otherwise sitting at a stop with sharing on
   for five minutes would dress the bus, and every such sitting is a bus on the
   map that isn't one.
-- *No streaks, no salamat.* A streak on a crew member's phone is an attendance
-  sheet, and "thanked 50 times" is the running total the salamat design exists
-  not to keep.
+- *Totals and streaks, on the phone only* (changed later in October 2026).
+  At first there were no streaks, no salamat total and no time on the map
+  summed: a streak on a crew member's phone is an attendance sheet, and
+  "thanked 50 times" is the running total the salamat design existed not to
+  keep. The maintainer decided otherwise, for two reasons: riders are likelier
+  to come back to an app that keeps their score, and the company has its own
+  ways of keeping track of its crews, so a total on a sharer's own phone adds
+  no new way to watch them. What was kept from the old reasoning is the
+  shape: each is one number (minutes on the map, salamat received, the week
+  of the last trip, the streak and the best), never a list of days, times or
+  trips, so they say how much and never when. The server still adds nothing
+  up and `thanks_now` still dies with its trip. Streaks count weeks, because
+  a commuter's weekend would break a daily one every Saturday, and the
+  decorations follow the best streak, so breaking one takes nothing away.
+  Eight decorations come from them: flowers, ribbons and a gold star at 10,
+  50 and 100 salamat; luggage, curtains and a painted back window at 10, 50
+  and 100 hours; fog lamps and a pennant at 4 and 12 weeks in a row. The
+  ticket a trip ends with says what the bus has gathered in all.
 - *On the sharer's phone only.* Decorations on the live map were considered: a
   decorated bus tells the road whose phone has shared most, and the same
   decorations on the same bus every morning would link one person's trips
@@ -1169,12 +1186,14 @@ would unlock. What changed, and what was kept and why:
   "the ticket is the same for the same trip" (it still is, but no two trips
   are drawn alike); `for-operators.html`'s "one thing can be kept" (now two,
   and it says what the second is).
+- **Changed after that, by the maintainer:** a running salamat total, time on
+  the map in all, and a streak (in weeks), all on the sharer's own phone
+  only, as single numbers. See "Collecting" for why and what shape they keep.
 - **Kept:** no location history; no watcher location leaves the device; no
-  running salamat total (it would unlock "thanked N times" and is exactly the
-  driver metric); no streaks (an attendance sheet); no time on the map summed
-  (working hours); nothing about speed or trip length in any stamp, luck or
-  decoration; no ETA in minutes (it needs the travel-time history the first
-  invariant forbids); decorations only on the sharer's own phone.
+  total of anything on the server; nothing about speed or a trip's length in
+  any stamp, luck or decoration threshold beyond the time summed in all; no
+  ETA in minutes (it needs the travel-time history the first invariant
+  forbids); decorations only on the sharer's own phone.
 
 ## The guide and the tour
 

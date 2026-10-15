@@ -1220,6 +1220,7 @@
   .tkt-ty{display:flex; align-items:center; gap:9px; margin-top:12px; font-size:var(--fs-small); font-weight:800; color:#1d5e3c;}
   .tkt-greet{margin-bottom:4px; font-size:var(--fs-title); font-weight:900; letter-spacing:-.01em;}
   /* A trip that put something new on the sharer's bus says so, with the bus. */
+  .tkt-all{margin-top:8px; font-size:var(--fs-label); font-weight:800; letter-spacing:.02em; opacity:.85;}
   .tkt-new{display:flex; align-items:center; gap:10px; margin-top:12px; padding:8px; border-radius:var(--r-s);
     background:rgba(227,154,28,.16); font-size:var(--fs-small); font-weight:700; line-height:1.3;}
   .tkt-new .mybus{flex:0 0 96px; width:96px; height:auto; border-radius:var(--r-s);}
@@ -1310,6 +1311,9 @@
   .alb-stamp.yet b{font-weight:700; opacity:.6;}
   .alb-bus{padding:10px;}
   .alb-bus .mybus{display:block; width:100%; height:auto; border-radius:var(--r-s);}
+  .alb-totals{display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-top:10px;}
+  .alb-totals span{padding:3px 9px; border-radius:999px; background:rgba(227,154,28,.22);
+    font-size:var(--fs-label); font-weight:800; letter-spacing:.02em;}
   .alb-decor{display:grid; grid-template-columns:1fr 1fr; gap:6px 10px; margin:10px 0 0; padding:0; list-style:none;}
   .alb-decor li{display:flex; flex-direction:column; min-width:0; padding:6px 8px; border-radius:var(--r-s); border:1.3px dashed rgba(109,26,37,.35);}
   .alb-decor li.on{border-style:solid; border-color:var(--ti); background:rgba(227,154,28,.18);}
@@ -1815,13 +1819,13 @@
       <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the location button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the tab.</p>
       <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the tab, and is never sent either.</p>
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
-      <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number, and it never adds up across trips: <b>no running total is kept for any driver or any bus, anywhere.</b></p>
+      <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number. On our side it never adds up across trips: <b>no running total is kept for any driver or any bus on the server.</b> The sharer's own phone adds theirs up for their bus in My tickets, and that never leaves it.</p>
       <p>“Send a link to this bus”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do.</p>
 
       <h4 class="ok">If you share from the bus</h4>
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
       <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop.</p>
-      <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and it goes when the trip does. Nothing keeps a total for you, so there is no score to go up or down.</p>
+      <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and on our side it goes when the trip does. Your phone adds it to your bus in My tickets, a total only you can see.</p>
       <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>it is not sent anywhere</b>. Close it and it is gone.</p>
       <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Remove all” in My tickets deletes every copy.</p>
 
@@ -1849,7 +1853,7 @@
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
       <p>Six small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it. All six stay in your browser, are never sent anywhere, and are not linked to anything.</p>
-      <p>Your bus is the coach your trips decorate in My tickets, and it is <b>numbers only</b>: how many trips you shared, how many of them were first on the map, end to end, before 5 AM or after dark, which directions, which places on the route, and whether you finished each tour. No days, no times, no bus numbers and nothing about salamat, so it cannot time anyone's work or rank anybody. The trip you are sharing is kept so that a page that reloads or closes mid-trip can carry on with the same bus, or still give you its ticket: when it started, roughly where it began and last was on the route, and the trip's random ID. It is deleted the moment the trip ends, or, if the page closed mid-trip, the next time the page opens.</p>
+      <p>Your bus is the coach your trips decorate in My tickets, and it is <b>numbers only</b>: how many trips you shared, how many of them were first on the map, end to end, before 5 AM or after dark, which directions, which places on the route, whether you finished each tour, your time on the map and the salamat you received in all, and how many weeks in a row you have shared, with the week of your last trip to count it from. Totals, never a list: no days, no clock times and no bus numbers, so it can say how much, but never when. The trip you are sharing is kept so that a page that reloads or closes mid-trip can carry on with the same bus, or still give you its ticket: when it started, roughly where it began and last was on the route, and the trip's random ID. It is deleted the moment the trip ends, or, if the page closed mid-trip, the next time the page opens.</p>
       <p>Clearing your browser data removes them all, “Remove my stop” in the stop picker deletes the third on its own, and “Remove all” in My tickets the fourth and fifth.</p>
     </div>
     <div class="modal-foot">
@@ -2951,6 +2955,43 @@ const BUS_DECOR = {
     }
     return '<path d="' + w + '" fill="none" stroke="#3a2a26" stroke-width=".6"/>' + b;
   })(),
+  // Bulaklak: flowers in a vase in the front side window, for ten salamat.
+  flowers: '<path d="M291 64.6V57M289 64.6L286 58.4M293 64.6L296 58.6M290.2 64.6L288.2 54.4M291.8 64.6L294 55" stroke="#4f7d4f" stroke-width=".8" fill="none"/>' +
+    '<path d="M287 73L288.4 64.6H293.6L295 73Z" fill="#3d7cc9"/>' +
+    '<circle cx="291" cy="56" r="2.2" fill="#f39ac0"/><circle cx="286" cy="57.6" r="1.9" fill="#fff"/><circle cx="296" cy="57.8" r="1.9" fill="#f2c230"/>' +
+    '<circle cx="288.2" cy="53.6" r="1.7" fill="#e8483f"/><circle cx="294" cy="54.2" r="1.7" fill="#fff"/>' +
+    '<g fill="#f2c230"><circle cx="291" cy="56" r=".7"/><circle cx="286" cy="57.6" r=".6"/><circle cx="294" cy="54.2" r=".5"/></g>',
+  // Laso: ribbons streaming back from the mirror, for fifty.
+  ribbons: '<path d="M348 21Q340 24 334 22T322 24" fill="none" stroke="#e8483f" stroke-width="1.6" stroke-linecap="round"/>' +
+    '<path d="M348 21.5Q341 27 335 26T324 29" fill="none" stroke="#f2c230" stroke-width="1.6" stroke-linecap="round"/>' +
+    '<path d="M348 22Q343 30 337 30T328 33" fill="none" stroke="#3d7cc9" stroke-width="1.6" stroke-linecap="round"/>' +
+    '<circle cx="348" cy="21.4" r="1.6" fill="#d7262c"/>',
+  // Gintong bituin: a gold star on the front, for a hundred.
+  goldstar: '<circle cx="340" cy="86" r="8.4" fill="#7a1f2b" stroke="#e3b23c" stroke-width="1"/>' +
+    '<path d="M340 79.4L341.6 83.7L346.3 84L342.7 86.9L343.9 91.3L340 88.8L336.1 91.3L337.3 86.9L333.7 84L338.4 83.7Z" fill="#f2c230" stroke="#b8860b" stroke-width=".5" stroke-linejoin="round"/>',
+  // Bagahe: luggage on the roof rack, for ten hours on the map.
+  luggage: '<path d="M122 13V9M234 13V9M122 9H234" stroke="#5a514c" stroke-width="1.2"/>' +
+    '<rect x="132" y="2" width="22" height="11" rx="2" fill="#9a5b45"/><path d="M132 7h22" stroke="#6d3a2a" stroke-width=".8"/>' +
+    '<rect x="158" y="4" width="18" height="9" rx="2" fill="#3d7cc9"/><path d="M167 4V2.6" stroke="#2a3a9e" stroke-width="1.4"/>' +
+    '<path d="M180 13Q179 3 188 3Q197 3 196 13Z" fill="#d9cfbe"/><path d="M185 4.6h6" stroke="#9a8c7a" stroke-width="1"/>' +
+    '<path d="M200 13V6h14v7Z" fill="#e3a72f"/><path d="M200 9.5h14M207 6v7" stroke="#b8860b" stroke-width=".8"/>',
+  // Pinta: a sunset with palm trees on the back window, for a hundred hours.
+  mural: '<path d="M41 64C50 62 58 66 66 63S78 62 83 64V70H41Z" fill="#e8483f" opacity=".55"/>' +
+    '<path d="M53 60A9 9 0 0 1 71 60Z" fill="#f39a2d" opacity=".9"/><path d="M41 60H83" stroke="#f39a2d" stroke-width="1"/>' +
+    '<g fill="none" stroke="#1d1a17" stroke-linecap="round"><path d="M48 70Q47 58 50 46" stroke-width="1.6"/>' +
+    '<path d="M50 46q-6-1-9 3M50 46q-5-4-8-3M50 46q2-5 7-5M50 46q6-1 8 3M50 46q1 4-1 7" stroke-width="1.2"/>' +
+    '<path d="M76 70Q77 62 75 55" stroke-width="1.3"/><path d="M75 55q-5 0-7 3M75 55q-3-4-6-3M75 55q2-4 6-3M75 55q4 1 5 4" stroke-width="1"/></g>',
+  // Kurtina: curtains gathered in every side window, for fifty hours.
+  curtains: [[40, 84], [89, 132], [137, 180], [185, 228], [233, 298]].map(function(p){
+    const a = p[0], b = p[1];
+    return '<path d="M' + (a + 1) + ' 31.5H' + (a + 9) + 'Q' + (a + 5) + ' 44 ' + (a + 2) + ' 54Z" fill="#b23a4b"/>' +
+      '<path d="M' + (b - 1) + ' 31.5H' + (b - 9) + 'Q' + (b - 5) + ' 44 ' + (b - 2) + ' 54Z" fill="#b23a4b"/>' +
+      '<path d="M' + (a + 4) + ' 33Q' + (a + 4.5) + ' 42 ' + (a + 2.6) + ' 50M' + (b - 4) + ' 33Q' + (b - 4.5) + ' 42 ' + (b - 2.6) + ' 50" stroke="#d9667a" stroke-width=".8" fill="none"/>';
+  }).join(''),
+  // Fog lamps under the front, for four weeks in a row.
+  foglamps: '<g fill="#ffd27a" stroke="#8a929a" stroke-width=".8"><circle cx="336" cy="118" r="2.8"/><circle cx="345" cy="118" r="2.8"/></g>',
+  // Bandera: a pennant flying from the back of the roof, for twelve.
+  pennant: '<path d="M40 22V3" stroke="#5a514c" stroke-width="1.2"/><path d="M40 4L20 8.5L40 13Z" fill="#7a1f2b"/><path d="M40 6.5L28 8.5L40 10.5Z" fill="#e39a1c"/>',
   // Balikan: chrome bumpers at both ends, for riding both ways.
   bumpers: '<g fill="#e3e7eb" stroke="#8a929a" stroke-width=".8"><rect x="329" y="109" width="23" height="7" rx="3"/><rect x="16" y="109" width="16" height="7" rx="3"/></g>',
   // Mapa: the route along the skirt, a station for each place, for having
@@ -2966,7 +3007,8 @@ const DECOR_BOX = {
   bell:'296 70 44 22', placard:'296 44 56 28', sampaguita:'294 28 64 32', flaps:'50 100 64 32', horns:'236 0 56 28', fringe:'40 24 64 32',
   chrome:'58 104 60 30', lights:'40 14 64 32', horse:'300 0 48 24', rooster:'128 94 64 32',
   stripe:'150 70 64 32', sunrise:'22 68 56 28', string:'40 62 64 32', bumpers:'306 96 56 28',
-  route:'184 100 76 38'
+  route:'184 100 76 38', flowers:'266 50 48 24', ribbons:'318 10 48 24', goldstar:'320 72 40 20',
+  luggage:'116 0 96 48', mural:'30 26 64 32', curtains:'30 24 64 32', foglamps:'316 100 48 24', pennant:'14 0 48 24'
 };
 function decorTile(key){
   if (!hasOwn(BUS_DECOR, key) || !hasOwn(DECOR_BOX, key)) return '';
@@ -4007,14 +4049,21 @@ function albumSights(list){
 // more rules hold them:
 //
 // 14. Counted from every trip that drew a ticket and went somewhere, its two
-//     ends different places, kept or not. Numbers and place names only: no
-//     day, no time, no duration, nothing per bus and nothing about salamat,
-//     so the counts cannot become a timesheet or a score. A trip that went
+//     ends different places, kept or not. Numbers and place names only:
+//     never a list of days or times, nothing per bus. A trip that went
 //     nowhere counts for nothing, so sitting at a stop with sharing on is no
 //     way to dress a bus, and no reason to put a bus on the map that isn't
 //     one.
-// 15. Earned once and kept: the counts only grow, and nothing is lost by a
-//     missed day. No streaks.
+// 15. Earned once and kept: the counts only grow, and decorations for a
+//     streak follow the best one, so a broken streak takes nothing away.
+//
+// Since October 2026, by the maintainer's decision, the bus also keeps what
+// was refused at first: the time on the map in all, the salamat received in
+// all, and a streak of weeks with a trip in them (the week of the last trip,
+// the streak and the best). Each is a single number on the sharer's own
+// phone and never sent; the server still adds nothing up, and thanks_now
+// still dies with its trip. Weeks, not days: commuters do not ride on
+// Sundays, and a streak that broke every weekend would be a punishment.
 // 16. A decoration not yet earned is "not yet", never a zero.
 //
 // Two more come from the tours, one each for finishing them (to their last
@@ -4039,9 +4088,21 @@ const DECOR = [
   { k:'sunrise',    t:'Araw',           s:'3 trips before 5 AM',          c:'dawn',   goal:3 },
   { k:'string',     t:'Patay-sindi',    s:'3 trips after dark',           c:'night',  goal:3 },
   { k:'bumpers',    t:'Balikan',        s:'both directions',              c:'ways',   goal:2 },
-  { k:'route',      t:'Mapa',           s:'every place on the route',     c:'places', goal:0 }
+  { k:'route',      t:'Mapa',           s:'every place on the route',     c:'places', goal:0 },
+  { k:'flowers',    t:'Bulaklak',       s:'10 salamat received',          c:'ty',     goal:10 },
+  { k:'ribbons',    t:'Laso',           s:'50 salamat received',          c:'ty',     goal:50 },
+  { k:'goldstar',   t:'Gintong bituin', s:'100 salamat received',         c:'ty',     goal:100 },
+  { k:'luggage',    t:'Bagahe',         s:'10 hours on the map',          c:'hours',  goal:10 },
+  { k:'mural',      t:'Pinta',          s:'100 hours on the map',         c:'hours',  goal:100 },
+  { k:'curtains',   t:'Kurtina',        s:'50 hours on the map',          c:'hours',  goal:50 },
+  { k:'foglamps',   t:'Fog lamps',      s:'4 weeks in a row',             c:'best',   goal:4 },
+  { k:'pennant',    t:'Bandera',        s:'12 weeks in a row',            c:'best',   goal:12 }
 ];
-const BUS_COUNTS = ['n', 'first', 'full', 'dawn', 'night', 'north', 'south', 'tw', 'ts'];
+const BUS_COUNTS = ['n', 'first', 'full', 'dawn', 'night', 'north', 'south', 'tw', 'ts', 'mins', 'ty', 'wk', 'streak', 'best'];
+// Weeks since the Monday of 5 January 1970, for a streak counted in weeks.
+function weekIndex(d){
+  return Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(1970, 0, 5)) / 604800000);
+}
 // What came back out of storage: only the counts, whole and not negative,
 // and a short list of short place names.
 function busClean(raw){
@@ -4055,13 +4116,27 @@ function busClean(raw){
   }).slice(0, 40).map(function(x){ return x.slice(0, 24); });
   return b;
 }
-// t: { dir, stamps (every stamp the trip earned, by name), fromIdx, toIdx }.
+// t: { dir, stamps (every stamp the trip earned, by name), fromIdx, toIdx,
+// mins on the map, thanks (the salamat it got), week (weekIndex of its end) }.
 // The counts after one more trip; unchanged for a trip that went nowhere.
 function busAdd(b, t, cps){
   b = busClean(b);
   if (!(t.fromIdx >= 0 && t.toIdx >= 0 && t.fromIdx !== t.toIdx && t.fromIdx < cps.length && t.toIdx < cps.length)) return b;
   const st = t.stamps || [];
   b.n++;
+  b.mins += Math.max(0, Math.round(+t.mins || 0));
+  b.ty += Math.max(0, (+t.thanks || 0) | 0);
+  // The streak: weeks in a row with a trip in them. A second trip in the
+  // same week adds nothing, the next week adds one, a week missed starts
+  // again at one, and a trip from an older week (a ticket handed over late)
+  // leaves it alone. The best is kept, and decorations follow the best.
+  const w = (+t.week || 0) | 0;
+  if (w > 0){
+    if (!b.wk || w > b.wk + 1) b.streak = 1;
+    else if (w === b.wk + 1) b.streak++;
+    if (w > b.wk) b.wk = w;
+    if (b.streak > b.best) b.best = b.streak;
+  }
   ['first', 'full', 'dawn', 'night'].forEach(function(k){ if (st.indexOf(k) >= 0) b[k]++; });
   if (t.dir === 'south') b.south++; else b.north++;
   for (let i = Math.min(t.fromIdx, t.toIdx); i <= Math.max(t.fromIdx, t.toIdx); i++){
@@ -4078,8 +4153,15 @@ function busToured(b, names){
   if ((names || []).indexOf('share') >= 0) b.ts = 1;
   return b;
 }
+// The streak as it stands this week: alive while last week or this one has
+// a trip, otherwise none.
+function busStreak(b, week){
+  b = busClean(b);
+  return b.wk && week - b.wk <= 1 ? b.streak : 0;
+}
 function busCount(b, d, cps){
   if (d.c === 'ways') return (b.north > 0 ? 1 : 0) + (b.south > 0 ? 1 : 0);
+  if (d.c === 'hours') return Math.floor((b.mins || 0) / 60);
   if (d.c === 'places') return cps.filter(function(c){ return b.places.indexOf(c.short || c.name) >= 0; }).length;
   return b[d.c] || 0;
 }
@@ -6781,7 +6863,7 @@ function showTicket(trip, end, endAt, fresh){
     '<div class="tkt-big">You kept the bus on everyone’s map for</div>' +
     '<div class="tkt-row"><div class="tkt-dur">' + (hrs ? hrs + '<small> h </small>' : '') + rem + '<small> min</small></div>' + stamp(0) + '</div>' +
     (ty ? '<div class="tkt-ty"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg><span>' + ty + '</span></div>' : '') +
-    tktFresh(fresh) +
+    tktFresh(fresh) + (Array.isArray(fresh) ? tktTotals(now) : '') +
     '<hr>' +
     '<div class="tkt-row"><div class="tkt-greet">' + ticketGreeting(endMins) + '</div>' + stamp(1) + '</div>' +
     '<div class="tkt-fine">' + (endAt ? 'Sharing stopped when the page closed, so this is the trip as it stood then. ' : '') +
@@ -6798,7 +6880,8 @@ function endTicket(trip, end, endAt){
   let fresh = [];
   if (!WALK && ticketWorthShowing({ mins:f.mins, writes:trip.writes })){
     const before = loadBus();
-    const after = busAdd(before, { dir:shareDir, stamps:f.all.map(function(x){ return x.k; }), fromIdx:f.fromIdx, toIdx:f.toIdx }, CHECKPOINTS);
+    const after = busAdd(before, { dir:shareDir, stamps:f.all.map(function(x){ return x.k; }), fromIdx:f.fromIdx, toIdx:f.toIdx,
+                                   mins:f.mins, thanks:trip.maxThanks, week:weekIndex(f.now) }, CHECKPOINTS);
     if (after.n > before.n && saveBus(after)){
       const had = busEarned(before, CHECKPOINTS);
       fresh = busEarned(after, CHECKPOINTS).filter(function(k){ return had.indexOf(k) < 0; });
@@ -6815,6 +6898,21 @@ function tktFresh(fresh){
   return '<div class="tkt-new">' + busSvg(busEarned(loadBus(), CHECKPOINTS)) +
     '<span>New on your bus: <b>' + names.map(function(d){ return escapeHtml(d.t); }).join(', ') + '</b>' +
     '<small>' + names.map(function(d){ return escapeHtml(d.s); }).join(' · ') + '</small></span></div>';
+}
+// The bus's totals in words, without a zero: time on the map, salamat, and a
+// streak once there are two weeks in it.
+function busTotalsWords(b, now){
+  const out = [], h = Math.floor(b.mins / 60), live = busStreak(b, weekIndex(now));
+  if (b.mins) out.push(h ? h + ' h on the map' : b.mins + ' min on the map');
+  if (b.ty) out.push(b.ty + ' salamat');
+  if (live > 1) out.push(live + ' weeks in a row');
+  return out;
+}
+// The line under the trip's own numbers, on a ticket a real trip ended with:
+// what the sharer's bus has gathered in all.
+function tktTotals(now){
+  const words = busTotalsWords(loadBus(), now);
+  return words.length ? '<div class="tkt-all">In all: ' + words.join(' · ') + '</div>' : '';
 }
 // Your bus's counts, the fifth thing the privacy panel says the app keeps.
 function loadBus(){
@@ -6989,6 +7087,13 @@ function clearAlbum(){
   closeModal('albumModal');
 }
 function attrText(s){ return escapeHtml(s).replace(/"/g, '&quot;'); }
+// Under the bus: its totals, and the best streak once it is longer than the
+// one running. Nothing is drawn for a total that is still nothing.
+function albTotals(b){
+  const now = new Date(), words = busTotalsWords(b, now), live = busStreak(b, weekIndex(now));
+  if (b.best > 1 && b.best > live) words.push('best ' + b.best + ' weeks in a row');
+  return words.length ? '<div class="alb-totals">' + words.map(function(w){ return '<span>' + escapeHtml(w) + '</span>'; }).join('') + '</div>' : '';
+}
 function renderAlbum(){
   const list = loadAlbum(), st = albumStats(list, CHECKPOINTS);
   const kinds = Object.keys(STAMPS), got = kinds.filter(function(k){ return st.stamps[k] > 0; }).length;
@@ -7036,7 +7141,7 @@ function renderAlbum(){
   const bus = loadBus(), earned = busEarned(bus, CHECKPOINTS);
   const busPart = '<div class="alb-h">Your bus<span>' + (bus.n ? bus.n + (bus.n === 1 ? ' trip' : ' trips') + ' shared' :
       earned.length ? 'your first trip is next' : 'starts with your first trip') + '</span></div>' +
-    '<div class="alb-paper alb-bus">' + busSvg(earned) + '<ul class="alb-decor">' + DECOR.map(function(d){
+    '<div class="alb-paper alb-bus">' + busSvg(earned) + albTotals(bus) + '<ul class="alb-decor">' + DECOR.map(function(d){
       const g = busGoal(d, CHECKPOINTS), n = busCount(bus, d, CHECKPOINTS), on = g > 0 && n >= g;
       return '<li' + (on ? ' class="on"' : '') + '>' + decorTile(d.k) + '<b>' + escapeHtml(d.t) + '</b><span>' + escapeHtml(d.s) + '</span>' +
         '<i>' + (on ? 'on your bus' : n ? n + ' of ' + g : 'not yet') + '</i></li>';

@@ -669,8 +669,8 @@ function run(page, include, label, configText, setup) {
   check(/Six small things are remembered on your own device/.test(panel),
     'and the panel counts them out loud, so a seventh cannot slip in quietly');
   check(/your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it/.test(panel) &&
-        /No days, no times, no bus numbers and nothing about salamat/.test(panel) && /deleted the moment the trip ends/.test(panel),
-    'naming your bus as numbers only, and the trip in progress as gone when it ends');
+        /Totals, never a list: no days, no clock times and no bus numbers/.test(panel) && /deleted the moment the trip ends/.test(panel),
+    'naming your bus as totals only, never a list of days or times, and the trip in progress as gone when it ends');
   check(/the stop you saved/i.test(panel), 'naming the saved stop among them');
   check(/the tickets you chose to keep/i.test(panel) && /Remove all.{0,4} in My tickets/.test(panel),
     'and the kept tickets, with the way to delete them');
@@ -705,7 +705,7 @@ function run(page, include, label, configText, setup) {
       'with nothing kept or earned, the sharing tab still offers My tickets, saying what starts it, with no zero', row.textContent.replace(/\s+/g, ' ').trim());
     w.openAlbum();
     const empty = d.getElementById('albumBody');
-    check(/starts with your first trip/.test(empty.textContent) && empty.querySelectorAll('.alb-decor li').length === 15 &&
+    check(/starts with your first trip/.test(empty.textContent) && empty.querySelectorAll('.alb-decor li').length === 23 &&
           empty.querySelectorAll('.alb-decor li.on').length === 0 && empty.querySelectorAll('.alb-sight.yet').length === 16 &&
           empty.querySelectorAll('.alb-stamp.yet').length === 4 && !/×0|\b0 of\b|\b0 tickets?\b/.test(empty.textContent) &&
           hidden(d.getElementById('albumClear')),
@@ -1260,6 +1260,9 @@ function run(page, include, label, configText, setup) {
       check(isHidden('askModal') && !isHidden('tktModal') && w.localStorage.getItem('wt-trip') === null,
         'a trip whose bus has long left the map gets its ticket without a question');
       check(bus().n === 3 && /New on your bus: Mud flaps/.test(d.getElementById('tktCard').textContent), 'and the third trip puts the mud flaps on');
+      const all = (d.querySelector('#tktCard .tkt-all') || {}).textContent || '';
+      check(/^In all: \d+ h on the map · 3 salamat$/.test(all) && bus().ty === 3 && bus().mins > 0 && bus().streak === 1,
+        'and the ticket says what the bus has gathered in all: time on the map and salamat, no streak of one', all);
       w.closeTicket();
       w.openAlbum();
       const albumText = d.getElementById('albumBody').textContent;

@@ -22,7 +22,7 @@ new Function('S', src + albumSrc + 'S.thanksWords=thanksWords;S.thanksControl=th
   'S.STAMPS=STAMPS;S.albumEntry=albumEntry;S.albumClean=albumClean;S.albumPlaces=albumPlaces;S.albumStats=albumStats;' +
   'S.ticketSky=ticketSky;S.keptGreeting=keptGreeting;S.keptDate=keptDate;S.keptSince=keptSince;' +
   'S.tripStamps=tripStamps;S.SIGHTS=SIGHTS;S.ticketLook=ticketLook;S.moonPhase=moonPhase;S.ticketSeason=ticketSeason;S.albumSights=albumSights;' +
-  'S.DECOR=DECOR;S.busClean=busClean;S.busAdd=busAdd;S.busCount=busCount;S.busGoal=busGoal;S.busEarned=busEarned;')(S);
+  'S.DECOR=DECOR;S.busClean=busClean;S.busAdd=busAdd;S.busCount=busCount;S.busGoal=busGoal;S.busEarned=busEarned;S.busToured=busToured;')(S);
 // The drawings the luck and the bus are drawn with, from the same file.
 const P = require(path.join(ROOT, 'tools', 'make-pictures.js')).renderer();
 new Function('P', html.slice(html.indexOf('// ---- THE PICTURES (unit tested)'), html.indexOf('// ---- END PICTURES')) +
@@ -513,7 +513,7 @@ console.log('\n=== 19. your bus: counted, never a timesheet ===');
 {
   const cps = 'MENDEZ TGY AMADEO GEN.T IMUS PITX AYALA'.split(' ').map(short => ({ short, name: short }));
   let b = S.busClean(null);
-  check(JSON.stringify(b) === JSON.stringify({ places: [], n: 0, first: 0, full: 0, dawn: 0, night: 0, north: 0, south: 0 }),
+  check(JSON.stringify(b) === JSON.stringify({ places: [], n: 0, first: 0, full: 0, dawn: 0, night: 0, north: 0, south: 0, tw: 0, ts: 0 }),
     'an empty bus is counts and a list of places, nothing else', JSON.stringify(b));
   check(S.busEarned(b, cps).length === 0, 'and wears nothing');
   b = S.busAdd(b, { dir: 'north', stamps: ['first'], fromIdx: 2, toIdx: 2 }, cps);
@@ -522,7 +522,7 @@ console.log('\n=== 19. your bus: counted, never a timesheet ===');
   check(b.n === 1 && b.full === 1 && b.dawn === 1 && b.first === 1 && b.north === 1 && b.places.length === 7,
     'a whole-route trip counts once, with every stamp it earned and every place it passed', JSON.stringify(b));
   check(S.busEarned(b, cps).join(',') === 'sampaguita,stripe,route', 'and puts on the garland, the stripe and the route', S.busEarned(b, cps).join(','));
-  check(Object.keys(b).sort().join(',') === 'dawn,first,full,n,night,north,places,south',
+  check(Object.keys(b).sort().join(',') === 'dawn,first,full,n,night,north,places,south,ts,tw',
     'what is kept is counts and place names: no day, no time, no bus, no salamat', Object.keys(b).sort().join(','));
   for (let i = 0; i < 4; i++) b = S.busAdd(b, { dir: 'south', stamps: ['night'], fromIdx: 5, toIdx: 1 }, cps);
   const earned = S.busEarned(b, cps);
@@ -534,8 +534,19 @@ console.log('\n=== 19. your bus: counted, never a timesheet ===');
     'whatever comes back out of storage is cleaned to counts and short names, and anything else is dropped', JSON.stringify(dirty));
   check(S.DECOR.every(d => /^[a-z]+$/.test(d.k)) && S.DECOR.map(d => d.k).sort().join(',') === Object.keys(P.BUS_DECOR).sort().join(','),
     'every decoration has its drawing, and every drawing its decoration');
-  check(S.DECOR.every(d => ['n', 'first', 'full', 'dawn', 'night', 'ways', 'places'].includes(d.c)),
-    'and each is earned by a count of trips, of a kind of trip, of directions or of places: never time, never salamat');
+  check(S.DECOR.every(d => ['n', 'first', 'full', 'dawn', 'night', 'ways', 'places', 'tw', 'ts'].includes(d.c)),
+    'and each is earned by a count of trips, of a kind of trip, of directions or of places, or by a finished tour: never time, never salamat');
+  // The tours: one decoration each, once, and nothing else changes.
+  let t = S.busToured(S.busClean(null), ['watch']);
+  check(t.tw === 1 && t.ts === 0 && t.n === 0 && S.busEarned(t, cps).join(',') === 'bell',
+    'finishing the map\'s tour hangs the bell, and counts no trip', S.busEarned(t, cps).join(','));
+  t = S.busToured(S.busToured(t, ['share', 'watch']), ['watch']);
+  check(t.tw === 1 && t.ts === 1 && S.busEarned(t, cps).join(',') === 'bell,placard',
+    'the sharing tour puts up the route board, and a tour taken again adds nothing');
+  const walk = fn('walkFinished');
+  check(/if \(WALK \|\| !names \|\| !names\.length\) return;/.test(walk) && /walkFinished\(finished\);\s*\}/.test(fn('endWalk')) &&
+        /if \(last && WALK\.finished\.indexOf\(WALK\.name\) < 0\) WALK\.finished\.push\(WALK\.name\);/.test(fn('walkShow')),
+    'a tour counts once it reaches its last step, and is stored only after the run is over, never during it');
   const banned = /share|help|support|chat|widget|like|fav|thumb|heart|vote|social|clap/i;
   check(!S.DECOR.some(d => banned.test(d.k)) && !Object.keys(S.SIGHTS).some(k => banned.test(k)),
     'no decoration or sight is named like a social widget');
@@ -549,8 +560,9 @@ console.log('\n=== 19. your bus: counted, never a timesheet ===');
     'counted once per trip that earned a ticket, and never on a practice one');
   const saves = [...html.matchAll(/localStorage\.(setItem|removeItem)\(\s*'wt-bus'/g)];
   check(saves.length === 2 && saves.every(m => (fn('saveBus') + fn('dropBus')).includes(m[0])) &&
-        [...html.matchAll(/saveBus\(/g)].length === 2 && [...html.matchAll(/dropBus\(/g)].length === 2,
-    'written in one place, by the end of a trip, and removed only by Remove all');
+        [...html.matchAll(/saveBus\(/g)].length === 3 && /saveBus\(after\)/.test(fn('endTicket')) && /saveBus\(after\)/.test(fn('walkFinished')) &&
+        [...html.matchAll(/dropBus\(/g)].length === 2,
+    'written in one place, by the end of a trip or a finished tour, and removed only by Remove all');
   check(/n \? n \+ ' of ' \+ g : 'not yet'/.test(fn('renderAlbum')), 'a decoration not yet earned is "not yet", never 0 of anything');
   // Each card shows its decoration on its own part of the bus, earned or
   // not: the ones still to come as an outline, a look at what is coming.

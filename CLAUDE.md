@@ -204,10 +204,12 @@ fifteen, gold foil are worked out by `ticketLook()` from the day, the direction
 and the two ends a kept ticket already keeps: no new storage, no re-roll, and
 never anything about driving, trip length or salamat (rules 11 to 13). Every
 trip that drew a ticket and went somewhere, kept or not, is counted in
-`wt-bus` as numbers with no dates, and thirteen decorations (`DECOR`, drawn by
-`BUS_DECOR`) are earned from those counts: shown in My tickets and on the
-ticket that earns one, never on the live map, and never for streaks or
-salamat (rules 14 to 16). `docs/ARCHITECTURE.md`, "Collecting", and "Rules
+`wt-bus` as numbers with no dates, and fifteen decorations (`DECOR`, drawn by
+`BUS_DECOR`) are earned from those counts, two of them for finishing the two
+tours, so a new user's bus starts with something on it: shown in My tickets,
+always offered on the sharing tab with the ones still to come as outlines,
+and on the ticket that earns one, never on the live map, and never for
+streaks or salamat (rules 14 to 16). `docs/ARCHITECTURE.md`, "Collecting", and "Rules
 revisited" for what was changed to allow it and what was kept.
 
 **A request nobody waits for is never sent.** supabase-js sends an `rpc()`

@@ -1108,8 +1108,9 @@ and the tests that pin it did not move.
 **Your bus** (rules 14 to 16). Every trip that drew a ticket and went
 somewhere, its two ends different places, kept or not, is counted on the
 sharer's phone as `wt-bus`: trips, and how many were first on the map, end to
-end, before 5 AM or after dark, which directions, and which places. Thirteen
-decorations are earned from those counts (`DECOR`), from a sampaguita garland
+end, before 5 AM or after dark, which directions, and which places, plus
+whether each tour was finished. Fifteen decorations are earned from those
+counts (`DECOR`), from a sampaguita garland
 for the first trip to a chrome horse for the hundredth, a rooster for being
 first on the map three times, a stripe for a trip end to end, bumpers for both
 directions; `BUS_DECOR` draws them over `COACH_SIDE` and `busSvg()` draws the
@@ -1125,6 +1126,18 @@ for a reason:
   decoration's card shows it on its own part of the bus (`decorTile()`, cut
   by `DECOR_BOX`): in colour once earned, and until then as a dashed outline
   over a faded coach, so a sharer can see what is coming.
+- *The first ones come from the tours.* Finishing the map's tour hangs a bell
+  by the door (Kampanilya, the one a rider rings for "Para po!"), finishing
+  the sharing tour puts a route board in the windscreen (Plaka ng ruta). So a
+  new user's bus has something on it before any trip, and they have seen how
+  decorating works; for someone who only watches, it is a nudge towards
+  sharing, which is the tool's real shortage. Finished means reaching the
+  last step, tapping through included: it is a welcome, not a test. Earned
+  once, kept as two yes-or-no counts on the bus, and stored only after the
+  run is over (`walkFinished()` from `endWalk()`), because nothing is stored
+  while a tour is on. A tour puts nothing on the map, so there is nothing to
+  farm, unlike trips. A "New on your bus" card says what it earned, close
+  up, and where My tickets is.
 
 - *Numbers, no dates.* A count of trips cannot say when anyone worked; a list
   of dated trips could, which is why kept tickets never held times and this

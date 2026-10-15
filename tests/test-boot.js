@@ -668,7 +668,7 @@ function run(page, include, label, configText, setup) {
   const panel = ok.d.getElementById('privModal').textContent.replace(/\s+/g, ' ');
   check(/Six small things are remembered on your own device/.test(panel),
     'and the panel counts them out loud, so a seventh cannot slip in quietly');
-  check(/your bus, if you have shared, and the trip you are sharing, while you share it/.test(panel) &&
+  check(/your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it/.test(panel) &&
         /No days, no times, no bus numbers and nothing about salamat/.test(panel) && /deleted the moment the trip ends/.test(panel),
     'naming your bus as numbers only, and the trip in progress as gone when it ends');
   check(/the stop you saved/i.test(panel), 'naming the saved stop among them');
@@ -705,7 +705,7 @@ function run(page, include, label, configText, setup) {
       'with nothing kept or earned, the sharing tab still offers My tickets, saying what starts it, with no zero', row.textContent.replace(/\s+/g, ' ').trim());
     w.openAlbum();
     const empty = d.getElementById('albumBody');
-    check(/starts with your first trip/.test(empty.textContent) && empty.querySelectorAll('.alb-decor li').length === 13 &&
+    check(/starts with your first trip/.test(empty.textContent) && empty.querySelectorAll('.alb-decor li').length === 15 &&
           empty.querySelectorAll('.alb-decor li.on').length === 0 && empty.querySelectorAll('.alb-sight.yet').length === 16 &&
           empty.querySelectorAll('.alb-stamp.yet').length === 4 && !/×0|\b0 of\b|\b0 tickets?\b/.test(empty.textContent) &&
           hidden(d.getElementById('albumClear')),
@@ -808,6 +808,14 @@ function run(page, include, label, configText, setup) {
     check(seen.join(' ') === w.eval('walkSteps("watch", !!map).map(function(s){ return s.id; }).join(" ")'),
       'it steps through every step of the map tour in order', seen.join(' '));
     check(walking() === null && hidden(d.getElementById('walk')), 'and Done on the last one closes it');
+    // Finished, the tour hangs the bell on the reader's bus, once, and says
+    // where the bus is.
+    const busNew = d.getElementById('busNewModal');
+    const busRec = () => JSON.parse(w.localStorage.getItem('wt-bus') || 'null');
+    check(!hidden(busNew) && /Kampanilya/.test(busNew.textContent) && /My tickets/.test(busNew.textContent) &&
+          !!busNew.querySelector('svg.decor-art') && busRec() && busRec().tw === 1 && busRec().n === 0,
+      'and finishing it puts the bell on the reader\'s bus, shown with the bus and where to find it', busNew.textContent.replace(/\s+/g, ' ').trim().slice(0, 120));
+    w.closeModal('busNewModal');
     check(w.eval('MYSTOP && MYSTOP.name') === 'My own stop' && w.eval('dirFilter') === 'south',
       'the reader\'s own stop and filter are back');
     check(!/Practice/.test(d.getElementById('busList').textContent) && !d.querySelector('#trackStrip .buspill'),
@@ -829,11 +837,31 @@ function run(page, include, label, configText, setup) {
     check(!hidden(d.getElementById('trackView')) && w.eval('shareDir') === null && d.getElementById('busLabel').value === '',
       'back on the map tab, with no direction picked and no bus number left in the field');
 
+    check(hidden(busNew) && busRec().ts === 0, 'a tour closed before its last step earns nothing');
+
+    // The sharing tour to its last step: the route board, then nothing more
+    // for taking it again.
+    w.startWalk('share');
+    for (let i = 0; i < 12 && walking(); i++) {
+      if (/\/(tab|dir)$/.test(walking())) w.walkGo(1); else d.getElementById('walkNext').click();
+    }
+    check(walking() === null && !hidden(busNew) && /Plaka ng ruta/.test(busNew.textContent) && busRec().ts === 1,
+      'finishing the sharing tour puts the route board up');
+    w.closeModal('busNewModal');
+    w.startWalk('watch');
+    for (let i = 0; i < 14 && walking(); i++) {
+      if (/^watch\/(bus|tab|dir)$/.test(walking())) w.walkGo(1); else d.getElementById('walkNext').click();
+    }
+    check(walking() === null && hidden(busNew), 'and a tour taken again adds nothing and says nothing');
+    w.switchTab('track'); w.pickDir(null); d.getElementById('busLabel').value = '';
+
     check(sent.every(f => /^get_/.test(f)), 'the only requests made were the reads the map makes anyway',
       [...new Set(sent)].join(' ') || 'none');
     const added = storedKeys().split(',').filter(k => k && !keysBefore.split(',').includes(k));
-    check(added.every(k => k === 'wt-guide-seen') && w.localStorage.getItem('wt-mystop') === storedStop,
-      'and nothing was kept but the guide\'s own "shown around" flag', added.join(' ') || 'nothing new');
+    check(added.every(k => k === 'wt-guide-seen' || k === 'wt-bus') && w.localStorage.getItem('wt-mystop') === storedStop &&
+          busRec().n === 0 && Object.keys(busRec()).every(k => !/time|date|when/.test(k)),
+      'and nothing was kept but the guide\'s "shown around" flag and the two tours finished on the bus, no trip counted', added.join(' ') || 'nothing new');
+    w.localStorage.removeItem('wt-bus');
 
     // The first visit's note: shown once, answered once, kept under the
     // guide's own key so the privacy panel's four things stay four.

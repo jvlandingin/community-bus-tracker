@@ -1325,6 +1325,11 @@
   .alb-decor li:not(.on) .decor-art .dg *{fill:none; stroke:var(--ti); stroke-width:1.3px; stroke-dasharray:3 2;
     vector-effect:non-scaling-stroke;}
   .alb-none{margin:16px 0 0;}
+  .busnew-art{display:flex; gap:10px; margin:4px 0 12px;}
+  .busnew-art figure{flex:1; min-width:0; margin:0;}
+  .busnew-art .decor-art{display:block; width:100%; height:auto; border-radius:var(--r-m);}
+  .busnew-art figcaption{margin-top:5px; text-align:center; font-size:var(--fs-label); font-weight:800;}
+  .busnew p{margin:0 0 14px; line-height:1.45;}
   .alb-sights{display:grid; grid-template-columns:repeat(4,1fr); gap:12px 8px; padding:12px 10px;}
   .alb-sight{display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; text-align:center;}
   .alb-sight > i:first-child{display:block; width:100%; border-radius:var(--r-s); overflow:hidden; line-height:0;
@@ -1843,8 +1848,8 @@
 
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
-      <p>Six small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared, and the trip you are sharing, while you share it. All six stay in your browser, are never sent anywhere, and are not linked to anything.</p>
-      <p>Your bus is the coach your trips decorate in My tickets, and it is <b>numbers only</b>: how many trips you shared, how many of them were first on the map, end to end, before 5 AM or after dark, which directions, and which places on the route. No days, no times, no bus numbers and nothing about salamat, so it cannot time anyone's work or rank anybody. The trip you are sharing is kept so that a page that reloads or closes mid-trip can carry on with the same bus, or still give you its ticket: when it started, roughly where it began and last was on the route, and the trip's random ID. It is deleted the moment the trip ends, or, if the page closed mid-trip, the next time the page opens.</p>
+      <p>Six small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it. All six stay in your browser, are never sent anywhere, and are not linked to anything.</p>
+      <p>Your bus is the coach your trips decorate in My tickets, and it is <b>numbers only</b>: how many trips you shared, how many of them were first on the map, end to end, before 5 AM or after dark, which directions, which places on the route, and whether you finished each tour. No days, no times, no bus numbers and nothing about salamat, so it cannot time anyone's work or rank anybody. The trip you are sharing is kept so that a page that reloads or closes mid-trip can carry on with the same bus, or still give you its ticket: when it started, roughly where it began and last was on the route, and the trip's random ID. It is deleted the moment the trip ends, or, if the page closed mid-trip, the next time the page opens.</p>
       <p>Clearing your browser data removes them all, “Remove my stop” in the stop picker deletes the third on its own, and “Remove all” in My tickets the fourth and fifth.</p>
     </div>
     <div class="modal-foot">
@@ -1871,6 +1876,20 @@
     <div class="modal-actions">
       <button class="big btn-primary" id="askYes" onclick="askYes()"></button>
       <button class="big btn-ghost" id="askNo" onclick="askNo()"></button>
+    </div>
+  </div>
+</div>
+
+<!-- A tour finished: what it put on the reader's bus, and where the bus is.
+     Filled by walkFinished(). -->
+<div class="modal hidden" id="busNewModal" role="dialog" aria-modal="true" aria-labelledby="busNewTitle">
+  <div class="modal-card busnew">
+    <h3 id="busNewTitle"><svg class="gi" aria-hidden="true"><use href="#i-coach"/></svg>New on your bus
+      <button class="modal-x" onclick="closeModal('busNewModal')" aria-label="Close"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>
+    </h3>
+    <div id="busNewBody"></div>
+    <div class="modal-actions">
+      <button class="big btn-primary" onclick="seeMyBus()">See my bus</button>
     </div>
   </div>
 </div>
@@ -2867,6 +2886,15 @@ const BUS_DECOR = {
     '<circle cx="318.4" cy="43" r="2"/><circle cx="320.9" cy="43.8" r="2"/><circle cx="323.5" cy="44" r="2"/><circle cx="326.1" cy="43.8" r="2"/>' +
     '<circle cx="328.6" cy="43" r="2"/><circle cx="331.2" cy="41.8" r="2"/><circle cx="333.7" cy="40" r="2"/><circle cx="336.3" cy="37.8" r="2"/>' +
     '<circle cx="323.5" cy="48.5" r="1.8"/><circle cx="323.5" cy="52" r="1.8"/></g><path d="M322 55h3l-1.5 4z" fill="#d7262c"/>',
+  // Kampanilya: the bell by the door, the one a rider rings for "Para po!",
+  // for finishing the map's tour.
+  bell: '<path d="M317 76.4V79.6" stroke="#5a514c" stroke-width=".7"/>' +
+    '<path d="M313.5 86.5Q313.5 79.5 317 79.5Q320.5 79.5 320.5 86.5Z" fill="#e3b23c" stroke="#a8761c" stroke-width=".6"/>' +
+    '<rect x="312.6" y="86.2" width="8.8" height="1.6" rx=".8" fill="#c99a2e"/><circle cx="317" cy="88.6" r="1" fill="#a8761c"/>',
+  // Plaka ng ruta: the route board in the windscreen, for finishing the
+  // sharing tour. Lettered in dashes, like the ticket's art: no words.
+  placard: '<rect x="307" y="60" width="33" height="11" rx="1.2" fill="#fbf4e4" stroke="#6d1a25" stroke-width=".8"/>' +
+    '<path d="M310 63.6h11M324 63.6h13" stroke="#6d1a25" stroke-width="1.4"/><path d="M310 67.6h7M320 67.6h17" stroke="#b8322a" stroke-width="1.4"/>',
   // Mud flaps behind both wheels, red with a white band and a reflector.
   flaps: '<g fill="#b8322a"><rect x="60" y="106" width="9" height="26" rx="1.5"/><rect x="254" y="106" width="9" height="26" rx="1.5"/></g>' +
     '<g fill="#fff"><rect x="60" y="123" width="9" height="2.6"/><rect x="254" y="123" width="9" height="2.6"/></g>' +
@@ -2935,7 +2963,7 @@ const BUS_DECOR = {
 // drawing space), so a decoration can be shown on its own: in colour once
 // earned, as an outline over a faded coach while it is still to come.
 const DECOR_BOX = {
-  sampaguita:'294 28 64 32', flaps:'50 100 64 32', horns:'236 0 56 28', fringe:'40 24 64 32',
+  bell:'296 70 44 22', placard:'296 44 56 28', sampaguita:'294 28 64 32', flaps:'50 100 64 32', horns:'236 0 56 28', fringe:'40 24 64 32',
   chrome:'58 104 60 30', lights:'40 14 64 32', horse:'300 0 48 24', rooster:'128 94 64 32',
   stripe:'150 70 64 32', sunrise:'22 68 56 28', string:'40 62 64 32', bumpers:'306 96 56 28',
   route:'184 100 76 38'
@@ -3989,9 +4017,16 @@ function albumSights(list){
 //     missed day. No streaks.
 // 16. A decoration not yet earned is "not yet", never a zero.
 //
+// Two more come from the tours, one each for finishing them (to their last
+// step), so a new sharer's bus has something on it before the first trip
+// and they see how it works. Earned once: replaying a tour adds nothing, and
+// a tour puts nothing on the map, so there is nothing to farm.
+//
 // c is the count it is earned by, goal how many; the route's own length
 // for every place on it.
 const DECOR = [
+  { k:'bell',       t:'Kampanilya',     s:'the map\u2019s tour, finished', c:'tw',      goal:1 },
+  { k:'placard',    t:'Plaka ng ruta',  s:'the sharing tour, finished',   c:'ts',     goal:1 },
   { k:'sampaguita', t:'Sampaguita',     s:'your first trip shared',       c:'n',      goal:1 },
   { k:'flaps',      t:'Mud flaps',      s:'3 trips shared',               c:'n',      goal:3 },
   { k:'horns',      t:'Busina',         s:'5 trips shared',               c:'n',      goal:5 },
@@ -4006,7 +4041,7 @@ const DECOR = [
   { k:'bumpers',    t:'Balikan',        s:'both directions',              c:'ways',   goal:2 },
   { k:'route',      t:'Mapa',           s:'every place on the route',     c:'places', goal:0 }
 ];
-const BUS_COUNTS = ['n', 'first', 'full', 'dawn', 'night', 'north', 'south'];
+const BUS_COUNTS = ['n', 'first', 'full', 'dawn', 'night', 'north', 'south', 'tw', 'ts'];
 // What came back out of storage: only the counts, whole and not negative,
 // and a short list of short place names.
 function busClean(raw){
@@ -4033,6 +4068,14 @@ function busAdd(b, t, cps){
     const name = cps[i].short || cps[i].name;
     if (b.places.indexOf(name) < 0) b.places.push(name);
   }
+  return b;
+}
+// The two tours, finished: tw the map's, ts the sharing one's. A yes or no
+// each, kept as a count of one, and never the reason for anything else.
+function busToured(b, names){
+  b = busClean(b);
+  if ((names || []).indexOf('watch') >= 0) b.tw = 1;
+  if ((names || []).indexOf('share') >= 0) b.ts = 1;
   return b;
 }
 function busCount(b, d, cps){
@@ -6991,7 +7034,8 @@ function renderAlbum(){
   // Shown before the first trip too, plain, with everything still to come:
   // this is where a sharer finds out what there is to earn.
   const bus = loadBus(), earned = busEarned(bus, CHECKPOINTS);
-  const busPart = '<div class="alb-h">Your bus<span>' + (bus.n ? bus.n + (bus.n === 1 ? ' trip' : ' trips') + ' shared' : 'starts with your first trip') + '</span></div>' +
+  const busPart = '<div class="alb-h">Your bus<span>' + (bus.n ? bus.n + (bus.n === 1 ? ' trip' : ' trips') + ' shared' :
+      earned.length ? 'your first trip is next' : 'starts with your first trip') + '</span></div>' +
     '<div class="alb-paper alb-bus">' + busSvg(earned) + '<ul class="alb-decor">' + DECOR.map(function(d){
       const g = busGoal(d, CHECKPOINTS), n = busCount(bus, d, CHECKPOINTS), on = g > 0 && n >= g;
       return '<li' + (on ? ' class="on"' : '') + '>' + decorTile(d.k) + '<b>' + escapeHtml(d.t) + '</b><span>' + escapeHtml(d.s) + '</span>' +
@@ -7188,8 +7232,11 @@ function startWalk(name){
   const kmOf = function(p){ return routeProgressKm({ lat:p.lat, lng:p.lng }, CHECKPOINTS, ROUTE_CHAIN); };
   const prac = walkPractice(CHECKPOINTS, STOPS, kmOf);
   const first = CHECKPOINTS[0], last = CHECKPOINTS[CHECKPOINTS.length - 1];
+  // A tour switched to from the last step of the other carries that one's
+  // finish along, to be counted when the run ends.
+  const finished = WALK ? WALK.finished : [];
   WALK = {
-    name:name, steps:walkSteps(name, !!map), i:0, saved:saved, ticket:false, el:null, key:'',
+    name:name, steps:walkSteps(name, !!map), i:0, saved:saved, ticket:false, el:null, key:'', finished:finished,
     names:{ north: last ? last.name : '', south: first ? first.name : '' },
     buses: prac ? [{ pub_id:WALK_ID, lat:prac.bus.lat, lng:prac.bus.lng, speed:null, self:false,
                      direction:'north', bus_label:'Practice', ts:Date.now() - 9000 }] : [],
@@ -7213,7 +7260,7 @@ function walkSave(){
 }
 function endWalk(){
   if (!WALK) return;
-  const s = WALK.saved, hadTicket = WALK.ticket;
+  const s = WALK.saved, hadTicket = WALK.ticket, finished = WALK.finished;
   WALK = null;
   if (hadTicket) closeTicket();
   if (map) map.closePopup();
@@ -7230,6 +7277,31 @@ function endWalk(){
   }
   window.scrollTo(0, s.y);
   if (s.focus && s.focus.focus && s.focus.getClientRects().length) s.focus.focus();
+  // Counted now, with the run over: nothing is stored while one is on.
+  walkFinished(finished);
+}
+// A tour taken to its last step decorates the reader's bus, once, and says
+// so with the bus and where to find it.
+function walkFinished(names){
+  if (WALK || !names || !names.length) return;
+  const before = loadBus(), after = busToured(before, names);
+  const had = busEarned(before, CHECKPOINTS), fresh = busEarned(after, CHECKPOINTS).filter(function(k){ return had.indexOf(k) < 0; });
+  if (!fresh.length || !saveBus(after)) return;
+  syncAlbumRow();
+  const names2 = DECOR.filter(function(d){ return fresh.indexOf(d.k) >= 0; });
+  // Close up, the way its card in My tickets shows it: on the whole bus a
+  // bell is a few pixels.
+  document.getElementById('busNewBody').innerHTML = '<div class="busnew-art">' +
+    names2.map(function(d){ return '<figure>' + decorTile(d.k) + '<figcaption>' + escapeHtml(d.t) + '</figcaption></figure>'; }).join('') + '</div>' +
+    '<p><b>' + names2.map(function(d){ return escapeHtml(d.t); }).join(' and ') + '</b>, for finishing ' +
+    (names.length > 1 ? 'both tours' : names[0] === 'share' ? 'the sharing tour' : 'the map\u2019s tour') + '. ' +
+    'Your bus, and everything it can still earn, is in <b>My tickets</b>, at the foot of the \u201cI\u2019m on the bus\u201d tab.</p>';
+  openModal('busNewModal');
+}
+function seeMyBus(){
+  closeModal('busNewModal');
+  switchTab('share');
+  openAlbum();
 }
 function walkGo(d){
   if (!WALK) return;
@@ -7243,6 +7315,7 @@ function walkShow(i){
   WALK.i = i; WALK.el = null; WALK.key = '';
   walkScene(st);
   const n = WALK.steps.length, last = i === n - 1;
+  if (last && WALK.finished.indexOf(WALK.name) < 0) WALK.finished.push(WALK.name);
   const title = document.getElementById('walkTitle');
   title.textContent = st.title || '';
   title.classList.toggle('hidden', !st.title);

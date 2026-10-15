@@ -31,12 +31,13 @@ One row per route. Holds every secret in the system.
 
 | column | notes |
 |---|---|
-| `key` | the share key, primary key. Secret. |
+| `key` | the share key, primary key. Secret. A long key, or a PIN of 4 to 8 digits since `12-share-pin.sql`. |
 | `slug` | public route name, unique, not null. Safe to publish. |
 | `prev_key` | previous share key, kept for the rotation grace |
 | `prev_key_expires` | when the old key stops working (rotation + 4 hours) |
 | `admin_salt`, `admin_hash` | salted SHA-256 of the admin key. The key itself is never stored. |
 | `pub_salt` | random per route, salts the `pub_id` that `get_positions` publishes instead of the session id. Never returned by anything. |
+| `key_fail_count`, `key_fail_since`, `key_paused_until`, `key_last_paused` | wrong PINs on this route, and the pause they cause. See "A PIN for the share key". |
 | `settings` | jsonb, see below |
 | `notice_text`, `notice_updated`, `notice_expires` | the pinned notice |
 
@@ -45,7 +46,13 @@ One row per sharing session, upserted in place. **No history table exists, by
 design.** Unique on `(route_slug, session_id)`.
 
 `route_key`, `route_slug`, `session_id`, `lat`, `lng`, `speed`, `direction`,
-`bus_label`, `updated_at`. `lat`, `lng` and `direction` refuse NULL.
+`bus_label`, `keyless`, `updated_at`. `lat`, `lng` and `direction` refuse NULL.
+
+`keyless` (since `11-open-sharing.sql`, default false) is true for a bus started
+through `set_open_position`, without the share key. It exists so turning open
+sharing off can take exactly those buses off the map, and so the admin page can
+mark them. It says nothing about a person, and `get_positions` does not return
+it: watchers are not told which buses had a key.
 
 `speed` has been NULL in every row since `08-position-checks.sql`. It was kept
 and handed to anyone with the slug, though no page ever read it and neither the
@@ -98,7 +105,8 @@ continuity only.
   "sighting_expiry_min": 120,
   "max_sessions": 25,
   "sightings_enabled": true,
-  "parol_enabled": true
+  "parol_enabled": true,
+  "open_sharing": false
 }
 ```
 
@@ -150,6 +158,13 @@ reader's phone (`inParolSeason()`), so the setting is only ever a veto.
 Neither needed a migration: `_check_settings` validates the keys it knows and
 passes the rest through, and `get_settings` returns the whole object.
 
+`open_sharing` is the opposite way round: **absent means off**, because it is
+not a display switch. It lets a page with no share key put a bus on the map
+(October 2026, `sql/11-open-sharing.sql`), so a route only gets it by an
+organizer choosing it. `_check_settings` refuses anything but a JSON boolean,
+and only a real `true` counts as on. Saving settings with it off, or absent,
+deletes every `keyless` bus in the same transaction: see "Open sharing" below.
+
 ## RPC surface
 
 ### Public, slug only, no secret
@@ -162,6 +177,7 @@ passes the rest through, and `get_settings` returns the whole object.
 | `clear_bus_position(p_slug, p_session)` | takes the real session id, which only the sharer's own phone holds; keeps working across a rotation and from sendBeacon |
 | `mark_watching(p_slug, p_watcher)` | the watching heartbeat, see below. Returns nothing and tells the caller nothing. |
 | `say_thanks(p_slug, p_pub, p_watcher)` | one rider thanking one live bus, see "Saying salamat". Returns nothing and tells the caller nothing. |
+| `set_open_position(p_slug, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | a bus with no share key, **only while `open_sharing` is on**; refused with `open sharing is off` otherwise, checked on every write so switching it off stops a trip already under way. Every check `set_bus_position` makes, by the same code. See "Open sharing". |
 | `ping()` | keep-alive target for the uptime monitor |
 
 ### Why `get_positions` does not return the session id
@@ -195,10 +211,17 @@ did was invalidate a sentence in this file about a different function.
 ### Share key required
 | function | notes |
 |---|---|
-| `route_exists(p_key)` | true only for the **current** key |
-| `set_bus_position(p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | see checks below |
+| `check_share_key(p_slug, p_key)` | the gate. Returns `ok`, `invalid key` or `too many tries`; counts a wrong PIN. |
+| `set_keyed_position(p_slug, p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | the trip, as the page sends it. Returns null when the position went in, or `invalid key` / `too many tries`; every other refusal raises, as below. |
+| `route_exists(p_key)` | true only for the **current** key, and never for a PIN. Kept for pages already on phones. |
+| `set_bus_position(p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | the same checks, by the key alone; refuses any PIN-shaped key. Kept for pages already on phones. |
 
-`set_bus_position` rejects, with these exact messages the client turns into
+Both new calls take the slug because a wrong PIN has to be counted against a
+route, and the old two find the route by the key, so they could not. They
+**return** a wrong key rather than raising it: an exception rolls the
+transaction back, and the count with it.
+
+`set_keyed_position` and `set_bus_position` reject, with these exact messages the client turns into
 plain words: `invalid key`, `invalid session` (must match
 `^[A-Za-z0-9\-]{8,64}$`), `invalid direction` (anything but `north` or `south`,
 missing included), `label too long` (over 12), `position off route` (missing,
@@ -219,12 +242,17 @@ indefinitely with nothing on the map. The cap now counts only rows inside
 
 It also runs `_sweep()` afterwards, which is where all cleanup happens.
 
+Since `11-open-sharing.sql` every check after finding the route lives in
+`_write_position()`, which `set_bus_position` and `set_open_position` both call,
+so the keyed and keyless paths cannot drift apart. The messages, their order
+and the rotation grace are unchanged.
+
 Rotation grace lives here: if the key matches `prev_key` and has not expired,
 the write is allowed **only for a session that already exists**. A new session
 on the old key gets `invalid key`.
 
 ### Admin key required
-`admin_check`, `admin_set_settings`, `admin_set_notice(p_text, p_minutes)`,
+`admin_key_status`, `admin_resume_key`, `admin_check`, `admin_set_settings`, `admin_set_notice(p_text, p_minutes)`,
 `admin_rotate_share_key`, `admin_kick`, `admin_delete_sighting`,
 `admin_change_key`, `admin_list_sharers`, `admin_list_blocked`,
 `admin_unblock`, `admin_watching_count`. All take `(p_slug, p_admin, ...)` and
@@ -247,7 +275,85 @@ works **only while none is set**, so it cannot be used to take over a route.
 ### SQL editor only (execute revoked from anon)
 `rename_route_slug(p_old, p_new)`, and the internal helpers `_hash_admin`,
 `_pub_id`, `_require_admin`, `_check_settings`, `_sweep`, `_sweep_watching`,
-`_watching_window`, `_watching_cap`, `_thanks_mark`, `_thanks_cap`.
+`_watching_window`, `_watching_cap`, `_thanks_mark`, `_thanks_cap`,
+`_write_position`, `_key_failed`, `_key_paused`. `_write_position` matters most: it trusts its caller to have decided
+the write may happen, so callable from outside it would be a way round both
+the key and the switch.
+
+## Open sharing
+
+Since October 2026 (`sql/11-open-sharing.sql`) an organizer can let anyone share
+a bus without the key, from the OPEN SHARING card on the admin page. It is for
+the tracker's real problem: most riders never see the link in the group chat.
+
+What it costs, which the admin page says beside the switch:
+
+- **Anyone on the internet can post a bus, not only riders.** The slug is public
+  (it is in `config.txt`) and so is the anon key, so a short script is enough;
+  nobody has to open the site.
+- **The sharer cap becomes a way to lock real sharers out.** Made-up buses count
+  towards `max_sessions` like any other.
+- **Stopping one from the admin page barely helps.** It blocks one session id,
+  and a script makes a new one each time. With no key there is no key to rotate.
+
+What still holds: every check on a position (on the route, plausible speed, one
+write in 2 seconds per session, the cap, a blocked session), and no history,
+since a keyless bus is the same one row per trip as any other.
+
+**The way out is the switch.** Turning it off does for keyless buses what
+rotating the key does for keyed ones, at once and with no grace period:
+`admin_set_settings` deletes every `keyless` row in the same transaction, and
+`set_open_position` refuses their next write, so they cannot come back. Sharers
+with the key are never touched, and the key works whether the switch is on or
+off. The tracker uses the key whenever it has one, so a keyed trip is never
+keyless and never removed by the switch.
+
+`admin_list_sharers` returns `keyless` so the admin page can mark those buses
+**no key**. `get_positions` does not, deliberately: a "no key" badge on the
+public map would invite riders to distrust the riders the switch was turned on
+for, and the honest statement is the one the privacy panel makes, that while it
+is on a bus is somebody's report and anyone could have made it.
+
+## A PIN for the share key
+
+Since October 2026 (`sql/12-share-pin.sql`) the admin page can set the share key
+to a PIN of 4 to 8 digits instead of a long key, 6 by default. It is easier to
+say out loud, post on a sign or type on a bus.
+
+A PIN can be guessed: 10,000 four-digit PINs, a public slug, and a server that
+used to answer every wrong key at once. So while the key is a PIN, **20 wrong
+tries on the route inside 10 minutes pause new trips for 10 minutes.** The
+numbers are in `_key_failed()`. What that buys and costs:
+
+- The fastest a guesser can go is 20 tries per 10 minutes: 20 quick ones, the
+  pause, a fresh window. On average a 4-digit PIN lasts about 42 hours of that,
+  6 digits about 6 months. The admin page prints the figure for the length
+  chosen.
+- **During the pause a new trip is refused even with the right PIN.** Anything
+  else would let the guess that happened to be right in. Trips already on the
+  map carry on, keyed by their session being there.
+- So someone guessing also keeps real sharers from starting. It is per route,
+  not per phone, because nothing a Postgres function can see tells two
+  guessers apart reliably; a forwarded address header is set by whoever sends
+  the request. The admin page shows the pause above the live sharers, with
+  Resume now, and changing the key ends it and forgets the count. Changing is
+  the better answer, since a resume hands the guesser a fresh window.
+- Tries during a pause are answered `too many tries` and not counted: they
+  cannot succeed, and counting them would only lengthen a pause the guesser
+  is causing anyway.
+- A **long key has no limit**, as before. Nobody can guess one, and a limit
+  would only give anyone a free way to stop new trips. Nine digits and more
+  count as a long key, since they pass the long key's rule and are past
+  guessing; four to eight digits are a PIN.
+
+The page learns only that the key is a PIN (`share_pin` in `get_settings`), to
+offer a number pad. Never its length, and nothing else about it.
+
+The two old calls stay for pages already on phones, and neither will test a
+PIN: `route_exists` answers false to one and `set_bus_position` refuses one.
+Without that they would be a way round the count. An old page whose route
+has moved to a PIN therefore cannot share until it reloads, which any visit
+after the deploy does.
 
 ## The watching count
 

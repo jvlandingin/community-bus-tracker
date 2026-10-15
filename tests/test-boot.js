@@ -938,19 +938,19 @@ function run(page, include, label, configText, setup) {
     const watchesOpen = () => sim.watches.length - sim.cleared.length;
     // A trip: Start, then wait for the first write to land.
     const startTrip = async () => {
-      const before = of('set_bus_position').length;
+      const before = of('set_keyed_position').length;
       w.startSharing();
-      await waitFor(() => of('set_bus_position').length > before);
+      await waitFor(() => of('set_keyed_position').length > before);
       await pause(60);
-      return of('set_bus_position')[before];
+      return of('set_keyed_position')[before];
     };
     // A fix that is written straight away, rather than after the 5 seconds
     // the page waits between writes.
     const writeNow = async () => {
-      const before = of('set_bus_position').length;
+      const before = of('set_keyed_position').length;
       w.eval('lastWrite = 0');
       sim.watches[sim.watches.length - 1].onPos(here);
-      await waitFor(() => of('set_bus_position').length > before);
+      await waitFor(() => of('set_keyed_position').length > before);
       await pause(60);
     };
 
@@ -958,7 +958,7 @@ function run(page, include, label, configText, setup) {
     w.switchTab('share');
     const first = await startTrip();
     check(!!first && watchesOpen() === 1, 'a trip starts with one write and one GPS watch',
-      `${of('set_bus_position').length} writes, ${watchesOpen()} watches`);
+      `${of('set_keyed_position').length} writes, ${watchesOpen()} watches`);
     // Sent as null rather than left out: PostgREST finds the function by its
     // argument names, so a missing p_speed would match nothing.
     check(!!first && first.args.p_speed === null,
@@ -972,7 +972,7 @@ function run(page, include, label, configText, setup) {
       `${of('get_positions').length - readsBefore} reads for 10 fixes`);
 
     // A write that fails mid-trip: an error to read, not the end of the trip.
-    sim.reply.set_bus_position = () => ({ error: 'upstream timed out' });
+    sim.reply.set_keyed_position = () => ({ error: 'upstream timed out' });
     await writeNow();
     check(w.eval('sharing') === true, 'a failed write does not end the trip');
     check(!isHidden('onbusActive') && isHidden('onbusSetup'),
@@ -984,7 +984,7 @@ function run(page, include, label, configText, setup) {
     await pause(80);
     check(watchesOpen() === 1 && sim.watches.length === 1, 'a second Start mid-trip opens no second GPS watch',
       `${sim.watches.length} started, ${sim.cleared.length} ended`);
-    delete sim.reply.set_bus_position;
+    delete sim.reply.set_keyed_position;
     await writeNow();
     check(/^Sharing live: ▲ northbound$/.test(status()), 'the first write to land puts "Sharing live" back', status());
 
@@ -1001,7 +1001,7 @@ function run(page, include, label, configText, setup) {
 
     // An organiser's Stop is the one end that keeps the session, because the
     // block is on it.
-    sim.reply.set_bus_position = () => ({ error: 'session blocked' });
+    sim.reply.set_keyed_position = () => ({ error: 'session blocked' });
     const blocked = await startTrip();
     await waitFor(() => w.eval('sharing') === false);
     check(!w.eval('sharing') && watchesOpen() === 0, 'a blocked session ends the trip and its watch');
@@ -1012,7 +1012,7 @@ function run(page, include, label, configText, setup) {
     await waitFor(() => w.eval('sharing') === false);
 
     // A route already full: the trip ends rather than failing every 5 seconds.
-    sim.reply.set_bus_position = () => ({ error: 'too many active sessions' });
+    sim.reply.set_keyed_position = () => ({ error: 'too many active sessions' });
     await startTrip();
     await waitFor(() => w.eval('sharing') === false);
     check(!w.eval('sharing') && watchesOpen() === 0 && isHidden('onbusActive') && !isHidden('onbusSetup'),
@@ -1021,7 +1021,9 @@ function run(page, include, label, configText, setup) {
     check(w.eval('accessKey') === 'TESTKEY', 'and the key is kept, since nothing is wrong with it');
 
     // A changed key: dropped everywhere it was kept, so the next Start asks.
-    sim.reply.set_bus_position = () => ({ error: 'invalid key' });
+    // Returned, not raised, as the server does, so the count of wrong PINs
+    // is not rolled back with an error (sql/12-share-pin.sql).
+    sim.reply.set_keyed_position = () => ({ data: 'invalid key' });
     await startTrip();
     await waitFor(() => w.eval('sharing') === false);
     check(!w.eval('sharing') && watchesOpen() === 0, 'a key the server has refused ends the trip');
@@ -1032,12 +1034,41 @@ function run(page, include, label, configText, setup) {
     w.startSharing();
     check(!isHidden('gate'), 'the next Start asks for the new key');
     // The key only ever arrives inside a link, so a pasted link has to work.
-    sim.reply.route_exists = () => ({ data: true });
+    sim.reply.check_share_key = () => ({ data: 'ok' });
     d.getElementById('gateKey').value = 'https://community-bus-tracker.netlify.app/#k=NEW-KEY-456';
     await w.submitKey();
-    check(of('route_exists').slice(-1)[0].args.p_key === 'NEW-KEY-456' && w.eval('accessKey') === 'NEW-KEY-456',
-      'and a whole pasted link is taken for the key in it', of('route_exists').slice(-1)[0].args.p_key);
-    delete sim.reply.set_bus_position;
+    check(of('check_share_key').slice(-1)[0].args.p_key === 'NEW-KEY-456' && w.eval('accessKey') === 'NEW-KEY-456',
+      'and a whole pasted link is taken for the key in it', of('check_share_key').slice(-1)[0].args.p_key);
+    check(of('check_share_key').slice(-1)[0].args.p_slug === w.eval('CFG.ROUTE_SLUG') && of('route_exists').length === 0,
+      'checked with the route\'s slug, so a wrong PIN counts against it, and never by route_exists');
+
+    // A PIN (sql/12-share-pin.sql): a number pad, a wrong one said in plain
+    // words, and a route paused by somebody guessing ends the trip without
+    // retrying, keeping the PIN.
+    sim.reply.get_settings = () => ({ data: { settings: {}, share_pin: true, notice: null } });
+    await w.pollSettings();
+    check(d.getElementById('gateKey').getAttribute('inputmode') === 'numeric' && d.getElementById('gateKey').placeholder === 'PIN',
+      'a route whose key is a PIN gets a number pad at the gate');
+    sim.reply.check_share_key = () => ({ data: 'invalid key' });
+    check(await w.tryKey('0000') === false && /not recognized/.test(d.getElementById('gateErr').textContent),
+      'a wrong PIN is refused at the gate', d.getElementById('gateErr').textContent);
+    sim.reply.check_share_key = () => ({ data: 'too many tries' });
+    check(await w.tryKey('0001') === false && /paused/.test(d.getElementById('gateErr').textContent),
+      'and a paused route says so, rather than calling the PIN wrong', d.getElementById('gateErr').textContent);
+    w.closeModal('gate');
+    sim.reply.check_share_key = () => ({ data: 'ok' });
+    sim.reply.set_keyed_position = () => ({ data: 'too many tries' });
+    const pausedTrip = await startTrip();
+    await waitFor(() => w.eval('sharing') === false);
+    check(!!pausedTrip && pausedTrip.args.p_slug === w.eval('CFG.ROUTE_SLUG') && pausedTrip.args.p_key === 'NEW-KEY-456',
+      'a keyed trip sends the slug with the key', pausedTrip && JSON.stringify(pausedTrip.args));
+    check(!w.eval('sharing') && watchesOpen() === 0 && /paused/.test(status()),
+      'a paused route ends the trip and says why', status());
+    check(w.eval('accessKey') === 'NEW-KEY-456', 'and keeps the PIN, since nothing is wrong with it');
+    sim.reply.get_settings = () => ({ data: { settings: {}, share_pin: false, notice: null } });
+    await w.pollSettings();
+    check(d.getElementById('gateKey').getAttribute('inputmode') === 'text', 'a long key gets the keyboard back');
+    delete sim.reply.set_keyed_position;
 
     // GPS giving up ends the trip the way Stop does: the bus is cleared now,
     // not left on everyone's map until it expires.
@@ -1052,6 +1083,42 @@ function run(page, include, label, configText, setup) {
     check(!w.eval('sharing') && watchesOpen() === 0 && /GPS timed out/.test(status()),
       'ends the trip, and says why', status());
     check(w.sessionStorage.getItem('wt-session') === null, 'and the next trip gets a session of its own');
+
+    // Open sharing (sql/11-open-sharing.sql): with the switch on, a page
+    // with no key shares by the public slug, and one with the key still
+    // uses it. Switched off under a keyless trip, the trip ends and the
+    // next Start asks for the key again.
+    check(w.eval('SET.open_sharing') === false, 'open sharing is off when the settings never mention it');
+    sim.reply.get_settings = () => ({ data: { settings: { open_sharing: true }, notice: null } });
+    await w.pollSettings();
+    check(w.eval('SET.open_sharing') === true, 'and on once the organizer turns it on');
+    const keyedOpen = await startTrip();
+    check(!!keyedOpen && keyedOpen.args.p_key === 'NEW-KEY-456' && of('set_open_position').length === 0,
+      'a page with the key still shares with it, not by the open path', keyedOpen && JSON.stringify(Object.keys(keyedOpen.args)));
+    await w.stopSharing({ quiet: true });
+    w.forgetKey();
+    const openBefore = of('set_open_position').length;
+    w.startSharing();
+    await waitFor(() => of('set_open_position').length > openBefore);
+    await pause(60);
+    const keyless = of('set_open_position')[openBefore];
+    check(isHidden('gate') && !!keyless, 'a page with no key starts without asking for one');
+    check(!!keyless && keyless.args.p_slug === w.eval('CFG.ROUTE_SLUG') && !('p_key' in keyless.args)
+        && keyless.args.p_speed === null,
+      'sending the route\'s public slug, no key and no speed', keyless && JSON.stringify(keyless.args));
+    sim.reply.set_open_position = () => ({ error: 'open sharing is off' });
+    const offBefore = of('set_open_position').length;
+    w.eval('lastWrite = 0');
+    sim.watches[sim.watches.length - 1].onPos(here);
+    await waitFor(() => w.eval('sharing') === false);
+    check(of('set_open_position').length > offBefore && !w.eval('sharing') && watchesOpen() === 0,
+      'switched off mid-trip, the keyless trip ends');
+    check(/switched off sharing without the key/.test(status()), 'saying why', status());
+    sim.reply.get_settings = () => ({ data: { settings: {}, notice: null } });
+    w.startSharing();
+    check(!isHidden('gate'), 'and the next Start asks for the key, without waiting for the settings poll');
+    w.closeModal('gate');
+    delete sim.reply.set_open_position;
 
     // One row with no position stopped the whole list drawing.
     const cp = CONFIG.split(/\r?\n/).filter(l => l.trim().startsWith('CHECKPOINT ='))[2]
@@ -1075,6 +1142,10 @@ function run(page, include, label, configText, setup) {
     const adm = await run('/admin.html', () => true, 'admin rows', null, window => {
       const passOn = window.fetch;
       window.fetch = function(u, o){
+        if (/\/rest\/v1\/rpc\/admin_key_status/.test(String(u))) return Promise.resolve(json([
+          { is_pin: true, pin_length: 4, recent_failures: 0,
+            paused_until: new Date(Date.now() + 6e5).toISOString(), last_paused: new Date().toISOString() }
+        ]));
         if (!/\/rest\/v1\/rpc\/admin_list_sharers/.test(String(u))) return passOn(u, o);
         return Promise.resolve(json([
           { session_id: 'nullrow-0001', lat: null, lng: null, direction: null, bus_label: null,
@@ -1092,6 +1163,20 @@ function run(page, include, label, configText, setup) {
         && items[0].querySelector('button.btn-danger'),
       'the admin page lists a sharer with no position, with a Stop button for it',
       threw || `${items.length} listed`);
+
+    // A PIN (sql/12-share-pin.sql): the admin page makes one of the length
+    // chosen, says plainly how long it would last, and shows a pause.
+    adm.d.getElementById('keyKind').value = 'pin';
+    adm.d.getElementById('pinLen').value = '4';
+    adm.w.syncKeyKind(); adm.w.genKey();
+    check(/^[0-9]{4}$/.test(adm.d.getElementById('newAccessKey').value),
+      'Generate makes a PIN of the length chosen', adm.d.getElementById('newAccessKey').value);
+    check(/about 42 hours/.test(adm.d.getElementById('pinWarn').textContent),
+      'and the page says how long a 4-digit one lasts against steady guessing', adm.d.getElementById('pinWarn').textContent);
+    await adm.w.refreshKeyStatus();
+    check(!adm.d.getElementById('keyAlert').classList.contains('hidden') && /20 wrong PINs/.test(adm.d.getElementById('keyAlert').textContent)
+        && adm.d.querySelector('#keyState button'),
+      'a pause shows above the live sharers, with a way to resume', adm.d.getElementById('keyAlert').textContent);
     adm.w.close();
   }
 

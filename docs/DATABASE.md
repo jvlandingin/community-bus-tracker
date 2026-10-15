@@ -45,7 +45,13 @@ One row per sharing session, upserted in place. **No history table exists, by
 design.** Unique on `(route_slug, session_id)`.
 
 `route_key`, `route_slug`, `session_id`, `lat`, `lng`, `speed`, `direction`,
-`bus_label`, `updated_at`. `lat`, `lng` and `direction` refuse NULL.
+`bus_label`, `keyless`, `updated_at`. `lat`, `lng` and `direction` refuse NULL.
+
+`keyless` (since `11-open-sharing.sql`, default false) is true for a bus started
+through `set_open_position`, without the share key. It exists so turning open
+sharing off can take exactly those buses off the map, and so the admin page can
+mark them. It says nothing about a person, and `get_positions` does not return
+it: watchers are not told which buses had a key.
 
 `speed` has been NULL in every row since `08-position-checks.sql`. It was kept
 and handed to anyone with the slug, though no page ever read it and neither the
@@ -98,7 +104,8 @@ continuity only.
   "sighting_expiry_min": 120,
   "max_sessions": 25,
   "sightings_enabled": true,
-  "parol_enabled": true
+  "parol_enabled": true,
+  "open_sharing": false
 }
 ```
 
@@ -150,6 +157,13 @@ reader's phone (`inParolSeason()`), so the setting is only ever a veto.
 Neither needed a migration: `_check_settings` validates the keys it knows and
 passes the rest through, and `get_settings` returns the whole object.
 
+`open_sharing` is the opposite way round: **absent means off**, because it is
+not a display switch. It lets a page with no share key put a bus on the map
+(October 2026, `sql/11-open-sharing.sql`), so a route only gets it by an
+organizer choosing it. `_check_settings` refuses anything but a JSON boolean,
+and only a real `true` counts as on. Saving settings with it off, or absent,
+deletes every `keyless` bus in the same transaction: see "Open sharing" below.
+
 ## RPC surface
 
 ### Public, slug only, no secret
@@ -162,6 +176,7 @@ passes the rest through, and `get_settings` returns the whole object.
 | `clear_bus_position(p_slug, p_session)` | takes the real session id, which only the sharer's own phone holds; keeps working across a rotation and from sendBeacon |
 | `mark_watching(p_slug, p_watcher)` | the watching heartbeat, see below. Returns nothing and tells the caller nothing. |
 | `say_thanks(p_slug, p_pub, p_watcher)` | one rider thanking one live bus, see "Saying salamat". Returns nothing and tells the caller nothing. |
+| `set_open_position(p_slug, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | a bus with no share key, **only while `open_sharing` is on**; refused with `open sharing is off` otherwise, checked on every write so switching it off stops a trip already under way. Every check `set_bus_position` makes, by the same code. See "Open sharing". |
 | `ping()` | keep-alive target for the uptime monitor |
 
 ### Why `get_positions` does not return the session id
@@ -219,6 +234,11 @@ indefinitely with nothing on the map. The cap now counts only rows inside
 
 It also runs `_sweep()` afterwards, which is where all cleanup happens.
 
+Since `11-open-sharing.sql` every check after finding the route lives in
+`_write_position()`, which `set_bus_position` and `set_open_position` both call,
+so the keyed and keyless paths cannot drift apart. The messages, their order
+and the rotation grace are unchanged.
+
 Rotation grace lives here: if the key matches `prev_key` and has not expired,
 the write is allowed **only for a session that already exists**. A new session
 on the old key gets `invalid key`.
@@ -247,7 +267,44 @@ works **only while none is set**, so it cannot be used to take over a route.
 ### SQL editor only (execute revoked from anon)
 `rename_route_slug(p_old, p_new)`, and the internal helpers `_hash_admin`,
 `_pub_id`, `_require_admin`, `_check_settings`, `_sweep`, `_sweep_watching`,
-`_watching_window`, `_watching_cap`, `_thanks_mark`, `_thanks_cap`.
+`_watching_window`, `_watching_cap`, `_thanks_mark`, `_thanks_cap`,
+`_write_position`. The last matters most: it trusts its caller to have decided
+the write may happen, so callable from outside it would be a way round both
+the key and the switch.
+
+## Open sharing
+
+Since October 2026 (`sql/11-open-sharing.sql`) an organizer can let anyone share
+a bus without the key, from the OPEN SHARING card on the admin page. It is for
+the tracker's real problem: most riders never see the link in the group chat.
+
+What it costs, which the admin page says beside the switch:
+
+- **Anyone on the internet can post a bus, not only riders.** The slug is public
+  (it is in `config.txt`) and so is the anon key, so a short script is enough;
+  nobody has to open the site.
+- **The sharer cap becomes a way to lock real sharers out.** Made-up buses count
+  towards `max_sessions` like any other.
+- **Stopping one from the admin page barely helps.** It blocks one session id,
+  and a script makes a new one each time. With no key there is no key to rotate.
+
+What still holds: every check on a position (on the route, plausible speed, one
+write in 2 seconds per session, the cap, a blocked session), and no history,
+since a keyless bus is the same one row per trip as any other.
+
+**The way out is the switch.** Turning it off does for keyless buses what
+rotating the key does for keyed ones, at once and with no grace period:
+`admin_set_settings` deletes every `keyless` row in the same transaction, and
+`set_open_position` refuses their next write, so they cannot come back. Sharers
+with the key are never touched, and the key works whether the switch is on or
+off. The tracker uses the key whenever it has one, so a keyed trip is never
+keyless and never removed by the switch.
+
+`admin_list_sharers` returns `keyless` so the admin page can mark those buses
+**no key**. `get_positions` does not, deliberately: a "no key" badge on the
+public map would invite riders to distrust the riders the switch was turned on
+for, and the honest statement is the one the privacy panel makes, that while it
+is on a bus is somebody's report and anyone could have made it.
 
 ## The watching count
 

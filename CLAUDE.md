@@ -46,7 +46,7 @@ each moves the seeded rows the next would expect. From `tests/`:
 ```
 createdb bustest
 psql -d bustest -f db/00-legacy-baseline.sql
-psql -d bustest -f ../sql/01-base.sql          # then 02 through 10 in order
+psql -d bustest -f ../sql/01-base.sql          # then 02 through 11 in order
 psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 ```
 
@@ -117,7 +117,10 @@ board in place. The pages that run no drawing code carry boards drawn by
 
 **Three credentials, not interchangeable.** The route slug is public and unlocks
 reading. The share key lives only in the link posted to the community, and
-unlocks putting a bus on the map. The admin key is stored as a salted SHA-256
+unlocks putting a bus on the map — unless an organizer has switched on open
+sharing (`open_sharing` in settings, absent means off, `sql/11-open-sharing.sql`),
+when a page with no key shares by the slug. Switching it off removes every bus
+started without the key at once; keyed sharers are never touched. The admin key is stored as a salted SHA-256
 hash and unlocks `admin.html`. All reads and writes go through `SECURITY DEFINER`
 Postgres functions; tables have RLS enabled with no policies, so the anon key
 cannot touch them directly.

@@ -83,6 +83,7 @@ psql -d bustest -f ../sql/07-thanks.sql
 psql -d bustest -f ../sql/08-position-checks.sql
 psql -d bustest -f ../sql/09-window-headway.sql
 psql -d bustest -f ../sql/10-weekend-hours.sql
+psql -d bustest -f ../sql/11-open-sharing.sql
 ```
 
 Then run one suite against it:
@@ -96,6 +97,7 @@ psql -d bustest -f db/05-rotate-tests.sql      # 10 checks, rotation guard
 psql -d bustest -f db/06-watching-tests.sql    # 32 checks, the watching count
 psql -d bustest -f db/07-thanks-tests.sql      # 38 checks, saying salamat
 psql -d bustest -f db/08-position-tests.sql    # 36 checks, what a position write refuses
+psql -d bustest -f db/09-open-sharing-tests.sql # 34 checks, sharing without the key
 ```
 
 `dropdb bustest` and build it again between suites. Apply **all** the migration
@@ -116,7 +118,7 @@ check in a way that looks like a schema bug rather than a missing role.
 ## Continuous integration
 
 `.github/workflows/tests.yml` runs everything on every pull request and every
-push to `main`: the six JavaScript suites in one job, and the eight database
+push to `main`: the six JavaScript suites in one job, and the nine database
 suites against a `postgres:16` service container in another. The database job
 deliberately repeats the steps above rather than calling a script, so the
 runbook on this page is re-proven on every commit instead of being taken on

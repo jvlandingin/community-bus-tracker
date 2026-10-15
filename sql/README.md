@@ -14,6 +14,9 @@ retry.
 | `06-watching-count.sql` | lets the admin page see how many devices have the map open right now, without recording who |
 | `07-thanks.sql` | lets a rider tap Salamat on a live bus, with no total kept for anyone |
 | `08-position-checks.sql` | refuses a bus with no position, stops dead rows filling the sharer cap, and stops keeping or publishing speed |
+| `09-window-headway.sql` | lets each departure window carry its own interval |
+| `10-weekend-hours.sql` | lets Saturdays and Sundays have their own hours |
+| `11-open-sharing.sql` | lets the admin page switch on sharing without the key, and off again with every keyless bus removed |
 
 If you are setting up fresh, run all of them. They are separate files because
 they were written in that order against a live deployment, and keeping the
@@ -40,6 +43,15 @@ deployed. It deletes any bus row with no position, which nothing should have
 written and which stopped the map drawing for everyone, and clears every stored
 speed. Run it against a database that already has `01` through `07`; it is safe
 to re-run.
+
+`11` must be run **before** anyone turns open sharing on. The admin page can
+save the setting against an older database, because `_check_settings` passes
+unknown keys through, and every keyless page would then fail each write with
+the generic "couldn't send" message until the migration runs. It changes the
+shape of `admin_list_sharers` by one column, which an older admin page ignores
+and the new one reads as false when missing, so the pages can deploy either
+side of it. Re-running `08` after `11` puts the older `set_bus_position` and
+`admin_list_sharers` back; re-run `11` after it. Safe to re-run.
 
 **If the salamat button appears but nothing reaches the sharer**, this
 migration has almost certainly not been run. The button is drawn by the page,

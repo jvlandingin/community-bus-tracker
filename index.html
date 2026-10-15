@@ -1786,7 +1786,8 @@
       <h4 class="hon">To be fully honest</h4>
       <p>• The map's background images load from CARTO, a map provider. Like any website you visit, they can see your device's IP address. Everything else (code, fonts) is served from this site itself.<br>
       • The database runs on Supabase, which keeps standard server logs like any hosting service.<br>
-      • Anyone who opens this site can see live bus positions, no key needed. That's the point of the tool, but worth saying plainly: while you share, anyone can watch, and could write down what they see as it happens. This site itself keeps only where the bus is now.</p>
+      • Anyone who opens this site can see live bus positions, no key needed. That's the point of the tool, but worth saying plainly: while you share, anyone can watch, and could write down what they see as it happens. This site itself keeps only where the bus is now.<br>
+      • Sharing normally needs the key from the group chat. The organizer can open it to everyone, and while it is open anyone at all can put a bus on the map, so a bus here is somebody's report, not a fact.</p>
 
       <h4 class="ok hidden" id="sourceHead">Open source</h4>
       <p class="hidden" id="sourceBody">This tool is free and open source under the AGPL-3.0 licence, which means anyone can read it, run it for their own route, and must keep their version open too. <a id="sourceLink" href="#" target="_blank" rel="noopener noreferrer">See the source code</a>.</p>
@@ -2652,7 +2653,11 @@ let SET = { hours:{ north:[], south:[] }, headway_min:30,
             sightings_enabled:true,
             // Absent means on, for the same reason: the parol and the lights
             // appear in season unless an organizer has switched them off.
-            parol_enabled:true };
+            parol_enabled:true,
+            // Absent means off, unlike the two above: this one lets anyone
+            // put a bus on the map without the key, so a route that never
+            // chose it never gets it. See sql/11-open-sharing.sql.
+            open_sharing:false };
 let NOTICE = null;
 let CHECKPOINTS = [];
 let STOPS = [];
@@ -2918,6 +2923,7 @@ async function pollSettings(){
   // Its own line: the loop above only takes numbers.
   if (typeof st.sightings_enabled === 'boolean') SET.sightings_enabled = st.sightings_enabled;
   if (typeof st.parol_enabled === 'boolean') SET.parol_enabled = st.parol_enabled;
+  SET.open_sharing = st.open_sharing === true;
   applySeason();
   NOTICE = res.data.notice || null;
   renderNotice();
@@ -2937,6 +2943,10 @@ function renderNotice(){
 // ============================================================
 // Share key (only sharing needs it; watching is open)
 // ============================================================
+// Unless the organizer has opened sharing to everyone, and then a page with
+// no key shares by the public slug instead. A page that has the key always
+// uses it, so turning the switch off later never stops a keyed trip.
+function openSharing(){ return SET.open_sharing === true; }
 let accessKey = null;
 function resolveKey() {
   const m = location.hash.match(/k=([A-Za-z0-9_-]+)/);
@@ -5489,6 +5499,8 @@ function writeErrorMessage(err){
     return 'GPS reported an impossible speed, so that update was skipped. Usually fixes itself.';
   if (m.indexOf('session blocked')>=0)
     return 'An organizer stopped this share. If you think that was a mistake, message them in the group chat.';
+  if (m.indexOf('open sharing is off')>=0)
+    return 'The organizer has switched off sharing without the key, so this bus was taken off the map. To share, open the link from the group chat.';
   if (m.indexOf('invalid key')>=0)
     return 'This access key is no longer valid (it may have been changed by the organizer). Get the current link from the group chat.';
   if (m.indexOf('invalid direction')>=0)
@@ -5619,8 +5631,10 @@ let writeFailing=false;
 async function writePosition(coords){
   // Nothing goes out for a trip that has ended, whatever asked.
   if (guardPaused || !sharing) return;
-  const res = await rpc('set_bus_position', {
-    p_key:accessKey, p_session:getSessionId(),
+  // With the key when there is one; by the slug when sharing is open to all.
+  const keyed = !!accessKey;
+  const args = {
+    p_session:getSessionId(),
     p_lat:coords.latitude, p_lng:coords.longitude,
     // Always null. No page ever used it, and a bus's speed is the one thing
     // this tool promises cannot be used to review a driver by. Since
@@ -5628,7 +5642,9 @@ async function writePosition(coords){
     p_speed: null,
     p_direction:shareDir,
     p_label: document.getElementById('busLabel').value.trim() || null
-  });
+  };
+  if (keyed) args.p_key = accessKey; else args.p_slug = CFG.ROUTE_SLUG;
+  const res = await rpc(keyed ? 'set_bus_position' : 'set_open_position', args);
   // The trip ended while this was on its way: nobody is left to tell.
   if (!sharing) return;
   if (!res.error){
@@ -5640,9 +5656,10 @@ async function writePosition(coords){
   }
   const raw = ((res.error.message||'')+'').toLowerCase();
   const msg = writeErrorMessage(res.error);
-  // Three answers never change by retrying, so stop rather than hammer the
+  // Four answers never change by retrying, so stop rather than hammer the
   // server and leave the person staring at a live-looking dot: a session an
-  // organizer stopped, a key that has been changed, and a route already full.
+  // organizer stopped, a key that has been changed, a route already full, and
+  // sharing without the key switched off under a keyless trip.
   // A changed key is dropped as well, so the next Start asks for the new one
   // instead of trying the dead one again.
   if (raw.indexOf('session blocked')>=0){
@@ -5650,7 +5667,12 @@ async function writePosition(coords){
     setShareUI('error', msg);
     return;
   }
-  if (raw.indexOf('invalid key')>=0 || raw.indexOf('too many active sessions')>=0){
+  if (raw.indexOf('invalid key')>=0 || raw.indexOf('too many active sessions')>=0
+      || raw.indexOf('open sharing is off')>=0){
+    // Switched off while this trip was keyless: the settings in hand still
+    // say open, so they are corrected now, or the next Start would skip the
+    // key and be refused again.
+    if (raw.indexOf('open sharing is off')>=0) SET.open_sharing = false;
     await stopSharing({ quiet:true });
     if (raw.indexOf('invalid key')>=0) forgetKey();
     setShareUI('error', msg);
@@ -5832,7 +5854,7 @@ function dupProceed(){
 function startSharing(){
   if (WALK) return;   // the practice Start starts nothing
   if (sharing) return;   // one trip at a time: a second would bring its own GPS watch
-  if (!accessKey){
+  if (!accessKey && !openSharing()){
     openModal('gate');
     return;
   }
@@ -6277,7 +6299,7 @@ const WALKS = {
   ],
   share: [
     { id:'hello', tab:'track', title:'Sharing from the bus',
-      words:'This is practice, so nothing gets shared. To share for real, you need the key from the group chat.' },
+      words:'This is practice, so nothing gets shared. Sharing for real may need the key from the group chat.' },
     { id:'tab', tab:'track', at:'#tabOnbus', tap:'Tap I’m on the bus',
       words:'On a bus, open this tab.' },
     { id:'dir', tab:'share', at:'.dirpick', patch:'#pickNorth', tap:'Tap Northbound',

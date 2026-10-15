@@ -327,10 +327,29 @@
   </div>
 
   <div class="card">
+    <span class="badge">OPEN SHARING</span>
+    <!-- Absent means off, unlike the sightings and parol switches: this one
+         lets anyone put a bus on the map, so a route never gets it without
+         an organizer choosing it. See sql/11-open-sharing.sql. -->
+    <label class="check" for="openOn" style="margin-top:10px;">
+      <input type="checkbox" id="openOn">
+      <span>
+        <b>Let anyone share a bus, without the key</b>
+        <span class="sub">Riders who never saw the link in the group chat can tap Start and share. People with the key are not affected either way. Turning it off takes every bus started without the key off the map straight away, and their phones cannot put them back.</span>
+      </span>
+    </label>
+    <div class="row" style="margin-top:10px;">
+      <button class="big btn-primary" onclick="saveSettings()">Save</button>
+    </div>
+    <div id="openStatus"></div>
+    <div class="hint warn" style="margin-top:10px;">Honest limit: while it is on, anyone on the internet can put a bus on the map, not only riders, because the route name the call needs is public. Made-up buses can also fill the sharer limit and lock real sharers out. Stopping one below does not help much, because a new session gets round it. If that happens, turn this off: that is the real expulsion, and it leaves people with the key alone.</div>
+  </div>
+
+  <div class="card">
     <span class="badge">LIVE SHARERS</span>
     <div class="hint" style="margin-top:8px;">Everyone currently sharing a bus position. Stopping one removes the bus and blocks that phone from sharing for 6 hours, and their app tells them an organizer stopped it.</div>
     <div id="liveList" style="margin-top:6px;"></div>
-    <div class="hint warn" style="margin-top:10px;">Honest limit: someone determined can open the tracker in a new tab to get a new session and share again. Changing the share key below is the only real expulsion, and it affects everyone.</div>
+    <div class="hint warn" style="margin-top:10px;">Honest limit: someone determined can open the tracker in a new tab to get a new session and share again. Changing the share key below is the only real expulsion, and it affects everyone with the key. A bus marked <b>no key</b> was started while open sharing was on; turning open sharing off removes all of those at once.</div>
   </div>
 
   <div class="card">
@@ -494,7 +513,7 @@ function note(id, msg, kind){
 // One Save writes the whole settings object, and it can be pressed from any
 // of three cards, so the result has to show up wherever it was pressed.
 function noteSettings(msg, kind){
-  ['hoursStatus','limitsStatus','sightStatus','parolStatus'].forEach(function(id){ note(id, msg, kind); });
+  ['hoursStatus','limitsStatus','sightStatus','parolStatus','openStatus'].forEach(function(id){ note(id, msg, kind); });
 }
 // turn server errors into plain words
 function friendly(err){
@@ -508,6 +527,7 @@ function friendly(err){
   if (m.indexOf('already the current share key')>=0) return 'That is the key already in use. Type a different one, or tap Generate.';
   if (m.indexOf('key already in use')>=0) return 'That key is already used by another route.';
   if (m.indexOf('notice too long')>=0) return 'Notice is over 280 characters.';
+  if (m.indexOf('open_sharing must be')>=0) return 'Open sharing has to be on or off. Reload the page and try again.';
   if (m.indexOf('failed to fetch')>=0) return 'Could not reach the server. Check your connection.';
   return 'Something went wrong: ' + ((err&&err.message)||'unknown error');
 }
@@ -677,6 +697,7 @@ function fillSettingsForm(st){
   document.getElementById('maxSessions').value = st.max_sessions ?? 25;
   document.getElementById('sightingsOn').checked = st.sightings_enabled !== false;
   document.getElementById('parolOn').checked = st.parol_enabled !== false;
+  document.getElementById('openOn').checked = st.open_sharing === true;
 }
 async function refreshSettings(){
   const res = await rpc('get_settings', { p_slug:CFG.ROUTE_SLUG });
@@ -712,13 +733,27 @@ async function saveSettings(){
     sighting_expiry_min: parseInt(document.getElementById('sightingExpiry').value,10),
     max_sessions: parseInt(document.getElementById('maxSessions').value,10),
     sightings_enabled: document.getElementById('sightingsOn').checked,
-    parol_enabled: document.getElementById('parolOn').checked
+    parol_enabled: document.getElementById('parolOn').checked,
+    open_sharing: document.getElementById('openOn').checked
   };
+  // Every Save button sends the whole settings object, so a tick left in
+  // this box would go out with an hours change. Turning it on is asked about
+  // whichever button did it.
+  if (st.open_sharing && (SETTINGS||{}).open_sharing !== true &&
+      !confirm('Turn on open sharing? Anyone, including people who are not riders, will be able to put a bus on the map without the key. You can turn it off at any time.')){
+    document.getElementById('openOn').checked = false;
+    noteSettings('Not saved. Open sharing is still off.','err');
+    return;
+  }
   const res = await rpc('admin_set_settings', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_settings:st });
   if (res.error){
     noteSettings(friendly(res.error), 'err');
     return;
   }
+  // Turning open sharing off has just removed the keyless buses.
+  const wasOpen = (SETTINGS||{}).open_sharing === true;
+  SETTINGS = st;
+  if (wasOpen && !st.open_sharing) refreshSharers();
   noteSettings('Saved. The app picks it up within a minute.','ok');
 }
 
@@ -767,6 +802,9 @@ async function refreshSharers(){
       ? b.lat.toFixed(4)+', '+b.lng.toFixed(4) : 'no position';
     return '<div class="item"><div>'+dir+
       (b.bus_label ? ' · <b>'+esc(b.bus_label)+'</b>' : ' · no bus number')+
+      // Started without the key, while open sharing was on. Missing on a
+      // database without sql/11-open-sharing.sql, which reads as keyed.
+      (b.keyless === true ? ' · <b>no key</b>' : '')+
       '<div class="meta">'+at+
       ' · updated '+timeAgo(Date.parse(b.updated_at))+' ago · session '+esc(b.session_id.slice(0,8))+'...</div></div>'+
       '<button class="small btn-danger" onclick="kick(\''+esc(b.session_id)+'\')">Stop</button></div>';

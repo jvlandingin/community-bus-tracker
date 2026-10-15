@@ -1053,6 +1053,42 @@ function run(page, include, label, configText, setup) {
       'ends the trip, and says why', status());
     check(w.sessionStorage.getItem('wt-session') === null, 'and the next trip gets a session of its own');
 
+    // Open sharing (sql/11-open-sharing.sql): with the switch on, a page
+    // with no key shares by the public slug, and one with the key still
+    // uses it. Switched off under a keyless trip, the trip ends and the
+    // next Start asks for the key again.
+    check(w.eval('SET.open_sharing') === false, 'open sharing is off when the settings never mention it');
+    sim.reply.get_settings = () => ({ data: { settings: { open_sharing: true }, notice: null } });
+    await w.pollSettings();
+    check(w.eval('SET.open_sharing') === true, 'and on once the organizer turns it on');
+    const keyedOpen = await startTrip();
+    check(!!keyedOpen && keyedOpen.args.p_key === 'NEW-KEY-456' && !('p_slug' in keyedOpen.args),
+      'a page with the key still shares with it', keyedOpen && JSON.stringify(Object.keys(keyedOpen.args)));
+    await w.stopSharing({ quiet: true });
+    w.forgetKey();
+    const openBefore = of('set_open_position').length;
+    w.startSharing();
+    await waitFor(() => of('set_open_position').length > openBefore);
+    await pause(60);
+    const keyless = of('set_open_position')[openBefore];
+    check(isHidden('gate') && !!keyless, 'a page with no key starts without asking for one');
+    check(!!keyless && keyless.args.p_slug === w.eval('CFG.ROUTE_SLUG') && !('p_key' in keyless.args)
+        && keyless.args.p_speed === null,
+      'sending the route\'s public slug, no key and no speed', keyless && JSON.stringify(keyless.args));
+    sim.reply.set_open_position = () => ({ error: 'open sharing is off' });
+    const offBefore = of('set_open_position').length;
+    w.eval('lastWrite = 0');
+    sim.watches[sim.watches.length - 1].onPos(here);
+    await waitFor(() => w.eval('sharing') === false);
+    check(of('set_open_position').length > offBefore && !w.eval('sharing') && watchesOpen() === 0,
+      'switched off mid-trip, the keyless trip ends');
+    check(/switched off sharing without the key/.test(status()), 'saying why', status());
+    sim.reply.get_settings = () => ({ data: { settings: {}, notice: null } });
+    w.startSharing();
+    check(!isHidden('gate'), 'and the next Start asks for the key, without waiting for the settings poll');
+    w.closeModal('gate');
+    delete sim.reply.set_open_position;
+
     // One row with no position stopped the whole list drawing.
     const cp = CONFIG.split(/\r?\n/).filter(l => l.trim().startsWith('CHECKPOINT ='))[2]
       .split('=')[1].split('|').map(x => x.trim());

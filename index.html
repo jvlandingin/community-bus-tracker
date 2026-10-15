@@ -5683,7 +5683,7 @@ async function writePosition(coords){
   // A changed key is dropped as well, so the next Start asks for the new one
   // instead of trying the dead one again.
   if (raw.indexOf('session blocked')>=0){
-    await stopSharing({ quiet:true, blocked:true });
+    await stopSharing({ blocked:true });
     setShareUI('error', msg);
     return;
   }
@@ -5693,7 +5693,7 @@ async function writePosition(coords){
     // say open, so they are corrected now, or the next Start would skip the
     // key and be refused again.
     if (raw.indexOf('open sharing is off')>=0) SET.open_sharing = false;
-    await stopSharing({ quiet:true });
+    await stopSharing();
     if (raw.indexOf('invalid key')>=0) forgetKey();
     setShareUI('error', msg);
     return;
@@ -5961,9 +5961,10 @@ function beginWatch(firstCoords){
   }, function(err){
     // GPS giving up ends the trip, so it ends the way Stop ends one: the bus
     // leaves the map now rather than at expiry, any question still open is
-    // closed, and the next trip gets a session of its own.
+    // closed, the sharer gets the ticket the trip had earned so far, and the
+    // next trip gets a session of its own.
     const msg=gpsErrorMessage(err);
-    stopSharing({ quiet:true }).then(function(){ setShareUI('error', msg); });
+    stopSharing().then(function(){ setShareUI('error', msg); });
   });
   // heartbeat: a bus idling at a stop doesn't fire watchPosition; re-send last fix
   hbTimer=setInterval(function(){
@@ -6002,17 +6003,28 @@ async function stopSharing(opts){
   if (hbTimer){ clearInterval(hbTimer); hbTimer=null; }
   releaseWakeLock();
   writeFailing=false;
-  await rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:getSessionId() });
+  const session = getSessionId();
   // The next trip gets a session id of its own, unless an organizer stopped
   // this one: the block is on the session id, so keeping it is what makes
   // the block hold on this phone.
   if (!(opts && opts.blocked)) endSession();
   setShareUI('off','Not sharing');
-  if (!(opts && opts.quiet)) showTicket(trip, endCoords);
+  // Every end gets its ticket, not only Stop: GPS giving up, a key changed
+  // or open sharing switched off mid-trip, the end-of-line question left
+  // unanswered. A sharer who kept a bus on the map earned it however the trip
+  // ended, and ticketWorthShowing() still decides whether it was long enough.
+  // The one exception is an organizer's Stop: a bus taken off the map as
+  // wrong is not thanked for having been on it. The ticket comes before the
+  // network, because it is made on this phone, and at the end of the line
+  // the request below can take a minute to answer, long enough for the
+  // phone to be back in a pocket; and nothing about drawing it may keep the
+  // bus on everyone's map.
+  if (!(opts && opts.blocked)){ try{ showTicket(trip, endCoords); }catch(e){} }
+  await rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:session });
 }
 // ---- The salamat ticket ---------------------------------------------
 // What this phone remembers about the trip it is sharing, for the ticket it
-// shows at Stop: when it started, roughly where (on the chain, not a
+// shows when the trip ends: when it started, roughly where (on the chain, not a
 // position), how many other buses were on the map at that moment, whether a
 // write ever landed, and the highest salamat count it saw. It lives in this
 // variable and nowhere else, and stopSharing() drops it as it draws the

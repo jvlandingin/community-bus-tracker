@@ -918,6 +918,9 @@ function run(page, include, label, configText, setup) {
         let args = {};
         try { args = JSON.parse((o && o.body) || '{}'); } catch (e) {}
         sim.calls.push({ fn: m[1], args });
+        // A call held back, like a request at the end of the line that has
+        // not been answered yet; let go with sim.hold[fn].forEach(f => f()).
+        if (sim.hold && sim.hold[m[1]]) return new Promise(r => sim.hold[m[1]].push(() => r(new Response(null, { status: 204 }))));
         const r = sim.reply[m[1]] ? sim.reply[m[1]](args) : null;
         if (r && r.error) return Promise.resolve(json({ code: 'P0001', message: r.error, details: null, hint: null }, 400));
         return Promise.resolve(r && 'data' in r ? json(r.data) : new Response(null, { status: 204 }));
@@ -990,21 +993,26 @@ function run(page, include, label, configText, setup) {
 
     // Stop: the watch ends, the bus is cleared, and the session goes with the trip.
     const trip1 = first.args.p_session;
-    await w.stopSharing({ quiet: true });
+    await w.stopSharing();
     check(watchesOpen() === 0, 'Stop ends the only GPS watch there was', `${watchesOpen()} still open`);
     check(of('clear_bus_position').some(c => c.args.p_session === trip1), 'and clears that trip\'s bus');
     check(w.sessionStorage.getItem('wt-session') === null, 'and forgets its session id');
     const second = await startTrip();
     check(!!second && second.args.p_session !== trip1,
       'so the next trip is a different session, and a different bus on the map');
-    await w.stopSharing({ quiet: true });
+    await w.stopSharing();
 
     // An organiser's Stop is the one end that keeps the session, because the
     // block is on it.
-    sim.reply.set_keyed_position = () => ({ error: 'session blocked' });
+    // Stopped half an hour in, it is also the one end without a ticket.
     const blocked = await startTrip();
+    w.eval('TRIP.start -= 30 * 60000');
+    sim.reply.set_keyed_position = () => ({ error: 'session blocked' });
+    w.eval('lastWrite = 0');
+    sim.watches[sim.watches.length - 1].onPos(here);
     await waitFor(() => w.eval('sharing') === false);
     check(!w.eval('sharing') && watchesOpen() === 0, 'a blocked session ends the trip and its watch');
+    check(isHidden('tktModal'), 'and draws no ticket, however long it was on the map: a bus an organizer took off is not thanked for it');
     check(w.sessionStorage.getItem('wt-session') === blocked.args.p_session,
       'and keeps its session id, so the block holds on this phone');
     const again = await startTrip();
@@ -1083,6 +1091,25 @@ function run(page, include, label, configText, setup) {
     check(!w.eval('sharing') && watchesOpen() === 0 && /GPS timed out/.test(status()),
       'ends the trip, and says why', status());
     check(w.sessionStorage.getItem('wt-session') === null, 'and the next trip gets a session of its own');
+    check(isHidden('tktModal'), 'a trip that lost its GPS in its first minute gets no ticket: too short to have helped anyone');
+
+    // Half an hour in, it gets the ticket Stop would have given, and does not
+    // wait for the network to give it: at the end of the line the request
+    // that takes the bus off the map can be slow to answer.
+    await startTrip();
+    w.eval('TRIP.start -= 30 * 60000');
+    sim.hold = { clear_bus_position: [] };
+    sim.watches[sim.watches.length - 1].onErr({ code: 2 });
+    await waitFor(() => !isHidden('tktModal') && sim.hold.clear_bus_position.length > 0);
+    check(!isHidden('tktModal') && /map for\s*30 min/.test(d.getElementById('tktCard').textContent),
+      'a half-hour trip whose GPS gave up gets its ticket', d.getElementById('tktCard').textContent.replace(/\s+/g, ' ').slice(0, 160));
+    check(sim.hold.clear_bus_position.length === 1, 'drawn while the bus is still being taken off the map, not after');
+    sim.hold.clear_bus_position.forEach(f => f());
+    delete sim.hold;
+    await waitFor(() => /GPS fix/.test(status()));
+    check(!w.eval('sharing') && /Can't get a GPS fix/.test(status()),
+      'and under it, the status says why the trip ended', status());
+    w.closeTicket();
 
     // Open sharing (sql/11-open-sharing.sql): with the switch on, a page
     // with no key shares by the public slug, and one with the key still
@@ -1095,7 +1122,7 @@ function run(page, include, label, configText, setup) {
     const keyedOpen = await startTrip();
     check(!!keyedOpen && keyedOpen.args.p_key === 'NEW-KEY-456' && of('set_open_position').length === 0,
       'a page with the key still shares with it, not by the open path', keyedOpen && JSON.stringify(Object.keys(keyedOpen.args)));
-    await w.stopSharing({ quiet: true });
+    await w.stopSharing();
     w.forgetKey();
     const openBefore = of('set_open_position').length;
     w.startSharing();
@@ -1106,6 +1133,7 @@ function run(page, include, label, configText, setup) {
     check(!!keyless && keyless.args.p_slug === w.eval('CFG.ROUTE_SLUG') && !('p_key' in keyless.args)
         && keyless.args.p_speed === null,
       'sending the route\'s public slug, no key and no speed', keyless && JSON.stringify(keyless.args));
+    w.eval('TRIP.start -= 20 * 60000');
     sim.reply.set_open_position = () => ({ error: 'open sharing is off' });
     const offBefore = of('set_open_position').length;
     w.eval('lastWrite = 0');
@@ -1114,6 +1142,8 @@ function run(page, include, label, configText, setup) {
     check(of('set_open_position').length > offBefore && !w.eval('sharing') && watchesOpen() === 0,
       'switched off mid-trip, the keyless trip ends');
     check(/switched off sharing without the key/.test(status()), 'saying why', status());
+    check(!isHidden('tktModal'), 'with the ticket for the twenty minutes it was on the map');
+    w.closeTicket();
     sim.reply.get_settings = () => ({ data: { settings: {}, notice: null } });
     w.startSharing();
     check(!isHidden('gate'), 'and the next Start asks for the key, without waiting for the settings poll');

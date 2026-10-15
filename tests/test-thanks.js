@@ -300,11 +300,23 @@ console.log('\n=== 14. the ticket: made on the phone, kept only if asked ===');
     'drawing the ticket sends nothing and stores nothing');
   check(/TKT_KEEP = albumEntry\(\{ when:now, dir:shareDir, fromShort:tktPlace\(fromIdx\), toShort:tktPlace\(toIdx\),\s*stamps:stamps, thanked:trip\.maxThanks > 0 \}\);/.test(show),
     'what Keep would keep is albumEntry() of the trip: the ends, the stamps, and only whether anyone thanked');
-  check(/if \(!\(opts && opts\.quiet\)\) showTicket\(trip, endCoords\);/.test(html) &&
-        /await stopSharing\(\{ quiet:true, blocked:true \}\);\s*setShareUI\('error'/.test(html),
-    'and a session the server has blocked ends on its error, not on a ticket');
-  check(/await stopSharing\(\{ quiet:true \}\);\s*if \(raw\.indexOf\('invalid key'\)>=0\) forgetKey\(\);\s*setShareUI\('error'/.test(html),
-    'as does a trip refused for a changed key or a full route');
+  // Every end of a trip gets its ticket but one. The sharer asked for this:
+  // a trip that kept a bus on the map should not lose its ticket to a GPS
+  // error or a key changed under it. Whether it was long enough is still
+  // ticketWorthShowing()'s to say, so a route already full at the first
+  // write still shows nothing.
+  const stop = fn('stopSharing');
+  check(/if \(!\(opts && opts\.blocked\)\)\{ try\{ showTicket\(trip, endCoords\); \}catch\(e\)\{\} \}/.test(stop) &&
+        !/opts\.quiet/.test(stop) && !/quiet\s*:/.test(html),
+    'every end of a trip draws its ticket, with no quiet way round it');
+  check(/await stopSharing\(\{ blocked:true \}\);\s*setShareUI\('error'/.test(html),
+    'except a session an organizer stopped, which ends on its error, not on a ticket');
+  check(/await stopSharing\(\);\s*if \(raw\.indexOf\('invalid key'\)>=0\) forgetKey\(\);\s*setShareUI\('error'/.test(html),
+    'a trip refused for a changed key mid-trip gets its ticket, then says why it ended');
+  check(/const msg=gpsErrorMessage\(err\);\s*stopSharing\(\)\.then/.test(html),
+    'and so does a trip whose GPS gave up');
+  check(stop.indexOf('showTicket(') > 0 && stop.indexOf('showTicket(') < stop.indexOf("rpc('clear_bus_position'"),
+    'the ticket is drawn before the network is asked anything, so a slow line cannot hold it back');
 }
 
 console.log('\n=== 15. a kept ticket: the souvenir, not the stopwatch ===');

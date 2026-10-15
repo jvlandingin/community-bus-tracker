@@ -900,7 +900,20 @@ rules above before it was built.
   that compares one run with another — those are the driver numbers
   `for-operators.html` promises the tool cannot produce), a trip under five
   minutes or that never reached the map gets no ticket, and the salamat line
-  goes through `thanksWords()`, so a quiet trip shows no zero. The record it is
+  goes through `thanksWords()`, so a quiet trip shows no zero. **Every end of
+  a trip draws it, not only Stop** (October 2026): GPS giving up, a key
+  changed or open sharing switched off mid-trip, the end-of-line question left
+  to stop by itself. Those ends used to pass `quiet` and show nothing, so a
+  sharer who kept a bus on the map for an hour lost the ticket to a GPS
+  timeout at the last stop; the maintainer asked that nobody who shared go
+  without one because of an error along the way. Whether the trip was long
+  enough is still `ticketWorthShowing()`'s alone, so a route already full at
+  the first write shows nothing. The one end without a ticket is an
+  organizer's Stop, because a bus taken off the map as wrong is not thanked
+  for having been on it. The ticket is also drawn before `clear_bus_position`
+  is sent rather than after it answers: it is made on the phone, and at the
+  end of the line that request can take long enough to answer that the
+  phone is back in a pocket first. The record it is
   made from is six numbers and flags in one variable — when the trip started,
   roughly where on the chain, how many other buses were on the map, whether a
   write landed, the highest count seen — and `test-thanks.js` fails if it grows

@@ -176,7 +176,8 @@ at the destination behind it, the sky from its stamps), how long the bus was on
 the map, how many said salamat, a stamp or two. Made on the phone and sent nowhere. Fenced the same way as the count: no
 stamp may be about how the bus was driven (speed, trip time, comparisons — the
 driver metric again), no ticket for a trip under five minutes or one that never
-reached the map, no zero. It is built from a six-field record in memory, and
+reached the map, no zero. Every other end draws one, GPS failure and a refused
+key included; only an organizer's Stop does not. It is built from a six-field record in memory, and
 `test-thanks.js` fails if that record grows a field or anything is ever appended
 to it.
 

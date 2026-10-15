@@ -272,11 +272,26 @@ const skyFor = guideStamps.includes('Madaling araw') ? 'dawn' : guideStamps.incl
 check(art.length === 1 && punched.join(',') === [art[0].from, art[0].to].join(',') && art[0].sky === skyFor,
   'and it shows the two stops the ticket punches, under the sky its stamps give', art.length ? `${art[0].from} → ${art[0].to}, ${art[0].sky}` : '');
 
-// The guide's picture of your bus is busSvg() itself, drawn in by the tool.
+// The guide's pictures of your bus are busSvg() itself, drawn in by the tool:
+// one with what sharing earns, one dressed from the shop in a paint.
 const bus = tool.buses(guide, S);
-check(bus.length === 1 && bus[0].current === bus[0].wanted && bus[0].keys.length > 0,
-  'how-to.html: its picture of your bus is drawn by the tracker\'s own code, as it is now',
-  bus.length !== 1 ? bus.length + ' pictures' : bus[0].current === bus[0].wanted ? bus[0].keys.join(' ') : 'stale (run node tools/make-pictures.js)');
+const busStale = bus.filter(b => b.current !== b.wanted);
+check(bus.length === 2 && !busStale.length && bus.every(b => b.keys.length > 0),
+  'how-to.html: its pictures of your bus are drawn by the tracker\'s own code, as it is now',
+  bus.length !== 2 ? bus.length + ' pictures' : busStale.length ? 'stale (run node tools/make-pictures.js)' : bus.map(b => b.paint + ': ' + b.keys.join(' ')).join(' / '));
+check(bus.some(b => b.paint !== 'klasiko' && b.keys.some(k => /^(dice|antenna|visor|mirror|exhaust|flames|underglow|goldrims)$/.test(k))),
+  'and one of them is painted and wears something from the shop, as "Dress it up" says');
+// And its popup's picture is rideSvg(), on the road through the town its line
+// names, plain because that sharer has not chosen to show their bus.
+const ride = tool.rides(guide, S);
+const popupMark = (/<div class="kw">(<svg class="mark"[^]*?<\/svg>)/.exec(guide) || [])[1];
+check(ride.length === 1 && ride[0].current === ride[0].wanted,
+  'how-to.html: its popup\'s bus on the road is drawn by the tracker\'s own code, as it is now',
+  ride.length !== 1 ? ride.length + ' pictures' : ride[0].current === ride[0].wanted ? 'current' : 'stale (run node tools/make-pictures.js)');
+check(ride.length === 1 && ride[0].views.length === 1 && popupMark === S.markSvg(ride[0].views[0]) &&
+  ride[0].keys.length === 0 && ride[0].paint === 'klasiko' && /^<svg class="rideart" viewBox="34 22 186 52"/.test(ride[0].wanted),
+  'and it passes the place its town line is about, as a plain bus, framed as the popup frames it',
+  ride.length ? ride[0].views.join(',') + ', ' + ride[0].paint : '');
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);

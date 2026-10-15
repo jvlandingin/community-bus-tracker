@@ -1011,12 +1011,13 @@ ended by the same checkpoint gets one sign, and a place with no mark gets the
 strip's plain station ring.
 
 **Where it lives.** `wt-tickets` in `localStorage`, the fourth thing the
-privacy panel names, with "Remove all" in the album and Remove (asked twice)
+privacy panel names, with "Start from scratch" in the album and Remove (asked twice)
 on each kept ticket; removing the last ticket removes the key. The honest
 limits, all stated in the album or the panel: it is in that one browser, so
 clearing browser data loses it, and the Android app and Chrome on the same
-phone keep separate albums; there is no backup, because a backup is a copy
-somewhere else. There is no cap: a ticket is under a hundred bytes, so a
+phone keep separate albums. At first there was no backup, because a backup
+is a copy somewhere else; there is one now, as a file the sharer makes and
+keeps themselves (see "Dressing the bus"). There is no cap: a ticket is under a hundred bytes, so a
 commuter riding twice a day for years stays far inside the browser's storage,
 and a collection that silently drops its oldest tickets would be worse than a
 large one.
@@ -1141,12 +1142,14 @@ for a reason:
   farm, unlike trips. A "New on your bus" card says what it earned, close
   up, and where My tickets is.
 
-- *Numbers, no dates.* A count of trips cannot say when anyone worked; a list
-  of dated trips could, which is why kept tickets never held times and this
-  never holds days.
+- *Numbers, not a list of dates.* A count of trips cannot say when anyone
+  worked; a list of dated trips could, which is why kept tickets never held
+  times and this never holds a list of days. It holds two single dates, each
+  overwritten by the next: the week of the last trip, to count the streak
+  from, and the day of the last paid trip, for barya's daily cap (below).
 - *Kept or not.* Milestones that needed Keep tapped every time would make Keep
-  a default in practice. Counts with no dates are not the thing rule 10 was
-  protecting.
+  a default in practice. Counts with no list of dates are not the thing rule
+  10 was protecting.
 - *Only trips that went somewhere.* Otherwise sitting at a stop with sharing on
   for five minutes would dress the bus, and every such sitting is a bus on the
   map that isn't one.
@@ -1160,7 +1163,7 @@ for a reason:
   no new way to watch them. What was kept from the old reasoning is the
   shape: each is one number (minutes on the map, salamat received, the week
   of the last trip, the streak and the best), never a list of days, times or
-  trips, so they say how much and never when. The server still adds nothing
+  trips, so they say how much and when last, never a timetable. The server still adds nothing
   up and `thanks_now` still dies with its trip. Streaks count weeks, because
   a commuter's weekend would break a daily one every Saturday, and the
   decorations follow the best streak, so breaking one takes nothing away.
@@ -1168,10 +1171,108 @@ for a reason:
   50 and 100 salamat; luggage, curtains and a painted back window at 10, 50
   and 100 hours; fog lamps and a pennant at 4 and 12 weeks in a row. The
   ticket a trip ends with says what the bus has gathered in all.
-- *On the sharer's phone only.* Decorations on the live map were considered: a
-  decorated bus tells the road whose phone has shared most, and the same
-  decorations on the same bus every morning would link one person's trips
-  across days, a schedule kept by anyone watching.
+- *On the sharer's phone only, unless they choose* (changed later in October
+  2026). Decorations on the live map were refused at first: a decorated bus
+  tells the road whose phone has shared most, and the same decorations on the
+  same bus every morning would link one person's trips across days, a
+  schedule kept by anyone watching. That is still true, and is now the
+  sharer's to decide: see "Dressing the bus".
+
+## Dressing the bus: barya, the shop, and showing it
+
+Later in October 2026 the maintainer asked for coins earned by achievements
+and spent on accessories, a change of colour, a backup and restore with a way
+to start from scratch, riders seeing a sharer's decorated bus, and the bus
+moving through scenery that follows where it is. With two conditions:
+guardrails, so that nobody can farm any of it at everyone else's cost, and
+nothing added to the tracking tab. Rules 17 to 19 in the album block hold it,
+`test-thanks.js` section 20 tests the logic and `test-boot.js` the screens.
+
+**Barya** (rule 17), the conductor's word for coins. Each achievement pays
+once, when it is earned (`DECOR`'s `pay`, 10 for the first trip up to 100 for
+the hundredth; `paid` keeps which have), and a trip that drew a ticket and went
+somewhere pays `BARYA_TRIP`, 5, for at most `BARYA_TRIPS_A_DAY`, 3, a day.
+`busTripPay()` and `busSettle()` are the only things that add. The guardrails
+are about the map, not the coins: every trip farmed for barya would be a bus
+on everyone's map that isn't one, so a trip earns little, earns nothing past
+the third of a day, and only if it went somewhere, and the achievements pay
+most. Nothing a sharer can do with barya changes what anyone else sees except
+through rule 19, which only carries presets. Barya are never bought with
+money, never sent and cannot be given to anyone: there is no balance on the
+server, so there is nothing to sell or steal. Someone who edits their own
+storage, or a backup, can give themselves any amount; it changes their own
+drawing and nothing else, which is why that is accepted rather than
+prevented.
+
+**The shop and the paint** (rule 18). Eight accessories (`SHOP`: dice, an
+antenna, a visor, a chrome mirror, an exhaust stack, flames, a glow under the
+bus, gold wheels) and seven paints (`PAINTS`, `BUS_PAINTS`; the first,
+klasiko, is the livery and free). The achievements' own decorations are
+trophies: earned, never for sale, so a bell still means a tour finished and a
+horse a hundred trips. Presets only, with no colour picker and no text,
+because rule 19 lets the bus be seen: nothing on it can be a word, an advert,
+a phone number or anybody's colours. Buying takes two taps on the same
+button; anything owned can be taken off and put back on; the paint chosen is
+the bus's everywhere it is drawn.
+
+**Showing it to riders** (rule 19). Off until the sharer switches it on, and
+asked once, only when there is first something on the bus to show: on the
+ticket of the trip that earned its first decoration, on the card at the end
+of a tour that earned one, after the first thing bought, and as a switch in My
+tickets. Never on the tracking tab: the maintainer asked for no clutter
+there, and a question about showing nothing would be noise. While it is on,
+each position carries `busLook()`: a digit for the paint and one letter per
+thing worn, from the `id`s in `DECOR` and `SHOP`, sorted. The database keeps
+only that shape (`^[0-9][A-Za-z]{0,40}$`, `sql/13-bus-look.sql`), storing
+anything else as nothing rather than refusing the position, on the trip's own
+row, so it is overwritten with every write and goes with the trip. A watcher's
+popup reads it back with `lookRead()`, which ignores any letter it does not
+know. The honest cost is the one that kept decorations off the map at first,
+riders can tell the bus is the same sharer's from one trip to the next, and
+it is stated where the switch is, in the privacy panel and in
+`for-operators.html`. A sharer's own popup shows their bus as they dressed it,
+whether or not they show it to anyone else.
+
+Order of deployment does not matter. The two writers gain `p_look` with a
+default, so a page from before it calls them as it always did and shows plain
+buses. A page from after it, against a database without it, is refused for
+the unknown argument (PostgREST's "Could not find the function"); the page
+sends the same position again without the look and stops sending one for the
+rest of its life (`LOOK_SENDS`), so a position is never lost to a look.
+
+**The ride** (`rideSvg()` in the PICTURES block). In a bus's popup and at the
+top of My tickets, the coach is on the road: the dashes, the posts and the
+bushes scroll past, the wheels turn and the coach rocks a little, in front of
+the view of the place it is nearest (`TICKET_VIEWS`, chosen by the nearest
+checkpoint's mark) under the sky of the hour. In My tickets it drives past
+each kind of place on the route in turn, five seconds each (`rideViews()`).
+Decided:
+
+- *A pace, not a speed.* The loops run at fixed durations (`RIDE_LOOPS`), never
+  the bus's speed: a scene that sped up with the bus would put the driver
+  metric on every rider's screen.
+- *Still when the bus has gone quiet.* A bus not heard from lately stops on
+  the road, so the picture never claims movement the data does not.
+- *Phase-aligned.* The popup is redrawn with every refresh; each loop's
+  negative `animation-delay` is worked out from the clock, so a redraw
+  carries on where the last one was instead of jumping back.
+- *Close up in the popup.* `close` frames the coach and a little road, because
+  at 240 pixels the full scene leaves the bus a few pixels long.
+- Under reduced motion the stylesheet's blanket ends every loop where it
+  started, and My tickets does not cycle its views.
+
+**Backup, restore and starting over.** There are no accounts, so a backup is
+a file: "Save a backup" in My tickets, under Your progress, makes a small JSON
+file of the kept tickets and the bus (`backupMake()`) and hands it to the
+phone's share sheet where there is one, or downloads it; "Copy" puts the same
+text on the clipboard for a chat or a note. Restore reads a file or pasted
+text through `backupRead()`, which cleans every field the way storage is
+cleaned and refuses anything that is not a backup (or is over 400,000
+characters), then replaces what is on the phone, with a second tap if there
+is anything to lose. "Start from scratch" (once "Remove all") deletes the
+tickets and the bus, also on a second tap. The app never sends a backup
+anywhere, it writes only the two keys it already had, so the six remembered
+things stay six, and the privacy panel says what a backup is.
 
 ## Rules revisited, October 2026
 
@@ -1182,18 +1283,24 @@ would unlock. What changed, and what was kept and why:
   the trip runs, so a reload no longer costs the trip or its ticket); "four
   remembered things" (six: your bus and the trip in progress were added, and
   the privacy panel names both); the ticket being the only thing a trip leaves
-  on a phone (your bus's counts now outlast trips, as numbers with no dates);
+  on a phone (your bus's counts now outlast trips, as numbers with no list of
+  dates);
   "the ticket is the same for the same trip" (it still is, but no two trips
   are drawn alike); `for-operators.html`'s "one thing can be kept" (now two,
   and it says what the second is).
 - **Changed after that, by the maintainer:** a running salamat total, time on
   the map in all, and a streak (in weeks), all on the sharer's own phone
   only, as single numbers. See "Collecting" for why and what shape they keep.
+- **And after that:** barya, a shop, paint, a backup, and a decorated bus on
+  the live map, by the sharer's choice. See "Dressing the bus" for the
+  guardrails.
 - **Kept:** no location history; no watcher location leaves the device; no
   total of anything on the server; nothing about speed or a trip's length in
   any stamp, luck or decoration threshold beyond the time summed in all; no
   ETA in minutes (it needs the travel-time history the first invariant
-  forbids); decorations only on the sharer's own phone.
+  forbids); a decorated bus on the map only by its sharer's choice, off until
+  they make it, and only from fixed lists; no picture that moves with the
+  bus's speed.
 
 ## The guide and the tour
 

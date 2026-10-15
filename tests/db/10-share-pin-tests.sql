@@ -178,7 +178,8 @@ begin
                  'anon cannot call _key_failed');
   perform assert(has_function_privilege('anon', 'public.check_share_key(text,text)', 'execute')
                  and has_function_privilege('anon',
-                   'public.set_keyed_position(text,text,text,double precision,double precision,double precision,text,text)',
+                   -- with the look 13-bus-look.sql added
+                   'public.set_keyed_position(text,text,text,double precision,double precision,double precision,text,text,text)',
                    'execute'),
                  'anon can call the gate and the writer');
 end $$;

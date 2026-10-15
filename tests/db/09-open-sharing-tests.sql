@@ -179,7 +179,9 @@ begin
     'anon cannot call _write_position directly');
   perform assert(
     has_function_privilege('anon',
-      'public.set_open_position(text,text,double precision,double precision,double precision,text,text)',
+      -- with the look 13-bus-look.sql added: the suites check the database
+      -- as it ends up
+      'public.set_open_position(text,text,double precision,double precision,double precision,text,text,text)',
       'execute'),
     'anon can call set_open_position');
 end $$;

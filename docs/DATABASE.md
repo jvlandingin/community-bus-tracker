@@ -46,7 +46,19 @@ One row per sharing session, upserted in place. **No history table exists, by
 design.** Unique on `(route_slug, session_id)`.
 
 `route_key`, `route_slug`, `session_id`, `lat`, `lng`, `speed`, `direction`,
-`bus_label`, `keyless`, `updated_at`. `lat`, `lng` and `direction` refuse NULL.
+`bus_label`, `keyless`, `updated_at`, `look`. `lat`, `lng` and `direction`
+refuse NULL.
+
+`look` (since `13-bus-look.sql`) is NULL unless the sharer has switched on
+"Show my bus to riders" in the app. Then it is a code for their decorated bus:
+a digit for the paint and up to 40 letters, one per thing worn, from the app's
+own fixed lists (`^[0-9][A-Za-z]{0,40}$`, enforced by a check constraint, and
+anything else is stored as NULL rather than refused, so a bad look never costs a
+position). Every write sets it, so switching showing off makes the bus plain
+from the next write; it goes with the row when the trip ends. `get_positions`
+returns it for every bus, since showing it to riders is the point. The cost,
+said in the app where the switch is: riders can recognise a decorated bus from
+trip to trip.
 
 `keyless` (since `11-open-sharing.sql`, default false) is true for a bus started
 through `set_open_position`, without the share key. It exists so turning open

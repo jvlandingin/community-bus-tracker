@@ -18,10 +18,17 @@ retry.
 | `10-weekend-hours.sql` | lets Saturdays and Sundays have their own hours |
 | `11-open-sharing.sql` | lets the admin page switch on sharing without the key, and off again with every keyless bus removed |
 | `12-share-pin.sql` | lets the share key be a PIN of 4 to 8 digits, and pauses new trips after 20 wrong tries |
+| `13-bus-look.sql` | lets a sharer who chooses to show their decorated bus to riders, as a short code that dies with the trip |
 
 If you are setting up fresh, run all of them. They are separate files because
 they were written in that order against a live deployment, and keeping the
 history visible is more honest than pretending the first version was right.
+
+`13` can be run in either order too. Until it is applied, a sharer who has
+switched on "Show my bus to riders" has their write refused for the argument the
+database does not know yet; the page sends the same position again without it,
+stops asking for the rest of the visit, and their bus shows plain. Pages that
+send no look are untouched either way.
 
 `06` is the one that can be run in either order relative to the pages: until it
 is applied the heartbeat call fails and is swallowed, and the admin page says it

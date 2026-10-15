@@ -903,6 +903,8 @@
   .buspop .leaflet-popup-content{margin:9px 12px; font-size:var(--fs-small); line-height:1.5;}
   .buspop .leaflet-popup-tip{background:var(--surface);}
   .buspop .pdir{font-size:var(--fs-cap); font-weight:800; letter-spacing:.06em;}
+  /* The bus on the road through where it is (popupRide), above its words. */
+  .buspop .pride{width:100%; margin:0 0 7px; border-radius:var(--r-s); overflow:hidden;}
   .buspop .nb .pdir{color:var(--gold-deep);}
   .buspop .sb .pdir{color:var(--brand-ink);}
   .buspop .pname{font-weight:800; font-size:var(--fs-body); margin-top:1px;}
@@ -1316,24 +1318,44 @@
     font-size:var(--fs-label); font-weight:800; letter-spacing:.02em;}
   .alb-decor{display:grid; grid-template-columns:1fr 1fr; gap:6px 10px; margin:10px 0 0; padding:0; list-style:none;}
   .alb-decor li{display:flex; flex-direction:column; min-width:0; padding:6px 8px; border-radius:var(--r-s); border:1.3px dashed rgba(109,26,37,.35);}
-  .alb-decor li.on{border-style:solid; border-color:var(--ti); background:rgba(227,154,28,.18);}
+  .alb-decor li.got{border-style:solid; border-color:var(--ti);}
+  .alb-decor li.on{background:rgba(227,154,28,.18);}
   .alb-decor b{font-size:var(--fs-label); font-weight:900;}
   .alb-decor span{font-size:var(--fs-cap); font-weight:600; opacity:.8; line-height:1.3;}
   .alb-decor i{margin-top:2px; font-style:normal; font-size:var(--fs-cap); font-weight:900; letter-spacing:.04em;}
-  .alb-decor li:not(.on) b, .alb-decor li:not(.on) i{opacity:.6;}
+  .alb-decor li:not(.got) b, .alb-decor li:not(.got) i{opacity:.6;}
   /* Each decoration on its own part of the bus: in colour once earned; until
      then a dashed outline over a faded coach, a look at what is coming. The
      outline's width is in screen pixels, so every card draws it the same. */
   .alb-decor .decor-art{display:block; width:100%; height:auto; margin-bottom:6px; border-radius:var(--r-s);}
-  .alb-decor li:not(.on) .decor-art .dc{opacity:.3;}
-  .alb-decor li:not(.on) .decor-art .dg *{fill:none; stroke:var(--ti); stroke-width:1.3px; stroke-dasharray:3 2;
+  .alb-decor li:not(.got) .decor-art .dc{opacity:.3;}
+  .alb-decor li:not(.got) .decor-art .dg *{fill:none; stroke:var(--ti); stroke-width:1.3px; stroke-dasharray:3 2;
     vector-effect:non-scaling-stroke;}
   .alb-none{margin:16px 0 0;}
+  /* The bus on the road (rideSvg): the road, the posts and the bushes go
+     by, the wheels turn and the coach rocks, all at one decorative pace.
+     Stopped for a bus not heard from lately; the reduced-motion blanket
+     below ends every loop where it started, so the scene stands still. */
+  .rideart{display:block; width:100%; height:auto;}
+  .rideart .rr{animation:rideroad 1.3s linear infinite;}
+  .rideart .rp{animation:rideposts 3s linear infinite;}
+  .rideart .rb{animation:ridebush 15s linear infinite;}
+  .rideart .rw{transform-box:fill-box; transform-origin:50% 50%; animation:ridewheel 1.1s linear infinite;}
+  .rideart .rk{animation:riderock .9s ease-in-out infinite;}
+  .rideart.still .rr, .rideart.still .rp, .rideart.still .rb, .rideart.still .rw, .rideart.still .rk{animation-play-state:paused;}
+  .rideart .rv{opacity:0; transition:opacity var(--dur-3) var(--ease);}
+  .rideart .rv.on{opacity:1;}
+  @keyframes rideroad{to{transform:translateX(-26px);}}
+  @keyframes rideposts{to{transform:translateX(-60px);}}
+  @keyframes ridebush{to{transform:translateX(-150px);}}
+  @keyframes ridewheel{to{transform:rotate(360deg);}}
+  @keyframes riderock{50%{transform:translateY(-.35px);}}
   .busnew-art{display:flex; gap:10px; margin:4px 0 12px;}
   .busnew-art figure{flex:1; min-width:0; margin:0;}
   .busnew-art .decor-art{display:block; width:100%; height:auto; border-radius:var(--r-m);}
   .busnew-art figcaption{margin-top:5px; text-align:center; font-size:var(--fs-label); font-weight:800;}
   .busnew p{margin:0 0 14px; line-height:1.45;}
+  .busnew .lookq{margin-bottom:14px;}
   .alb-sights{display:grid; grid-template-columns:repeat(4,1fr); gap:12px 8px; padding:12px 10px;}
   .alb-sight{display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; text-align:center;}
   .alb-sight > i:first-child{display:block; width:100%; border-radius:var(--r-s); overflow:hidden; line-height:0;
@@ -1363,13 +1385,63 @@
   .tm-st i.red{color:#b0281c;} .tm-st i.blue{color:#2a3a9e;} .tm-st i.green{color:#1d6a43;}
   .alb-more{margin-top:14px;}
   .alb-since{margin-top:14px; text-align:center; font-size:var(--fs-label); font-weight:700; color:var(--muted);}
-  .alb-end{display:flex; align-items:center; gap:12px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line);}
-  .alb-end .hint{flex:1; margin:0; font-size:var(--fs-label);}
+  .alb-end{margin-top:16px; padding-top:4px; border-top:1px solid var(--line);}
+  .alb-end .hint{margin:0 0 10px; font-size:var(--fs-label);}
   .alb-clear{
-    flex:0 0 auto; min-height:var(--tap); padding:0 14px; border-radius:var(--r-m); cursor:pointer;
+    display:block; width:100%; margin-top:12px; min-height:var(--tap); padding:0 14px; border-radius:var(--r-m); cursor:pointer;
     border:1.5px solid var(--line); background:var(--paper); color:var(--lost-ink);
     font-family:inherit; font-size:var(--fs-label); font-weight:800;
   }
+  /* Your progress: save, copy, restore. */
+  .alb-keep{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
+  .alb-btn{min-height:var(--tap); padding:0 10px; border-radius:var(--r-m); cursor:pointer; border:1.5px solid var(--line);
+    background:var(--paper); color:var(--ink); font-family:inherit; font-size:var(--fs-label); font-weight:800;}
+  .alb-restore{display:flex; flex-direction:column; gap:6px; margin-top:10px;}
+  .alb-restore label{font-size:var(--fs-label); font-weight:700; color:var(--muted);}
+  /* The browser's own file picker, dressed as the buttons beside it. */
+  .alb-restore input[type=file]{max-width:100%; font-family:inherit; font-size:var(--fs-label); color:var(--muted);}
+  .alb-restore input[type=file]::file-selector-button{min-height:var(--tap); margin-right:10px; padding:0 14px; border-radius:var(--r-m);
+    cursor:pointer; border:1.5px solid var(--line); background:var(--paper); color:var(--ink); font-family:inherit; font-size:var(--fs-label); font-weight:800;}
+  .alb-restore textarea{width:100%; padding:8px; border-radius:var(--r-s); border:1.5px solid var(--line); background:var(--paper);
+    color:var(--ink); font-family:ui-monospace,Menlo,Consolas,monospace; font-size:var(--fs-cap);}
+  .alb-msg{margin:8px 0 0; font-size:var(--fs-label); font-weight:700; color:var(--ok-ink);}
+  .alb-msg:empty{display:none;}
+  /* The garage: the bus on the road, its paints, the shop, the trophies. */
+  .alb-ride{border-radius:var(--r-s); overflow:hidden;}
+  .alb-paints{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:10px;}
+  .alb-paint{display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; padding:6px 4px; border-radius:var(--r-s); cursor:pointer;
+    border:1.3px dashed rgba(109,26,37,.35); background:transparent; color:var(--ti); font-family:inherit;}
+  .alb-paint i{display:block; width:100%; height:26px; border-radius:var(--r-s); box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);}
+  .alb-paint b{font-size:var(--fs-label); font-weight:900;}
+  .alb-paint span{font-size:var(--fs-cap); font-weight:800; opacity:.8;}
+  .alb-paint.on{border-style:solid; border-color:var(--ti); background:rgba(227,154,28,.18);}
+  .alb-paint.short{opacity:.5;}
+  .alb-act{margin-top:6px; min-height:34px; padding:4px 8px; border-radius:var(--r-s); cursor:pointer; border:1.3px solid var(--ti);
+    background:transparent; color:var(--ti); font-family:inherit; font-size:var(--fs-cap); font-weight:900; letter-spacing:.02em;}
+  .alb-act.buy{background:var(--gold); border-color:var(--gold); color:#2b2320;}
+  .alb-act.buy.short{background:transparent; border-color:rgba(109,26,37,.35); color:var(--ti); opacity:.6; cursor:default;}
+  .alb-show{display:flex; align-items:center; gap:10px; margin-top:10px; padding:8px 10px; border-radius:var(--r-s); background:rgba(227,154,28,.14);}
+  .alb-show span{flex:1; min-width:0;}
+  .alb-show b{display:block; font-size:var(--fs-label); font-weight:900;}
+  .alb-show small{display:block; font-size:var(--fs-cap); font-weight:600; line-height:1.35; opacity:.85;}
+  .alb-toggle{flex:0 0 auto; min-width:58px; min-height:34px; border-radius:999px; cursor:pointer; border:1.5px solid var(--ti);
+    background:transparent; color:var(--ti); font-family:inherit; font-size:var(--fs-label); font-weight:900;}
+  .alb-toggle.on{background:var(--ti); color:#fbf4e4;}
+  /* The question whether to show the bus, asked once. */
+  .lookq{display:flex; flex-direction:column; gap:4px; margin-top:10px; padding:10px; border-radius:var(--r-s);
+    border:1.5px solid var(--gold); background:rgba(227,154,28,.12); color:#6d1a25; text-align:left;}
+  .lookq b{font-size:var(--fs-small); font-weight:900;}
+  .lookq span{font-size:var(--fs-label); font-weight:600; line-height:1.4;}
+  .lookq .lookq-acts{display:flex; gap:8px; margin-top:4px;}
+  .lookq button{flex:1; min-height:var(--tap); border-radius:var(--r-m); cursor:pointer; font-family:inherit; font-size:var(--fs-small); font-weight:900;}
+  .lookq .lookq-yes{border:1.5px solid var(--gold); background:var(--gold); color:#2b2320;}
+  .lookq .lookq-no{border:1.5px solid rgba(109,26,37,.35); background:transparent; color:#6d1a25;}
+  .lookq.done{border-style:dashed;}
+  /* Barya on a ticket, and on the tour's card. */
+  .tkt-coins{display:flex; align-items:center; gap:9px; margin-top:10px; font-size:var(--fs-small); font-weight:900; color:#7a5a12;}
+  .tkt-coins small{display:block; font-size:var(--fs-label); font-weight:600; opacity:.85;}
+  .coin{flex:0 0 auto; display:inline-block; width:18px; height:18px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #fff1b8, #e3b23c 55%, #b8860b); box-shadow:inset 0 0 0 1.5px #a8761c;}
 
   /* ---- Pasko: a parol and a string of lights --------------------------
      September to early January, the season the whole country decorates for
@@ -1823,11 +1895,11 @@
       <p>“Send a link to this bus”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do.</p>
 
       <h4 class="ok">If you share from the bus</h4>
-      <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
+      <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip, plus, only if you switched on “Show my bus to riders”, a short code for how your bus is painted and dressed. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
       <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop.</p>
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and on our side it goes when the trip does. Your phone adds it to your bus in My tickets, a total only you can see.</p>
       <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>it is not sent anywhere</b>. Close it and it is gone.</p>
-      <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Remove all” in My tickets deletes every copy.</p>
+      <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Start from scratch” in My tickets deletes every copy.</p>
 
       <div id="privSightings">
         <h4 class="ok">Sightings</h4>
@@ -1853,8 +1925,10 @@
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
       <p>Six small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it. All six stay in your browser, are never sent anywhere, and are not linked to anything.</p>
-      <p>Your bus is the coach your trips decorate in My tickets, and it is <b>numbers only</b>: how many trips you shared, how many of them were first on the map, end to end, before 5 AM or after dark, which directions, which places on the route, whether you finished each tour, your time on the map and the salamat you received in all, and how many weeks in a row you have shared, with the week of your last trip to count it from. Totals, never a list: no days, no clock times and no bus numbers, so it can say how much, but never when. The trip you are sharing is kept so that a page that reloads or closes mid-trip can carry on with the same bus, or still give you its ticket: when it started, roughly where it began and last was on the route, and the trip's random ID. It is deleted the moment the trip ends, or, if the page closed mid-trip, the next time the page opens.</p>
-      <p>Clearing your browser data removes them all, “Remove my stop” in the stop picker deletes the third on its own, and “Remove all” in My tickets the fourth and fifth.</p>
+      <p>Your bus is the coach your trips decorate in My tickets, and it is <b>totals and choices, never a diary</b>: how many trips you shared, how many of them were first on the map, end to end, before 5 AM or after dark, which directions, which places on the route, whether you finished each tour, your time on the map and the salamat you received in all, and how many weeks in a row you have shared, with the week of your last trip to count it from; and the barya it has (the app's own coins: never bought with money, never sent), what they bought, which paint and accessories it wears, whether you show it to riders, and, for the cap of three paid trips a day, the day of your last paid trip. Totals, never a list: no clock times and no bus numbers, so it can say how much you have shared and the last day you did, but never a timetable of when you worked. The trip you are sharing is kept so that a page that reloads or closes mid-trip can carry on with the same bus, or still give you its ticket: when it started, roughly where it began and last was on the route, and the trip's random ID. It is deleted the moment the trip ends, or, if the page closed mid-trip, the next time the page opens.</p>
+      <p><b>Showing your bus to riders</b> is off unless you switch it on, in My tickets or when the app first asks, once there is something on your bus to show. While it is on and you share, riders who tap your bus see it as you dressed it. The honest cost: they will be able to tell it is yours from one trip to the next. The code that carries it is letters from the app's own lists, never words or colours of anyone's choosing, and it is deleted with the trip, like the position.</p>
+      <p><b>A backup</b>, from Your progress in My tickets, is a small file of your kept tickets and your bus, made on this phone and handed to you to keep wherever you like. The app never sends it anywhere. Restore reads one back.</p>
+      <p>Clearing your browser data removes them all, “Remove my stop” in the stop picker deletes the third on its own, and “Start from scratch” in My tickets the fourth and fifth.</p>
     </div>
     <div class="modal-foot">
       <button class="big btn-ghost" onclick="closeModal('privModal')">Close</button>
@@ -1908,9 +1982,25 @@
     </h3>
     <div class="modal-scroll">
       <div id="albumBody"></div>
+      <!-- Your progress: a backup made on this phone and kept wherever its
+           owner puts it, a restore from one, and starting from scratch. -->
       <div class="alb-end">
-        <p class="hint">Kept on this phone only and never sent anywhere. Clearing this browser’s data removes them, and Remove all takes your bus too.</p>
-        <button type="button" class="alb-clear" id="albumClear" onclick="clearAlbum()">Remove all</button>
+        <div class="alb-h">Your progress</div>
+        <p class="hint">Your tickets, your bus and its barya are kept on this phone only and never sent anywhere, so clearing this browser’s data deletes them. Save a backup to keep them safe, or to move them to another phone.</p>
+        <div class="alb-keep">
+          <button type="button" class="alb-btn" onclick="saveBackup()">Save a backup</button>
+          <button type="button" class="alb-btn" onclick="copyBackup()">Copy as text</button>
+          <button type="button" class="alb-btn" onclick="openRestore()">Restore</button>
+        </div>
+        <div class="alb-restore hidden" id="bkRestore">
+          <label for="bkFile">A backup file</label>
+          <input type="file" id="bkFile" accept=".json,application/json,text/plain">
+          <label for="bkText">or a backup pasted as text</label>
+          <textarea id="bkText" rows="3" spellcheck="false" autocomplete="off"></textarea>
+          <button type="button" class="alb-btn" id="bkGo" onclick="restoreBackup()">Restore from this backup</button>
+        </div>
+        <p class="alb-msg" id="bkMsg" role="status"></p>
+        <button type="button" class="alb-clear" id="albumClear" onclick="clearAlbum()">Start from scratch</button>
       </div>
     </div>
   </div>
@@ -2997,7 +3087,40 @@ const BUS_DECOR = {
   // Mapa: the route along the skirt, a station for each place, for having
   // ridden past every one.
   route: '<path d="M190 114H254" stroke="#6d1a25" stroke-width="1.6"/><g fill="#fbf4e4" stroke="#6d1a25" stroke-width="1.2">' +
-    [0, 1, 2, 3, 4, 5, 6].map(function(i){ return '<circle cx="' + (190 + i * 64 / 6).toFixed(1) + '" cy="114" r="2.2"/>'; }).join('') + '</g>'
+    [0, 1, 2, 3, 4, 5, 6].map(function(i){ return '<circle cx="' + (190 + i * 64 / 6).toFixed(1) + '" cy="114" r="2.2"/>'; }).join('') + '</g>',
+  // The shop's, bought with barya rather than earned (SHOP in the album
+  // block). Dais: a pair of dice hanging in the front side window.
+  dice: '<path d="M296 31.5V36.5M299.5 31.5V39.5" stroke="#5a514c" stroke-width=".6"/>' +
+    '<rect x="293.5" y="36.4" width="5" height="5" rx="1" fill="#fff" stroke="#8a929a" stroke-width=".4"/>' +
+    '<rect x="297" y="39.4" width="5" height="5" rx="1" fill="#d7262c"/>' +
+    '<g fill="#2b2320"><circle cx="295" cy="37.9" r=".5"/><circle cx="297" cy="39.9" r=".5"/></g>' +
+    '<g fill="#fff"><circle cx="298.5" cy="40.9" r=".5"/><circle cx="300.5" cy="42.9" r=".5"/><circle cx="299.5" cy="41.9" r=".5"/></g>',
+  // Antena: a whip antenna on the roof, a streamer at its tip.
+  antenna: '<path d="M296 22.5L291 1.6" stroke="#5a514c" stroke-width=".9" stroke-linecap="round"/><circle cx="291" cy="1.6" r="1.1" fill="#e8483f"/>' +
+    '<path d="M291.4 3.2Q287.5 4.4 284.6 2.6" fill="none" stroke="#f2c230" stroke-width="1.2" stroke-linecap="round"/>',
+  // Visor: a sun visor over the windscreen.
+  visor: '<path d="M299 23.6V21.4Q299 19.4 301 19.4H340Q347.5 19.4 352.5 24.6Z" fill="#3a3f45"/>' +
+    '<path d="M301 20.6H339.6Q345.6 20.6 349.6 23.2" fill="none" stroke="#8a929a" stroke-width=".7"/>',
+  // Salaming kromo: the mirror, in chrome, with a round bug-eye head.
+  mirror: '<path d="M333 27C350 17 363 28 358 44" fill="none" stroke="#cfd5db" stroke-width="2.6" stroke-linecap="round"/>' +
+    '<ellipse cx="357.3" cy="50" rx="5.2" ry="8.4" fill="#e3e7eb" stroke="#8a929a" stroke-width=".8"/>' +
+    '<path d="M354.6 45.6Q355.8 43.6 358 43.8" fill="none" stroke="#fff" stroke-width="1" stroke-linecap="round"/>',
+  // Tambutso: a chrome exhaust stack up the back.
+  exhaust: '<rect x="29" y="16" width="4" height="54" rx="1.6" fill="#cfd5db" stroke="#8a929a" stroke-width=".6"/>' +
+    '<path d="M28 16.4H34L33 13H29Z" fill="#8a929a"/><path d="M30 20V66" stroke="#fff" stroke-width=".7" opacity=".7"/>',
+  // Apoy: flames on the front of the skirt, streaming back.
+  flames: '<path d="M331 103C321 103 314 99.5 303 101.5C311 103.5 313 105.5 307 108C317 107 321 110 313 114.5C323 112.5 327 115 331 117.5Z" fill="#d7262c"/>' +
+    '<path d="M331 105.5C323 105.5 318 103.5 311 104.6C317 106 318 107.6 314 109.4C321 109 324 111 319 113.6C325 112.6 328 114 331 115.4Z" fill="#f39a2d"/>' +
+    '<path d="M331 108C326 108 323 107 319 107.6C322 108.6 322.6 109.6 320.6 110.8C324.6 110.6 327 111.6 331 112.6Z" fill="#f2c230"/>',
+  // Ilaw sa ilalim: a glow under the skirt, between and beyond the wheels.
+  underglow: '<path d="M30 125H72M104 125H266M298 125H344" stroke="#5ff0b8" stroke-width="6" opacity=".22" stroke-linecap="round"/>' +
+    '<path d="M32 121.6H70M106 121.6H264M300 121.6H342" stroke="#5ff0b8" stroke-width="2.6" opacity=".8" stroke-linecap="round"/>',
+  // Gintong gulong: gold wheels.
+  goldrims: [88, 282].map(function(x){
+    return '<circle cx="' + x + '" cy="120" r="9.5" fill="#e3b23c" stroke="#a8761c"/><circle cx="' + x + '" cy="120" r="5.6" fill="#f2d27a"/>' +
+      '<path d="M' + x + ' 114.4V125.6M' + (x - 5.6) + ' 120H' + (x + 5.6) + '" stroke="#a8761c" stroke-width="1.2"/>' +
+      '<circle cx="' + x + '" cy="120" r="1.8" fill="#a8761c"/>';
+  }).join('')
 };
 // Where each decoration sits on the coach, as the corner of it a card in My
 // tickets looks at (x y w h, all twice as wide as tall, in the coach's own
@@ -3008,25 +3131,100 @@ const DECOR_BOX = {
   chrome:'58 104 60 30', lights:'40 14 64 32', horse:'300 0 48 24', rooster:'128 94 64 32',
   stripe:'150 70 64 32', sunrise:'22 68 56 28', string:'40 62 64 32', bumpers:'306 96 56 28',
   route:'184 100 76 38', flowers:'266 50 48 24', ribbons:'318 10 48 24', goldstar:'320 72 40 20',
-  luggage:'116 0 96 48', mural:'30 26 64 32', curtains:'30 24 64 32', foglamps:'316 100 48 24', pennant:'14 0 48 24'
+  luggage:'116 0 96 48', mural:'30 26 64 32', curtains:'30 24 64 32', foglamps:'316 100 48 24', pennant:'14 0 48 24',
+  dice:'276 26 40 20', antenna:'272 0 40 20', visor:'294 8 64 32', mirror:'320 16 88 44', exhaust:'0 0 72 36',
+  flames:'294 94 48 24', underglow:'96 104 80 40', goldrims:'58 104 60 30'
 };
 function decorTile(key){
   if (!hasOwn(BUS_DECOR, key) || !hasOwn(DECOR_BOX, key)) return '';
   const c = TICKET_SKIES.day;
   return '<svg class="decor-art" viewBox="' + DECOR_BOX[key] + '" aria-hidden="true" focusable="false" style="' + c.coach + '">' +
-    '<rect x="-10" y="-10" width="384" height="160" fill="' + c.sky + '"/>' +
+    '<rect x="-10" y="-10" width="440" height="160" fill="' + c.sky + '"/>' +
     '<g class="dc">' + COACH_SIDE + '</g><g class="dg">' + BUS_DECOR[key] + '</g></svg>';
 }
+// The paint jobs a bus can wear: body, roof and skirt, the band, and the
+// trim. Klasiko is the app's own maroon and gold, the coach as it is drawn
+// everywhere else. Presets only, never a colour picker, so nobody can paint
+// a bus to pass for an operator's or to say something on everyone's map.
+const BUS_PAINTS = {
+  klasiko: ['#f3ecdf', '#e6dccb', '#d9cfbe', '#7a1f2b', '#e39a1c'],
+  dagat:   ['#f4f6f8', '#e2e8ee', '#d3dbe3', '#1f5f9e', '#f2c230'],
+  gubat:   ['#f1efe2', '#e2dfcc', '#d5d1ba', '#2e6b45', '#e3b23c'],
+  kahel:   ['#fbf3ea', '#efe2d2', '#e2d2bf', '#d9661c', '#7a1f2b'],
+  lila:    ['#f3eff8', '#e3dcee', '#d6cde4', '#5b3a8e', '#c9a7e8'],
+  uling:   ['#3a3539', '#2f2a2e', '#28242a', '#b8322a', '#e3b23c'],
+  ginto:   ['#f6ead0', '#ead9b4', '#dcc79c', '#b8860b', '#7a1f2b']
+};
+// The coach's colours for a time of day, in a paint job: the sky's own
+// glass, lamps and wheels, the paint's body, band and trim.
+function paintStyle(paint, sky){
+  const p = BUS_PAINTS[hasOwn(BUS_PAINTS, paint) ? paint : 'klasiko'];
+  const base = (TICKET_SKIES[sky] || TICKET_SKIES.day).coach;
+  return base.replace(/--c-body:[^;]*/, '--c-body:' + p[0]).replace(/--c-roof:[^;]*/, '--c-roof:' + p[1])
+    .replace(/--c-skirt:[^;]*/, '--c-skirt:' + p[2]).replace(/--c-band:[^;]*/, '--c-band:' + p[3])
+    .replace(/--c-gold:[^;]*/, '--c-gold:' + p[4]);
+}
+function decorOn(keys){
+  return (keys || []).filter(function(k){ return hasOwn(BUS_DECOR, k); }).map(function(k){ return BUS_DECOR[k]; }).join('');
+}
 // The coach wearing the decorations named, in the order given, by day.
-function busSvg(keys){
+function busSvg(keys, paint){
   const c = TICKET_SKIES.day;
-  const d = (keys || []).filter(function(k){ return hasOwn(BUS_DECOR, k); }).map(function(k){ return BUS_DECOR[k]; }).join('');
-  return '<svg class="mybus" viewBox="0 0 400 170" aria-hidden="true" focusable="false" style="' + c.coach + '">' +
+  const d = decorOn(keys);
+  return '<svg class="mybus" viewBox="0 0 400 170" aria-hidden="true" focusable="false" style="' + paintStyle(paint, 'day') + '">' +
     '<rect width="400" height="170" fill="' + c.sky + '"/>' +
     '<path d="M0 118C60 104 120 112 190 104C260 96 330 110 400 102V170H0Z" fill="' + c.hill + '"/>' +
     '<rect y="146" width="400" height="12" fill="' + c.road + '"/><rect y="158" width="400" height="12" fill="' + c.ground + '"/>' +
     '<path d="M6 152H394" stroke="#fbf4e4" stroke-width="1.6" stroke-dasharray="9 8" opacity=".55"/>' +
     '<svg x="18" y="12.5" width="364" height="136" viewBox="0 0 364 136">' + COACH_SIDE + d + '</svg></svg>';
+}
+// A bus on the road through a place, moving (October 2026): the scene in a
+// bus's popup, and My tickets' own bus. The road's dashes, the posts by it
+// and the bushes behind scroll past, the wheels turn and the coach rocks a
+// little; the view is the place's (TICKET_VIEWS, by the mark of the
+// checkpoint the bus is nearest), held still the way a far landmark is. The
+// pace is decorative and the same for every bus: nothing sends a bus's real
+// speed, and a scene that went faster or slower would read as a promise of
+// when it arrives. t: { views (marks; more than one are stacked, and the
+// page fades from one to the next), sky, worn (decorations, in order),
+// paint, still (stopped, for a bus not heard from lately), now (milliseconds;
+// where in its loop each moving part is, so a popup redrawn by a poll
+// carries on rather than jumping back), close (framed closer, for My
+// tickets, where the bus is what is being looked at) }. No ids.
+const RIDE_LOOPS = { road:1.3, posts:3, bush:15, wheel:1.1, rock:.9 };
+function rideSvg(t){
+  t = t || {};
+  const k = TICKET_SKIES[t.sky] ? t.sky : 'day', c = TICKET_SKIES[k];
+  const at = function(loop){ return ' style="animation-delay:-' + (((+t.now || 0) / 1000) % RIDE_LOOPS[loop]).toFixed(2) + 's"'; };
+  const views = (t.views && t.views.length ? t.views : ['']).slice(0, 12).map(function(v, i){
+    const key = String(v || '').toLowerCase();
+    return '<g class="rv' + (i === 0 ? ' on' : '') + '">' + (hasOwn(TICKET_VIEWS, key)
+      ? TICKET_VIEWS[key](c) + '<path d="M0 60C60 57.5 120 60.5 180 58.5C230 57 270 59.5 300 58.5V66H0Z" fill="' + c.hill + '"/>'
+      : '<path d="M0 58C40 50 80 54 120 50C170 45 220 54 260 49C280 47 292 50 300 50V66H0Z" fill="' + c.hill + '"/>') + '</g>';
+  }).join('');
+  const sky = k === 'night'
+    ? '<path d="M24 7h0M70 20h0M88 6h0M140 11h0M160 5h0M196 8h0M226 4h0M286 22h0M252 3h0" stroke="' + c.orb + '" stroke-width="2" stroke-linecap="round" opacity=".85"/>' +
+      '<path d="M112 7a8 8 0 1 0 0 16a6.2 8 0 1 1 0-16z" fill="' + c.orb + '"/>'
+    : k === 'dawn' ? '<circle cx="118" cy="36" r="9" fill="' + c.orb + '"/>'
+    : '<circle cx="100" cy="15" r="6.5" fill="' + c.orb + '"/><path d="M126 20a4 4 0 0 1 4-4a5.5 5.5 0 0 1 10.5-1.5a4 4 0 0 1 3.5 5.5z" fill="#fff" opacity=".9"/>' +
+      '<path d="M238 11a3 3 0 0 1 3-3a4 4 0 0 1 7.6-1a3 3 0 0 1 2.4 4z" fill="#fff" opacity=".8"/>';
+  let bush = '', posts = '';
+  for (let x = 0; x < 450; x += 150){
+    bush += '<circle cx="' + (x + 20) + '" cy="62" r="4.5"/><circle cx="' + (x + 27) + '" cy="61" r="5.5"/><circle cx="' + (x + 34) + '" cy="62.5" r="3.8"/>' +
+            '<circle cx="' + (x + 96) + '" cy="62" r="3.6"/><circle cx="' + (x + 101) + '" cy="61.6" r="4.4"/>';
+  }
+  for (let x = 0; x < 420; x += 60) posts += 'M' + (x + 12) + ' 79V71.5';
+  const wheel = function(x){ return '<g class="rw"' + at('wheel') + '><path d="M' + x + ' 106.5V112.5M' + x + ' 127.5V133.5M' + (x - 13.5) + ' 120H' + (x - 7.5) + 'M' + (x + 7.5) + ' 120H' + (x + 13.5) + '" stroke="var(--c-hub)" stroke-width="2.2" opacity=".75"/></g>'; };
+  const beam = k === 'night' ? '<path d="M145 61L186 55V71Z" fill="rgba(255,243,196,.32)"/>' : '';
+  return '<svg class="rideart' + (t.still ? ' still' : '') + '" viewBox="' + (t.close ? '34 22 186 52' : '0 0 300 84') +
+    '" aria-hidden="true" focusable="false" style="' + paintStyle(t.paint, k) + '">' +
+    '<rect width="300" height="84" fill="' + c.sky + '"/>' + sky + views +
+    '<g class="rb"' + at('bush') + ' fill="' + c.shrub + '" opacity=".9">' + bush + '</g>' +
+    '<rect y="64" width="300" height="20" fill="' + c.ground + '"/><rect y="64" width="300" height="9" fill="' + c.road + '"/>' +
+    '<path class="rr"' + at('road') + ' d="M0 68.5H330" stroke="#fbf4e4" stroke-width="1.4" stroke-dasharray="7 6" opacity=".55"/>' +
+    '<path class="rp"' + at('posts') + ' d="' + posts + '" stroke="' + c.post + '" stroke-width="1.6"/>' + beam +
+    '<g class="rk"' + at('rock') + '><svg x="58" y="37.5" width="88" height="33" viewBox="0 0 364 136">' + COACH_SIDE + decorOn(t.worn) +
+      wheel(88) + wheel(282) + '</svg></g></svg>';
 }
 // ---- END PICTURES ---------------------------------------------------------
 
@@ -4074,31 +4272,89 @@ function albumSights(list){
 // c is the count it is earned by, goal how many; the route's own length
 // for every place on it.
 const DECOR = [
-  { k:'bell',       t:'Kampanilya',     s:'the map\u2019s tour, finished', c:'tw',      goal:1 },
-  { k:'placard',    t:'Plaka ng ruta',  s:'the sharing tour, finished',   c:'ts',     goal:1 },
-  { k:'sampaguita', t:'Sampaguita',     s:'your first trip shared',       c:'n',      goal:1 },
-  { k:'flaps',      t:'Mud flaps',      s:'3 trips shared',               c:'n',      goal:3 },
-  { k:'horns',      t:'Busina',         s:'5 trips shared',               c:'n',      goal:5 },
-  { k:'fringe',     t:'Borlas',         s:'10 trips shared',              c:'n',      goal:10 },
-  { k:'chrome',     t:'Kromo',          s:'25 trips shared',              c:'n',      goal:25 },
-  { k:'lights',     t:'Ilaw sa bubong', s:'50 trips shared',              c:'n',      goal:50 },
-  { k:'horse',      t:'Kabayo',         s:'100 trips shared',             c:'n',      goal:100 },
-  { k:'rooster',    t:'Tandang',        s:'first bus on the map, 3 times', c:'first', goal:3 },
-  { k:'stripe',     t:'Guhit',          s:'a trip end to end',            c:'full',   goal:1 },
-  { k:'sunrise',    t:'Araw',           s:'3 trips before 5 AM',          c:'dawn',   goal:3 },
-  { k:'string',     t:'Patay-sindi',    s:'3 trips after dark',           c:'night',  goal:3 },
-  { k:'bumpers',    t:'Balikan',        s:'both directions',              c:'ways',   goal:2 },
-  { k:'route',      t:'Mapa',           s:'every place on the route',     c:'places', goal:0 },
-  { k:'flowers',    t:'Bulaklak',       s:'10 salamat received',          c:'ty',     goal:10 },
-  { k:'ribbons',    t:'Laso',           s:'50 salamat received',          c:'ty',     goal:50 },
-  { k:'goldstar',   t:'Gintong bituin', s:'100 salamat received',         c:'ty',     goal:100 },
-  { k:'luggage',    t:'Bagahe',         s:'10 hours on the map',          c:'hours',  goal:10 },
-  { k:'mural',      t:'Pinta',          s:'100 hours on the map',         c:'hours',  goal:100 },
-  { k:'curtains',   t:'Kurtina',        s:'50 hours on the map',          c:'hours',  goal:50 },
-  { k:'foglamps',   t:'Fog lamps',      s:'4 weeks in a row',             c:'best',   goal:4 },
-  { k:'pennant',    t:'Bandera',        s:'12 weeks in a row',            c:'best',   goal:12 }
+  { k:'bell',       id:'a', pay:10,  t:'Kampanilya',     s:'the map\u2019s tour, finished',  c:'tw',     goal:1 },
+  { k:'placard',    id:'b', pay:10,  t:'Plaka ng ruta',  s:'the sharing tour, finished',    c:'ts',     goal:1 },
+  { k:'sampaguita', id:'c', pay:10,  t:'Sampaguita',     s:'your first trip shared',        c:'n',      goal:1 },
+  { k:'flaps',      id:'d', pay:10,  t:'Mud flaps',      s:'3 trips shared',                c:'n',      goal:3 },
+  { k:'horns',      id:'e', pay:15,  t:'Busina',         s:'5 trips shared',                c:'n',      goal:5 },
+  { k:'fringe',     id:'f', pay:20,  t:'Borlas',         s:'10 trips shared',               c:'n',      goal:10 },
+  { k:'chrome',     id:'g', pay:30,  t:'Kromo',          s:'25 trips shared',               c:'n',      goal:25 },
+  { k:'lights',     id:'h', pay:50,  t:'Ilaw sa bubong', s:'50 trips shared',               c:'n',      goal:50 },
+  { k:'horse',      id:'i', pay:100, t:'Kabayo',         s:'100 trips shared',              c:'n',      goal:100 },
+  { k:'rooster',    id:'j', pay:20,  t:'Tandang',        s:'first bus on the map, 3 times', c:'first',  goal:3 },
+  { k:'stripe',     id:'k', pay:15,  t:'Guhit',          s:'a trip end to end',             c:'full',   goal:1 },
+  { k:'sunrise',    id:'l', pay:20,  t:'Araw',           s:'3 trips before 5 AM',           c:'dawn',   goal:3 },
+  { k:'string',     id:'m', pay:20,  t:'Patay-sindi',    s:'3 trips after dark',            c:'night',  goal:3 },
+  { k:'bumpers',    id:'n', pay:15,  t:'Balikan',        s:'both directions',               c:'ways',   goal:2 },
+  { k:'route',      id:'o', pay:30,  t:'Mapa',           s:'every place on the route',      c:'places', goal:0 },
+  { k:'flowers',    id:'p', pay:15,  t:'Bulaklak',       s:'10 salamat received',           c:'ty',     goal:10 },
+  { k:'ribbons',    id:'q', pay:40,  t:'Laso',           s:'50 salamat received',           c:'ty',     goal:50 },
+  { k:'goldstar',   id:'r', pay:80,  t:'Gintong bituin', s:'100 salamat received',          c:'ty',     goal:100 },
+  { k:'luggage',    id:'s', pay:20,  t:'Bagahe',         s:'10 hours on the map',           c:'hours',  goal:10 },
+  { k:'mural',      id:'t', pay:100, t:'Pinta',          s:'100 hours on the map',          c:'hours',  goal:100 },
+  { k:'curtains',   id:'u', pay:50,  t:'Kurtina',        s:'50 hours on the map',           c:'hours',  goal:50 },
+  { k:'foglamps',   id:'v', pay:30,  t:'Fog lamps',      s:'4 weeks in a row',              c:'best',   goal:4 },
+  { k:'pennant',    id:'w', pay:80,  t:'Bandera',        s:'12 weeks in a row',             c:'best',   goal:12 }
 ];
-const BUS_COUNTS = ['n', 'first', 'full', 'dawn', 'night', 'north', 'south', 'tw', 'ts', 'mins', 'ty', 'wk', 'streak', 'best'];
+// ---- Barya (October 2026) -------------------------------------------------
+// Achievements pay barya, the conductor's word for coins, and barya buy
+// accessories and paint in the shop. Three more rules, with the guardrails
+// the maintainer asked for so nobody can farm them at everyone else's cost:
+//
+// 17. Barya come only from achievements, each paid once (paid), and from
+//     trips that drew a ticket and went somewhere: BARYA_TRIP a trip, for at
+//     most BARYA_TRIPS_A_DAY a day. Every farmed trip would be a bus on
+//     everyone's map that isn't one, so a trip earns little and the day's
+//     earnings stop. Never bought with money, never sent, never traded.
+// 18. The achievements' own decorations are trophies: earned, never for
+//     sale. The shop sells other things (SHOP) and paint (PAINTS), presets
+//     only, so nothing anyone puts on a bus is words or a colour of their
+//     own making.
+// 19. A bus is shown to riders only if its sharer says so (show), asked
+//     once, when there is first something on it to show, and only while
+//     sharing; what goes is a code of the paint and what is worn (busLook),
+//     letters from these lists and nothing else, and it dies with the trip.
+const BARYA_TRIP = 5, BARYA_TRIPS_A_DAY = 3;
+const SHOP = [
+  { k:'dice',      id:'F', price:10, t:'Dais',           s:'a pair of dice in the window' },
+  { k:'antenna',   id:'G', price:15, t:'Antena',         s:'with a streamer' },
+  { k:'visor',     id:'A', price:20, t:'Visor',          s:'over the windscreen' },
+  { k:'mirror',    id:'H', price:25, t:'Salaming kromo', s:'a chrome mirror' },
+  { k:'exhaust',   id:'C', price:30, t:'Tambutso',       s:'a stack up the back' },
+  { k:'flames',    id:'B', price:40, t:'Apoy',           s:'flames on the front' },
+  { k:'underglow', id:'D', price:60, t:'Ilaw sa ilalim', s:'a glow under the bus' },
+  { k:'goldrims',  id:'E', price:80, t:'Gintong gulong', s:'gold wheels' }
+];
+const PAINTS = [
+  { k:'klasiko', id:'0', price:0,  t:'Klasiko' },
+  { k:'dagat',   id:'1', price:10, t:'Dagat' },
+  { k:'gubat',   id:'2', price:10, t:'Gubat' },
+  { k:'kahel',   id:'3', price:20, t:'Kahel' },
+  { k:'lila',    id:'4', price:30, t:'Lila' },
+  { k:'uling',   id:'5', price:40, t:'Uling' },
+  { k:'ginto',   id:'6', price:60, t:'Ginto' }
+];
+function findIn(list, k){ for (let i = 0; i < list.length; i++) if (list[i].k === k) return list[i]; return null; }
+// The trophies as My tickets lists them: by what earns them, in DECOR's
+// order of kinds, and the nearest first within a kind. DECOR's own order is
+// the order they are drawn in, which is not always the order they come in:
+// the mural goes on before the curtains that hang over it.
+function decorShown(){
+  const kind = function(d){ for (let i = 0; i < DECOR.length; i++) if (DECOR[i].c === d.c) return i; return 0; };
+  return DECOR.slice().sort(function(a, b){ return kind(a) - kind(b) || a.goal - b.goal; });
+}
+// The order a bus wears things in, which is the order they are drawn: the
+// glow under it first, the trophies, then the shop's.
+const WEAR_ORDER = ['underglow'].concat(DECOR.map(function(d){ return d.k; }),
+  SHOP.filter(function(x){ return x.k !== 'underglow'; }).map(function(x){ return x.k; }));
+const BUS_COUNTS = ['n', 'first', 'full', 'dawn', 'night', 'north', 'south', 'tw', 'ts', 'mins', 'ty', 'wk', 'streak', 'best',
+                    'c', 'day', 'dayn', 'show', 'asked'];
+// Yes or no, kept as a count of one.
+const BUS_FLAGS = ['tw', 'ts', 'show', 'asked'];
+// Days since 1 January 1970, for the day's cap on trip barya.
+function dayIndex(d){
+  return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+}
 // Weeks since the Monday of 5 January 1970, for a streak counted in weeks.
 function weekIndex(d){
   return Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(1970, 0, 5)) / 604800000);
@@ -4107,13 +4363,24 @@ function weekIndex(d){
 // and a short list of short place names.
 function busClean(raw){
   const b = { places:[] };
+  const o = raw && typeof raw === 'object' ? raw : {};
   BUS_COUNTS.forEach(function(k){
-    const v = raw && typeof raw === 'object' ? raw[k] : 0;
-    b[k] = typeof v === 'number' && isFinite(v) && v > 0 ? Math.floor(Math.min(v, 1e6)) : 0;
+    const v = o[k];
+    b[k] = typeof v === 'number' && isFinite(v) && v > 0 ? Math.floor(Math.min(v, BUS_FLAGS.indexOf(k) >= 0 ? 1 : 1e6)) : 0;
   });
-  if (raw && Array.isArray(raw.places)) b.places = raw.places.filter(function(x, i, a){
+  if (Array.isArray(o.places)) b.places = o.places.filter(function(x, i, a){
     return typeof x === 'string' && x && a.indexOf(x) === i;
   }).slice(0, 40).map(function(x){ return x.slice(0, 24); });
+  // Only names from these lists, each once: anything else in storage, or in
+  // a restored backup, is dropped.
+  const only = function(list, keys){
+    return Array.isArray(list) ? list.filter(function(x, i, a){ return typeof x === 'string' && keys.indexOf(x) >= 0 && a.indexOf(x) === i; }) : [];
+  };
+  b.own = only(o.own, SHOP.map(function(x){ return x.k; }));
+  b.paints = only(o.paints, PAINTS.slice(1).map(function(x){ return x.k; }));
+  b.off = only(o.off, WEAR_ORDER);
+  b.paid = only(o.paid, DECOR.map(function(d){ return d.k; }));
+  b.paint = o.paint === 'klasiko' || b.paints.indexOf(o.paint) >= 0 ? o.paint : 'klasiko';
   return b;
 }
 // t: { dir, stamps (every stamp the trip earned, by name), fromIdx, toIdx,
@@ -4171,6 +4438,108 @@ function busEarned(b, cps){
   b = busClean(b);
   return DECOR.filter(function(d){ const g = busGoal(d, cps); return g > 0 && busCount(b, d, cps) >= g; })
               .map(function(d){ return d.k; });
+}
+// Pays what is owed: each achievement earned and not yet paid, once (rule
+// 17). Returns the bus after, the barya and which achievements paid.
+function busSettle(b, cps){
+  b = busClean(b);
+  const due = busEarned(b, cps).filter(function(k){ return b.paid.indexOf(k) < 0; });
+  let got = 0;
+  due.forEach(function(k){ got += findIn(DECOR, k).pay; b.paid.push(k); });
+  b.c = Math.min(b.c + got, 1e6);
+  return { b:b, got:got, keys:due };
+}
+// A counted trip's own barya, for at most BARYA_TRIPS_A_DAY a day.
+function busTripPay(b, day){
+  b = busClean(b);
+  if (b.day !== day){ b.day = day; b.dayn = 0; }
+  if (b.dayn >= BARYA_TRIPS_A_DAY) return { b:b, got:0 };
+  b.dayn++;
+  b.c = Math.min(b.c + BARYA_TRIP, 1e6);
+  return { b:b, got:BARYA_TRIP };
+}
+function busOwns(b, k, cps){
+  return busEarned(b, cps).indexOf(k) >= 0 || busClean(b).own.indexOf(k) >= 0;
+}
+// Buys one thing from the shop or one paint, and puts it on. Null when it
+// cannot be bought: unknown, owned already, a trophy (rule 18), or more
+// barya than there are.
+function busBuy(b, k){
+  b = busClean(b);
+  const item = findIn(SHOP, k), paint = findIn(PAINTS, k);
+  if (item){
+    if (b.own.indexOf(k) >= 0 || b.c < item.price) return null;
+    b.c -= item.price; b.own.push(k);
+    b.off = b.off.filter(function(x){ return x !== k; });
+    return b;
+  }
+  if (paint && paint.price > 0){
+    if (b.paints.indexOf(k) >= 0 || b.c < paint.price) return null;
+    b.c -= paint.price; b.paints.push(k); b.paint = k;
+    return b;
+  }
+  return null;
+}
+// Puts something owned on, or takes it off into the garage.
+function busWear(b, k, on, cps){
+  b = busClean(b);
+  if (!busOwns(b, k, cps)) return b;
+  b.off = b.off.filter(function(x){ return x !== k; });
+  if (!on) b.off.push(k);
+  return b;
+}
+function busUsePaint(b, k){
+  b = busClean(b);
+  if (k === 'klasiko' || b.paints.indexOf(k) >= 0) b.paint = k;
+  return b;
+}
+// What the bus is wearing, in the order it is drawn.
+function busWorn(b, cps){
+  b = busClean(b);
+  const owned = busEarned(b, cps).concat(b.own);
+  return WEAR_ORDER.filter(function(k){ return owned.indexOf(k) >= 0 && b.off.indexOf(k) < 0; });
+}
+// Something to show: worn, or a paint that is not the plain one.
+function busHasLook(b, cps){
+  b = busClean(b);
+  return busWorn(b, cps).length > 0 || b.paint !== 'klasiko';
+}
+// The bus as riders see it (rule 19): a digit for the paint, then a letter
+// for each thing worn, sorted. Letters only from DECOR and SHOP, so the code
+// can carry nothing else.
+function busLook(b, cps){
+  b = busClean(b);
+  return findIn(PAINTS, b.paint).id + busWorn(b, cps).map(function(k){
+    return (findIn(DECOR, k) || findIn(SHOP, k)).id;
+  }).sort().join('');
+}
+// A code read back, from a server row anyone could have written: the paint
+// and what is worn, in drawing order. Null for anything not shaped like one;
+// a letter it does not know is skipped.
+function lookRead(code){
+  if (typeof code !== 'string' || !/^[0-9][A-Za-z]{0,40}$/.test(code)) return null;
+  let paint = 'klasiko';
+  PAINTS.forEach(function(p){ if (p.id === code[0]) paint = p.k; });
+  const ids = code.slice(1);
+  return { paint:paint, worn:WEAR_ORDER.filter(function(k){ return ids.indexOf((findIn(DECOR, k) || findIn(SHOP, k)).id) >= 0; }) };
+}
+// Whether a bus is as a new phone's is, with nothing earned, bought, worn,
+// chosen or counted: what restoring a backup over it would lose is nothing.
+function busIsNew(b){
+  return JSON.stringify(busClean(b)) === JSON.stringify(busClean(null));
+}
+// A backup: the kept tickets and the bus, as a file the sharer keeps where
+// they like. Made on the phone and sent nowhere by the app.
+function backupMake(list, bus, when){
+  return JSON.stringify({ app:'bus-tracker', v:1, made:ymd(when), tickets:albumClean(list), bus:busClean(bus) });
+}
+// A backup read back, cleaned the way storage is: null unless it is one.
+function backupRead(text){
+  if (typeof text !== 'string' || text.length > 400000) return null;
+  let o = null;
+  try{ o = JSON.parse(text.trim()); }catch(e){ return null; }
+  if (!o || o.app !== 'bus-tracker' || o.v !== 1 || !Array.isArray(o.tickets) || !o.bus || typeof o.bus !== 'object') return null;
+  return { tickets:albumClean(o.tickets), bus:busClean(o.bus) };
 }
 function keptGreeting(st){
   return (st || []).indexOf('night') >= 0 ? 'Ingat pauwi!' : 'Ingat sa biyahe!';
@@ -4373,13 +4742,30 @@ function aboardControl(b, linkable){
     : '<button type="button" class="buslink" onclick="boardBus(\''+b.id+'\')">'+COACH_GLYPH+'I’m on this bus</button>';
 }
 const COACH_GLYPH = '<svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg>';
+// The time of day the scenes are drawn in, by this phone's clock.
+function skyNow(){
+  const h = new Date().getHours();
+  return h < 5 || h >= 19 ? 'night' : h < 7 ? 'dawn' : 'day';
+}
+// The bus in its popup, on the road through the place it is nearest: as its
+// sharer dressed it if they chose to show it (lookRead of the row's look),
+// a sharer's own as they dressed it whatever they chose, and plain
+// otherwise. Stopped for a bus not heard from lately.
+function popupRide(b, fresh){
+  let look = null;
+  if (b.self && !WALK){ const own = loadBus(); look = { paint:own.paint, worn:busWorn(own, CHECKPOINTS) }; }
+  else look = lookRead(b.look);
+  const i = nearestCheckpoint(routeProgressKm({ lat:b.lat, lng:b.lng }, CHECKPOINTS, ROUTE_CHAIN));
+  return '<div class="pride">' + rideSvg({ views:[(CHECKPOINTS[i] && CHECKPOINTS[i].mark) || ''], sky:skyNow(),
+    worn: look ? look.worn : [], paint: look ? look.paint : 'klasiko', still: fresh === 'delayed', now: Date.now(), close:true }) + '</div>';
+}
 function busPopupHtml(b){
   const fresh = freshness(b.ts);
   const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
   const story = storyFor(pl, b.direction, CHECKPOINTS);
   // Same strict check as the strip's pills before an id goes into a handler.
   const linkable = b.id && /^[A-Za-z0-9\-]+$/.test(b.id);
-  return '<div class="'+(b.direction==='north'?'nb':'sb')+'">'+
+  return '<div class="'+(b.direction==='north'?'nb':'sb')+'">'+ popupRide(b, fresh) +
     '<div class="pdir">'+(b.direction==='north'?'▲ NORTHBOUND':'▼ SOUTHBOUND')+'</div>'+
     (b.label ? '<div class="pname">'+escapeHtml(b.label)+'</div>' : '')+
     '<div>'+escapeHtml(pl ? pl.label : 'position unclear')+'</div>'+
@@ -5304,13 +5690,14 @@ function clusterBuses(list){
       // either of them is you.
       if (b.self) target.self=true;
       if (!target.label && b.bus_label) target.label=b.bus_label;
+      if (!target.look && b.look) target.look=b.look;
       if (b.ts>target.ts){              // keep the freshest position
         target.lat=b.lat; target.lng=b.lng; target.ts=b.ts; target.speed=b.speed;
       }
     } else {
       clusters.push({ id:b.pub_id, lat:b.lat, lng:b.lng, ts:b.ts, speed:b.speed,
                       direction:b.direction, label:b.bus_label||'', count:1,
-                      self:!!b.self, members:[b.pub_id] });
+                      self:!!b.self, members:[b.pub_id], look:b.look||'' });
     }
   });
   return clusters;
@@ -5342,7 +5729,7 @@ function syncBusMarkers(all) {
       // above popups: without it, a bus near the middle of the map opened a
       // popup whose first words were under the controls.
       m.bindPopup(busPopupHtml(b),
-        { closeButton:false, className:'buspop', maxWidth:220,
+        { closeButton:false, className:'buspop', maxWidth:240,
           autoPanPaddingTopLeft:[66,18], autoPanPaddingBottomRight:[18,18] });
       busMarkers[b.id] = m.addTo(map);
       // Fade a genuinely new badge in. Added here, at creation, because the
@@ -5854,7 +6241,9 @@ async function pollPositions() {
   const rows = (res.data||[]).filter(drawableRow);
   BUSES = rows.map(function(v){
     return { pub_id:v.pub_id, lat:v.lat, lng:v.lng, speed:v.speed, self:!!v.is_self,
-             direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at) };
+             direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at),
+             // A sharer's bus, if they chose to show it (sql/13-bus-look.sql).
+             look: typeof v.look === 'string' ? v.look : '' };
   });
   // Only ever set from our own row. The server sends null for every other
   // bus (sql/07-thanks.sql), so there is nothing here to put on the map even
@@ -6276,6 +6665,8 @@ function showAppHints(){
 // set, a GPS fix does not put "Sharing live" back over the error: the fix is
 // not what reaches anybody, the write is.
 let writeFailing=false;
+// Cleared for the rest of the visit by a database that does not know p_look.
+let LOOK_SENDS = true;
 async function writePosition(coords){
   // Nothing goes out for a trip that has ended, whatever asked.
   if (guardPaused || !sharing) return;
@@ -6296,7 +6687,20 @@ async function writePosition(coords){
   // the count survives. It is turned into an error here, like any other.
   args.p_slug = CFG.ROUTE_SLUG;
   if (keyed) args.p_key = accessKey;
-  let res = await rpc(keyed ? 'set_keyed_position' : 'set_open_position', args);
+  // The bus's look, only when its sharer has said to show it (rule 19).
+  const bus = loadBus();
+  if (LOOK_SENDS && bus.show && busHasLook(bus, CHECKPOINTS)) args.p_look = busLook(bus, CHECKPOINTS);
+  const writer = keyed ? 'set_keyed_position' : 'set_open_position';
+  let res = await rpc(writer, args);
+  // A database from before sql/13-bus-look.sql refuses the argument it does
+  // not know: the same position goes again without it, and no look is sent
+  // for the rest of the visit. The bus shows plain; the trip is unaffected.
+  if (res.error && args.p_look && /p_look|could not find the function|PGRST202/i.test(
+        (res.error.message || '') + ' ' + (res.error.code || '') + ' ' + (res.error.hint || ''))){
+    LOOK_SENDS = false;
+    delete args.p_look;
+    res = await rpc(writer, args);
+  }
   if (!res.error && typeof res.data === 'string' && res.data) res = { error:{ message:res.data } };
   // The trip ended while this was on its way: nobody is left to tell.
   if (!sharing) return;
@@ -6824,8 +7228,9 @@ function ticketFacts(trip, end, endAt){
   return { now:now, began:began, mins:Math.round((now - began) / 60000), fromIdx:fromIdx, toIdx:toIdx,
            endMins:t.endMins, stamps:ticketStamps(t), all:tripStamps(t) };
 }
-// fresh: the decorations this trip has just put on the sharer's bus.
-function showTicket(trip, end, endAt, fresh){
+// fresh: the decorations this trip has just put on the sharer's bus; coins:
+// the barya it brought.
+function showTicket(trip, end, endAt, fresh, coins){
   if (!trip) return;
   const f = ticketFacts(trip, end, endAt);
   if (!ticketWorthShowing({ mins:f.mins, writes:trip.writes })) return;
@@ -6863,7 +7268,7 @@ function showTicket(trip, end, endAt, fresh){
     '<div class="tkt-big">You kept the bus on everyone’s map for</div>' +
     '<div class="tkt-row"><div class="tkt-dur">' + (hrs ? hrs + '<small> h </small>' : '') + rem + '<small> min</small></div>' + stamp(0) + '</div>' +
     (ty ? '<div class="tkt-ty"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg><span>' + ty + '</span></div>' : '') +
-    tktFresh(fresh) + (Array.isArray(fresh) ? tktTotals(now) : '') +
+    tktCoins(coins) + tktFresh(fresh) + (Array.isArray(fresh) ? tktTotals(now) : '') +
     '<hr>' +
     '<div class="tkt-row"><div class="tkt-greet">' + ticketGreeting(endMins) + '</div>' + stamp(1) + '</div>' +
     '<div class="tkt-fine">' + (endAt ? 'Sharing stopped when the page closed, so this is the trip as it stood then. ' : '') +
@@ -6877,27 +7282,47 @@ function showTicket(trip, end, endAt, fresh){
 function endTicket(trip, end, endAt){
   if (!trip) return;
   const f = ticketFacts(trip, end, endAt);
-  let fresh = [];
+  let fresh = [], coins = null;
   if (!WALK && ticketWorthShowing({ mins:f.mins, writes:trip.writes })){
     const before = loadBus();
-    const after = busAdd(before, { dir:shareDir, stamps:f.all.map(function(x){ return x.k; }), fromIdx:f.fromIdx, toIdx:f.toIdx,
-                                   mins:f.mins, thanks:trip.maxThanks, week:weekIndex(f.now) }, CHECKPOINTS);
-    if (after.n > before.n && saveBus(after)){
-      const had = busEarned(before, CHECKPOINTS);
-      fresh = busEarned(after, CHECKPOINTS).filter(function(k){ return had.indexOf(k) < 0; });
+    let after = busAdd(before, { dir:shareDir, stamps:f.all.map(function(x){ return x.k; }), fromIdx:f.fromIdx, toIdx:f.toIdx,
+                                 mins:f.mins, thanks:trip.maxThanks, week:weekIndex(f.now) }, CHECKPOINTS);
+    if (after.n > before.n){
+      // The trip's own barya, capped for the day (rule 17), then whatever
+      // the trip has just earned, paid once.
+      const trip5 = busTripPay(after, dayIndex(f.now)), due = busSettle(trip5.b, CHECKPOINTS);
+      after = due.b;
+      if (saveBus(after)){
+        const had = busEarned(before, CHECKPOINTS);
+        fresh = busEarned(after, CHECKPOINTS).filter(function(k){ return had.indexOf(k) < 0; });
+        coins = { trip:trip5.got, got:due.got, keys:due.keys };
+      }
     }
   }
-  showTicket(trip, end, endAt, fresh);
+  showTicket(trip, end, endAt, fresh, coins);
   syncAlbumRow();
 }
 // The line on the ticket for a trip that earned a decoration: the bus as it
 // is now, and what is new on it.
 function tktFresh(fresh){
   if (!fresh || !fresh.length) return '';
-  const names = DECOR.filter(function(d){ return fresh.indexOf(d.k) >= 0; });
-  return '<div class="tkt-new">' + busSvg(busEarned(loadBus(), CHECKPOINTS)) +
+  const names = DECOR.filter(function(d){ return fresh.indexOf(d.k) >= 0; }), bus = loadBus();
+  return '<div class="tkt-new">' + busSvg(busWorn(bus, CHECKPOINTS), bus.paint) +
     '<span>New on your bus: <b>' + names.map(function(d){ return escapeHtml(d.t); }).join(', ') + '</b>' +
-    '<small>' + names.map(function(d){ return escapeHtml(d.s); }).join(' · ') + '</small></span></div>';
+    '<small>' + names.map(function(d){ return escapeHtml(d.s); }).join(' · ') + '</small></span></div>' +
+    // The first thing on the bus is the moment to ask whether to show it.
+    (!bus.asked && busHasLook(bus, CHECKPOINTS) ? lookQuestion() : '');
+}
+// What the trip brought in barya: its own, for one of the day's first few,
+// and each trophy's, once.
+function tktCoins(c){
+  if (!c) return '';
+  const total = c.trip + c.got;
+  if (!total) return '<div class="tkt-all">No barya for this trip: the first ' + BARYA_TRIPS_A_DAY + ' trips of a day earn them.</div>';
+  const parts = [];
+  if (c.trip) parts.push(c.trip + ' for the trip');
+  c.keys.forEach(function(k){ const d = findIn(DECOR, k); parts.push(d.pay + ' for ' + d.t); });
+  return '<div class="tkt-coins"><i class="coin" aria-hidden="true"></i><span>+' + total + ' barya<small>' + escapeHtml(parts.join(' · ')) + '</small></span></div>';
 }
 // The bus's totals in words, without a zero: time on the map, salamat, and a
 // streak once there are two weeks in it.
@@ -7059,25 +7484,33 @@ function syncAlbumRow(){
   const st = albumStats(list, CHECKPOINTS), parts = [];
   if (list.length) parts.push(st.tickets + (st.tickets === 1 ? ' ticket' : ' tickets') + ' · ' + st.places + ' of ' + st.of + ' places on the route');
   if (dec) parts.push(dec + (dec === 1 ? ' decoration' : ' decorations') + ' on your bus');
+  const c = loadBus().c;
+  if (c) parts.push(c + ' barya');
   document.getElementById('albumRowVal').textContent = parts.join(' · ');
 }
 function openAlbum(){
-  ALB_SHOW = 24; ALB_CLEAR_ARMED = false;
-  document.getElementById('albumClear').textContent = 'Remove all';
+  ALB_SHOW = 24; ALB_CLEAR_ARMED = false; ALB_BUY_ARMED = ''; BK_ARMED = false;
+  document.getElementById('albumClear').textContent = 'Start from scratch';
+  // Anything earned and not yet paid is paid now: trophies won before
+  // there were barya, or brought back by a restored backup.
+  if (!WALK){ const due = busSettle(loadBus(), CHECKPOINTS); if (due.got) saveBus(due.b); }
+  bkReset();
   renderAlbum();
+  albumRideStart();
   const sc = document.querySelector('#albumModal .modal-scroll');
   if (sc) sc.scrollTop = 0;
   openModal('albumModal');
 }
 function albumMore(){ ALB_SHOW += 24; renderAlbum(); }
-// Remove all asks twice too, and says how many it is about to remove.
-// It takes your bus with it: Remove all leaves My tickets empty.
+// Start from scratch: every kept ticket and the whole bus, its barya and
+// what it bought included, after a second tap that says what goes.
 function clearAlbum(){
+  if (WALK) return;
   const btn = document.getElementById('albumClear');
-  const n = loadAlbum().length, bus = loadBus().n > 0;
+  const n = loadAlbum().length;
   if (!ALB_CLEAR_ARMED){
     ALB_CLEAR_ARMED = true;
-    btn.textContent = 'Tap again to remove ' + (n ? 'all ' + n + (bus ? ' and your bus' : '') : 'your bus');
+    btn.textContent = 'Tap again to delete ' + (n ? n + (n === 1 ? ' ticket' : ' tickets') + ', ' : '') + 'your bus and its barya';
     return;
   }
   ALB_CLEAR_ARMED = false;
@@ -7085,12 +7518,211 @@ function clearAlbum(){
   dropBus();
   syncAlbumRow();
   closeModal('albumModal');
+  showToast('Started from scratch. Everything My tickets held is gone from this phone.');
 }
 function attrText(s){ return escapeHtml(s).replace(/"/g, '&quot;'); }
+// ---- Your bus, as a garage (October 2026) ------------------------------
+let ALB_BUY_ARMED = '';    // the shop item or paint one more tap buys
+let ALB_RIDE_T = null;     // moves My tickets' bus on from place to place
+// Every kind of place on the route that has a view, in route order: the bus
+// in My tickets drives past each in turn.
+function rideViews(){
+  const out = [];
+  CHECKPOINTS.forEach(function(c){ if (c.mark && out.indexOf(c.mark) < 0) out.push(c.mark); });
+  return out.length ? out : [''];
+}
+function albumBusHtml(bus){
+  const worn = busWorn(bus, CHECKPOINTS), earned = busEarned(bus, CHECKPOINTS);
+  const act = function(k, on){
+    return '<button type="button" class="alb-act" data-wear="' + k + '">' + (on ? 'On your bus · take off' : 'In the garage · put on') + '</button>';
+  };
+  const paints = PAINTS.map(function(p){
+    const owned = p.k === 'klasiko' || bus.paints.indexOf(p.k) >= 0, using = bus.paint === p.k, c = BUS_PAINTS[p.k];
+    const words = using ? 'on your bus' : owned ? 'use it' : ALB_BUY_ARMED === p.k ? 'tap again to buy' : p.price + ' barya';
+    return '<button type="button" class="alb-paint' + (using ? ' on' : '') + (owned || bus.c >= p.price ? '' : ' short') + '" data-paint="' + p.k +
+      '" aria-pressed="' + using + '"><i aria-hidden="true" style="background:linear-gradient(' + c[0] + ' 0 48%, ' + c[3] + ' 48% 80%, ' + c[4] + ' 80%)"></i>' +
+      '<b>' + escapeHtml(p.t) + '</b><span>' + words + '</span></button>';
+  }).join('');
+  const shop = SHOP.map(function(x){
+    const owned = bus.own.indexOf(x.k) >= 0, on = owned && worn.indexOf(x.k) >= 0, can = bus.c >= x.price;
+    return '<li class="' + (owned ? 'got' : 'yet') + (on ? ' on' : '') + '">' + decorTile(x.k) + '<b>' + escapeHtml(x.t) + '</b><span>' + escapeHtml(x.s) + '</span>' +
+      (owned ? act(x.k, on) : '<button type="button" class="alb-act buy' + (can ? '' : ' short') + '" data-buy="' + x.k + '"' + (can ? '' : ' disabled') + '>' +
+        (ALB_BUY_ARMED === x.k ? 'Tap again to buy' : 'Buy · ' + x.price + ' barya') + '</button>') + '</li>';
+  }).join('');
+  const trophies = decorShown().map(function(d){
+    const g = busGoal(d, CHECKPOINTS), n = busCount(bus, d, CHECKPOINTS), got = earned.indexOf(d.k) >= 0, on = got && worn.indexOf(d.k) >= 0;
+    return '<li class="' + (got ? 'got' : 'yet') + (on ? ' on' : '') + '">' + decorTile(d.k) + '<b>' + escapeHtml(d.t) + '</b><span>' + escapeHtml(d.s) + '</span>' +
+      (got ? act(d.k, on) : '<i>' + (n ? n + ' of ' + g : 'not yet') + ' · ' + d.pay + ' barya</i>') + '</li>';
+  }).join('');
+  return '<div class="alb-h">Your bus<span>' + (bus.n ? bus.n + (bus.n === 1 ? ' trip' : ' trips') + ' shared' :
+      earned.length ? 'your first trip is next' : 'starts with your first trip') + '</span></div>' +
+    '<div class="alb-paper alb-bus"><div class="alb-ride">' +
+      rideSvg({ views:rideViews(), sky:skyNow(), worn:worn, paint:bus.paint, now:Date.now(), close:true }) + '</div>' + albTotals(bus) +
+      (busHasLook(bus, CHECKPOINTS) ? (bus.asked ? showSwitch(bus) : lookQuestion()) : '') + '</div>' +
+    '<div class="alb-h">Paint<span>' + (bus.c ? bus.c + ' barya to spend' : 'barya come from trips and trophies') + '</span></div>' +
+    '<div class="alb-paper alb-paints">' + paints + '</div>' +
+    '<div class="alb-h">Shop<span>' + BARYA_TRIP + ' barya a trip, ' + BARYA_TRIPS_A_DAY + ' trips a day</span></div>' +
+    '<div class="alb-paper"><ul class="alb-decor alb-shop">' + shop + '</ul></div>' +
+    '<div class="alb-h">Trophies<span>earned, never for sale</span></div>' +
+    '<div class="alb-paper"><ul class="alb-decor alb-trophies">' + trophies + '</ul></div>';
+}
+// The question (rule 19), asked once, where the first thing to show appears:
+// on the ticket or the tour's card that brings it, or at the top of My
+// tickets after a first purchase.
+function lookQuestion(){
+  return '<div class="lookq"><b>Show your bus to riders?</b><span>When you share, riders who tap your bus on the map will see it as you dressed it. ' +
+    'They will be able to tell it is yours from one trip to the next. You can change this any time in My tickets.</span>' +
+    '<span class="lookq-acts"><button type="button" class="lookq-yes" onclick="setShowBus(1)">Show it</button>' +
+    '<button type="button" class="lookq-no" onclick="setShowBus(0)">Not now</button></span></div>';
+}
+// Once asked, the same choice as a switch under the bus.
+function showSwitch(bus){
+  return '<div class="alb-show"><span><b>Show my bus to riders</b><small>Riders who tap your bus while you share see it as you dressed it, ' +
+    'and can tell it is yours from one trip to the next.</small></span>' +
+    '<button type="button" class="alb-toggle' + (bus.show ? ' on' : '') + '" onclick="setShowBus(' + (bus.show ? 0 : 1) + ')" aria-pressed="' + !!bus.show + '">' +
+    (bus.show ? 'On' : 'Off') + '</button></div>';
+}
+function setShowBus(on){
+  if (WALK) return;
+  const b = loadBus();
+  b.show = on ? 1 : 0; b.asked = 1;
+  if (!saveBus(b)) return;
+  [].slice.call(document.querySelectorAll('.lookq')).forEach(function(el){
+    el.className = 'lookq done';
+    el.innerHTML = '<b>' + (on ? 'Riders will see your bus while you share' : 'Your bus stays on your phone') + '</b><span>You can change this any time in My tickets.</span>';
+  });
+  const album = document.getElementById('albumModal');
+  if (album && !album.classList.contains('hidden')) renderAlbum();
+}
+function albumBuy(k){
+  if (WALK) return;
+  if (ALB_BUY_ARMED !== k){ ALB_BUY_ARMED = k; renderAlbum(); return; }
+  ALB_BUY_ARMED = '';
+  const before = loadBus(), after = busBuy(before, k);
+  if (after && saveBus(after)){
+    const paint = findIn(PAINTS, k), item = paint || findIn(SHOP, k);
+    showToast((paint ? 'Painted ' : 'Bought: ') + item.t + (paint ? '.' : '. It is on your bus.'));
+    // The first thing to show is the moment to ask, at the top of the bus.
+    if (!after.asked && !busHasLook(before, CHECKPOINTS)){
+      renderAlbum(); syncAlbumRow();
+      const q = document.querySelector('#albumBody .lookq');
+      if (q && q.scrollIntoView) q.scrollIntoView({ block:'center' });
+      return;
+    }
+  }
+  renderAlbum(); syncAlbumRow();
+}
+function albumWear(k){
+  if (WALK) return;
+  const b = loadBus();
+  saveBus(busWear(b, k, busWorn(b, CHECKPOINTS).indexOf(k) < 0, CHECKPOINTS));
+  renderAlbum();
+}
+function albumPaint(k){
+  if (WALK) return;
+  const b = loadBus();
+  if (k === 'klasiko' || b.paints.indexOf(k) >= 0){ saveBus(busUsePaint(b, k)); renderAlbum(); return; }
+  albumBuy(k);
+}
+// ---- Backup, restore ----------------------------------------------------
+// A backup is a small file of the kept tickets and the bus (backupMake),
+// made on this phone. The app hands it to the phone, to save or to send to
+// wherever its owner likes, and never sends it anywhere itself.
+let BK_ARMED = false;
+function bkSay(text){ const m = document.getElementById('bkMsg'); if (m) m.textContent = text || ''; }
+function bkReset(){
+  BK_ARMED = false; bkSay('');
+  const r = document.getElementById('bkRestore'), go = document.getElementById('bkGo'), t = document.getElementById('bkText'), f = document.getElementById('bkFile');
+  if (r) r.classList.add('hidden');
+  if (go) go.textContent = 'Restore from this backup';
+  if (t) t.value = '';
+  if (f) f.value = '';
+}
+function backupName(){ return 'bus-tracker-backup-' + ymd(new Date()) + '.json'; }
+async function saveBackup(){
+  if (WALK) return;
+  const text = backupMake(loadAlbum(), loadBus(), new Date()), name = backupName();
+  // The phone's own sheet where it can take a file (save to Files, Drive, a
+  // message to yourself), and a download where it cannot.
+  try{
+    const file = new File([text], name, { type:'application/json' });
+    if (navigator.canShare && navigator.canShare({ files:[file] })){
+      await navigator.share({ files:[file], title:'Bus Tracker backup' });
+      bkSay('Backup saved. Keep it somewhere you will find it again.');
+      return;
+    }
+  }catch(e){ if (e && e.name === 'AbortError') return; }
+  try{
+    const url = URL.createObjectURL(new Blob([text], { type:'application/json' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    bkSay('Saved as ' + name + ', in your downloads. If nothing appeared, use Copy as text.');
+  }catch(e){ bkSay('This browser would not save a file. Use Copy as text instead.'); }
+}
+async function copyBackup(){
+  if (WALK) return;
+  const text = backupMake(loadAlbum(), loadBus(), new Date());
+  try{
+    await navigator.clipboard.writeText(text);
+    bkSay('Copied. Paste it somewhere safe, like a note or a message to yourself.');
+  }catch(e){
+    // No clipboard: show it to be copied by hand.
+    openRestore();
+    const t = document.getElementById('bkText');
+    t.value = text; t.focus(); t.select();
+    bkSay('Copy the text in the box and keep it somewhere safe.');
+  }
+}
+function openRestore(){
+  const r = document.getElementById('bkRestore');
+  if (r) r.classList.remove('hidden');
+}
+async function restoreBackup(){
+  if (WALK) return;
+  const f = document.getElementById('bkFile'), t = document.getElementById('bkText'), go = document.getElementById('bkGo');
+  let text = t ? t.value : '';
+  if (f && f.files && f.files[0]){
+    try{ text = await f.files[0].text(); }catch(e){ text = ''; }
+  }
+  const got = backupRead(text);
+  if (!got){ bkSay('That is not a Bus Tracker backup.'); return; }
+  // It replaces what is here, so a phone with anything of its own asks
+  // twice: a ticket, a trip, barya, or a tour's bell bought around.
+  const here = loadAlbum().length || !busIsNew(loadBus());
+  if (here && !BK_ARMED){
+    BK_ARMED = true;
+    go.textContent = 'Tap again: this replaces what is on this phone';
+    return;
+  }
+  BK_ARMED = false;
+  if (!saveAlbum(got.tickets) || !saveBus(got.bus)){ bkSay('This browser would not let the page keep it.'); return; }
+  bkReset();
+  bkSay('Restored: ' + got.tickets.length + (got.tickets.length === 1 ? ' ticket' : ' tickets') + ' and your bus.');
+  syncAlbumRow();
+  renderAlbum();
+}
+// While My tickets is open its bus drives on to the next place every few
+// seconds; still for a reader who asked for less motion.
+function albumRideStart(){
+  clearInterval(ALB_RIDE_T); ALB_RIDE_T = null;
+  if (reducedMotion()) return;
+  ALB_RIDE_T = setInterval(function(){
+    const modal = document.getElementById('albumModal');
+    if (!modal || modal.classList.contains('hidden')){ clearInterval(ALB_RIDE_T); ALB_RIDE_T = null; return; }
+    const views = [].slice.call(document.querySelectorAll('#albumBody .alb-ride .rv'));
+    if (views.length < 2) return;
+    const i = views.findIndex(function(v){ return v.classList.contains('on'); });
+    views[i < 0 ? 0 : i].classList.remove('on');
+    views[(i + 1) % views.length].classList.add('on');
+  }, 5000);
+}
 // Under the bus: its totals, and the best streak once it is longer than the
 // one running. Nothing is drawn for a total that is still nothing.
 function albTotals(b){
   const now = new Date(), words = busTotalsWords(b, now), live = busStreak(b, weekIndex(now));
+  if (b.c) words.unshift(b.c + ' barya');
   if (b.best > 1 && b.best > live) words.push('best ' + b.best + ' weeks in a row');
   return words.length ? '<div class="alb-totals">' + words.map(function(w){ return '<span>' + escapeHtml(w) + '</span>'; }).join('') + '</div>' : '';
 }
@@ -7134,20 +7766,14 @@ function renderAlbum(){
       (e.st.length ? '<span class="tm-st">' + e.st.map(function(k){ return '<i class="' + STAMPS[k].c + '">' + escapeHtml(STAMPS[k].t) + '</i>'; }).join('') + '</span>' : '') +
     '</button>';
   }).join('');
-  // Your bus first: the coach as it is dressed now, and every decoration
-  // with what earns it, the ones still to come faint with how far along.
-  // Shown before the first trip too, plain, with everything still to come:
-  // this is where a sharer finds out what there is to earn.
-  const bus = loadBus(), earned = busEarned(bus, CHECKPOINTS);
-  const busPart = '<div class="alb-h">Your bus<span>' + (bus.n ? bus.n + (bus.n === 1 ? ' trip' : ' trips') + ' shared' :
-      earned.length ? 'your first trip is next' : 'starts with your first trip') + '</span></div>' +
-    '<div class="alb-paper alb-bus">' + busSvg(earned) + albTotals(bus) + '<ul class="alb-decor">' + DECOR.map(function(d){
-      const g = busGoal(d, CHECKPOINTS), n = busCount(bus, d, CHECKPOINTS), on = g > 0 && n >= g;
-      return '<li' + (on ? ' class="on"' : '') + '>' + decorTile(d.k) + '<b>' + escapeHtml(d.t) + '</b><span>' + escapeHtml(d.s) + '</span>' +
-        '<i>' + (on ? 'on your bus' : n ? n + ' of ' + g : 'not yet') + '</i></li>';
-    }).join('') + '</ul></div>';
+  // Your bus first, as a garage: the bus as it is dressed now, its paint,
+  // the shop, and the trophies with what earns each. Shown before the first
+  // trip too, plain, with everything still to come: this is where a sharer
+  // finds out what there is to earn.
+  const bus = loadBus();
+  const busPart = albumBusHtml(bus);
   const clear = document.getElementById('albumClear');
-  if (clear) clear.classList.toggle('hidden', !list.length && !bus.n);
+  if (clear) clear.classList.toggle('hidden', !list.length && !bus.n && !bus.c && !bus.tw && !bus.ts);
   // Nothing kept yet: what a kept ticket can collect, all of it faint, and
   // how to start. No counts, so no zeros.
   if (!list.length){
@@ -7184,7 +7810,13 @@ function renderAlbum(){
   const body = document.getElementById('albumBody');
   if (body) body.addEventListener('click', function(ev){
     const b = ev.target.closest('.tktmini');
-    if (b) showKeptTicket(+b.getAttribute('data-i'));
+    if (b){ showKeptTicket(+b.getAttribute('data-i')); return; }
+    const buy = ev.target.closest('[data-buy]');
+    if (buy){ albumBuy(buy.getAttribute('data-buy')); return; }
+    const wear = ev.target.closest('[data-wear]');
+    if (wear){ albumWear(wear.getAttribute('data-wear')); return; }
+    const paint = ev.target.closest('[data-paint]');
+    if (paint) albumPaint(paint.getAttribute('data-paint'));
   });
 })();
 
@@ -7389,9 +8021,11 @@ function endWalk(){
 // so with the bus and where to find it.
 function walkFinished(names){
   if (WALK || !names || !names.length) return;
-  const before = loadBus(), after = busToured(before, names);
-  const had = busEarned(before, CHECKPOINTS), fresh = busEarned(after, CHECKPOINTS).filter(function(k){ return had.indexOf(k) < 0; });
-  if (!fresh.length || !saveBus(after)) return;
+  const before = loadBus(), toured = busToured(before, names);
+  const had = busEarned(before, CHECKPOINTS), fresh = busEarned(toured, CHECKPOINTS).filter(function(k){ return had.indexOf(k) < 0; });
+  if (!fresh.length) return;
+  const due = busSettle(toured, CHECKPOINTS), after = due.b;
+  if (!saveBus(after)) return;
   syncAlbumRow();
   const names2 = DECOR.filter(function(d){ return fresh.indexOf(d.k) >= 0; });
   // Close up, the way its card in My tickets shows it: on the whole bus a
@@ -7400,7 +8034,9 @@ function walkFinished(names){
     names2.map(function(d){ return '<figure>' + decorTile(d.k) + '<figcaption>' + escapeHtml(d.t) + '</figcaption></figure>'; }).join('') + '</div>' +
     '<p><b>' + names2.map(function(d){ return escapeHtml(d.t); }).join(' and ') + '</b>, for finishing ' +
     (names.length > 1 ? 'both tours' : names[0] === 'share' ? 'the sharing tour' : 'the map\u2019s tour') + '. ' +
-    'Your bus, and everything it can still earn, is in <b>My tickets</b>, at the foot of the \u201cI\u2019m on the bus\u201d tab.</p>';
+    'Your bus, and everything it can still earn, is in <b>My tickets</b>, at the foot of the \u201cI\u2019m on the bus\u201d tab.</p>' +
+    (due.got ? '<div class="tkt-coins"><i class="coin" aria-hidden="true"></i><span>+' + due.got + ' barya<small>to spend on paint and accessories in My tickets</small></span></div>' : '') +
+    (!after.asked && busHasLook(after, CHECKPOINTS) ? lookQuestion() : '');
   openModal('busNewModal');
 }
 function seeMyBus(){

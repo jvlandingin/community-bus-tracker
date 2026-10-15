@@ -669,10 +669,14 @@ function run(page, include, label, configText, setup) {
   check(/Six small things are remembered on your own device/.test(panel),
     'and the panel counts them out loud, so a seventh cannot slip in quietly');
   check(/your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it/.test(panel) &&
-        /Totals, never a list: no days, no clock times and no bus numbers/.test(panel) && /deleted the moment the trip ends/.test(panel),
-    'naming your bus as totals only, never a list of days or times, and the trip in progress as gone when it ends');
+        /Totals, never a list: no clock times and no bus numbers/.test(panel) && /deleted the moment the trip ends/.test(panel),
+    'naming your bus as totals only, never a list of times, and the trip in progress as gone when it ends');
+  check(/Showing your bus to riders<\/b> is off unless you switch it on/.test(panel.replace(/<[^b\/][^>]*>/g, '')) || /Showing your bus to riders is off unless you switch it on/.test(panel),
+    'and showing the bus to riders as off unless switched on, with what it costs', '');
+  check(/tell it is yours from one trip to the next/.test(panel) && /never bought with money, never sent/.test(panel) && /The app never sends it anywhere/.test(panel),
+    'saying riders can recognise a shown bus, barya are never money, and a backup is never sent');
   check(/the stop you saved/i.test(panel), 'naming the saved stop among them');
-  check(/the tickets you chose to keep/i.test(panel) && /Remove all.{0,4} in My tickets/.test(panel),
+  check(/the tickets you chose to keep/i.test(panel) && /Start from scratch.{0,4} in My tickets deletes every copy/.test(panel),
     'and the kept tickets, with the way to delete them');
   check(/Nothing is ever kept unless you tap Keep/.test(panel) && /leaves out the times, how long the trip took, the bus number and how many riders thanked you/.test(panel),
     'saying a ticket is kept only on a tap, and what a kept one leaves out');
@@ -705,12 +709,53 @@ function run(page, include, label, configText, setup) {
       'with nothing kept or earned, the sharing tab still offers My tickets, saying what starts it, with no zero', row.textContent.replace(/\s+/g, ' ').trim());
     w.openAlbum();
     const empty = d.getElementById('albumBody');
-    check(/starts with your first trip/.test(empty.textContent) && empty.querySelectorAll('.alb-decor li').length === 23 &&
+    check(/starts with your first trip/.test(empty.textContent) && empty.querySelectorAll('.alb-trophies li').length === 23 &&
+          empty.querySelectorAll('.alb-shop li').length === 8 && empty.querySelectorAll('.alb-shop [data-buy][disabled]').length === 8 &&
           empty.querySelectorAll('.alb-decor li.on').length === 0 && empty.querySelectorAll('.alb-sight.yet').length === 16 &&
+          !!empty.querySelector('.alb-ride svg.rideart') && !empty.querySelector('.lookq') &&
           empty.querySelectorAll('.alb-stamp.yet').length === 4 && !/×0|\b0 of\b|\b0 tickets?\b/.test(empty.textContent) &&
           hidden(d.getElementById('albumClear')),
-      'and opened, it shows the plain bus, every decoration, stamp and sight still to come, no zero, and nothing to remove');
+      'and opened, it shows the plain bus on the road, every trophy, shop item, stamp and sight still to come, no zero, nothing to remove and nothing to ask');
     w.closeModal('albumModal');
+
+    // Your progress: a backup copied as text (this DOM has no clipboard, so
+    // the text is shown to be copied by hand), Start from scratch, and a
+    // restore, which asks twice before replacing progress already here.
+    w.localStorage.setItem('wt-bus', JSON.stringify({ n: 2, c: 15, places: ['MENDEZ', 'TGY'], paid: ['sampaguita'], own: ['dice'] }));
+    w.localStorage.setItem('wt-tickets', JSON.stringify([{ d: '2026-10-09', dir: 'n', from: 'MENDEZ', to: 'TGY', st: [], ty: false }]));
+    w.openAlbum();
+    await w.copyBackup();
+    const bkText = d.getElementById('bkText'), bkMsg = () => d.getElementById('bkMsg').textContent, bkGo = d.getElementById('bkGo');
+    const copied = bkText.value;
+    check(!!w.backupRead(copied) && JSON.parse(copied).tickets.length === 1 && JSON.parse(copied).bus.own.join(',') === 'dice' &&
+          /Copy the text/.test(bkMsg()), 'a backup holds the tickets and the bus, shown to be copied where there is no clipboard', bkMsg());
+    const clearBtn = d.getElementById('albumClear');
+    check(!hidden(clearBtn) && /Start from scratch/.test(clearBtn.textContent), 'Start from scratch is offered when there is something to delete');
+    clearBtn.click();
+    check(/Tap again to delete 1 ticket, your bus and its barya/.test(clearBtn.textContent) && w.localStorage.getItem('wt-bus') !== null,
+      'the first tap says what goes, and deletes nothing', clearBtn.textContent);
+    clearBtn.click();
+    check(w.localStorage.getItem('wt-bus') === null && w.localStorage.getItem('wt-tickets') === null && hidden(d.getElementById('albumModal')),
+      'the second deletes everything My tickets held');
+    w.openAlbum();
+    w.openRestore();
+    bkText.value = '{"hello":1}';
+    await w.restoreBackup();
+    check(/not a Bus Tracker backup/.test(bkMsg()) && w.localStorage.getItem('wt-bus') === null, 'something that is not a backup restores nothing');
+    bkText.value = copied;
+    await w.restoreBackup();
+    check(JSON.parse(w.localStorage.getItem('wt-tickets') || '[]').length === 1 && JSON.parse(w.localStorage.getItem('wt-bus') || '{}').own.join(',') === 'dice' &&
+          /Restored: 1 ticket and your bus/.test(bkMsg()), 'a restore on an empty phone puts it all back at once', bkMsg());
+    w.openRestore();
+    bkText.value = copied;
+    await w.restoreBackup();
+    check(/Tap again: this replaces/.test(bkGo.textContent), 'over progress already here it asks first', bkGo.textContent);
+    await w.restoreBackup();
+    check(/Restored/.test(bkMsg()), 'and restores on the second tap');
+    w.closeModal('albumModal');
+    w.localStorage.removeItem('wt-bus');
+    w.localStorage.removeItem('wt-tickets');
+    w.syncAlbumRow();
     w.switchTab('share');
     w.pickDir('north');
     d.getElementById('busLabel').value = '98019';
@@ -1270,6 +1315,75 @@ function run(page, include, label, configText, setup) {
             /not yet/.test(albumText) && !/\b0 of\b|×0/.test(albumText) && /No tickets kept yet/.test(albumText),
         'My tickets shows the bus, what is on it and what is still to come, and no zeros, with nothing kept', albumText.slice(0, 120));
       w.closeModal('albumModal');
+
+      // The garage (rules 17 to 19). Barya in hand, a purchase takes two
+      // taps; the bus already wears trophies, so My tickets asks whether to
+      // show it, once; and a trip then carries its look.
+      const shopBefore = bus();
+      check(shopBefore.paid.join(',') === 'sampaguita,flaps' && shopBefore.c > 0,
+        'trips that won trophies paid them as they ended', JSON.stringify({ paid: shopBefore.paid, c: shopBefore.c }));
+      // As if the trophies had been won before there were barya.
+      w.localStorage.setItem('wt-bus', JSON.stringify(Object.assign({}, shopBefore, { c: 40, paid: [] })));
+      w.openAlbum();
+      // Opening My tickets pays any trophy earned and not yet paid: here the
+      // garland and the mud flaps, won before this visit.
+      const cOpen = bus().c;
+      check(cOpen === 40 + 10 + 10 && bus().paid.join(',') === 'sampaguita,flaps', 'opening My tickets pays the trophies not yet paid, once', String(cOpen));
+      const buyDice = () => d.querySelector('#albumBody [data-buy="dice"]');
+      buyDice().click();
+      check(/Tap again/.test(buyDice().textContent) && bus().own.length === 0 && bus().c === cOpen, 'the first tap on Buy only asks');
+      buyDice().click();
+      check(bus().own.includes('dice') && bus().c === cOpen - 10 && !d.querySelector('#albumBody [data-buy="dice"]') &&
+            /On your bus/.test(d.querySelector('#albumBody .alb-shop li.on').textContent),
+        'the second buys the dice, for 10 barya, and puts them on', JSON.stringify({ own: bus().own, c: bus().c }));
+      const lookq = d.querySelector('#albumBody .lookq');
+      check(!!lookq && /Show your bus to riders/.test(lookq.textContent) && /from one trip to the next/.test(lookq.textContent),
+        'with something on the bus and nothing asked yet, My tickets asks whether to show it, saying riders will recognise it');
+      lookq.querySelector('.lookq-yes').click();
+      check(bus().show === 1 && bus().asked === 1 && !!d.querySelector('#albumBody .alb-show .alb-toggle.on') && !d.querySelector('#albumBody .lookq'),
+        'Show it turns showing on, and a switch takes the question\'s place');
+      w.closeModal('albumModal');
+      const lookNow = w.eval('busLook(loadBus(), CHECKPOINTS)');
+      const shown = await startTrip();
+      check(!!shown && shown.args.p_look === lookNow && /^[0-9][A-Za-z]+$/.test(lookNow) && lookNow.includes('F'),
+        'a trip then carries the bus\'s look with its position', shown && shown.args.p_look);
+      w.setShowBus(0);
+      await writeNow();
+      const plainWrite = of('set_keyed_position').slice(-1)[0];
+      check(!('p_look' in plainWrite.args), 'switched off, the next position goes without it');
+      w.setShowBus(1);
+      // A database from before sql/13-bus-look.sql: refused, sent again without.
+      sim.reply.set_keyed_position = args => ('p_look' in args)
+        ? { error: 'Could not find the function public.set_keyed_position(p_direction, p_key, p_label, p_lat, p_lng, p_look, p_session, p_slug, p_speed) in the schema cache' }
+        : null;
+      const n0 = of('set_keyed_position').length;
+      w.eval('lastWrite = 0');
+      sim.watches[sim.watches.length - 1].onPos(here);
+      await waitFor(() => of('set_keyed_position').length >= n0 + 2);
+      await pause(60);
+      const pair = of('set_keyed_position').slice(n0);
+      check(pair.length === 2 && 'p_look' in pair[0].args && !('p_look' in pair[1].args) && w.eval('LOOK_SENDS') === false &&
+            /^Sharing live/.test(status()),
+        'a database that does not know the look gets the same position again without it, and the trip goes on', status());
+      await writeNow();
+      check(!('p_look' in of('set_keyed_position').slice(-1)[0].args), 'and no look is sent for the rest of the visit');
+      delete sim.reply.set_keyed_position;
+      w.eval('LOOK_SENDS = true');
+      await w.stopSharing();
+      w.closeTicket();
+      // A rider's popup draws a shown bus as it was dressed, and any other plain.
+      const cpRide = CONFIG.split(/\r?\n/).filter(l => l.trim().startsWith('CHECKPOINT ='))[2].split('=')[1].split('|').map(x => x.trim());
+      const popOf = look => w.busPopupHtml({ id: 'cd'.repeat(16), lat: +cpRide[2], lng: +cpRide[3], direction: 'north', label: '',
+                                             ts: Date.now(), count: 1, self: false, look });
+      const dressed = popOf('1Fc'), plain = popOf(''), junk = popOf('1<b>x</b>');
+      check(/class="pride"><svg class="rideart/.test(dressed) && dressed.includes(w.eval('BUS_DECOR.dice')) && dressed.includes('--c-band:#1f5f9e'),
+        'a bus shown by its sharer rides through its popup as they dressed it, paint and all');
+      check(/class="pride"><svg class="rideart/.test(plain) && !plain.includes(w.eval('BUS_DECOR.dice')) && plain.includes('--c-band:#7a1f2b') &&
+            !junk.includes('<b>x</b>') && junk.includes('--c-band:#7a1f2b'),
+        'any other bus rides through plain, and a look that is not one is no look at all');
+      check(!/class="rideart still"/.test(dressed) && /class="rideart still"/.test(w.busPopupHtml({ id: 'ef'.repeat(16), lat: +cpRide[2], lng: +cpRide[3],
+              direction: 'north', label: '', ts: Date.now() - 10 * 60000, count: 1, self: false, look: '' })),
+        'a bus heard from lately moves; one not heard from for minutes stands still');
 
       // Another tab still sharing it: left alone.
       rec = seed({ trip: { start: Date.now() - 20 * 60000, startKm: 0, others: 0, writes: 12, maxThanks: 0, polled: true,

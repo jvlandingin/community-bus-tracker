@@ -348,6 +348,7 @@
   <div class="card">
     <span class="badge">LIVE SHARERS</span>
     <div class="hint" style="margin-top:8px;">Everyone currently sharing a bus position. Stopping one removes the bus and blocks that phone from sharing for 6 hours, and their app tells them an organizer stopped it.</div>
+    <div class="hint warn hidden" id="keyAlert" style="margin-top:8px;"></div>
     <div id="liveList" style="margin-top:6px;"></div>
     <div class="hint warn" style="margin-top:10px;">Honest limit: someone determined can open the tracker in a new tab to get a new session and share again. Changing the share key below is the only real expulsion, and it affects everyone with the key. A bus marked <b>no key</b> was started while open sharing was on; turning open sharing off removes all of those at once.</div>
   </div>
@@ -423,17 +424,36 @@
     <summary>
       <span class="lbl">
         <span class="badge">SHARE KEY</span>
-        <span class="val">Rotate the key that lets people share from the bus.</span>
+        <span class="val" id="keySummary">Rotate the key that lets people share from the bus.</span>
       </span>
       <span class="chev" aria-hidden="true"><svg class="gi"><use href="#i-chev"/></svg></span>
     </summary>
     <div class="foldbody">
       <div class="hint" style="margin-top:0;">The key that lets people share from the bus. Changing it: anyone already sharing gets 4 hours to finish their trip, and NEW sharers need the new key immediately. The old links in the group chat stop working for starting a share, so post the new link after changing.</div>
+      <div id="keyState" style="margin-top:8px;"></div>
+      <!-- A PIN is easier to say out loud and type on a bus. It is only a lock
+           because wrong guesses are limited: see sql/12-share-pin.sql. -->
+      <label class="f">KIND OF KEY</label>
+      <select id="keyKind" onchange="syncKeyKind()">
+        <option value="key">Long key (letters and digits, cannot be guessed)</option>
+        <option value="pin">PIN (digits only, easier to type)</option>
+      </select>
+      <div id="pinLenRow" class="hidden">
+        <label class="f">PIN LENGTH</label>
+        <select id="pinLen" onchange="syncKeyKind()">
+          <option value="4">4 digits</option>
+          <option value="5">5 digits</option>
+          <option value="6" selected>6 digits</option>
+          <option value="7">7 digits</option>
+          <option value="8">8 digits</option>
+        </select>
+      </div>
       <label class="f">NEW SHARE KEY</label>
       <div class="row">
         <input type="text" id="newAccessKey" maxlength="64" placeholder="8 to 64 chars: letters, digits, - _" autocomplete="off">
         <button class="small btn-ghost tight" onclick="genKey()">Generate</button>
       </div>
+      <div class="hint warn hidden" id="pinWarn" style="margin-top:10px;"></div>
       <div style="height:10px"></div>
       <button class="big btn-danger" onclick="rotateKey()">Change the share key</button>
       <div id="rotateStatus"></div>
@@ -522,7 +542,7 @@ function friendly(err){
   if (m.indexOf('not set up')>=0) return 'The admin key has not been set up yet. Run the admin_setup step from the migration file.';
   if (m.indexOf('hh:mm')>=0 || m.indexOf('window')>=0 || m.indexOf('hours')>=0) return 'Check the hours: each window needs a start before its end.';
   if (m.indexOf('out of range')>=0) return 'One of the numbers is outside its allowed range.';
-  if (m.indexOf('share key must be')>=0) return 'Share key must be 8 to 64 characters: letters, digits, - or _';
+  if (m.indexOf('share key must be')>=0) return 'A long key must be 8 to 64 characters: letters, digits, - or _. A PIN must be 4 to 8 digits.';
   if (m.indexOf('admin key must be')>=0) return 'Admin key must be at least 12 characters.';
   if (m.indexOf('already the current share key')>=0) return 'That is the key already in use. Type a different one, or tap Generate.';
   if (m.indexOf('key already in use')>=0) return 'That key is already used by another route.';
@@ -566,7 +586,9 @@ function enter(){
   document.getElementById('main').classList.remove('hidden');
   document.getElementById('slugLine').textContent = 'ROUTE: ' + CFG.ROUTE_SLUG.toUpperCase();
   refreshSettings(); refreshSharers(); refreshSightings(); refreshBlocked(); refreshWatching();
+  refreshKeyStatus(); syncKeyKind();
   timers.push(setInterval(refreshSharers, 6000));
+  timers.push(setInterval(refreshKeyStatus, 30000));
   timers.push(setInterval(refreshSightings, 15000));
   timers.push(setInterval(refreshBlocked, 30000));
   // slower than the rest on purpose: the number moves on a 3 minute
@@ -867,10 +889,79 @@ async function delSighting(sid){
 // Key rotation
 // ============================================================
 function genKey(){
+  if (document.getElementById('keyKind').value === 'pin'){
+    // Rejection sampling, so every digit is equally likely.
+    const n=parseInt(document.getElementById('pinLen').value,10);
+    let k=''; const b=new Uint8Array(1);
+    while (k.length < n){ crypto.getRandomValues(b); if (b[0] < 250) k += String(b[0] % 10); }
+    document.getElementById('newAccessKey').value=k;
+    return;
+  }
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
   const buf=new Uint32Array(20); crypto.getRandomValues(buf);
   let k=''; for (let i=0;i<20;i++) k+=chars[buf[i]%chars.length];
   document.getElementById('newAccessKey').value=k;
+}
+// How long a PIN of n digits lasts against someone guessing as fast as the
+// limit allows: 20 quick tries, then the 10 minute pause, then 20 more, so 20
+// per 10 minutes, and on average half the PINs before the right one.
+function pinGuessTime(n){
+  const hours = Math.pow(10, n) / 2 / 20 * 10 / 60;
+  if (hours < 48) return 'about ' + Math.round(hours) + ' hours';
+  if (hours < 24*60) return 'about ' + Math.round(hours/24) + ' days';
+  if (hours < 24*730) return 'about ' + Math.round(hours/24/30) + ' months';
+  return 'about ' + Math.round(hours/24/365) + ' years';
+}
+function syncKeyKind(){
+  const pin = document.getElementById('keyKind').value === 'pin';
+  const n = parseInt(document.getElementById('pinLen').value,10);
+  const input = document.getElementById('newAccessKey');
+  document.getElementById('pinLenRow').classList.toggle('hidden', !pin);
+  input.setAttribute('inputmode', pin ? 'numeric' : 'text');
+  input.placeholder = pin ? n + ' digits' : '8 to 64 chars: letters, digits, - _';
+  input.value = '';
+  const warn = document.getElementById('pinWarn');
+  warn.classList.toggle('hidden', !pin);
+  warn.textContent = pin
+    ? 'Honest limit: a PIN can be guessed, so after 20 wrong tries in 10 minutes nobody can START a trip for 10 minutes, the right PIN included. Trips already running carry on. Someone guessing non-stop would find a ' + n +
+      '-digit PIN in ' + pinGuessTime(n) + ' on average, and real sharers would keep hitting the pause while they tried. If you see it below, change the PIN, or go back to a long key.'
+    : '';
+}
+// What the server says about the key, never the key itself.
+let KEYSTATUS=null;
+async function refreshKeyStatus(){
+  const res = await rpc('admin_key_status', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
+  // Missing before sql/12-share-pin.sql: say nothing rather than something wrong.
+  if (res.error) return;
+  const k = KEYSTATUS = (res.data||[])[0] || null;
+  if (!k) return;
+  const kind = k.is_pin ? 'a ' + k.pin_length + '-digit PIN' : 'a long key';
+  const paused = !!k.paused_until;
+  const until = paused ? new Date(k.paused_until).toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }) : '';
+  document.getElementById('keySummary').textContent = paused
+    ? 'Paused: someone has been guessing the PIN.'
+    : 'The share key is ' + kind + '. Change it here.';
+  document.getElementById('keyState').innerHTML =
+    '<div class="item"><div>The share key is <b>' + esc(kind) + '</b>' +
+    '<div class="meta">' + (k.is_pin
+      ? (paused ? 'New trips paused until ' + esc(until) + ' after 20 wrong tries.'
+                : (k.recent_failures ? k.recent_failures + ' wrong ' + (k.recent_failures === 1 ? 'try' : 'tries') + ' in the last 10 minutes, of 20 before a pause.'
+                                     : 'No wrong tries in the last 10 minutes.')) +
+        (k.last_paused && !paused ? ' Last paused ' + timeAgo(Date.parse(k.last_paused)) + ' ago.' : '')
+      : 'Wrong keys are not limited, because a long key cannot be guessed.') +
+    '</div></div>' + (paused ? '<button class="small btn-ghost" onclick="resumeKey()">Resume now</button>' : '') + '</div>';
+  const alert = document.getElementById('keyAlert');
+  alert.classList.toggle('hidden', !paused);
+  alert.innerHTML = paused
+    ? 'Someone tried 20 wrong PINs in 10 minutes, so nobody can start a trip until ' + esc(until) +
+      '. Trips already running are fine. Changing the PIN under SHARE KEY ends the pause and is the safer answer.'
+    : '';
+}
+async function resumeKey(){
+  if (!confirm('Let new trips start again now? Whoever was guessing can carry on, so changing the PIN is usually better.')) return;
+  const res = await rpc('admin_resume_key', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
+  if (res.error){ alert(friendly(res.error)); return; }
+  refreshKeyStatus();
 }
 // Where the tracker lives, relative to wherever this admin page is being
 // served from. Netlify serves admin.html at /admin as well as /admin.html,
@@ -894,8 +985,10 @@ async function rotateKey(){
   const link = trackerBase() + '#k=' + encodeURIComponent(k);
   const box=document.getElementById('newLinkBox');
   box.classList.remove('hidden');
-  box.innerHTML = 'New sharer link to post in the group chat:<br><b>'+esc(link)+'</b>';
+  box.innerHTML = 'New sharer link to post in the group chat:<br><b>'+esc(link)+'</b>' +
+    (/^[0-9]{4,8}$/.test(k) ? '<br>Or tell people the PIN: <b>'+esc(k)+'</b>' : '');
   document.getElementById('newAccessKey').value='';
+  refreshKeyStatus();
 }
 
 // ============================================================

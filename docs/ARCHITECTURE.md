@@ -91,7 +91,7 @@ Three separate credentials, deliberately not interchangeable.
 | | What it is | Where it lives | What it unlocks |
 |---|---|---|---|
 | Route slug | public name, e.g. `wonderful-mendez-ayala` | config.txt, shipped publicly | reading positions, sightings, settings |
-| Share key | secret | the link posted in the group chat | putting a bus on the map, unless open sharing is on |
+| Share key | secret: a long key, or a PIN of 4 to 8 digits | the link posted in the group chat | putting a bus on the map, unless open sharing is on |
 | Admin key | secret, stored only as a salted SHA-256 hash | the maintainer's notes, nowhere else | the admin page |
 
 **Watching is open to everyone.** This changed in July 2026. Gating reads never
@@ -131,6 +131,18 @@ privately as a keyed one's; the duplicate-sharer warning, the wrong-direction
 guard and the cap all run the same either way; and the privacy panel now says
 that while sharing is open a bus is somebody's report. `docs/DATABASE.md`,
 "Open sharing", has the rest.
+
+**The share key may be a PIN** (October 2026), easier to say on a bus. A PIN
+can be guessed, so while the key is one, 20 wrong tries in 10 minutes pause
+new trips on the route for 10 minutes, the right PIN included, and every key
+check now carries the slug so a wrong one can be counted against a route
+(`check_share_key`, `set_keyed_position`). The old `route_exists` and
+`set_bus_position` refuse to test a PIN, since they could not count one.
+Applying the rule above: the pause is a new way to stop real sharers starting,
+which is why it exists only for a PIN and the admin page shows it; and
+`check_share_key` writes, to count, so it is a write like `mark_watching`, not
+a read, and the reads still write nothing.
+`docs/DATABASE.md`, "A PIN for the share key", has the numbers.
 
 **Key rotation has a grace period.** Rotating moves the old key to `prev_key`
 with a 4 hour expiry. A session that was already sharing keeps working on the

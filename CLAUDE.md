@@ -46,7 +46,7 @@ each moves the seeded rows the next would expect. From `tests/`:
 ```
 createdb bustest
 psql -d bustest -f db/00-legacy-baseline.sql
-psql -d bustest -f ../sql/01-base.sql          # then 02 through 11 in order
+psql -d bustest -f ../sql/01-base.sql          # then 02 through 12 in order
 psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 ```
 
@@ -120,7 +120,11 @@ reading. The share key lives only in the link posted to the community, and
 unlocks putting a bus on the map — unless an organizer has switched on open
 sharing (`open_sharing` in settings, absent means off, `sql/11-open-sharing.sql`),
 when a page with no key shares by the slug. Switching it off removes every bus
-started without the key at once; keyed sharers are never touched. The admin key is stored as a salted SHA-256
+started without the key at once; keyed sharers are never touched. The share key
+may be a PIN of 4 to 8 digits (`sql/12-share-pin.sql`); while it is, 20 wrong
+tries in 10 minutes pause new trips on the route for 10 minutes, so every key
+check carries the slug (`check_share_key`, `set_keyed_position`) and the old
+`route_exists`/`set_bus_position` refuse to test a PIN. The admin key is stored as a salted SHA-256
 hash and unlocks `admin.html`. All reads and writes go through `SECURITY DEFINER`
 Postgres functions; tables have RLS enabled with no policies, so the anon key
 cannot touch them directly.

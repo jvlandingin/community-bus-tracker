@@ -31,12 +31,13 @@ One row per route. Holds every secret in the system.
 
 | column | notes |
 |---|---|
-| `key` | the share key, primary key. Secret. |
+| `key` | the share key, primary key. Secret. A long key, or a PIN of 4 to 8 digits since `12-share-pin.sql`. |
 | `slug` | public route name, unique, not null. Safe to publish. |
 | `prev_key` | previous share key, kept for the rotation grace |
 | `prev_key_expires` | when the old key stops working (rotation + 4 hours) |
 | `admin_salt`, `admin_hash` | salted SHA-256 of the admin key. The key itself is never stored. |
 | `pub_salt` | random per route, salts the `pub_id` that `get_positions` publishes instead of the session id. Never returned by anything. |
+| `key_fail_count`, `key_fail_since`, `key_paused_until`, `key_last_paused` | wrong PINs on this route, and the pause they cause. See "A PIN for the share key". |
 | `settings` | jsonb, see below |
 | `notice_text`, `notice_updated`, `notice_expires` | the pinned notice |
 
@@ -210,10 +211,17 @@ did was invalidate a sentence in this file about a different function.
 ### Share key required
 | function | notes |
 |---|---|
-| `route_exists(p_key)` | true only for the **current** key |
-| `set_bus_position(p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | see checks below |
+| `check_share_key(p_slug, p_key)` | the gate. Returns `ok`, `invalid key` or `too many tries`; counts a wrong PIN. |
+| `set_keyed_position(p_slug, p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | the trip, as the page sends it. Returns null when the position went in, or `invalid key` / `too many tries`; every other refusal raises, as below. |
+| `route_exists(p_key)` | true only for the **current** key, and never for a PIN. Kept for pages already on phones. |
+| `set_bus_position(p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | the same checks, by the key alone; refuses any PIN-shaped key. Kept for pages already on phones. |
 
-`set_bus_position` rejects, with these exact messages the client turns into
+Both new calls take the slug because a wrong PIN has to be counted against a
+route, and the old two find the route by the key, so they could not. They
+**return** a wrong key rather than raising it: an exception rolls the
+transaction back, and the count with it.
+
+`set_keyed_position` and `set_bus_position` reject, with these exact messages the client turns into
 plain words: `invalid key`, `invalid session` (must match
 `^[A-Za-z0-9\-]{8,64}$`), `invalid direction` (anything but `north` or `south`,
 missing included), `label too long` (over 12), `position off route` (missing,
@@ -244,7 +252,7 @@ the write is allowed **only for a session that already exists**. A new session
 on the old key gets `invalid key`.
 
 ### Admin key required
-`admin_check`, `admin_set_settings`, `admin_set_notice(p_text, p_minutes)`,
+`admin_key_status`, `admin_resume_key`, `admin_check`, `admin_set_settings`, `admin_set_notice(p_text, p_minutes)`,
 `admin_rotate_share_key`, `admin_kick`, `admin_delete_sighting`,
 `admin_change_key`, `admin_list_sharers`, `admin_list_blocked`,
 `admin_unblock`, `admin_watching_count`. All take `(p_slug, p_admin, ...)` and
@@ -268,7 +276,7 @@ works **only while none is set**, so it cannot be used to take over a route.
 `rename_route_slug(p_old, p_new)`, and the internal helpers `_hash_admin`,
 `_pub_id`, `_require_admin`, `_check_settings`, `_sweep`, `_sweep_watching`,
 `_watching_window`, `_watching_cap`, `_thanks_mark`, `_thanks_cap`,
-`_write_position`. The last matters most: it trusts its caller to have decided
+`_write_position`, `_key_failed`, `_key_paused`. `_write_position` matters most: it trusts its caller to have decided
 the write may happen, so callable from outside it would be a way round both
 the key and the switch.
 
@@ -305,6 +313,47 @@ keyless and never removed by the switch.
 public map would invite riders to distrust the riders the switch was turned on
 for, and the honest statement is the one the privacy panel makes, that while it
 is on a bus is somebody's report and anyone could have made it.
+
+## A PIN for the share key
+
+Since October 2026 (`sql/12-share-pin.sql`) the admin page can set the share key
+to a PIN of 4 to 8 digits instead of a long key, 6 by default. It is easier to
+say out loud, post on a sign or type on a bus.
+
+A PIN can be guessed: 10,000 four-digit PINs, a public slug, and a server that
+used to answer every wrong key at once. So while the key is a PIN, **20 wrong
+tries on the route inside 10 minutes pause new trips for 10 minutes.** The
+numbers are in `_key_failed()`. What that buys and costs:
+
+- The fastest a guesser can go is 20 tries per 10 minutes: 20 quick ones, the
+  pause, a fresh window. On average a 4-digit PIN lasts about 42 hours of that,
+  6 digits about 6 months. The admin page prints the figure for the length
+  chosen.
+- **During the pause a new trip is refused even with the right PIN.** Anything
+  else would let the guess that happened to be right in. Trips already on the
+  map carry on, keyed by their session being there.
+- So someone guessing also keeps real sharers from starting. It is per route,
+  not per phone, because nothing a Postgres function can see tells two
+  guessers apart reliably; a forwarded address header is set by whoever sends
+  the request. The admin page shows the pause above the live sharers, with
+  Resume now, and changing the key ends it and forgets the count. Changing is
+  the better answer, since a resume hands the guesser a fresh window.
+- Tries during a pause are answered `too many tries` and not counted: they
+  cannot succeed, and counting them would only lengthen a pause the guesser
+  is causing anyway.
+- A **long key has no limit**, as before. Nobody can guess one, and a limit
+  would only give anyone a free way to stop new trips. Nine digits and more
+  count as a long key, since they pass the long key's rule and are past
+  guessing; four to eight digits are a PIN.
+
+The page learns only that the key is a PIN (`share_pin` in `get_settings`), to
+offer a number pad. Never its length, and nothing else about it.
+
+The two old calls stay for pages already on phones, and neither will test a
+PIN: `route_exists` answers false to one and `set_bus_position` refuses one.
+Without that they would be a way round the count. An old page whose route
+has moved to a PIN therefore cannot share until it reloads, which any visit
+after the deploy does.
 
 ## The watching count
 

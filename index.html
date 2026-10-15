@@ -1888,9 +1888,9 @@
 <div class="gate hidden" id="gate">
   <form class="card gate-card" onsubmit="event.preventDefault(); submitKey();">
     <h2><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg>Bus Tracker</h2>
-    <p id="gateMsg">Watching the map needs no key. Sharing from the bus needs the access key from the group chat, or the full link posted there.</p>
+    <p id="gateMsg">Watching the map needs no key. Sharing from the bus needs the access key or PIN from the group chat, or the full link posted there.</p>
     <div style="height:6px"></div>
-    <input type="text" id="gateKey" placeholder="Access key" autocomplete="off" autofocus>
+    <input type="text" id="gateKey" placeholder="Access key or PIN" autocomplete="off" autofocus>
     <div style="height:10px"></div>
     <button class="big btn-primary" id="gateBtn" type="submit">Enter</button>
     <div style="height:8px"></div>
@@ -2925,6 +2925,8 @@ async function pollSettings(){
   if (typeof st.parol_enabled === 'boolean') SET.parol_enabled = st.parol_enabled;
   SET.open_sharing = st.open_sharing === true;
   applySeason();
+  SHARE_PIN = res.data.share_pin === true;
+  syncGateInput();
   NOTICE = res.data.notice || null;
   renderNotice();
   renderHours();
@@ -2947,6 +2949,15 @@ function renderNotice(){
 // no key shares by the public slug instead. A page that has the key always
 // uses it, so turning the switch off later never stops a keyed trip.
 function openSharing(){ return SET.open_sharing === true; }
+// Whether the share key is a PIN (sql/12-share-pin.sql), so the gate can
+// offer a number pad. The server says only that, never its length.
+let SHARE_PIN = false;
+function syncGateInput(){
+  const el = document.getElementById('gateKey');
+  if (!el) return;
+  el.setAttribute('inputmode', SHARE_PIN ? 'numeric' : 'text');
+  el.placeholder = SHARE_PIN ? 'PIN' : 'Access key or PIN';
+}
 let accessKey = null;
 function resolveKey() {
   const m = location.hash.match(/k=([A-Za-z0-9_-]+)/);
@@ -5501,6 +5512,8 @@ function writeErrorMessage(err){
     return 'An organizer stopped this share. If you think that was a mistake, message them in the group chat.';
   if (m.indexOf('open sharing is off')>=0)
     return 'The organizer has switched off sharing without the key, so this bus was taken off the map. To share, open the link from the group chat.';
+  if (m.indexOf('too many tries')>=0)
+    return 'Too many wrong PIN tries on this route just now, so new trips are paused for a few minutes. Try again shortly. A trip already sharing is not affected.';
   if (m.indexOf('invalid key')>=0)
     return 'This access key is no longer valid (it may have been changed by the organizer). Get the current link from the group chat.';
   if (m.indexOf('invalid direction')>=0)
@@ -5643,8 +5656,13 @@ async function writePosition(coords){
     p_direction:shareDir,
     p_label: document.getElementById('busLabel').value.trim() || null
   };
-  if (keyed) args.p_key = accessKey; else args.p_slug = CFG.ROUTE_SLUG;
-  const res = await rpc(keyed ? 'set_bus_position' : 'set_open_position', args);
+  // Both carry the slug: a wrong PIN is counted against the route, and the
+  // keyed writer answers one with a returned word rather than an error, so
+  // the count survives. It is turned into an error here, like any other.
+  args.p_slug = CFG.ROUTE_SLUG;
+  if (keyed) args.p_key = accessKey;
+  let res = await rpc(keyed ? 'set_keyed_position' : 'set_open_position', args);
+  if (!res.error && typeof res.data === 'string' && res.data) res = { error:{ message:res.data } };
   // The trip ended while this was on its way: nobody is left to tell.
   if (!sharing) return;
   if (!res.error){
@@ -5656,10 +5674,12 @@ async function writePosition(coords){
   }
   const raw = ((res.error.message||'')+'').toLowerCase();
   const msg = writeErrorMessage(res.error);
-  // Four answers never change by retrying, so stop rather than hammer the
+  // Five answers never change by retrying, so stop rather than hammer the
   // server and leave the person staring at a live-looking dot: a session an
-  // organizer stopped, a key that has been changed, a route already full, and
-  // sharing without the key switched off under a keyless trip.
+  // organizer stopped, a key that has been changed, a route already full,
+  // sharing without the key switched off under a keyless trip, and new trips
+  // paused because somebody has been guessing the PIN. Retrying the last
+  // every 5 seconds would only keep the pause going.
   // A changed key is dropped as well, so the next Start asks for the new one
   // instead of trying the dead one again.
   if (raw.indexOf('session blocked')>=0){
@@ -5668,7 +5688,7 @@ async function writePosition(coords){
     return;
   }
   if (raw.indexOf('invalid key')>=0 || raw.indexOf('too many active sessions')>=0
-      || raw.indexOf('open sharing is off')>=0){
+      || raw.indexOf('open sharing is off')>=0 || raw.indexOf('too many tries')>=0){
     // Switched off while this trip was keyless: the settings in hand still
     // say open, so they are corrected now, or the next Start would skip the
     // key and be refused again.
@@ -6299,7 +6319,7 @@ const WALKS = {
   ],
   share: [
     { id:'hello', tab:'track', title:'Sharing from the bus',
-      words:'This is practice, so nothing gets shared. Sharing for real may need the key from the group chat.' },
+      words:'This is practice, so nothing gets shared. Sharing for real may need the key or PIN from the group chat.' },
     { id:'tab', tab:'track', at:'#tabOnbus', tap:'Tap I’m on the bus',
       words:'On a bus, open this tab.' },
     { id:'dir', tab:'share', at:'.dirpick', patch:'#pickNorth', tap:'Tap Northbound',
@@ -6758,9 +6778,12 @@ async function tryKey(key){
   const btn=document.getElementById('gateBtn');
   btn.textContent='Checking…'; btn.disabled=true;
   let res;
-  try{ res=await rpc('route_exists',{p_key:key}); }catch(e){ res={error:e}; }
+  // check_share_key, not route_exists: a PIN can be guessed, so every wrong
+  // one is counted against the route. See sql/12-share-pin.sql.
+  try{ res=await rpc('check_share_key',{p_slug:CFG.ROUTE_SLUG, p_key:key}); }catch(e){ res={error:e}; }
   if (res.error){ showGateError('Could not reach the server. Check your connection and try again.'); return false; }
-  if (!res.data){ showGateError('That key is not recognized. Check the link shared in the group.'); return false; }
+  if (res.data === 'too many tries'){ showGateError(writeErrorMessage({ message:'too many tries' })); return false; }
+  if (res.data !== 'ok'){ showGateError('That key or PIN is not recognized. Check the one shared in the group.'); return false; }
   accessKey=key;
   try{ sessionStorage.setItem('wt-key',key); location.hash='k='+key; }catch(e){}
   return true;

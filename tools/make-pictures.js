@@ -54,7 +54,7 @@ function renderer() {
     'S.SIGN_FONT=SIGN_FONT;S.signGlyph=signGlyph;S.signLayout=signLayout;S.signboardSvg=signboardSvg;' +
     'S.COACH_SIDE=COACH_SIDE;S.SCENE_TIMES=SCENE_TIMES;S.sceneSvg=sceneSvg;S.MARKS=MARKS;S.markSvg=markSvg;' +
     'S.TICKET_SKIES=TICKET_SKIES;S.TICKET_VIEWS=TICKET_VIEWS;S.ticketArtSvg=ticketArtSvg;' +
-    'S.TICKET_SIGHTS=TICKET_SIGHTS;S.sightTile=sightTile;S.moonSvg=moonSvg;S.BUS_DECOR=BUS_DECOR;S.busSvg=busSvg;')(S);
+    'S.TICKET_SIGHTS=TICKET_SIGHTS;S.sightTile=sightTile;S.moonSvg=moonSvg;S.BUS_DECOR=BUS_DECOR;S.busSvg=busSvg;S.DECOR_BOX=DECOR_BOX;S.decorTile=decorTile;')(S);
   return S;
 }
 

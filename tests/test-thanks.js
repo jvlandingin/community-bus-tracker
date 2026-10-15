@@ -26,7 +26,7 @@ new Function('S', src + albumSrc + 'S.thanksWords=thanksWords;S.thanksControl=th
 // The drawings the luck and the bus are drawn with, from the same file.
 const P = require(path.join(ROOT, 'tools', 'make-pictures.js')).renderer();
 new Function('P', html.slice(html.indexOf('// ---- THE PICTURES (unit tested)'), html.indexOf('// ---- END PICTURES')) +
-  'P.BUS_DECOR=BUS_DECOR;P.busSvg=busSvg;')(P);
+  'P.BUS_DECOR=BUS_DECOR;P.busSvg=busSvg;P.DECOR_BOX=DECOR_BOX;P.decorTile=decorTile;')(P);
 // The part of the page around the ticket and the album, cut at the next
 // function so a check about one function reads that function alone.
 const fn = name => {
@@ -552,6 +552,19 @@ console.log('\n=== 19. your bus: counted, never a timesheet ===');
         [...html.matchAll(/saveBus\(/g)].length === 2 && [...html.matchAll(/dropBus\(/g)].length === 2,
     'written in one place, by the end of a trip, and removed only by Remove all');
   check(/n \? n \+ ' of ' \+ g : 'not yet'/.test(fn('renderAlbum')), 'a decoration not yet earned is "not yet", never 0 of anything');
+  // Each card shows its decoration on its own part of the bus, earned or
+  // not: the ones still to come as an outline, a look at what is coming.
+  check(/'<li' \+ \(on \? ' class="on"' : ''\) \+ '>' \+ decorTile\(d\.k\)/.test(fn('renderAlbum')),
+    'every decoration\'s card carries its picture, earned or still to come');
+  const tiles = S.DECOR.map(d => P.decorTile(d.k));
+  check(tiles.every((t, i) => t.startsWith('<svg class="decor-art" viewBox="' + P.DECOR_BOX[S.DECOR[i].k] + '"') &&
+        t.includes('<g class="dg">' + P.BUS_DECOR[S.DECOR[i].k] + '</g>') && !/ id="|<text|https?:|href=/.test(t)),
+    'drawn on the coach with nothing else on it, no ids, no words, nothing loaded');
+  check(Object.values(P.DECOR_BOX).every(b => { const v = b.split(' ').map(Number); return v[2] === 2 * v[3]; }) &&
+        Object.keys(P.DECOR_BOX).sort().join(',') === Object.keys(P.BUS_DECOR).sort().join(','),
+    'every decoration has its corner of the bus, all cut to the same shape so the cards line up');
+  check(/\.alb-decor li:not\(\.on\) \.decor-art \.dg \*\{fill:none; stroke:var\(--ti\);/.test(html),
+    'and a decoration still to come is only its outline');
   check(!/thank|maxThanks|\.ty\b|mins|minutes|label/.test(fn('busAdd') + fn('busClean') + fn('busCount')),
     'and nothing in the counting knows about salamat, time or the bus number');
 }

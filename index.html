@@ -1317,6 +1317,13 @@
   .alb-decor span{font-size:var(--fs-cap); font-weight:600; opacity:.8; line-height:1.3;}
   .alb-decor i{margin-top:2px; font-style:normal; font-size:var(--fs-cap); font-weight:900; letter-spacing:.04em;}
   .alb-decor li:not(.on) b, .alb-decor li:not(.on) i{opacity:.6;}
+  /* Each decoration on its own part of the bus: in colour once earned; until
+     then a dashed outline over a faded coach, a look at what is coming. The
+     outline's width is in screen pixels, so every card draws it the same. */
+  .alb-decor .decor-art{display:block; width:100%; height:auto; margin-bottom:6px; border-radius:var(--r-s);}
+  .alb-decor li:not(.on) .decor-art .dc{opacity:.3;}
+  .alb-decor li:not(.on) .decor-art .dg *{fill:none; stroke:var(--ti); stroke-width:1.3px; stroke-dasharray:3 2;
+    vector-effect:non-scaling-stroke;}
   .alb-none{margin:16px 0 0;}
   .alb-sights{display:grid; grid-template-columns:repeat(4,1fr); gap:12px 8px; padding:12px 10px;}
   .alb-sight{display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; text-align:center;}
@@ -2868,10 +2875,12 @@ const BUS_DECOR = {
   horns: '<rect x="246" y="17" width="32" height="5" rx="2" fill="#8a929a"/>' +
     '<g fill="#e3e7eb" stroke="#8a929a" stroke-width=".8" stroke-linejoin="round"><path d="M248 13H266L279 8.5V17.5L266 13Z"/><path d="M254 8H270L283 3.5V12.5L270 8Z"/></g>',
   // Borlas: a fringe of tassels along the top of the windows.
-  fringe: '<path d="M38 31.6H300" stroke="#e39a1c" stroke-width="1.6"/>' +
-    '<path d="M40 35H300" stroke="#d7262c" stroke-width="5" stroke-dasharray="2 4"/>' +
-    '<path d="M40 35H300" stroke="#f2c230" stroke-width="5" stroke-dasharray="2 4" stroke-dashoffset="-2"/>' +
-    '<path d="M40 35H300" stroke="#2e8b57" stroke-width="5" stroke-dasharray="2 4" stroke-dashoffset="-4"/>',
+  fringe: (function(){
+    const col = ['#d7262c', '#f2c230', '#2e8b57'];
+    let o = '<path d="M38 31.6H300" stroke="#e39a1c" stroke-width="1.6"/>';
+    for (let i = 0; i < 64; i++) o += '<path d="M' + (41 + i * 4) + ' 32.4h2.4v4.2l-1.2 1.4l-1.2-1.4z" fill="' + col[i % 3] + '"/>';
+    return o;
+  })(),
   // Kromo: chrome hubcaps with their spokes.
   chrome: [88, 282].map(function(x){
     return '<circle cx="' + x + '" cy="120" r="9.5" fill="#e9edf1" stroke="#9aa3ab"/>' +
@@ -2921,6 +2930,23 @@ const BUS_DECOR = {
   route: '<path d="M190 114H254" stroke="#6d1a25" stroke-width="1.6"/><g fill="#fbf4e4" stroke="#6d1a25" stroke-width="1.2">' +
     [0, 1, 2, 3, 4, 5, 6].map(function(i){ return '<circle cx="' + (190 + i * 64 / 6).toFixed(1) + '" cy="114" r="2.2"/>'; }).join('') + '</g>'
 };
+// Where each decoration sits on the coach, as the corner of it a card in My
+// tickets looks at (x y w h, all twice as wide as tall, in the coach's own
+// drawing space), so a decoration can be shown on its own: in colour once
+// earned, as an outline over a faded coach while it is still to come.
+const DECOR_BOX = {
+  sampaguita:'294 28 64 32', flaps:'50 100 64 32', horns:'236 0 56 28', fringe:'40 24 64 32',
+  chrome:'58 104 60 30', lights:'40 14 64 32', horse:'300 0 48 24', rooster:'128 94 64 32',
+  stripe:'150 70 64 32', sunrise:'22 68 56 28', string:'40 62 64 32', bumpers:'306 96 56 28',
+  route:'184 100 76 38'
+};
+function decorTile(key){
+  if (!hasOwn(BUS_DECOR, key) || !hasOwn(DECOR_BOX, key)) return '';
+  const c = TICKET_SKIES.day;
+  return '<svg class="decor-art" viewBox="' + DECOR_BOX[key] + '" aria-hidden="true" focusable="false" style="' + c.coach + '">' +
+    '<rect x="-10" y="-10" width="384" height="160" fill="' + c.sky + '"/>' +
+    '<g class="dc">' + COACH_SIDE + '</g><g class="dg">' + BUS_DECOR[key] + '</g></svg>';
+}
 // The coach wearing the decorations named, in the order given, by day.
 function busSvg(keys){
   const c = TICKET_SKIES.day;
@@ -6968,7 +6994,7 @@ function renderAlbum(){
   const busPart = '<div class="alb-h">Your bus<span>' + (bus.n ? bus.n + (bus.n === 1 ? ' trip' : ' trips') + ' shared' : 'starts with your first trip') + '</span></div>' +
     '<div class="alb-paper alb-bus">' + busSvg(earned) + '<ul class="alb-decor">' + DECOR.map(function(d){
       const g = busGoal(d, CHECKPOINTS), n = busCount(bus, d, CHECKPOINTS), on = g > 0 && n >= g;
-      return '<li' + (on ? ' class="on"' : '') + '><b>' + escapeHtml(d.t) + '</b><span>' + escapeHtml(d.s) + '</span>' +
+      return '<li' + (on ? ' class="on"' : '') + '>' + decorTile(d.k) + '<b>' + escapeHtml(d.t) + '</b><span>' + escapeHtml(d.s) + '</span>' +
         '<i>' + (on ? 'on your bus' : n ? n + ' of ' + g : 'not yet') + '</i></li>';
     }).join('') + '</ul></div>';
   const clear = document.getElementById('albumClear');

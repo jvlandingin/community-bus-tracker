@@ -1121,7 +1121,10 @@ for a reason:
   had no way to see what there was to earn. It is always there now. With
   nothing yet it says "Your first trip starts them", and opened it shows the
   plain bus with every decoration, and every place, stamp and sight, faint
-  with "not yet": what is possible, shown without a single zero.
+  with "not yet": what is possible, shown without a single zero. Each
+  decoration's card shows it on its own part of the bus (`decorTile()`, cut
+  by `DECOR_BOX`): in colour once earned, and until then as a dashed outline
+  over a faded coach, so a sharer can see what is coming.
 
 - *Numbers, no dates.* A count of trips cannot say when anyone worked; a list
   of dated trips could, which is why kept tickets never held times and this

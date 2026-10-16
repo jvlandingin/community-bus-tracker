@@ -195,7 +195,27 @@ function serveRepo(route, url){
   if (!f.startsWith(ROOT + path.sep) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) return route.fulfill({ status:404, body:'' });
   let body = fs.readFileSync(f);
   if (p === '/config.txt' && KEY) body = Buffer.from(body.toString().replace(/^CARTO_API_KEY\s*=.*$/m, 'CARTO_API_KEY = ' + KEY));
+  if (p === '/index.html') body = Buffer.from(filmGlide(body.toString()));
   return route.fulfill({ status:200, contentType:TYPES[path.extname(f)] || 'application/octet-stream', body });
+}
+// The saved stop's picture glides to each new position in a second, eased,
+// which suits a phone that hears every few seconds. The film polls twice a
+// second (POLL_FRAMES), so there the glide would start and stop twice a
+// second. In the copy of index.html the film is served, the glide lasts one
+// poll and goes at an even pace instead, so each ends where the next begins
+// and the bus comes on steadily. Presentation only: nothing else about the
+// page changes, and a change to those lines in index.html stops the render
+// rather than quietly filming the stutter again.
+const POLL_FRAMES = 15, GLIDE_MS = Math.round(POLL_FRAMES / FPS * 1000);
+function filmGlide(html){
+  const swaps = [['STOP_GLIDE_MS = 1000', 'STOP_GLIDE_MS = ' + GLIDE_MS],
+                 ['animation:stopglide 1s var(--ease-move) both', 'animation:stopglide ' + GLIDE_MS / 1000 + 's linear both'],
+                 ['* u * u * (3 - 2 * u)', '* u']];
+  swaps.forEach(function(s){
+    if (html.split(s[0]).length !== 2) throw new Error('index.html no longer has "' + s[0] + '" once: see filmGlide in render.js');
+    html = html.replace(s[0], s[1]);
+  });
+  return html;
 }
 // Map tiles, kept on disk after the first render, so a re-render asks CARTO
 // for nothing. The file is named by the tile, never by its address, which
@@ -433,5 +453,5 @@ function encoder(file){
   };
 }
 
-module.exports = { World, Phone, Stage, road, keys, stop, pictures, board, encoder, FPS, FROM, TO, OUT, NAME, KEY, CHROME, playwright };
+module.exports = { World, Phone, Stage, road, keys, stop, pictures, board, encoder, FPS, POLL_FRAMES, FROM, TO, OUT, NAME, KEY, CHROME, playwright };
 if (require.main === module) require('./film.js').main().catch(e => { console.error(e); process.exit(1); });

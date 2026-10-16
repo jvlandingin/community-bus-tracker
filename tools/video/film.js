@@ -432,8 +432,8 @@ async function main(){
     // The page's own poll, more often than it would, so the buses glide in
     // steps of half a second rather than six; and right after the sharer's
     // phone sends a position, so its bus moves on its own screen at once.
-    if (f % 15 === 0 || A.wrote){ A.wrote = false; await A.poll(); }
-    if (B.page && f % 15 === 0) await B.poll();
+    if (f % R.POLL_FRAMES === 0 || A.wrote){ A.wrote = false; await A.poll(); }
+    if (B.page && f % R.POLL_FRAMES === 0) await B.poll();
     // The buzzes the story is about: the switch going on, and the two
     // alarms. The page also buzzes as a trip starts (15 ms, too short to
     // see or hear), which stays out. It used to buzz once more just after

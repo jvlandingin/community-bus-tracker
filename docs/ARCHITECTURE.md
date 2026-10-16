@@ -1597,6 +1597,24 @@ worked out from the video's time; the half hour of the trip passes inside
 an interlude, in six-second steps so the page's own timers fire as they
 would.
 
+**One line of the page is the film's own.** The page polls twice a second
+in the film rather than every six, so the buses move in small steps. At
+that rate the saved stop's picture, which glides to each new position in a
+second and eases in and out, started and stopped twice a second. The
+maintainer asked for the bus to come on smoothly, for presentation. So the
+copy of `index.html` the film is served (`filmGlide()` in `render.js`)
+glides for one poll at an even pace, and each glide ends where the next
+begins. Nothing else in the page differs from the commit, and the render
+stops if those lines change in `index.html`, rather than quietly filming
+the stutter again.
+
+**Saving the stop takes four seconds** (the maintainer's ask, October 2026).
+The camera closes on the picker while the whole name is typed. After the
+pick, it goes to the pin as it lands on the map, with rings going out from
+it and the stop's name beside them, and stays there a second before the
+card. The other scenes were each made a little shorter, so the video is
+still about a minute.
+
 **Choices the app forced.** The story waits at Javalera and gets off at SM
 City General Trias because the card counts down to both one stop at a time;
 at Dagatan it reads "8 stops" and then "2", which is right (the Tagaytay

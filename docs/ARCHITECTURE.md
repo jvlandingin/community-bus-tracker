@@ -1612,7 +1612,9 @@ the stutter again.
 The camera closes on the picker while the whole name is typed. After the
 pick, it goes to the pin as it lands on the map, with rings going out from
 it and the stop's name beside them, and stays there a second before the
-card. The other scenes were each made a little shorter, so the video is
+card. It goes no closer than 1.35 times (`SHARP` in `film.js`). The phone
+is filmed at three pixels a point and the stage draws it at 2.2, so a
+closer camera enlarges the capture, and at 2.4 times the map blurred. The other scenes were each made a little shorter, so the video is
 still about a minute.
 
 **Choices the app forced.** The story waits at Javalera and gets off at SM

@@ -173,6 +173,10 @@ function changes(a, b){
   if (b.popup && !a.popup) out.push('pop');
   return out;
 }
+// The closest the camera goes on the page, so it is never blown up: the
+// phone is filmed at three pixels a point (Phone's deviceScaleFactor) and
+// the stage shows it at 2.2 (860 / 390), so 3 / 2.2.
+const SHARP = 1.35;
 const gold = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\*([^*]+)\*/g, '<b>$1</b>');
 
 // ---- The scenes: what happens when ------------------------------------------
@@ -235,11 +239,14 @@ function cues(A, B, stage, world, browser, heard){
   at(T.wait + 2.95, v => tap(A, '#stopList button[data-name="' + WAIT + '"]', v));
   // Picked: the camera goes to the pin as it lands on the map, rings go out
   // from it with its name beside them, and it stays there a second before
-  // the card. (The pin's own label, what tapping it shows, is wider than
-  // the screen this close and sits over the pin.)
+  // the card. No closer than SHARP: the phone is filmed at three pixels a
+  // point and the stage draws it at 2.2, so past 1.36 times the map is
+  // blown up and blurs (2.4 did). The rings and the name do the pointing.
+  // (The pin's own label, what tapping it shows, is wider than the screen
+  // when close and sits over the pin.)
   at(T.wait + 3.1, async v => {
     const r = await A.rect('.mypin');
-    await cam(A, '.mypin', v, { width:1000, cy:1060, maxZ:2.4, dur:.6 });
+    await cam(A, '.mypin', v, { width:1000, cy:1060, maxZ:SHARP, dur:.6 });
     if (r) await stage.event({ type:'mark', at:v + .3, x:r.x + r.w / 2, y:r.y + r.h / 2, dur:1.5, label:WAIT });
     heard.push({ t:v + .3, kind:'stamp', gain:.8 });
   });

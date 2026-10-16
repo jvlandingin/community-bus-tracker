@@ -225,17 +225,22 @@ function cues(A, B, stage, world, browser, heard){
   // Close on the picker, near enough to read what is typed and what it
   // finds; the whole name, a letter at a time, and a moment on it.
   at(T.wait + 1.0, v => cam(A, '#stopModal .modal-card', v, { width:1040, topAt:330, maxH:560 }));
+  // The list shrinks to what the first letter finds and the picker, which
+  // the page keeps in the middle, moves with it: the camera follows.
+  at(T.wait + 1.5, v => cam(A, '#stopModal .modal-card', v, { width:1040, cy:1040, dur:.4 }));
   WAIT.split('').forEach((c, i) => at(T.wait + 1.4 + i * .14, async v => {
     await type(A, '#stopSearch', WAIT.slice(0, i + 1));
     heard.push({ t:v, kind:'tap', gain:.35 });
   }));
   at(T.wait + 2.95, v => tap(A, '#stopList button[data-name="' + WAIT + '"]', v));
   // Picked: the camera goes to the pin as it lands on the map, rings go out
-  // from it, and it stays there a second before the card.
+  // from it with its name beside them, and it stays there a second before
+  // the card. (The pin's own label, what tapping it shows, is wider than
+  // the screen this close and sits over the pin.)
   at(T.wait + 3.1, async v => {
     const r = await A.rect('.mypin');
     await cam(A, '.mypin', v, { width:1000, cy:1060, maxZ:2.4, dur:.6 });
-    if (r) await stage.event({ type:'mark', at:v + .3, x:r.x + r.w / 2, y:r.y + r.h / 2, dur:1.5 });
+    if (r) await stage.event({ type:'mark', at:v + .3, x:r.x + r.w / 2, y:r.y + r.h / 2, dur:1.5, label:WAIT });
     heard.push({ t:v + .3, kind:'stamp', gain:.8 });
   });
   at(T.wait + 4.75, v => cam(A, null, v, { dur:.45 }));

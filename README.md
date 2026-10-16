@@ -102,6 +102,12 @@ company's name or initials, for the same reason.
   "are you watching our drivers?" is the first question, then asks — in order —
   to be told if it should stop, for permission to post the flyer, and for
   whatever cooperation suits them, up to handing the whole thing over.
+- **Showcase video:** `sh tools/render-video.sh` makes a one-minute vertical
+  video for Facebook, TikTok and Reels: the real tracker on a phone, with
+  made-up buses labelled as a demo, waiting for a bus, sharing it, getting
+  off, the ticket, My tickets and a dressed bus, between drawings made by the
+  app's own picture code. Nothing it does reaches the database. It needs
+  ffmpeg, Playwright and the CARTO key, and the video is not committed.
 
 ## What it deliberately does not do
 

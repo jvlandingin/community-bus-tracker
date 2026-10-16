@@ -83,6 +83,16 @@ paint=… -->` marker, and the bus on the road in its popup, from `<!-- ride
 views=… sky=… -->`.
 `test-tokens.js`, `test-signboard.js` and `test-pictures.js` fail until you do.
 
+One more makes the showcase video: a minute of the real tracker on a phone,
+with made-up buses, for posting where riders are. It needs ffmpeg, the map
+key and Playwright, which never goes in a package.json: a global install, or
+`npm install --no-save playwright-core@1.56` as CI does with jsdom. It writes
+to `video-out/`, which is not committed:
+
+```
+CARTO_API_KEY=... sh tools/render-video.sh
+```
+
 ## Architecture
 
 **Five pages, one config file.** `index.html` is the tracker (watch + share),
@@ -483,6 +493,16 @@ bus's popup (`busPopupHtml()`), so changing any of them means changing
 a copy, so it cannot go stale that way, but a step whose element is renamed or
 removed rings nothing: `test-tour.js` fails if a step's selector stops matching
 the page.
+
+**The showcase video cannot go stale that way, but it can go out of date.**
+`tools/render-video.sh` films the real `index.html`, so it never shows a
+screen the app does not have. Its story, `tools/video/film.js`, taps the
+tracker's controls by their ids and classes and names this route's stops, so
+changing those screens means re-rendering it; a control renamed or moved
+off the screen makes that step fail with its name rather than tap something
+else. Every request the page makes is answered by the script, never by the
+database, and every screen in it carries "Demo · not real buses".
+`docs/ARCHITECTURE.md`, "The showcase video".
 
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`
 each redraw the tracker's screen the same way, showing four buses live because

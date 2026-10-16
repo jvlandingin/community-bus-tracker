@@ -1489,6 +1489,61 @@ Netlify gives every build — the second line of the published site that is not
 the committed one, after the CARTO key. A host that does not set it gets a
 preview with no picture and nothing else changes.
 
+## The showcase video
+
+`tools/render-video.sh` makes a one-minute vertical video (1080x1920, silent,
+English captions) for Facebook, TikTok and Reels, where the riders who have
+never heard of the tracker are. The story is one sharer's morning: wait at a
+stop until the card says Sakay na!, get on and share the bus, riders say
+salamat, the card says Bababa na!, Stop gives a ticket, the ticket goes into
+My tickets, the bus gets a new paint and "Show customized bus to riders" goes
+on; the next morning another rider taps that bus and sees it dressed.
+
+**Real screens, not a drawing of them.** The guide, the flyer and the
+briefing redraw the tracker by hand and go stale when it changes. The video
+films the real `index.html` instead, in headless Chromium at a phone's size,
+so it cannot show a screen the app does not have; between scenes it shows
+drawings made by the app's own SIGNBOARD and PICTURES blocks, run the way
+`tools/make-pictures.js` runs them. When the screens change, the video is
+out of date until it is rendered again.
+
+**Nothing reaches the database.** Every request the page makes to Supabase
+is answered by the script (`World` in `tools/video/render.js`) with made-up
+buses, so no bus is put on anybody's real map, no watcher is counted and no
+salamat is sent. Because those buses could be mistaken for real ones, every
+screen carries "Demo · not real buses", the flyer's "example screen" rule,
+and the end card says so again.
+
+**Frame-exact.** Each phone's clock is Playwright's fake one, paused and moved
+on one frame at a time, and every CSS animation on the page is paused and
+set to the same time before the screenshot. So a render is the same on any
+machine and never stutters. The buses move in time-lapse, from positions
+worked out from the video's time; the half hour of the trip passes inside
+an interlude, in six-second steps so the page's own timers fire as they
+would.
+
+**Choices the app forced.** The story waits at Javalera and gets off at SM
+City General Trias because the card counts down to both one stop at a time;
+at Dagatan it reads "8 stops" and then "2", which is right (the Tagaytay
+hook) but looks like a fault. The sharer starts 700 m past the stop they
+waited at: within 300 m (`AT_STOP_KM`) the card would say Bababa na! at
+once and spend the trip's one buzz there. The stop to get off at is set while
+the phone is swiped off the screen as they board. Near the end the GPS is
+held still, so the page's next position (it sends one every five seconds at
+most) goes out the moment the bus reaches the last stretch.
+
+**What the captions may say.** One short plain sentence each, under the
+same rules as the app's own words: no minutes and no arrival time, nothing
+that makes spare parts sound like money, Bus Tracker and never the
+company's initials, and the end card's "Community-run. Not affiliated with
+the bus company." The stage draws a buzz only in the two alarm scenes. The
+page also buzzes just after Stop, because the waiting card counts the bus
+just left as one coming until the next poll; that is the app's to fix, not
+the video's to show. The parol is switched off in the made-up settings, so the
+video still looks current after the season. The map needs `CARTO_API_KEY`;
+the script writes it only into the copy of `config.txt` it serves, and keeps
+the tiles in `video-out/.tiles` so a re-render asks CARTO for nothing.
+
 ## The look: one system, one typeface, one set of icons
 
 October 2026. The app worked and looked assembled: twenty-one text sizes,

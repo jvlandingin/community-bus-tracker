@@ -291,6 +291,9 @@ function cues(A, B, stage, world, browser, heard){
     const box = document.querySelector(s), p = box.querySelector('.alb-paints');
     return Math.max(0, p.getBoundingClientRect().bottom - box.getBoundingClientRect().top + box.scrollTop - box.clientHeight + 16);
   }, .8));
+  // Close on the bus from here to the switch, so filmed twice as fine (see
+  // SHARP), and the montage after it closer still.
+  at(T.dress + .85, () => A.resolution(6));
   at(T.dress + .9, v => cam(A, '.alb-bus', v, { width:1000, cy:1000 }));
   at(T.dress + 1.2, v => tap(A, '.alb-paint[data-paint="kahel"]', v));
   at(T.dress + 1.9, v => tap(A, '.alb-paint[data-paint="kahel"]', v));
@@ -300,10 +303,9 @@ function cues(A, B, stage, world, browser, heard){
   // what the phone remembers and drawn by My tickets itself; nothing is
   // tapped, and the bus as bought comes back before anything else sees it.
   let bought = null;
-  // Close on the coach itself, the screen drawn twice as fine meanwhile.
+  // Close on the coach itself.
   at(T.dress + 2.3, async v => {
     bought = await A.run(() => localStorage.getItem('wt-bus'));
-    await A.resolution(6);
     await cam(A, '.alb-ride .rk', v, { width:920, cy:1100, maxZ:3, dur:.5 });
   });
   LOOKS.forEach((l, i) => at(T.dress + 2.8 + i * .5, async v => {
@@ -325,8 +327,11 @@ function cues(A, B, stage, world, browser, heard){
   at(T.show + .6, v => tap(A, '.alb-toggle', v));
   at(T.show + 1.2, async () => { world.dressed.look = await A.run(() => busLook(loadBus(), CHECKPOINTS)); });
   // rider: another phone; tap the sharer's bus.
+  // The rider's phone, filmed twice as fine: its popup is seen closer than
+  // SHARP. Set while it is still off the screen.
   at(T.rider - 1.2, async () => {
     await B.open(browser, B_CLOCK, { 'wt-guide-seen':'1' }, T.rider - 1);
+    await B.resolution(6);
   });
   at(T.rider + .7, async v => {
     const p = await B.run(() => {

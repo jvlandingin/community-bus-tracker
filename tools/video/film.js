@@ -28,7 +28,7 @@ const S = require('./sounds.js');
 // ---- How long each scene runs, in seconds ----------------------------------
 // Saving the stop takes its time, so a viewer reads the name being typed and
 // sees the pin land; the scenes around it are a little quicker for it.
-const DUR = { title:3.0, watch:5.6, wait:11.95, share:6.6, trip:2.6, getoff:5.4, ticket:5.4, collect:3.0, dress:6.45, show:2.8, rider:4.2, end:4.8 };
+const DUR = { title:3.0, watch:5.6, wait:11.95, share:6.6, trip:2.2, getoff:6.6, ticket:5.4, collect:3.0, dress:6.05, show:2.8, rider:4.2, end:4.8 };
 const T = {};
 let acc = 0;
 Object.keys(DUR).forEach(k => { T[k] = acc; acc += DUR[k]; });
@@ -105,13 +105,17 @@ function buses(world){
 // The sharer's GPS. 700 m past the stop when Start is tapped: the card still
 // has the stop they waited at, and within 300 m of it (AT_STOP_KM) it would
 // say "Bababa na!" and spend the trip's one buzz there. Along the road in
-// time-lapse, three stops short of getting off by the end of the interlude;
-// then on through 'getoff', where the card counts down as the bus goes
-// (filmPage lets the phone send twice a second): Malapit na! and its buzz
-// at 32.0 km, a stop to go at 32.6, the next stop yours at 34.4, Bababa na!
-// at 35.2 about 3s in, then slowing towards the sign.
-const GPS = R.keys([[T.share + 1.9, WAIT_KM + .7], [T.share + DUR.share, 26.4], [T.trip + DUR.trip - .25, 31.0],
-                    [T.getoff + .3, 31.4], [T.getoff + 2.6, 34.6], [T.getoff + 3.3, 35.3], [T.getoff + DUR.getoff, 35.9], [1000, 35.9]]);
+// time-lapse to Manggahan by the end of the interlude: six stops short of
+// getting off, so the scene opens with the stop's sign far up the road at
+// the horizon (filmPage lets the phone send twice a second). Then a stop
+// every 0.75s, wherever the stops fall on the road, so the sign comes on at
+// an even pace (the picture's one step a stop): LPU-Cavite, Monterey,
+// Sunny Brooke (Malapit na! and its buzz), Vista Mall, Santiago, Bababa na!
+// at 35.25 km, and slower to the sign.
+const GPS = R.keys([[T.share + 1.9, WAIT_KM + .7], [T.share + DUR.share, 26.4], [T.trip + DUR.trip - .3, 28.95],
+                    [T.getoff, 29.0], [T.getoff + .75, 29.3], [T.getoff + 1.5, 30.47], [T.getoff + 2.25, 31.88],
+                    [T.getoff + 3.0, 32.55], [T.getoff + 3.75, 34.37], [T.getoff + 4.6, 35.25], [T.getoff + DUR.getoff, 36.0],
+                    [1000, 36.0]]);
 
 // ---- Captions ---------------------------------------------------------------
 // One plain sentence each. *word* is drawn in gold.

@@ -1336,8 +1336,9 @@
   .alb-none{margin:16px 0 0;}
   /* The bus on the road (rideSvg): the road, the posts and the bushes go
      by, the wheels turn and the coach rocks, all at one decorative pace.
-     Stopped for a bus not heard from lately; the reduced-motion blanket
-     below ends every loop where it started, so the scene stands still. */
+     Stopped for a bus not heard from lately or standing still; the
+     reduced-motion blanket below ends every loop where it started, so the
+     scene stands still. */
   .rideart{display:block; width:100%; height:auto;}
   .rideart .rr{animation:rideroad 1.3s linear infinite;}
   .rideart .rp{animation:rideposts 1s linear infinite;}
@@ -3231,6 +3232,27 @@ function rideSvg(t){
     '<g class="rk"' + at('rock') + '><svg x="58" y="37.5" width="88" height="33" viewBox="0 0 364 136">' + COACH_SIDE + decorOn(t.worn) +
       wheel(88) + wheel(282) + '</svg></g></svg>';
 }
+// Standing still (October 2026). A sharer can start at the terminal while
+// the bus waits there to leave, and the picture drove past the town all the
+// while. So a bus whose reports have kept it within STAND_M of one place for
+// STAND_MS stands still on the road. Moving or not, never how fast: the
+// badge on the map already shows whether a bus is moving, so the picture
+// tells nothing the map does not, and the pace stays the one above. Worked
+// out on this phone from the positions every poll brings anyway: one place
+// and one time per bus, each overwritten, where the bus was when it was last
+// seen to move and when, by its own report times rather than this phone's
+// clock, so a bus that stops reporting is still freshness()'s to stop. was is
+// what this returned for the same bus at the poll before, or nothing.
+const STAND_M = 150, STAND_MS = 120000;
+function rideStand(was, b){
+  const ts = +b.ts || 0;
+  if (was && ts >= was.ts){
+    const kx = 111320 * Math.cos(was.lat * Math.PI / 180), ky = 110574;
+    const dx = (b.lng - was.lng) * kx, dy = (b.lat - was.lat) * ky;
+    if (dx * dx + dy * dy <= STAND_M * STAND_M) return { lat:was.lat, lng:was.lng, ts:was.ts, still: ts - was.ts >= STAND_MS };
+  }
+  return { lat:b.lat, lng:b.lng, ts:ts, still:false };
+}
 // ---- END PICTURES ---------------------------------------------------------
 
 // The header's board. Drawn once: the picture scales with its box, and the
@@ -3704,6 +3726,7 @@ function setFilter(f) {
 // ============================================================
 let map, busMarkers = {};   // clustered pub_id -> marker
 let BUSES = [];             // latest fetched positions
+let STANDS = Object.create(null);   // pub_id -> where that bus last moved (rideStand)
 let HOME_BOUNDS = null;     // the whole route, what the reset button goes back to
 
 // ============================================================
@@ -4030,7 +4053,10 @@ function thanksControl(id, isSelf, done){
 //     driver numbers for-operators.html promises this tool cannot produce.
 //     Stamps are about the trip's shape and the time of day, nothing else.
 //  6. A trip too short to have helped anyone gets no ticket: under five
-//     minutes on the map, or never on the map at all.
+//     minutes on the map, under TICKET_MIN_KM along the route between its
+//     two ends, or never on the map at all. A bus that waited at the
+//     terminal with sharing on and then stopped went nowhere, however long
+//     it waited.
 //  7. The salamat line follows rule 1. No zero, ever.
 //
 // The four stamps, under the names a kept ticket stores them by (k). Their
@@ -4059,8 +4085,12 @@ function tripStamps(t){
   if (t.othersAtStart === 0) out.push(stampOf('first'));
   return out;
 }
+// The kilometre is measured along the checkpoint chain, like everything else
+// about where a bus is, between the two ends the ticket names (ticketFacts).
+// A route with no checkpoints to measure along leaves it to the time.
+const TICKET_MIN_KM = 1;
 function ticketWorthShowing(t){
-  return !!t && t.writes > 0 && t.mins >= 5;
+  return !!t && t.writes > 0 && t.mins >= 5 && !(Number.isFinite(t.km) && t.km < TICKET_MIN_KM);
 }
 // Ingat pauwi, take care going home, for a trip that ends in the evening.
 function ticketGreeting(endMins){
@@ -4759,14 +4789,15 @@ function skyNow(){
 // The bus in its popup, on the road through the place it is nearest: as its
 // sharer dressed it if they chose to show it (lookRead of the row's look),
 // a sharer's own as they dressed it whatever they chose, and plain
-// otherwise. Stopped for a bus not heard from lately.
+// otherwise. Stopped for a bus not heard from lately, and for one that has
+// stood in one place for a couple of minutes (rideStand).
 function popupRide(b, fresh){
   let look = null;
   if (b.self && !WALK){ const own = loadBus(); look = { paint:own.paint, worn:busWorn(own, CHECKPOINTS) }; }
   else look = lookRead(b.look);
   const i = nearestCheckpoint(routeProgressKm({ lat:b.lat, lng:b.lng }, CHECKPOINTS, ROUTE_CHAIN));
   return '<div class="pride">' + rideSvg({ views:[(CHECKPOINTS[i] && CHECKPOINTS[i].mark) || ''], sky:skyNow(),
-    worn: look ? look.worn : [], paint: look ? look.paint : 'klasiko', still: fresh === 'delayed', now: Date.now(), frame:'popup' }) + '</div>';
+    worn: look ? look.worn : [], paint: look ? look.paint : 'klasiko', still: fresh === 'delayed' || !!b.standing, now: Date.now(), frame:'popup' }) + '</div>';
 }
 function busPopupHtml(b){
   const fresh = freshness(b.ts);
@@ -5705,12 +5736,12 @@ function clusterBuses(list){
       if (!target.label && b.bus_label) target.label=b.bus_label;
       if (!target.look && b.look) target.look=b.look;
       if (b.ts>target.ts){              // keep the freshest position
-        target.lat=b.lat; target.lng=b.lng; target.ts=b.ts; target.speed=b.speed;
+        target.lat=b.lat; target.lng=b.lng; target.ts=b.ts; target.speed=b.speed; target.standing=!!b.standing;
       }
     } else {
       clusters.push({ id:b.pub_id, lat:b.lat, lng:b.lng, ts:b.ts, speed:b.speed,
                       direction:b.direction, label:b.bus_label||'', count:1,
-                      self:!!b.self, members:[b.pub_id], look:b.look||'' });
+                      self:!!b.self, members:[b.pub_id], look:b.look||'', standing:!!b.standing });
     }
   });
   return clusters;
@@ -6258,6 +6289,17 @@ async function pollPositions() {
              // A sharer's bus, if they chose to show it (sql/13-bus-look.sql).
              look: typeof v.look === 'string' ? v.look : '' };
   });
+  // Whether each bus has stood still lately, for the picture in its popup.
+  // Rebuilt from this poll's buses alone, so one that leaves the map leaves
+  // nothing behind.
+  const stands = Object.create(null);
+  BUSES.forEach(function(b){
+    if (!b.pub_id) return;
+    const s = rideStand(STANDS[b.pub_id], b);
+    stands[b.pub_id] = s;
+    b.standing = s.still;
+  });
+  STANDS = stands;
   // Only ever set from our own row. The server sends null for every other
   // bus (sql/07-thanks.sql), so there is nothing here to put on the map even
   // by accident, and this is not carried into BUSES for the same reason.
@@ -7228,10 +7270,12 @@ function ticketFacts(trip, end, endAt){
   const endKm = end ? routeProgressKm({ lat:end.latitude, lng:end.longitude }, CHECKPOINTS, ROUTE_CHAIN)
                     : typeof trip.lastKm === 'number' ? trip.lastKm : null;
   const fromIdx = nearestCheckpoint(trip.startKm), toIdx = nearestCheckpoint(endKm);
+  // How far it went along the route, between those same two ends.
+  const km = Number.isFinite(trip.startKm) && Number.isFinite(endKm) ? Math.abs(endKm - trip.startKm) : null;
   const short = function(i){ return (CHECKPOINTS[i] && CHECKPOINTS[i].short) || ''; };
   const t = { fromIdx:fromIdx, toIdx:toIdx, lastIdx:CHECKPOINTS.length-1, fromShort:short(fromIdx), toShort:short(toIdx),
               startMins:hhmm(began), endMins:hhmm(now), othersAtStart:trip.others };
-  return { now:now, began:began, mins:Math.round((now - began) / 60000), fromIdx:fromIdx, toIdx:toIdx,
+  return { now:now, began:began, mins:Math.round((now - began) / 60000), fromIdx:fromIdx, toIdx:toIdx, km:km,
            endMins:t.endMins, stamps:ticketStamps(t), all:tripStamps(t) };
 }
 // fresh: the decorations this trip has just put on the sharer's bus; gain:
@@ -7239,7 +7283,7 @@ function ticketFacts(trip, end, endAt){
 function showTicket(trip, end, endAt, fresh, gain){
   if (!trip) return;
   const f = ticketFacts(trip, end, endAt);
-  if (!ticketWorthShowing({ mins:f.mins, writes:trip.writes })) return;
+  if (!ticketWorthShowing({ mins:f.mins, writes:trip.writes, km:f.km })) return;
   const now = f.now, began = f.began, mins = f.mins, fromIdx = f.fromIdx, toIdx = f.toIdx, endMins = f.endMins;
   const stamps = f.stamps;
   // "4:12–7:03 AM", or both halves in full when the trip crosses noon.
@@ -7288,7 +7332,7 @@ function endTicket(trip, end, endAt){
   if (!trip) return;
   const f = ticketFacts(trip, end, endAt);
   let fresh = [], gain = null;
-  if (!WALK && ticketWorthShowing({ mins:f.mins, writes:trip.writes })){
+  if (!WALK && ticketWorthShowing({ mins:f.mins, writes:trip.writes, km:f.km })){
     const before = loadBus();
     let after = busAdd(before, { dir:shareDir, stamps:f.all.map(function(x){ return x.k; }), fromIdx:f.fromIdx, toIdx:f.toIdx,
                                  mins:f.mins, thanks:trip.maxThanks, week:weekIndex(f.now) }, CHECKPOINTS);

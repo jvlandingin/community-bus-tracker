@@ -25,6 +25,31 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-16 — A bus waiting at the terminal, and a ticket for going nowhere
+
+The maintainer asked two things. Could the bus in a popup move with the bus's
+speed, since a sharer who starts at the terminal while the bus waits shows a
+bus driving past the town for as long as it waits? And could the app tell
+distance, so that a trip under a kilometre gets no ticket?
+
+The phone does know a speed: most phones' GPS reports one, and the Android
+app's plugin passes it on. The page throws it away before anything is sent,
+and the server has kept none since `sql/08-position-checks.sql`, because a
+bus's speed is the one thing this tool promises cannot be used to review a
+driver by. A picture that moved with it would put that number on every
+rider's screen, which is why the ride's fixed pace was kept when the rules
+were last revisited. The waiting bus needed less than a speed: whether it is
+moving at all, which every rider can already see from its badge on the map.
+The rider's page now works that out from the positions it is sent anyway and
+stands the picture still after two minutes in one place; nothing new is sent
+or kept.
+
+Distance it already had. Every trip keeps where on the route it started, and
+its end is read off the last fix, both measured along the checkpoint chain.
+Under a kilometre between the two is now no ticket, whatever the time on the
+map, so half an hour at the terminal with sharing on and then Stop gets
+nothing, and earns nothing for the bus either.
+
 ## 2026-10-14 — What two months of the group chat said
 
 A second Claude session with the riders' group chat (mid-August to early

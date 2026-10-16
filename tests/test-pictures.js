@@ -337,5 +337,53 @@ check(Math.abs(roadSpeed - 60) <= 3 && Math.abs(postSpeed - roadSpeed) <= 3 && M
 const guideCss = rideCss(guide);
 check(JSON.stringify(guideCss) === JSON.stringify(css), 'and the guide\'s copy moves the same way');
 
+// A bus waiting at the terminal stands still on the road: worked out from
+// its own reports, one place and one time per bus, and never from a speed.
+const R = {};
+new Function('R', slice('// ---- THE PICTURES (unit tested)', '// ---- END PICTURES') +
+  'R.rideStand=rideStand;R.STAND_M=STAND_M;R.STAND_MS=STAND_MS;')(R);
+const t0 = Date.UTC(2026, 9, 16, 21, 0, 0);
+// Reports from Mendez every 21 seconds, the heartbeat's pace, wandering
+// about 30 m the way a phone's GPS does when nothing is moving.
+const report = (secs, north) => ({ lat: 14.0997 + (north || 0), lng: 120.9145, ts: t0 + secs * 1000 });
+let stand = null;
+const early = [0, 21, 42, 63, 84, 105].map((s, i) => (stand = R.rideStand(stand, report(s, i % 2 ? 0.0003 : 0))));
+check(early.every(x => !x.still && x.ts === t0), 'first seen, and reporting from one place for under two minutes: it still drives on',
+  early.map(x => x.still).join(','));
+stand = R.rideStand(stand, report(126, 0.0002));
+check(R.STAND_M === 150 && R.STAND_MS === 120000 && stand.still && stand.ts === t0 && stand.lat === 14.0997,
+  'two minutes of its reports within 150 m of one place: it stands still, counted from the first of them');
+check(Object.keys(stand).sort().join(',') === 'lat,lng,still,ts', 'one place, one time and a yes or no per bus: nothing that could grow into a trail',
+  Object.keys(stand).join(','));
+const moved = R.rideStand(stand, report(147, 0.0018));
+check(!moved.still && moved.ts === t0 + 147000 && moved.lat === 14.0997 + 0.0018,
+  'one report 200 m on and it drives again at once, counting afresh from there');
+const quiet = R.rideStand(R.rideStand(null, report(300)), report(300));
+check(!quiet.still, 'the same report read again is no time standing: a bus that stops reporting is left to its freshness');
+const back = R.rideStand(stand, report(-30));
+check(!back.still && back.ts === t0 - 30000, 'and a report from before that place was first seen starts the count again rather than running it backwards');
+// A morning's crawl, stops and all, a poll every 6 seconds: the place it
+// remembers is here, since then, and never one the bus has left behind.
+let far = 0, crawl = null;
+for (let i = 0, lat = 14.0997; i < 600; i++) {
+  if (i % 60 < 45) lat += i % 7 === 0 ? 0.0012 : 0.0001;
+  crawl = R.rideStand(crawl, { lat, lng: 120.9145, ts: t0 + i * 6000 });
+  far = Math.max(far, Math.abs(crawl.lat - lat) * 110574);
+}
+check(far <= R.STAND_M, 'what it remembers is never more than 150 m from where the bus is now', far.toFixed(0) + ' m at most');
+const popupFn = (/function popupRide\([^]*?\n\}/.exec(html) || [''])[0];
+const pollFn = (/async function pollPositions\([^]*?\n\}/.exec(html) || [''])[0];
+const clusterFn = (/function clusterBuses\([^]*?\n\}/.exec(html) || [''])[0];
+check(/still: fresh === 'delayed' \|\| !!b\.standing/.test(popupFn) && !/speed/.test(popupFn + R.rideStand.toString()),
+  'a bus\'s popup stands it still when it has gone quiet or is standing, and nothing in either reads a speed');
+check(/rideStand\(STANDS\[b\.pub_id\], b\)/.test(pollFn) && /const stands = Object\.create\(null\);/.test(pollFn) && /STANDS = stands;/.test(pollFn) &&
+      /target\.standing=!!b\.standing/.test(clusterFn) && /standing:!!b\.standing/.test(clusterFn),
+  'worked out afresh at every poll for the buses on the map alone, and a bus two phones share stands by its freshest report');
+// Standing is for the picture alone. Printed anywhere, "standing for 12
+// minutes" would be a driver's breaks timed on every rider's screen.
+const readers = html.split(/\n(?=(?:async )?function )/).filter(f => /\.standing\b/.test(f)).map(f => (/function (\w+)/.exec(f) || [])[1]).sort();
+check(readers.join(',') === 'clusterBuses,pollPositions,popupRide',
+  'and it goes from the poll through the clustering to the popup\'s picture, and nowhere else, so it is never put into words', readers.join(','));
+
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);

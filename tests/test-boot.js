@@ -1212,11 +1212,20 @@ function run(page, include, label, configText, setup) {
     check(!w.eval('sharing') && watchesOpen() === 0 && /Location is off/.test(status()),
       'location switched off ends the trip straight away, and says why', status());
 
-    // Half an hour in, it gets the ticket Stop would have given, and does not
-    // wait for the network to give it: at the end of the line the request
-    // that takes the bus off the map can be slow to answer.
+    // Half an hour on the map without going anywhere, the bus waiting at the
+    // terminal with sharing on, then Stop where it started: no ticket.
     await startTrip();
     w.eval('TRIP.start -= 30 * 60000');
+    await w.stopSharing();
+    check(isHidden('tktModal') && !w.eval('sharing'),
+      'half an hour on the map that ends where it started gets no ticket: it went under a kilometre along the route');
+
+    // Half an hour in and three kilometres down the road, it gets the ticket
+    // Stop would have given, and does not wait for the network to give it:
+    // at the end of the line the request that takes the bus off the map can
+    // be slow to answer.
+    await startTrip();
+    w.eval('TRIP.start -= 30 * 60000; TRIP.startKm -= 3');
     sim.hold = { clear_bus_position: [] };
     sim.watches[sim.watches.length - 1].onErr({ code: 1 });
     await waitFor(() => !isHidden('tktModal') && sim.hold.clear_bus_position.length > 0);
@@ -1385,6 +1394,24 @@ function run(page, include, label, configText, setup) {
       check(!/class="rideart still"/.test(dressed) && /class="rideart still"/.test(w.busPopupHtml({ id: 'ef'.repeat(16), lat: +cpRide[2], lng: +cpRide[3],
               direction: 'north', label: '', ts: Date.now() - 10 * 60000, count: 1, self: false, look: '' })),
         'a bus heard from lately moves; one not heard from for minutes stands still');
+      // A bus waiting at the terminal, live all the while: reported again
+      // and again from one place, it stands still once two minutes of its
+      // own reports say so, and drives on at the first from further along.
+      const waiting = (secsAgo, north) => ({ data: [{ pub_id: 'ab'.repeat(16), lat: +cpRide[2] + (north || 0), lng: +cpRide[3],
+        direction: 'north', bus_label: '', updated_at: new Date(Date.now() - secsAgo * 1000).toISOString(), look: null, thanks: null }] });
+      const pollWith = async r => { sim.reply.get_positions = () => r; w.eval('lastPositionsAt = 0'); await w.pollPositions(); };
+      const waitPop = () => w.busPopupHtml(w.clusterBuses(w.eval('BUSES'))[0]);
+      await pollWith(waiting(150));
+      await pollWith(waiting(90, 0.0003));
+      check(!/class="rideart still"/.test(waitPop()), 'a live bus reporting from one place for a minute still drives on');
+      await pollWith(waiting(5));
+      check(/class="rideart still"/.test(waitPop()) && /· live/.test(waitPop()),
+        'two minutes of its reports from one place and it stands still on the road, live as it is');
+      await pollWith(waiting(0, 0.003));
+      check(!/class="rideart still"/.test(waitPop()), 'and the first report from 300 m on puts it back on the road');
+      await pollWith({ data: [] });
+      check(w.eval('BUSES').length === 0 && w.eval('Object.keys(STANDS).length') === 0, 'a bus gone from the map leaves nothing behind');
+      sim.reply.get_positions = () => ({ data: [] });
 
       // Another tab still sharing it: left alone.
       rec = seed({ trip: { start: Date.now() - 20 * 60000, startKm: 0, others: 0, writes: 12, maxThanks: 0, polled: true,
@@ -1417,7 +1444,8 @@ function run(page, include, label, configText, setup) {
     check(!!keyless && keyless.args.p_slug === w.eval('CFG.ROUTE_SLUG') && !('p_key' in keyless.args)
         && keyless.args.p_speed === null,
       'sending the route\'s public slug, no key and no speed', keyless && JSON.stringify(keyless.args));
-    w.eval('TRIP.start -= 20 * 60000');
+    // Twenty minutes and three kilometres in.
+    w.eval('TRIP.start -= 20 * 60000; TRIP.startKm -= 3');
     sim.reply.set_open_position = () => ({ error: 'open sharing is off' });
     const offBefore = of('set_open_position').length;
     w.eval('lastWrite = 0');

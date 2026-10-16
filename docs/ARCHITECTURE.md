@@ -213,7 +213,7 @@ Three details make it work:
   in the guide and admin headers would be two more things to look at for no
   more control.
 
-The preference is the second of the four things this app keeps between
+The preference is the second of the six things this app keeps between
 visits, after the
 guide-seen dot. Both are named in the privacy panel — the panel used to claim
 nothing was kept once you close the page, which the guide dot had already made
@@ -800,7 +800,7 @@ A sharer's is the cluster the server flags `is_self`, so a sharer taps
 nothing. Anyone else taps **I'm on this bus** in the bus's popup, which keeps
 the bus's public id in `sessionStorage` (`wt-aboard`) until the tab closes;
 it is never sent, and it means nothing after the trip because the id dies
-with it, so it is not a fifth remembered thing. Starting to share clears it,
+with it, so it is not a seventh remembered thing. Starting to share clears it,
 since the server's answer supersedes it and it would otherwise come back
 after Stop pointing at a trip the phone is not on. A fix up to 300 m past
 the stop still counts as at it (`AT_STOP_KM`), because phones wobble and
@@ -900,7 +900,20 @@ rules above before it was built.
   that compares one run with another — those are the driver numbers
   `for-operators.html` promises the tool cannot produce), a trip under five
   minutes or that never reached the map gets no ticket, and the salamat line
-  goes through `thanksWords()`, so a quiet trip shows no zero. The record it is
+  goes through `thanksWords()`, so a quiet trip shows no zero. **Every end of
+  a trip draws it, not only Stop** (October 2026): GPS giving up, a key
+  changed or open sharing switched off mid-trip, the end-of-line question left
+  to stop by itself. Those ends used to pass `quiet` and show nothing, so a
+  sharer who kept a bus on the map for an hour lost the ticket to a GPS
+  timeout at the last stop; the maintainer asked that nobody who shared go
+  without one because of an error along the way. Whether the trip was long
+  enough is still `ticketWorthShowing()`'s alone, so a route already full at
+  the first write shows nothing. The one end without a ticket is an
+  organizer's Stop, because a bus taken off the map as wrong is not thanked
+  for having been on it. The ticket is also drawn before `clear_bus_position`
+  is sent rather than after it answers: it is made on the phone, and at the
+  end of the line that request can take long enough to answer that the
+  phone is back in a pocket first. The record it is
   made from is six numbers and flags in one variable — when the trip started,
   roughly where on the chain, how many other buses were on the map, whether a
   write landed, the highest count seen — and `test-thanks.js` fails if it grows
@@ -961,9 +974,13 @@ map (summed, that is working hours), anything per bus, or streaks, which
 punish a missed day and on a crew member's phone are an attendance sheet. The
 flower is drawn on each thanked ticket and never added up: decided over a
 per-ticket count (summable by hand) and over a running total, which is exactly
-the figure the salamat design exists not to keep. A stamp not yet collected is
-printed faint with "not yet", never "×0", and the album is not offered at all
-until something has been kept, which is the no-zero rule again.
+the figure the salamat design existed not to keep. (The sharer's bus now
+keeps one, on their phone only, by a later decision: see "Collecting". The
+album still adds up no flowers.) A stamp not yet collected is
+printed faint with "not yet", never "×0". The album used to be offered only
+once something had been kept, the no-zero rule again; since your bus arrived
+it is always offered (see "Collecting"), worded without a number until there
+is something in it.
 
 **Every ticket has its own picture**, so the album reads as a collection rather
 than a pile of the same card. `ticketArtSvg()` draws the two ends as roadside
@@ -994,12 +1011,13 @@ ended by the same checkpoint gets one sign, and a place with no mark gets the
 strip's plain station ring.
 
 **Where it lives.** `wt-tickets` in `localStorage`, the fourth thing the
-privacy panel names, with "Remove all" in the album and Remove (asked twice)
+privacy panel names, with "Start from scratch" in the album and Remove (asked twice)
 on each kept ticket; removing the last ticket removes the key. The honest
 limits, all stated in the album or the panel: it is in that one browser, so
 clearing browser data loses it, and the Android app and Chrome on the same
-phone keep separate albums; there is no backup, because a backup is a copy
-somewhere else. There is no cap: a ticket is under a hundred bytes, so a
+phone keep separate albums. At first there was no backup, because a backup
+is a copy somewhere else; there is one now, as a file the sharer makes and
+keeps themselves (see "Dressing the bus"). There is no cap: a ticket is under a hundred bytes, so a
 commuter riding twice a day for years stays far inside the browser's storage,
 and a collection that silently drops its oldest tickets would be worse than a
 large one.
@@ -1019,6 +1037,297 @@ page of its own and the briefing to eight pages. The pointer had to fit on the
 keystone's last line. The flyer's "Walang itinatagong history ng biyahe" was
 left as it is: it is about what the system stores, and its claim that no
 driver's route, speed or stops are recorded still holds.
+
+## When a trip is interrupted
+
+October 2026. The maintainer asked that nobody who shared go without a ticket
+"because of just one error along the way", and two gaps were found besides the
+ends that used to pass `quiet`.
+
+**GPS that drops out is waited out.** A covered terminal or a phone slow to
+wake makes `watchPosition` report an error (no fix, or none within 20
+seconds) and carry on watching. Any error used to end the trip there and then.
+Now only "location off or blocked" (code 1, `NOT_AUTHORIZED` in the Android
+plugin) ends it at once. Anything else is waited out for as long as the server
+keeps a bus without an update (`bus_expiry_min`, 10 by default), with the
+sharing tab saying the signal is lost. Meanwhile the heartbeat holds back: it
+re-sends the last fix every 21 seconds so a bus idling at a stop stays live,
+and re-sending a fix nobody has confirmed would keep a guess looking live on
+everyone's map. Held back, the bus fades as "delayed" and then expires, which
+is the truth. The first fix puts everything back; none ends the trip the way
+Stop does, ticket included.
+
+**The trip outlives its page.** A reload, a browser that discarded the tab
+behind another app, an app the phone closed: each lost the trip and its ticket
+together, and left the bus on the map until it expired. `TRIP` is now also
+kept in localStorage as `wt-trip` while the trip runs, with the session id, the
+direction and the bus number, overwritten on every landed write and removed
+the moment the trip ends. The record grew two fields, `lastAt` and `lastKm`,
+when and where on the chain the last update landed: one number each, written
+over every time, so still no trail. A page opened with a record in it asks
+"Still on the bus?" while the bus would still be on the map: Keep sharing goes
+on as the same trip and the same bus (the session id is restored, the welcome
+is skipped), I got off clears the bus and draws the ticket as the trip stood
+at its last update. Older than that, the ticket comes without a question. A
+second tab of the same browser must not take over a trip the first is still
+sharing, so a record from another tab whose last save is under 45 seconds old
+is left alone and looked at again a minute later. The honest cost, stated in
+the privacy panel: a page that closed mid-trip and is never opened again
+leaves that one record, a start time and two numbers on the chain, on the
+phone until it is.
+
+**A request nobody waits for is never sent.** supabase-js builds a request and
+sends it only when something asks for its answer (`then`). The wrong-direction
+pause called `rpc('clear_bus_position', …)` and moved on, so the bus it was
+meant to take off the map while the question was open had never left it.
+It now ends in `.then`, and `test-boot.js` fails on any `rpc(` line that is
+not awaited, assigned, returned or `.then`ed.
+
+## Collecting: the ticket's luck and your bus
+
+October 2026. Asked for "so it really feels like a collection": sometimes one
+ticket, sometimes another; and milestones, "shared 3 times, shared 5 times".
+
+**Luck, worked out rather than drawn** (rules 11 to 13 in the album block).
+A ticket's paper (five pale colours), its punch (round, square, triangle,
+diamond), what is on the road (a jeepney, a tricycle, a carabao with its
+egret, a sorbetes cart, a fruit stand), in the sky (kites or birds), the
+weather (fog, drizzle, a rainbow), the moon that night (its real phase, from
+the date), the season (the parol from 1 September to Three Kings, as in the
+header; banderitas in May; two flags on the coach for the flag days, 28 May to
+12 June) and, one ticket in fifteen, gold foil with a shooting star or a double
+rainbow. All of it follows from a hash of the four things a kept ticket keeps,
+the day, the direction and the two ends, plus its stamps for the sky. That one
+choice does three jobs: a kept copy draws the same picture with nothing new
+stored; there is no re-roll, so starting and stopping short trips to fish for
+a gold ticket (each one a bus on everyone's map) gets the same ticket every
+time; and nothing about how the bus was driven, how long it took or how many
+said salamat can reach it. `ticketLook()` decides, `TICKET_SIGHTS` and
+`moonSvg()` draw, and `sightTile()` shows each sight on its own as a sticker
+in My tickets, where the ones not yet spotted are faint with "not yet". The
+plain picture, with no luck passed, is byte for byte what it was, so the guide
+and the tests that pin it did not move.
+
+**Your bus** (rules 14 to 16). Every trip that drew a ticket and went
+somewhere, its two ends different places, kept or not, is counted on the
+sharer's phone as `wt-bus`: trips, and how many were first on the map, end to
+end, before 5 AM or after dark, which directions, and which places, plus
+whether each tour was finished. Fifteen decorations are earned from those
+counts (`DECOR`), from a sampaguita garland
+for the first trip to a chrome horse for the hundredth, a rooster for being
+first on the map three times, a stripe for a trip end to end, bumpers for both
+directions; `BUS_DECOR` draws them over `COACH_SIDE` and `busSvg()` draws the
+bus. A trip that earns one says so on its ticket, with the bus. Decided, each
+for a reason:
+
+- *Findable before the first trip.* My tickets, the row at the foot of the
+  sharing tab, used to appear only once a ticket was kept, so a new sharer
+  had no way to see what there was to earn. It is always there now. With
+  nothing yet it says "Your first trip starts them", and opened it shows the
+  plain bus with every decoration, and every place, stamp and sight, faint
+  with "not yet": what is possible, shown without a single zero. Each
+  decoration's card shows it on its own part of the bus (`decorTile()`, cut
+  by `DECOR_BOX`): in colour once earned, and until then as a dashed outline
+  over a faded coach, so a sharer can see what is coming.
+- *The first ones come from the tours.* Finishing the map's tour hangs a bell
+  by the door (Kampanilya, the one a rider rings for "Para po!"), finishing
+  the sharing tour puts a route board in the windscreen (Plaka ng ruta). So a
+  new user's bus has something on it before any trip, and they have seen how
+  decorating works; for someone who only watches, it is a nudge towards
+  sharing, which is the tool's real shortage. Finished means reaching the
+  last step, tapping through included: it is a welcome, not a test. Earned
+  once, kept as two yes-or-no counts on the bus, and stored only after the
+  run is over (`walkFinished()` from `endWalk()`), because nothing is stored
+  while a tour is on. A tour puts nothing on the map, so there is nothing to
+  farm, unlike trips. A "New on your bus" card says what it earned, close
+  up, and where My tickets is.
+
+- *Numbers, not a list of dates.* A count of trips cannot say when anyone
+  worked; a list of dated trips could, which is why kept tickets never held
+  times and this never holds a list of days. It holds two single dates, each
+  overwritten by the next: the week of the last trip, to count the streak
+  from, and the day of the last trip that earned parts, for their daily cap
+  (below).
+- *Kept or not.* Milestones that needed Keep tapped every time would make Keep
+  a default in practice. Counts with no list of dates are not the thing rule
+  10 was protecting.
+- *Only trips that went somewhere.* Otherwise sitting at a stop with sharing on
+  for five minutes would dress the bus, and every such sitting is a bus on the
+  map that isn't one.
+- *Totals and streaks, on the phone only* (changed later in October 2026).
+  At first there were no streaks, no salamat total and no time on the map
+  summed: a streak on a crew member's phone is an attendance sheet, and
+  "thanked 50 times" is the running total the salamat design existed not to
+  keep. The maintainer decided otherwise, for two reasons: riders are likelier
+  to come back to an app that keeps their score, and the company has its own
+  ways of keeping track of its crews, so a total on a sharer's own phone adds
+  no new way to watch them. What was kept from the old reasoning is the
+  shape: each is one number (minutes on the map, salamat received, the week
+  of the last trip, the streak and the best), never a list of days, times or
+  trips, so they say how much and when last, never a timetable. The server still adds nothing
+  up and `thanks_now` still dies with its trip. Streaks count weeks, because
+  a commuter's weekend would break a daily one every Saturday, and the
+  decorations follow the best streak, so breaking one takes nothing away.
+  Eight decorations come from them: flowers, ribbons and a gold star at 10,
+  50 and 100 salamat; luggage, curtains and a painted back window at 10, 50
+  and 100 hours; fog lamps and a pennant at 4 and 12 weeks in a row. The
+  ticket a trip ends with says what the bus has gathered in all.
+- *On the sharer's phone only, unless they choose* (changed later in October
+  2026). Decorations on the live map were refused at first: a decorated bus
+  tells the road whose phone has shared most, and the same decorations on the
+  same bus every morning would link one person's trips across days, a
+  schedule kept by anyone watching. That is still true, and is now the
+  sharer's to decide: see "Dressing the bus".
+
+## Dressing the bus: spare parts, the shop, and showing it
+
+Later in October 2026 the maintainer asked for coins earned by achievements
+and spent on accessories, a change of colour, a backup and restore with a way
+to start from scratch, riders seeing a sharer's decorated bus, and the bus
+moving through scenery that follows where it is. With two conditions:
+guardrails, so that nobody can farm any of it at everyone else's cost, and
+nothing added to the tracking tab. Rules 17 to 19 in the album block hold it,
+`test-thanks.js` section 20 tests the logic and `test-boot.js` the screens.
+
+**Spare parts** (rule 17), *piyesa*. Each achievement gives parts once,
+when it is earned (`DECOR`'s `pay`, 10 for the first trip up to 100 for the
+hundredth; `paid` keeps which have), and a trip that drew a ticket and went
+somewhere gives `PARTS_TRIP`, 5, for at most `PARTS_TRIPS_A_DAY`, 3, a day.
+`busTripPay()` and `busSettle()` are the only things that add. The guardrails
+are about the map, not the parts: every trip farmed for them would be a bus
+on everyone's map that isn't one, so a trip earns little, earns nothing past
+the third of a day, and only if it went somewhere, and the achievements give
+most. Nothing a sharer can do with parts changes what anyone else sees except
+through rule 19, which only carries presets. They are never bought with
+money, never sent and cannot be given to anyone: there is no balance on the
+server, so there is nothing to sell or steal. Someone who edits their own
+storage, or a backup, can give themselves any amount, and a backup passed
+round a group chat gives everyone who restores it the same bus; it changes
+their own drawing and nothing else, which is why that is accepted rather
+than prevented. Stopping it would take a record per sharer on the server,
+which this app avoids on purpose.
+
+They were *barya*, coins, at first. The maintainer saw that riders might
+think real money was involved, so they became something that is plainly not
+money, shown as a drawn steel nut beside a number (`partsTag()`, the
+`i-part` icon), with the word for screen readers only and "Get" where a
+button said "Buy". Stars were considered and turned down because a star
+beside a trip reads as a driver's rating, the thing this app refuses, and
+gems because in the Philippines they are what games sell for load;
+`test-thanks.js` fails if barya, coins or buy appear anywhere on screen.
+
+**The shop and the paint** (rule 18). Eight accessories (`SHOP`: dice, an
+antenna, a visor, a chrome mirror, an exhaust stack, flames, a glow under the
+bus, gold wheels) and seven paints (`PAINTS`, `BUS_PAINTS`; the first,
+klasiko, is the livery and free). The achievements' own decorations are
+trophies: earned, never for sale, so a bell still means a tour finished and a
+horse a hundred trips. Presets only, with no colour picker and no text,
+because rule 19 lets the bus be seen: nothing on it can be a word, an advert,
+a phone number or anybody's colours. Buying takes two taps on the same
+button; anything owned can be taken off and put back on; the paint chosen is
+the bus's everywhere it is drawn.
+
+**Showing it to riders** (rule 19). Off until the sharer switches it on, and
+asked once, only when there is first something on the bus to show: on the
+ticket of the trip that earned its first decoration, on the card at the end
+of a tour that earned one, after the first thing bought, and as a switch in My
+tickets. Never on the tracking tab: the maintainer asked for no clutter
+there, and a question about showing nothing would be noise. While it is on,
+each position carries `busLook()`: a digit for the paint and one letter per
+thing worn, from the `id`s in `DECOR` and `SHOP`, sorted. The database keeps
+only that shape (`^[0-9][A-Za-z]{0,40}$`, `sql/13-bus-look.sql`), storing
+anything else as nothing rather than refusing the position, on the trip's own
+row, so it is overwritten with every write and goes with the trip. A watcher's
+popup reads it back with `lookRead()`, which ignores any letter it does not
+know. The honest cost is the one that kept decorations off the map at first,
+riders can tell the bus is the same sharer's from one trip to the next. It is
+stated in the privacy panel and in `for-operators.html`, not at the question:
+the question is one line, "Show customized bus to riders?", and the switch
+says the same, because the maintainer's rule is that nobody reads a paragraph
+in the middle of a moment like that (a first version explained the cost in
+three sentences there and was cut). A sharer's own popup shows their bus as
+they dressed it, whether or not they show it to anyone else.
+
+Order of deployment does not matter. The two writers gain `p_look` with a
+default, so a page from before it calls them as it always did and shows plain
+buses. A page from after it, against a database without it, is refused for
+the unknown argument (PostgREST's "Could not find the function"); the page
+sends the same position again without the look and stops sending one for the
+rest of its life (`LOOK_SENDS`), so a position is never lost to a look.
+
+**The ride** (`rideSvg()` in the PICTURES block). In a bus's popup and at the
+top of My tickets, the coach is on the road: the dashes, the posts and the
+bushes scroll past, the wheels turn and the coach rocks a little, in front of
+the view of the place it is nearest (`TICKET_VIEWS`, chosen by the nearest
+checkpoint's mark) under the sky of the hour. In My tickets it drives past
+each kind of place on the route in turn, five seconds each (`rideViews()`).
+Decided:
+
+- *A pace, not a speed.* The loops run at fixed durations (`RIDE_LOOPS`), never
+  the bus's speed: a scene that sped up with the bus would put the driver
+  metric on every rider's screen. The pace is about 60 km/h to the eye: the
+  first version read as 20, and the maintainer asked for 60. No loop may be
+  under 0.8 seconds (`test-tokens.js`), so each covers more road instead:
+  78 units of dashes in 1.3 seconds, a post a second, the bushes behind at
+  half that, three turns of the wheels a loop. `test-pictures.js` section 8
+  holds the road, the posts and the wheels to the same 60 units a second and
+  every loop to ending where it began.
+- *Still when the bus has gone quiet.* A bus not heard from lately stops on
+  the road, so the picture never claims movement the data does not.
+- *Phase-aligned.* The popup is redrawn with every refresh; each loop's
+  negative `animation-delay` is worked out from the clock, so a redraw
+  carries on where the last one was instead of jumping back.
+- *Close up in the popup.* The popup is 240 pixels wide on a phone, and the
+  map is too narrow for a wider one. Framed as My tickets frames it
+  (`close`), the bus was about 114 pixels long and the dice a few pixels; the
+  maintainer found a framing tight on the bus (212 pixels) too much, so the
+  popup's own (`RIDE_FRAMES.popup`) leaves some road ahead and sky above, the
+  bus about 180 pixels. The picture is taller, so the four lines under it
+  became two ("▲ 98018 · live", then where it is) and the popup still fits
+  the map.
+- Under reduced motion the stylesheet's blanket ends every loop where it
+  started, and My tickets does not cycle its views.
+
+**Backup, restore and starting over.** There are no accounts, so a backup is
+a file: "Save a backup" in My tickets, under Your progress, makes a small JSON
+file of the kept tickets and the bus (`backupMake()`) and hands it to the
+phone's share sheet where there is one, or downloads it; "Copy" puts the same
+text on the clipboard for a chat or a note. Restore reads a file or pasted
+text through `backupRead()`, which cleans every field the way storage is
+cleaned and refuses anything that is not a backup (or is over 400,000
+characters), then replaces what is on the phone, with a second tap if there
+is anything to lose. "Start from scratch" (once "Remove all") deletes the
+tickets and the bus, also on a second tap. The app never sends a backup
+anywhere, it writes only the two keys it already had, so the six remembered
+things stay six, and the privacy panel says what a backup is.
+
+## Rules revisited, October 2026
+
+The maintainer asked which rules could be changed and what changing them
+would unlock. What changed, and what was kept and why:
+
+- **Changed:** "the trip record lives only in memory" (it is now saved while
+  the trip runs, so a reload no longer costs the trip or its ticket); "four
+  remembered things" (six: your bus and the trip in progress were added, and
+  the privacy panel names both); the ticket being the only thing a trip leaves
+  on a phone (your bus's counts now outlast trips, as numbers with no list of
+  dates);
+  "the ticket is the same for the same trip" (it still is, but no two trips
+  are drawn alike); `for-operators.html`'s "one thing can be kept" (now two,
+  and it says what the second is).
+- **Changed after that, by the maintainer:** a running salamat total, time on
+  the map in all, and a streak (in weeks), all on the sharer's own phone
+  only, as single numbers. See "Collecting" for why and what shape they keep.
+- **And after that:** spare parts, a shop, paint, a backup, and a decorated bus on
+  the live map, by the sharer's choice. See "Dressing the bus" for the
+  guardrails.
+- **Kept:** no location history; no watcher location leaves the device; no
+  total of anything on the server; nothing about speed or a trip's length in
+  any stamp, luck or decoration threshold beyond the time summed in all; no
+  ETA in minutes (it needs the travel-time history the first invariant
+  forbids); a decorated bus on the map only by its sharer's choice, off until
+  they make it, and only from fixed lists; no picture that moves with the
+  bus's speed.
 
 ## The guide and the tour
 
@@ -1073,7 +1382,7 @@ the map on arrival would stand between a rider at a roadside and the answer.
 So a first visit gets a small "New here?" note at the foot of the screen, where
 it covers nothing the page was opened for, and answering it either way is kept
 under the guide dot's key: both mean "this phone has been shown around", and the
-privacy panel's four things stay four. After that the tour is a quiet button at
+privacy panel's six things stay six. After that the tour is a quiet button at
 the foot of each tab and two buttons at the top of the guide.
 
 **Named `walk*`.** The content-blocker lesson again (see "Content blockers"):
@@ -1401,8 +1710,8 @@ deploy folder:
   test cannot drift from the app. Since October 2026 they also hold the hours
   card and the parol season (`test-hours`), the stop-by-stop card and its two
   louder states (`test-mystop`), the town lines (`test-strip`), the
-  ticket's rules and the album's (`test-thanks`) and the ticket's picture
-  (`test-pictures`); every one of those checks was watched
+  ticket's rules and the album's, its luck and your bus (`test-thanks`), and
+  the ticket's picture, its sights and the decorated bus (`test-pictures`); every one of those checks was watched
   failing against a deliberately broken copy of the page before it was
   trusted. They need Node, plus config-template.txt one
   level up. `test-tokens.js` runs no app code: it reads every page's styles

@@ -20,7 +20,16 @@ const S = {};
 new Function('S', src + albumSrc + 'S.thanksWords=thanksWords;S.thanksControl=thanksControl;' +
   'S.ticketStamps=ticketStamps;S.ticketWorthShowing=ticketWorthShowing;S.ticketGreeting=ticketGreeting;' +
   'S.STAMPS=STAMPS;S.albumEntry=albumEntry;S.albumClean=albumClean;S.albumPlaces=albumPlaces;S.albumStats=albumStats;' +
-  'S.ticketSky=ticketSky;S.keptGreeting=keptGreeting;S.keptDate=keptDate;S.keptSince=keptSince;')(S);
+  'S.ticketSky=ticketSky;S.keptGreeting=keptGreeting;S.keptDate=keptDate;S.keptSince=keptSince;' +
+  'S.tripStamps=tripStamps;S.SIGHTS=SIGHTS;S.ticketLook=ticketLook;S.moonPhase=moonPhase;S.ticketSeason=ticketSeason;S.albumSights=albumSights;' +
+  'S.DECOR=DECOR;S.busClean=busClean;S.busAdd=busAdd;S.busCount=busCount;S.busGoal=busGoal;S.busEarned=busEarned;S.busToured=busToured;' +
+  'S.weekIndex=weekIndex;S.busStreak=busStreak;S.SHOP=SHOP;S.PAINTS=PAINTS;S.WEAR_ORDER=WEAR_ORDER;S.PARTS_TRIP=PARTS_TRIP;S.PARTS_TRIPS_A_DAY=PARTS_TRIPS_A_DAY;' +
+  'S.dayIndex=dayIndex;S.busSettle=busSettle;S.busTripPay=busTripPay;S.busOwns=busOwns;S.busBuy=busBuy;S.busWear=busWear;S.busUsePaint=busUsePaint;' +
+  'S.busWorn=busWorn;S.busHasLook=busHasLook;S.busLook=busLook;S.lookRead=lookRead;S.backupMake=backupMake;S.backupRead=backupRead;S.busIsNew=busIsNew;S.decorShown=decorShown;')(S);
+// The drawings the luck and the bus are drawn with, from the same file.
+const P = require(path.join(ROOT, 'tools', 'make-pictures.js')).renderer();
+new Function('P', html.slice(html.indexOf('// ---- THE PICTURES (unit tested)'), html.indexOf('// ---- END PICTURES')) +
+  'P.BUS_DECOR=BUS_DECOR;P.busSvg=busSvg;P.DECOR_BOX=DECOR_BOX;P.decorTile=decorTile;P.BUS_PAINTS=BUS_PAINTS;P.rideSvg=rideSvg;')(P);
 // The part of the page around the ticket and the album, cut at the next
 // function so a check about one function reads that function alone.
 const fn = name => {
@@ -111,8 +120,8 @@ const panel = html.slice(html.indexOf('id="privModal"'), html.indexOf('id="dupMo
 check(/salamat/i.test(panel), 'the privacy panel names the tap');
 check(/(deleted|disappear|gone)[^.]*trip|trip[^.]*(ends|over)/i.test(panel),
   'and says it does not outlive the trip');
-check(/(no|never)[^.]*(running total|total)/i.test(panel),
-  'and that no total is kept for anyone');
+check(/no running total is kept for any driver or any bus on the server/i.test(panel),
+  'and that no total is kept for anyone on our side: the only one is on the sharer\'s own phone');
 // The count is the sharer's, so the sharing half of the panel has to say so.
 const sharing = panel.slice(panel.indexOf('If you share from the bus'));
 check(/salamat/i.test(sharing) && /only you/i.test(sharing),
@@ -288,11 +297,19 @@ console.log('\n=== 14. the ticket: made on the phone, kept only if asked ===');
   // is an object of its own, and that object is not kept.
   const lit = ((begin.match(/TRIP = \{([\s\S]*?)\n  \};/) || [])[1] || '').replace(/\{[^{}]*\}/g, '');
   const keys = [...lit.matchAll(/(?:^|[,\s])([a-zA-Z]+)\s*:/g)].map(m => m[1]).sort().join(',');
-  check(keys === 'maxThanks,others,polled,start,startKm,writes', 'the trip record is six numbers and flags', keys);
+  // Eight since the trip learned to outlive its page: when and where on the
+  // chain the last update landed, each overwritten by the next, so the end
+  // is one number like the start and never a list.
+  check(keys === 'lastAt,lastKm,maxThanks,others,polled,start,startKm,writes', 'the trip record is eight numbers and flags', keys);
   const writes = [...html.matchAll(/TRIP\.([a-zA-Z]+)\s*(?:=[^=]|\+\+)/g)].map(m => m[1]);
-  check(writes.length > 0 && writes.every(k => ['maxThanks', 'polled', 'writes'].includes(k)),
+  check(writes.length > 0 && writes.every(k => ['maxThanks', 'polled', 'writes', 'lastAt', 'lastKm'].includes(k)),
     'and nothing else is ever written into it', [...new Set(writes)].join(','));
   check(!/TRIP\.[a-zA-Z]+\.push\(/.test(html), 'nothing is appended to it, so no trail can grow there');
+  const save = fn('saveTrip');
+  check(/localStorage\.setItem\('wt-trip', JSON\.stringify\(\{ trip:TRIP, session:getSessionId\(\), dir:shareDir,/.test(save) && !/push\(|concat\(|getItem/.test(save),
+    'kept on the phone as wt-trip, the record and what carrying on needs, written over each time');
+  check(/TRIP = null; RESUME = null;\s*dropTrip\(\);/.test(fn('stopSharing')) && /dropTrip\(\);/.test(fn('endLostTrip')),
+    'and removed the moment the trip ends, however it ends');
   const show = fn('showTicket');
   check(/const ty = thanksWords\(trip\.maxThanks\);/.test(show) && /\(ty \?/.test(show),
     'the salamat line goes through thanksWords, so a quiet trip shows no zero');
@@ -300,11 +317,23 @@ console.log('\n=== 14. the ticket: made on the phone, kept only if asked ===');
     'drawing the ticket sends nothing and stores nothing');
   check(/TKT_KEEP = albumEntry\(\{ when:now, dir:shareDir, fromShort:tktPlace\(fromIdx\), toShort:tktPlace\(toIdx\),\s*stamps:stamps, thanked:trip\.maxThanks > 0 \}\);/.test(show),
     'what Keep would keep is albumEntry() of the trip: the ends, the stamps, and only whether anyone thanked');
-  check(/if \(!\(opts && opts\.quiet\)\) showTicket\(trip, endCoords\);/.test(html) &&
-        /await stopSharing\(\{ quiet:true, blocked:true \}\);\s*setShareUI\('error'/.test(html),
-    'and a session the server has blocked ends on its error, not on a ticket');
-  check(/await stopSharing\(\{ quiet:true \}\);\s*if \(raw\.indexOf\('invalid key'\)>=0\) forgetKey\(\);\s*setShareUI\('error'/.test(html),
-    'as does a trip refused for a changed key or a full route');
+  // Every end of a trip gets its ticket but one. The sharer asked for this:
+  // a trip that kept a bus on the map should not lose its ticket to a GPS
+  // error or a key changed under it. Whether it was long enough is still
+  // ticketWorthShowing()'s to say, so a route already full at the first
+  // write still shows nothing.
+  const stop = fn('stopSharing');
+  check(/if \(!\(opts && opts\.blocked\)\)\{ try\{ endTicket\(trip, endCoords\); \}catch\(e\)\{\} \}/.test(stop) &&
+        !/opts\.quiet/.test(stop) && !/quiet\s*:/.test(html),
+    'every end of a trip draws its ticket, with no quiet way round it');
+  check(/await stopSharing\(\{ blocked:true \}\);\s*setShareUI\('error'/.test(html),
+    'except a session an organizer stopped, which ends on its error, not on a ticket');
+  check(/await stopSharing\(\);\s*if \(raw\.indexOf\('invalid key'\)>=0\) forgetKey\(\);\s*setShareUI\('error'/.test(html),
+    'a trip refused for a changed key mid-trip gets its ticket, then says why it ended');
+  check(/function gpsGaveUp\(msg\)\{\s*gpsFound\(\);\s*stopSharing\(\)\.then/.test(html),
+    'and so does a trip whose GPS gave up');
+  check(stop.indexOf('endTicket(') > 0 && stop.indexOf('endTicket(') < stop.indexOf("rpc('clear_bus_position'"),
+    'the ticket is drawn before the network is asked anything, so a slow line cannot hold it back');
 }
 
 console.log('\n=== 15. a kept ticket: the souvenir, not the stopwatch ===');
@@ -382,10 +411,13 @@ console.log('\n=== 16. the album adds up nothing that ranks anybody ===');
   check(/n \? '×' \+ n : 'not yet'/.test(render) && !/×0/.test(render),
     'a stamp not collected yet says so, never ×0');
   const sync = fn('syncAlbumRow');
-  check(/row\.classList\.toggle\('hidden', !list\.length\)/.test(sync),
-    'and the album is not offered at all until something has been kept');
-  check(!/streak|ranking|leader|best trip|fastest|average|total time|hours on/i.test(render + sync + albumSrc.replace(/^\s*\/\/.*$/gm, '')),
-    'no streak, no ranking, no best or average anywhere in it');
+  check(/row\.classList\.remove\('hidden'\);/.test(sync) && /if \(!list\.length && !dec\)\{\s*document\.getElementById\('albumRowVal'\)\.textContent = '[^'0-9]+';\s*return;/.test(sync),
+    'My tickets is always offered, so what there is to collect can be found, and with nothing yet it says so without a number');
+  // The kept tickets still add up none of these. The totals and the streak
+  // the maintainer asked for belong to the bus (section 19), not to them.
+  const albumOnly = ['albumEntry', 'albumClean', 'albumPlaces', 'albumStats'].map(fn).join('');
+  check(albumOnly.length > 0 && !/streak|ranking|leader|best|fastest|average|mins|maxThanks|total/i.test(albumOnly.replace(/^\s*\/\/.*$/gm, '')),
+    'no streak, no ranking, no best, average or total in what the kept tickets add up');
 }
 
 console.log('\n=== 17. keeping is a tap, and only Keep adds a ticket ===');
@@ -412,10 +444,12 @@ console.log('\n=== 17. keeping is a tap, and only Keep adds a ticket ===');
   const writes = [...html.matchAll(/localStorage\.(setItem|removeItem)\(\s*'wt-tickets'/g)];
   check(writes.length === 2 && writes.every(m => fn('saveAlbum').includes(m[0])),
     'the album is written in one place, saveAlbum()');
-  const callers = ['keepTicket', 'dropKeptTicket', 'clearAlbum'];
+  // Keep adds, Remove takes one away, Start from scratch empties it, and a
+  // restore puts back what a backup the sharer made had kept.
+  const callers = ['keepTicket', 'dropKeptTicket', 'clearAlbum', 'restoreBackup'];
   const calls = [...html.matchAll(/saveAlbum\(/g)].length - 1;
   check(calls === callers.length && callers.every(c => fn(c).includes('saveAlbum(')),
-    'which only Keep, Remove and Remove all call', String(calls) + ' calls');
+    'which only Keep, Remove, Start from scratch and a restore call', String(calls) + ' calls');
   check([...html.matchAll(/\.push\(TKT_KEEP\)/g)].length === 1 && /list\.push\(TKT_KEEP\);/.test(fn('keepTicket')),
     'and only Keep adds, with exactly the six things showTicket() made');
   // Comments may name it; code may not call it.
@@ -427,6 +461,275 @@ console.log('\n=== 17. keeping is a tap, and only Keep adds a ticket ===');
     'what Keep would keep is only ever albumEntry() of the ticket on screen', sets.join(' | '));
   check(/function closeTicket\(\)\{\s*TKT_KEEP = null;/.test(html),
     'and closing the ticket forgets it, so a ticket nobody kept leaves nothing behind');
+}
+
+console.log('\n=== 18. a ticket\'s luck: worked out, never a score ===');
+// Rules 11 to 13. The paper, the punch and what is in the picture follow
+// from the day, the direction and the two ends, so a kept copy draws the same
+// and a trip cannot be re-rolled; none of it follows how the bus was driven
+// or how many said salamat.
+{
+  const entry = (o) => Object.assign({ d: '2026-10-15', dir: 'n', from: 'MENDEZ', to: 'AYALA', st: [], ty: false }, o);
+  const same = (a, b) => JSON.stringify(S.ticketLook(a)) === JSON.stringify(S.ticketLook(b));
+  check(same(entry(), entry()), 'the same ticket always has the same luck');
+  check(same(entry({ ty: false }), entry({ ty: true })), 'whether anyone said salamat changes nothing about it');
+  const look = fn('ticketLook') + fn('ticketSeed') + fn('luck');
+  check(!/Math\.random|Date\.now|new Date|\bty\b|thank|mins|writes|speed|duration|label/.test(look),
+    'and nothing but the ticket\'s day, direction, ends and stamps goes into it: no clock, no randomness, no salamat, no trip length');
+  const all = [];
+  for (let m = 1; m <= 12; m++) for (let d = 1; d <= 28; d += 3) for (const dir of ['n', 's']) for (const st of [[], ['dawn'], ['night']])
+    for (const [from, to] of [['MENDEZ', 'AYALA'], ['TGY', 'IMUS'], ['AMADEO', 'GEN.T']])
+      all.push(entry({ d: '2026-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0'), dir, from, to, st }));
+  const looks = all.map(e => ({ e, l: S.ticketLook(e) }));
+  const seen = new Set(looks.flatMap(x => x.l.sights));
+  check(Object.keys(S.SIGHTS).every(k => seen.has(k)), 'over a year of trips every sight turns up', seen.size + ' of ' + Object.keys(S.SIGHTS).length);
+  const rare = looks.filter(x => x.l.rare).length / looks.length;
+  check(rare > 1 / 30 && rare < 1 / 9, 'and about one ticket in fifteen is gold', (rare * 100).toFixed(1) + '%');
+  check(new Set(looks.map(x => x.l.paper)).size === 5 && new Set(looks.map(x => x.l.punch)).size === 4, 'on five papers, with four punches');
+  check(looks.every(x => x.l.sights.every(k => k in S.SIGHTS)) && looks.every(x => new Set(x.l.sights).size === x.l.sights.length),
+    'every sight it names is one the album knows, and none twice');
+  const night = looks.filter(x => S.ticketSky(x.e.st) === 'night');
+  check(night.every(x => !['carabao', 'sorbetes', 'stall'].includes(x.l.road) && !x.l.air && x.l.weather !== 'double' && x.l.moon >= 0),
+    'at night: nothing by the roadside, nothing flying, no rainbow, and the moon of that night');
+  check(looks.filter(x => x.l.meteor).every(x => S.ticketSky(x.e.st) === 'night'), 'a shooting star only at night');
+  check(looks.every(x => !(x.l.weather === 'rain' && x.l.air) && !(x.l.season && x.l.air)), 'nothing flies in the rain or among the season\'s decorations');
+  check(S.moonPhase('2024-04-08') === 0 && S.moonPhase('2025-01-13') === 4 && S.moonPhase('2024-04-23') === 4 && S.moonPhase('2026-10-26') === 4,
+    'the moon is the real one: new on 8 April 2024, full on 13 January 2025');
+  const hours = html.slice(html.indexOf('function inParolSeason('), html.indexOf('// ---- END operating hours'));
+  const inParol = new Function(hours + 'return inParolSeason;')();
+  let agree = true;
+  for (let t = Date.UTC(2026, 0, 1); t < Date.UTC(2027, 0, 1); t += 86400000) {
+    const d = new Date(t), key = d.toISOString().slice(0, 10), local = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    if ((S.ticketSeason(key) === 'parol') !== inParol(local)) agree = false;
+  }
+  check(agree, 'the parol is on a ticket on exactly the days it hangs in the header');
+  check(S.ticketSeason('2026-05-27') === 'banderitas' && S.ticketSeason('2026-05-28') === 'flags' && S.ticketSeason('2026-06-12') === 'flags' &&
+        S.ticketSeason('2026-06-13') === '', 'banderitas in May, the flags from 28 May to Independence Day');
+  const sg = S.albumSights(all.slice(0, 40));
+  check(sg.gold === all.slice(0, 40).filter(e => S.ticketLook(e).rare).length && Object.values(sg.seen).every(n => n > 0),
+    'the album counts what its tickets show, and the gold ones');
+  check(Object.keys(P.TICKET_SIGHTS).sort().join(',') === Object.keys(S.SIGHTS).sort().join(','), 'every sight has its drawing, and every drawing its name');
+  const render = fn('renderAlbum');
+  check(/\(n \? \(x\.rare \? 'rare · ' : ''\) \+ '×' \+ n : 'not yet'\)/.test(render), 'a sight not yet spotted says so, never ×0');
+  check(/'<div><b>' \+ spotted \+ '<small>\/' \+ skeys\.length/.test(render), 'and the album counts how many it has spotted of all there are');
+}
+
+console.log('\n=== 19. your bus: counted, never a timesheet ===');
+// Rules 14 to 16. Every trip that drew a ticket and went somewhere counts,
+// kept or not, as numbers and place names: no day, no time, nothing per bus,
+// nothing about salamat. A trip that went nowhere counts for nothing.
+{
+  const cps = 'MENDEZ TGY AMADEO GEN.T IMUS PITX AYALA'.split(' ').map(short => ({ short, name: short }));
+  let b = S.busClean(null);
+  check(JSON.stringify(b) === JSON.stringify({ places: [], n: 0, first: 0, full: 0, dawn: 0, night: 0, north: 0, south: 0, tw: 0, ts: 0, mins: 0, ty: 0, wk: 0, streak: 0, best: 0,
+                     c: 0, day: 0, dayn: 0, show: 0, asked: 0, own: [], paints: [], off: [], paid: [], paint: 'klasiko' }),
+    'an empty bus is counts and a list of places, nothing else', JSON.stringify(b));
+  check(S.busEarned(b, cps).length === 0, 'and wears nothing');
+  b = S.busAdd(b, { dir: 'north', stamps: ['first'], fromIdx: 2, toIdx: 2 }, cps);
+  check(b.n === 0, 'a trip that began and ended at the same place counts for nothing');
+  b = S.busAdd(b, { dir: 'north', stamps: ['full', 'dawn', 'first'], fromIdx: 0, toIdx: 6 }, cps);
+  check(b.n === 1 && b.full === 1 && b.dawn === 1 && b.first === 1 && b.north === 1 && b.places.length === 7,
+    'a whole-route trip counts once, with every stamp it earned and every place it passed', JSON.stringify(b));
+  check(S.busEarned(b, cps).join(',') === 'sampaguita,stripe,route', 'and puts on the garland, the stripe and the route', S.busEarned(b, cps).join(','));
+  check(Object.keys(b).sort().join(',') === 'asked,best,c,dawn,day,dayn,first,full,mins,n,night,north,off,own,paid,paint,paints,places,show,south,streak,ts,tw,ty,wk',
+    'what is kept is counts, totals, place names and what the bus owns and wears: never a list of days or times, no bus number', Object.keys(b).sort().join(','));
+  for (let i = 0; i < 4; i++) b = S.busAdd(b, { dir: 'south', stamps: ['night'], fromIdx: 5, toIdx: 1 }, cps);
+  const earned = S.busEarned(b, cps);
+  check(b.n === 5 && earned.includes('horns') && earned.includes('bumpers') && earned.includes('string') && !earned.includes('fringe'),
+    'five trips: the horns, both directions, the lights after dark, and the fringe not yet', earned.join(','));
+  const dirty = S.busClean({ n: -3, first: 'x', full: 2.7, dawn: Infinity, night: 1e12, north: 1, south: 0, places: ['A', 'A', 7, 'B'.repeat(40)], when: '2026-10-15', minutes: 90, days: ['2026-10-15'] });
+  check(dirty.n === 0 && dirty.first === 0 && dirty.full === 2 && dirty.dawn === 0 && dirty.night === 1e6 && dirty.places.length === 2 &&
+        dirty.places[1].length === 24 && !('when' in dirty) && !('minutes' in dirty) && !('days' in dirty),
+    'whatever comes back out of storage is cleaned to counts and short names, and anything else is dropped', JSON.stringify(dirty));
+  check(S.DECOR.every(d => /^[a-z]+$/.test(d.k)) && S.DECOR.concat(S.SHOP).map(d => d.k).sort().join(',') === Object.keys(P.BUS_DECOR).sort().join(','),
+    'every decoration and every shop item has its drawing, and every drawing is one or the other');
+  check(S.DECOR.every(d => ['n', 'first', 'full', 'dawn', 'night', 'ways', 'places', 'tw', 'ts', 'ty', 'hours', 'best'].includes(d.c)),
+    'and each is earned by a count, a total, the best streak or a finished tour');
+  // The tours: one decoration each, once, and nothing else changes.
+  let t = S.busToured(S.busClean(null), ['watch']);
+  check(t.tw === 1 && t.ts === 0 && t.n === 0 && S.busEarned(t, cps).join(',') === 'bell',
+    'finishing the map\'s tour hangs the bell, and counts no trip', S.busEarned(t, cps).join(','));
+  t = S.busToured(S.busToured(t, ['share', 'watch']), ['watch']);
+  check(t.tw === 1 && t.ts === 1 && S.busEarned(t, cps).join(',') === 'bell,placard',
+    'the sharing tour puts up the route board, and a tour taken again adds nothing');
+  const walk = fn('walkFinished');
+  check(/if \(WALK \|\| !names \|\| !names\.length\) return;/.test(walk) && /walkFinished\(finished\);\s*\}/.test(fn('endWalk')) &&
+        /if \(last && WALK\.finished\.indexOf\(WALK\.name\) < 0\) WALK\.finished\.push\(WALK\.name\);/.test(fn('walkShow')),
+    'a tour counts once it reaches its last step, and is stored only after the run is over, never during it');
+  const banned = /share|help|support|chat|widget|like|fav|thumb|heart|vote|social|clap/i;
+  check(!S.DECOR.some(d => banned.test(d.k)) && !Object.keys(S.SIGHTS).some(k => banned.test(k)),
+    'no decoration or sight is named like a social widget');
+  const svg = P.busSvg(S.DECOR.map(d => d.k));
+  check(/^<svg class="mybus" viewBox="0 0 400 170" aria-hidden="true"/.test(svg) && !/ id="|<text|https?:|href=/.test(svg) &&
+        S.DECOR.every(d => svg.includes(P.BUS_DECOR[d.k])) && P.busSvg([]).length < svg.length,
+    'the bus draws what it has earned and nothing else, with no ids, no words and nothing loaded');
+  // The counting happens at the end of a trip, outside the drawing.
+  const end = fn('endTicket');
+  check(/busAdd\(before, \{ dir:shareDir, stamps:f\.all\.map/.test(end) && /if \(!WALK && ticketWorthShowing/.test(end),
+    'counted once per trip that earned a ticket, and never on a practice one');
+  const saves = [...html.matchAll(/localStorage\.(setItem|removeItem)\(\s*'wt-bus'/g)];
+  const busWriters = ['endTicket', 'walkFinished', 'setShowBus', 'albumBuy', 'albumWear', 'albumPaint', 'openAlbum', 'restoreBackup'];
+  check(saves.length === 2 && saves.every(m => (fn('saveBus') + fn('dropBus')).includes(m[0])) &&
+        [...html.matchAll(/saveBus\(/g)].length === busWriters.length + 1 && busWriters.every(c => /saveBus\(/.test(fn(c))) &&
+        /saveBus\(after\)/.test(fn('endTicket')) && /saveBus\(after\)/.test(fn('walkFinished')) &&
+        [...html.matchAll(/dropBus\(/g)].length === 2 && /dropBus\(\)/.test(fn('clearAlbum')),
+    'written in one place, by a trip, a tour, the garage or a restore, and removed only by Start from scratch');
+  check(busWriters.filter(c => c !== 'endTicket' && c !== 'walkFinished').every(c => /if \(WALK\) return;|if \(!WALK\)/.test(fn(c))),
+    'and none of the garage\'s or the backup\'s writes happens during a tour');
+  check(/n \? n \+ ' of ' \+ g : 'not yet'/.test(fn('albumBusHtml')), 'a decoration not yet earned is "not yet", never 0 of anything');
+  // Each card shows its decoration on its own part of the bus, earned or
+  // not: the ones still to come as an outline, a look at what is coming.
+  check(/'<li class="' \+ \(got \? 'got' : 'yet'\) \+ \(on \? ' on' : ''\) \+ '">' \+ decorTile\(d\.k\)/.test(fn('albumBusHtml')) &&
+        /'<li class="' \+ \(owned \? 'got' : 'yet'\) \+ \(on \? ' on' : ''\) \+ '">' \+ decorTile\(x\.k\)/.test(fn('albumBusHtml')),
+    'every trophy\'s card and every shop item\'s carries its picture, owned or still to come');
+  const tiles = S.DECOR.map(d => P.decorTile(d.k));
+  check(tiles.every((t, i) => t.startsWith('<svg class="decor-art" viewBox="' + P.DECOR_BOX[S.DECOR[i].k] + '"') &&
+        t.includes('<g class="dg">' + P.BUS_DECOR[S.DECOR[i].k] + '</g>') && !/ id="|<text|https?:|href=/.test(t)),
+    'drawn on the coach with nothing else on it, no ids, no words, nothing loaded');
+  check(Object.values(P.DECOR_BOX).every(b => { const v = b.split(' ').map(Number); return v[2] === 2 * v[3]; }) &&
+        Object.keys(P.DECOR_BOX).sort().join(',') === Object.keys(P.BUS_DECOR).sort().join(','),
+    'every decoration has its corner of the bus, all cut to the same shape so the cards line up');
+  // A box past the sky behind the coach leaves a strip of card showing through.
+  const sky = (/<rect x="(-?[\d.]+)" y="(-?[\d.]+)" width="([\d.]+)" height="([\d.]+)"/.exec(P.decorTile('mirror')) || []).slice(1).map(Number);
+  const outside = Object.keys(P.DECOR_BOX).filter(k => {
+    const v = P.DECOR_BOX[k].split(' ').map(Number);
+    return !(sky.length === 4 && v[0] >= sky[0] && v[1] >= sky[1] && v[0] + v[2] <= sky[0] + sky[2] && v[1] + v[3] <= sky[1] + sky[3]);
+  });
+  check(!outside.length, 'and every card is sky to its edges, none cut past it', outside.join(' '));
+  check(/\.alb-decor li:not\(\.got\) \.decor-art \.dg \*\{fill:none; stroke:var\(--ti\);/.test(html),
+    'and one not owned yet is only its outline');
+  check(!/label|getHours|getMinutes|getDate|toISOString|Date\.now|new Date|push\(t\.|\.week\s*\]/.test(fn('busAdd') + fn('busClean') + fn('busCount')),
+    'and nothing in the counting knows the bus number, a day or a clock time, or keeps a list of them');
+
+  // The totals and the streak (the maintainer's decision, October 2026):
+  // one number each, the streak in weeks, and a broken one takes nothing.
+  const wk = d => S.weekIndex(new Date(d[0], d[1] - 1, d[2]));
+  check(wk([2026, 10, 12]) === wk([2026, 10, 18]) && wk([2026, 10, 19]) === wk([2026, 10, 18]) + 1,
+    'a week runs Monday to Sunday', wk([2026, 10, 12]) + ' ' + wk([2026, 10, 18]) + ' ' + wk([2026, 10, 19]));
+  const go = (b, week, mins, thanks) => S.busAdd(b, { dir: 'north', stamps: [], fromIdx: 0, toIdx: 3, mins, thanks, week }, cps);
+  let z = S.busClean(null);
+  z = go(z, 100, 95, 3); z = go(z, 100, 40, 0);
+  check(z.mins === 135 && z.ty === 3 && z.streak === 1 && z.wk === 100, 'two trips in a week: their minutes and salamat added, a streak of one', JSON.stringify(z));
+  z = go(z, 101, 60, 2); z = go(z, 102, 60, 0); z = go(z, 103, 60, 5);
+  check(z.streak === 4 && z.best === 4 && z.ty === 10 && S.busEarned(z, cps).includes('foglamps') && S.busEarned(z, cps).includes('flowers'),
+    'four weeks in a row: the fog lamps; ten salamat: the flowers');
+  z = go(z, 106, 60, 0);
+  check(z.streak === 1 && z.best === 4 && S.busEarned(z, cps).includes('foglamps'), 'a week missed starts the streak again, and takes nothing away');
+  z = go(z, 104, 600, 0);
+  check(z.streak === 1 && z.wk === 106 && Math.floor(z.mins / 60) >= 10 && S.busEarned(z, cps).includes('luggage'),
+    'a ticket handed over late from an older week leaves the streak alone; ten hours on the map: the luggage');
+  check(S.busStreak(z, 106) === 1 && S.busStreak(z, 107) === 1 && S.busStreak(z, 108) === 0, 'a streak is alive this week and the next, then gone');
+  const nowhere = S.busAdd(z, { dir: 'south', stamps: [], fromIdx: 2, toIdx: 2, mins: 500, thanks: 40, week: 107 }, cps);
+  check(JSON.stringify(nowhere) === JSON.stringify(z), 'and a trip that went nowhere adds no time, no salamat and no week');
+}
+
+console.log('\n=== 20. spare parts: earned, capped, spent, never farmed ===');
+// Rules 17 to 19, with the guardrails the maintainer asked for: parts come
+// from achievements (once each) and from a few trips a day, the trophies are
+// never for sale, and what a rider can see of somebody's bus is a code of
+// letters from fixed lists.
+{
+  const cps = 'MENDEZ TGY AMADEO GEN.T IMUS KAWIT PITX AYALA'.split(' ').map(short => ({ short, name: short }));
+  const trip = (b, from, to) => S.busAdd(b, { dir: 'north', stamps: [], fromIdx: from, toIdx: to, mins: 30, thanks: 0, week: 100 }, cps);
+  let b = S.busClean(null);
+  // Every achievement pays once.
+  b = trip(b, 0, 3);
+  let r = S.busSettle(b, cps);
+  check(r.got === 10 && r.keys.join(',') === 'sampaguita' && r.b.c === 10 && r.b.paid.join(',') === 'sampaguita',
+    'the first trip\'s garland gives 10 parts', JSON.stringify(r.keys) + ' ' + r.got);
+  r = S.busSettle(r.b, cps);
+  check(r.got === 0 && r.b.c === 10, 'and settling again pays nothing: an achievement pays once');
+  // A trip's parts: a few a day, then nothing.
+  b = r.b;
+  const pays = [];
+  for (let i = 0; i < 6; i++){ const t = S.busTripPay(b, 20000); b = t.b; pays.push(t.got); }
+  check(pays.join(',') === [5, 5, 5, 0, 0, 0].join(',') && b.c === 25 && S.PARTS_TRIP === 5 && S.PARTS_TRIPS_A_DAY === 3,
+    'trips give 5 parts, for three a day at most: a fourth trip that day gives nothing', pays.join(','));
+  const t2 = S.busTripPay(b, 20001);
+  check(t2.got === 5 && t2.b.dayn === 1, 'and the next day pays again');
+  b = t2.b;
+  check(S.dayIndex(new Date(2026, 9, 15)) + 1 === S.dayIndex(new Date(2026, 9, 16)), 'days are counted on the phone\'s calendar');
+  // The shop.
+  check(S.busBuy(b, 'goldrims') === null, 'gold wheels cost more parts than there are: not got');
+  check(S.busBuy(b, 'horse') === null && S.busBuy(b, 'sampaguita') === null && S.SHOP.every(x => !S.DECOR.some(d => d.k === x.k)),
+    'a trophy can never be bought, and the shop sells none of them');
+  let after = S.busBuy(b, 'dice');
+  check(!!after && after.c === b.c - 10 && after.own.join(',') === 'dice' && S.busWorn(after, cps).includes('dice'),
+    'dice got for 10 parts, and put straight on the bus');
+  check(S.busBuy(after, 'dice') === null, 'and cannot be bought twice');
+  after = S.busBuy(after, 'dagat');
+  check(!!after && after.paint === 'dagat' && after.paints.join(',') === 'dagat' && after.c === b.c - 20, 'a paint job bought is the one on the bus');
+  check(S.busUsePaint(after, 'klasiko').paint === 'klasiko' && S.busUsePaint(after, 'ginto').paint === 'dagat',
+    'the plain paint is always there to go back to; one not bought cannot be used');
+  check(S.busBuy(S.busClean({ c: 9 }), 'dice') === null && S.busBuy(S.busClean({ c: 1e6 }), 'nothing') === null,
+    'nine parts get nothing worth ten, and nothing unknown can be got');
+  // Wearing.
+  let w = S.busWear(after, 'sampaguita', false, cps);
+  check(!S.busWorn(w, cps).includes('sampaguita') && S.busOwns(w, 'sampaguita', cps), 'a trophy taken off goes to the garage and is still owned');
+  w = S.busWear(w, 'sampaguita', true, cps);
+  check(S.busWorn(w, cps).includes('sampaguita'), 'and goes back on');
+  check(JSON.stringify(S.busWear(w, 'goldrims', true, cps)) === JSON.stringify(w), 'something not owned cannot be put on');
+  check(S.busWorn(S.busClean({ own: ['underglow', 'dice'], n: 1 }), cps).join(',') === 'underglow,sampaguita,dice',
+    'worn in drawing order: the glow under it first, the trophies, then the shop\'s');
+  // What riders see.
+  const look = S.busLook(w, cps);
+  check(look === '1Fc', 'the look is a digit for the paint and a letter for each thing worn', look);
+  const back = S.lookRead(look);
+  check(!!back && back.paint === 'dagat' && back.worn.join(',') === 'sampaguita,dice', 'and reads back as the same bus', JSON.stringify(back));
+  check(S.lookRead('1<b>hi</b>') === null && S.lookRead('hello') === null && S.lookRead('') === null && S.lookRead(null) === null &&
+        S.lookRead('1' + 'a'.repeat(41)) === null, 'a code with anything but a digit and letters, or too long, is no bus at all');
+  check(S.lookRead('1Fz').worn.join(',') === 'dice' && S.lookRead('9a').paint === 'klasiko', 'a letter or paint it does not know is skipped');
+  const ids = S.DECOR.concat(S.SHOP).map(x => x.id);
+  check(new Set(ids).size === ids.length && ids.every(i => /^[A-Za-z]$/.test(i)) && S.PAINTS.every(p => /^[0-9]$/.test(p.id)) &&
+        new Set(S.PAINTS.map(p => p.id)).size === S.PAINTS.length, 'every item has its own letter and every paint its own digit');
+  check(S.PAINTS.map(p => p.k).sort().join(',') === Object.keys(P.BUS_PAINTS).sort().join(',') && S.PAINTS[0].k === 'klasiko' && S.PAINTS[0].price === 0,
+    'every paint has its colours, and the plain one is free');
+  check(!S.busHasLook(S.busClean(null), cps) && S.busHasLook(S.busClean({ paints: ['lila'], paint: 'lila' }), cps) && S.busHasLook(w, cps),
+    'there is something to show once something is worn or painted, and not before');
+  // Storage and backups, cleaned on the way in.
+  const dirty = S.busClean({ c: -5, own: ['dice', 'horse', 'dice', 7], paints: ['klasiko', 'lila', 'pink'], paint: 'ginto', off: ['x', 'dice'],
+                             paid: ['sampaguita', 'dice'], show: 7, asked: 'yes' });
+  check(dirty.c === 0 && dirty.own.join(',') === 'dice' && dirty.paints.join(',') === 'lila' && dirty.paint === 'klasiko' &&
+        dirty.off.join(',') === 'dice' && dirty.paid.join(',') === 'sampaguita' && dirty.show === 1 && dirty.asked === 0,
+    'storage holds only shop items, paints, names and flags it knows: a trophy cannot be smuggled in as bought', JSON.stringify(dirty));
+  const list = [{ d: '2026-10-09', dir: 'n', from: 'MENDEZ', to: 'AYALA', st: ['full'], ty: true }];
+  const text = S.backupMake(list, w, new Date(2026, 9, 15));
+  const restored = S.backupRead(text);
+  check(!!restored && JSON.stringify(restored.tickets) === JSON.stringify(S.albumClean(list)) && JSON.stringify(restored.bus) === JSON.stringify(S.busClean(w)),
+    'a backup reads back as the same tickets and the same bus');
+  check(/"made":"2026-10-15"/.test(text) && !/\d\d:\d\d|"mins":\s*\[/.test(text.replace(/"made":"[^"]*"/, '')), 'dated by the day it was made, with nothing finer');
+  check(S.backupRead('nonsense') === null && S.backupRead('{"app":"other","v":1,"tickets":[],"bus":{}}') === null &&
+        S.backupRead(JSON.stringify({ app: 'bus-tracker', v: 2, tickets: [], bus: {} })) === null && S.backupRead('x'.repeat(400001)) === null,
+    'anything that is not one of these backups is refused');
+  const forged = S.backupRead(JSON.stringify({ app: 'bus-tracker', v: 1, tickets: [{ d: 'never' }], bus: { own: ['horse'], c: 'lots', paint: 'gold' } }));
+  check(!!forged && forged.tickets.length === 0 && forged.bus.own.length === 0 && forged.bus.c === 0 && forged.bus.paint === 'klasiko',
+    'and one edited by hand is cleaned like storage: no trophy bought, no parts from nowhere');
+  // My tickets lists the trophies nearest first within each kind, whatever
+  // order they are drawn in.
+  const shown = S.decorShown();
+  const climbs = shown.every((d, i) => i === 0 || shown[i - 1].c !== d.c || shown[i - 1].goal <= d.goal);
+  const grouped = shown.every((d, i) => i === 0 || shown[i - 1].c === d.c || !shown.slice(0, i - 1).some(x => x.c === d.c));
+  check(shown.length === S.DECOR.length && new Set(shown.map(d => d.k)).size === S.DECOR.length && climbs && grouped &&
+        /decorShown\(\)\.map/.test(fn('albumBusHtml')),
+    'the trophies are listed by kind, each kind from the nearest to the furthest: 10 hours, 50, then 100',
+    shown.filter(d => d.c === 'hours').map(d => d.goal).join(' '));
+  // Restoring replaces what is on the phone, so it asks twice whenever there
+  // is anything at all to lose, not only trips or parts.
+  check(S.busIsNew(null) && S.busIsNew({}) && S.busIsNew({ c: 0, own: ['horse'] }) &&
+        !S.busIsNew({ tw: 1 }) && !S.busIsNew({ own: ['dice'] }) && !S.busIsNew({ paints: ['dagat'], paint: 'dagat' }) &&
+        !S.busIsNew({ asked: 1 }) && !S.busIsNew({ places: ['IMUS'] }),
+    'a bus is new only with nothing earned, bought, chosen or counted: a tour\'s bell spent on dice is still something to lose');
+  check(/busIsNew\(loadBus\(\)\)/.test(fn('restoreBackup')), 'and restoring asks twice over anything that is not new');
+  // Parts are never named as money: drawn as a nut beside a number, with the
+  // word for a screen reader, and no coin or barya anywhere a rider can read.
+  check(/PART_GLYPH/.test(fn('partsTag')) && /class="vh"> parts/.test(fn('partsTag')) && /<symbol id="i-part"/.test(html),
+    'parts are a drawn nut and a number, and a screen reader hears "parts"');
+  const onScreen = html.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/\s\/\/ .*$/gm, '');
+  check(!/barya|\bcoins?\b|\bbuy\b/i.test(onScreen.replace(/data-buy|albumBuy|busBuy|ALB_BUY_ARMED|alb-act buy|\.buy\b/g, '')),
+    'and nothing on screen says barya, coins or buy', (onScreen.match(/.{30}(?:barya|\bcoins?\b|\bbuy\b).{30}/i) || [''])[0]);
+  // The page asks before it shows, and only sends while sharing.
+  check(/args\.p_look = /.test(fn('writePosition')) && /bus\.show/.test(fn('writePosition')),
+    'the look goes with a position only when the sharer has said to show it');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');

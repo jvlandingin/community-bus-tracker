@@ -22,9 +22,9 @@ node tests/test-guard.js      # wrong-direction detection on simulated trips
 node tests/test-strip.js      # progress strip position and wording, the town lines in the popup
 node tests/test-prompts.js    # idle, end-of-trip and direction prompts
 node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
-node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album
+node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its luck, your bus; spare parts, the shop, the look, backups
 node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the mark
-node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture
+node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride
 node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
 node tests/test-tour.js       # the tour: steps and words, the practice scene, the bubble's place, what a run may never do
 ```
@@ -46,7 +46,7 @@ each moves the seeded rows the next would expect. From `tests/`:
 ```
 createdb bustest
 psql -d bustest -f db/00-legacy-baseline.sql
-psql -d bustest -f ../sql/01-base.sql          # then 02 through 12 in order
+psql -d bustest -f ../sql/01-base.sql          # then 02 through 13 in order
 psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 ```
 
@@ -77,7 +77,10 @@ replacing a font file. `node tools/make-pictures.js` draws the dot-matrix route
 board into the guide, the flyer, the briefing and `tools/app-icons.html`, from
 the words beside each board, the scenes that cover the three pages, and the
 picture on the guide's ticket, with `index.html`'s own code; run it after
-changing those words or the drawings.
+changing those words or the drawings. It also draws the guide's pictures of
+your bus, from the decorations and paint named in each `<!-- mybus keys=…
+paint=… -->` marker, and the bus on the road in its popup, from `<!-- ride
+views=… sky=… -->`.
 `test-tokens.js`, `test-signboard.js` and `test-pictures.js` fail until you do.
 
 ## Architecture
@@ -166,9 +169,10 @@ is returned only on the sharer's own row, because a count beside every bus would
 rank the buses on the road in front of the riders choosing between them; a zero
 is never drawn, because "0" on the sharing screen for forty minutes turns
 silence into a verdict; and nothing stored identifies the rider who tapped. A
-running total per sharer is the driver metric `for-operators.html` promises
-cannot be produced — if one is ever wanted, that is the deliberate conversation,
-not a follow-up. `test-thanks.js` and `db/07-thanks-tests.sql` hold all of it.
+running total per sharer was refused as the driver metric until the
+maintainer had that deliberate conversation (October 2026): the server still
+keeps none, and the sharer's own phone now keeps theirs for their bus
+(`wt-bus`), which never leaves it. `test-thanks.js` and `db/07-thanks-tests.sql` hold all of it.
 
 **The sharer gets a ticket at Stop** (October 2026): a picture of where they got
 on and off (the two places' marks as roadside signs, the coach between, the view
@@ -176,7 +180,12 @@ at the destination behind it, the sky from its stamps), how long the bus was on
 the map, how many said salamat, a stamp or two. Made on the phone and sent nowhere. Fenced the same way as the count: no
 stamp may be about how the bus was driven (speed, trip time, comparisons — the
 driver metric again), no ticket for a trip under five minutes or one that never
-reached the map, no zero. It is built from a six-field record in memory, and
+reached the map, no zero. Every other end draws one, GPS failure and a refused
+key included; only an organizer's Stop does not. GPS that drops out is waited
+out for `bus_expiry_min` (only "location off" ends a trip at once), and a trip
+outlives its page: kept as `wt-trip` while it runs, so a page opened again
+mid-trip asks "Still on the bus?" and carries on as the same bus or hands over
+the ticket. `docs/ARCHITECTURE.md`, "When a trip is interrupted". It is built from a six-field record in memory, and
 `test-thanks.js` fails if that record grows a field or anything is ever appended
 to it.
 
@@ -191,6 +200,56 @@ salamat total (a flower per thanked ticket, never added up), nothing per bus,
 no streak. Keeping is a tap on one ticket and never a default; `keepTicket()`
 is the only thing that adds. `test-thanks.js` sections 15 to 17 hold all of it,
 and `docs/ARCHITECTURE.md`, "Keeping the ticket", has the reasoning.
+
+**No two tickets are drawn alike, and trips decorate your bus** (October
+2026). A ticket's paper, punch, sights, weather, moon, season and, one in
+fifteen, gold foil are worked out by `ticketLook()` from the day, the direction
+and the two ends a kept ticket already keeps: no new storage, no re-roll, and
+never anything about driving, trip length or salamat (rules 11 to 13). Every
+trip that drew a ticket and went somewhere, kept or not, is counted in
+`wt-bus` as numbers with no list of dates, and fifteen decorations (`DECOR`, drawn by
+`BUS_DECOR`) are earned from those counts, two of them for finishing the two
+tours, so a new user's bus starts with something on it: shown in My tickets,
+always offered on the sharing tab with the ones still to come as outlines,
+and on the ticket that earns one, and on the live map only if its sharer
+chooses (rules 14 to 16, and below). Since the maintainer's later decision
+the bus also keeps the salamat received, the time on the map and a streak of
+weeks, each a single number, with the week of the last trip to count the
+streak from, and eight of the decorations come from them; the kept tickets
+still add up none of it. `docs/ARCHITECTURE.md`, "Collecting", and "Rules
+revisited" for what was changed to allow it and what was kept.
+
+**Trips earn spare parts, which dress the bus, and a sharer may show it**
+(October 2026, rules 17 to 19). Each decoration gives parts once, and a trip
+that went somewhere gives 5 for at most 3 a day: every farmed trip would be a
+bus on everyone's map that isn't one. `busTripPay()` and `busSettle()` are the
+only things that add, and the day of the last trip that earned parts is the
+one date kept for it. Parts are a drawn steel nut beside a number
+(`partsTag()`), never coins and never named as money: they were *barya* until
+riders might have thought real money was involved, and `test-thanks.js` fails
+if barya, coins or buy appear on screen. Parts get the shop's accessories and
+paint, presets only, never words or free colours; the decorations sharing
+earns are trophies and never for sale.
+"Show customized bus to riders" is off until switched on and asked only where there is
+something to show: in My tickets, and when the first decoration or purchase
+arrives, never on the tracking tab. While on, each position carries
+`busLook()`, a paint digit and a letter per thing worn, kept on the trip's row
+by `sql/13-bus-look.sql` in that shape only and gone with it; riders can tell
+it is the same sharer's bus from trip to trip, which is why it is a choice.
+A page against a database without that migration resends without the look
+(`LOOK_SENDS`). A bus's popup and My tickets draw the bus moving through the
+view of the place it is nearest (`rideSvg()`), at a fixed pace and never the
+bus's speed (about 60 km/h to the eye, `test-pictures.js` section 8), and
+still when the bus has gone quiet; the popup frames it closer than My tickets
+does (`RIDE_FRAMES`). A backup is a file the
+sharer saves or copies from My tickets and restores by file or paste, cleaned
+like storage on the way in (`backupRead()`); "Start from scratch" deletes the
+tickets and the bus. `docs/ARCHITECTURE.md`, "Dressing the bus".
+
+**A request nobody waits for is never sent.** supabase-js sends an `rpc()`
+only when something awaits it or calls `.then`; a bare call is silently
+dropped, which is how the wrong-direction pause never cleared its bus.
+`test-boot.js` fails on a bare one.
 
 **A reader can send a link to one bus**: `#b=` plus the bus's public id, which
 every map already has, so the link reveals nothing and dies with the trip. It is
@@ -209,10 +268,12 @@ that code speaks of a time to come. Rows exist northbound only until southbound
 has data. Live pills breathe. `docs/ARCHITECTURE.md` has why a stretch and not
 a ghost bus.
 
-**The app keeps exactly four things between visits**, all on the device and
+**The app keeps exactly six things between visits**, all on the device and
 all named in the privacy panel: whether this phone has been shown around (the
-guide or the tour), the light/dark/system theme choice, the reader's saved stop, and the tickets a
-sharer chose to keep. Adding a fifth means editing that panel in the same
+guide or the tour), the light/dark/system theme choice, the reader's saved stop, the tickets a
+sharer chose to keep, your bus (its counts, its parts and what it wears), and
+the trip in progress while it runs. A backup is those tickets and that bus in
+a file the sharer holds, never a seventh key. Adding one means editing that panel in the same
 commit — the panel is the promise, not the code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
 `localStorage` keys the app writes stops matching the set the panel names.
 Per-visit switches go in `sessionStorage` for exactly this reason — the
@@ -227,11 +288,20 @@ real ones through `busesNow()`; the reader's own stop, filter, tab, chosen bus
 and map view come back on the way out. A clear layer takes every tap, and every
 function that sends or stores refuses while `WALK` is set anyway, so a practice
 salamat or Start can never fire. The first-visit note is answered under the
-guide's own `wt-guide-seen` key, so the four remembered things stay four. DOM
+guide's own `wt-guide-seen` key, so the six remembered things stay six. DOM
 names are `walk*`, never `tour`, `tooltip` or `onboard`: filter lists hide
 onboarding libraries by those names, and a hidden bubble over a dimmed page has
 no way out. `test-tour.js` holds the steps, the words and the refusals;
 `test-boot.js` section 13 runs both tours on the booted page.
+
+**Say it in a few words** (October 2026). The maintainer's rule: assume riders
+will not read a paragraph, least of all at a bus stop or mid-trip. Every
+message, prompt, hint and button says one short thing, with no reasons
+attached ("Location is off. Turn it on, then tap Start.", "Show customized bus
+to riders?"); the reasons live in the guide's "More" folds, in the privacy
+panel and in these docs. The privacy panel is the one place that stays long,
+because it is opened on purpose and it is the promise. A new feature's words
+get the same treatment before they ship.
 
 **The guide says it in a line and shows it in a picture** (October 2026).
 `how-to.html` was paragraphs; it is now a line, a drawing and a "More" fold per
@@ -324,10 +394,13 @@ not a judgement call mid-task.
 upserted in place. There is no trail table, so the tool cannot be used to review
 a driver's speed, breaks or route — the data does not exist. This is the single
 most important property of the system. The wrong-direction guard tracks progress
-in the sharing phone's memory only and it dies with the tab. A kept ticket is the
-one thing that outlasts a trip, on the sharer's own phone and only on a tap, and
-it holds a date and two checkpoint names, never a position or a time, so it
-cannot grow into a trail either.
+in the sharing phone's memory only and it dies with the tab. Two things outlast
+a trip, both on the sharer's own phone: a kept ticket, only on a tap, holding a
+date and two checkpoint names, and your bus's counts, numbers and place names
+with no list of dates (only the week of its last trip and the day of its last
+paid one, each overwritten). Neither holds a position or a time, so neither
+can grow into a trail. The trip in progress (`wt-trip`) holds one start time and two numbers
+on the chain, overwritten, and is gone when the trip ends.
 
 **No watcher location leaves the device, ever.** The reader can save a stop and
 switch on a dot showing where they are; both are computed and stored on the

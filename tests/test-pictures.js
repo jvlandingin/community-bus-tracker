@@ -184,12 +184,63 @@ check(S.ticketArtSvg({ from: 'volcano', to: 'towers', sky: 'noon' }) === S.ticke
     'with the white triangle at the hoist, on a flag twice as long as it is high');
 }
 const tktCode = slice('function showTicket(', '// ---- Trip mode');
-check(/tktArt\(fromIdx, toIdx, TKT_KEEP\.st\) \+ tktGrid\(fromIdx, toIdx\)/.test(tktCode),
+check(/tktArt\(fromIdx, toIdx, TKT_KEEP\) \+ tktGrid\(fromIdx, toIdx\)/.test(tktCode),
   'the ticket at Stop draws it above its punched stops');
-check(/tktArt\(a, b, e\.st\) \+ tktGrid\(a, b\)/.test(tktCode) && /tktArt\(a, b, e\.st\) \+\s*'<span class="tm-date">/.test(tktCode),
+check(/tktArt\(a, b, e\) \+ tktGrid\(a, b\)/.test(tktCode) && /tktArt\(a, b, e\) \+\s*'<span class="tm-date">/.test(tktCode),
   'and so do a kept ticket and its card in the album, from what was kept');
-check(/sky:ticketSky\(st\)/.test(tktCode) && /mark\(fromIdx\), to:mark\(toIdx\)/.test(tktCode),
-  'from the marks config.txt gives the two ends, and the sky the stamps give');
+check(/sky:ticketSky\(e\.st\)/.test(tktCode) && /mark\(fromIdx\), to:mark\(toIdx\)/.test(tktCode) && /look:look \}/.test(tktCode),
+  'from the marks config.txt gives the two ends, the sky the stamps give, and the ticket\'s luck');
+
+console.log('\n=== 6b. a ticket\'s luck, drawn ===');
+// What ticketLook (the album block, tested in test-thanks.js) chooses, this
+// block draws: the sights in their places, the moon of the night, gold for a
+// rare one, and each sight on its own as the album's sticker.
+{
+  const keys = Object.keys(S.TICKET_SIGHTS);
+  const plain = { from: 'volcano', to: 'towers', sky: 'day' };
+  check(S.ticketArtSvg(plain) === S.ticketArtSvg(Object.assign({ look: null }, plain)),
+    'with no luck the picture is the plain one, as it always was');
+  const lookWith = (o) => Object.assign({ paper: 'cream', punch: 'round', road: '', air: '', weather: '', season: '', moon: -1, rare: false, meteor: false, sights: [] }, o);
+  const where = { road: ['jeepney', 'tricycle', 'carabao', 'sorbetes', 'stall'], air: ['kites', 'birds'], weather: ['rain', 'fog', 'rainbow', 'double'],
+                  season: ['parol', 'banderitas', 'flags'] };
+  const drawn = [];
+  for (const [field, names] of Object.entries(where)) for (const k of names) {
+    const sky = k === 'parol' ? 'night' : 'day';
+    const svg = S.ticketArtSvg(Object.assign({ look: lookWith({ [field]: k }) }, plain, { sky }));
+    const c = k === 'rain' ? Object.assign({}, S.TICKET_SKIES.day, { sky: '#d3dde3' }) : S.TICKET_SKIES[sky];
+    if (svg.includes(S.TICKET_SIGHTS[k].draw(c, sky)) && svg !== S.ticketArtSvg(Object.assign({}, plain, { sky }))) drawn.push(k);
+  }
+  const meteor = S.ticketArtSvg(Object.assign({ look: lookWith({ meteor: true, moon: 2 }) }, plain, { sky: 'night' }));
+  if (meteor.includes(S.TICKET_SIGHTS.meteor.draw(S.TICKET_SKIES.night, 'night'))) drawn.push('meteor');
+  const full = S.ticketArtSvg(Object.assign({ look: lookWith({ moon: 4 }) }, plain, { sky: 'night' }));
+  if (full.includes(S.moonSvg(4, S.TICKET_SKIES.night))) drawn.push('fullmoon');
+  check(drawn.sort().join(',') === keys.slice().sort().join(','), 'every sight is drawn into the picture when its ticket has it', drawn.length + ' of ' + keys.length);
+  const moons = [0, 1, 2, 3, 4, 5, 6, 7].map(p => S.moonSvg(p, S.TICKET_SKIES.night));
+  check(moons[0] === '' && new Set(moons).size === 8 && /<circle cx="112" cy="15" r="8"/.test(moons[4]),
+    'the moon has its eight shapes: none at the new moon, round at the full');
+  const gold = S.ticketArtSvg(Object.assign({ look: lookWith({ rare: true }) }, plain));
+  check(/stroke="#d4a017"/.test(gold) && !/stroke="#d4a017"/.test(S.ticketArtSvg(Object.assign({ look: lookWith({}) }, plain))),
+    'a rare ticket has a gold edge, and no other does');
+  const lucky = Object.keys(where).flatMap(f => where[f].map(k => S.ticketArtSvg(Object.assign({ look: lookWith({ [f]: k, rare: true, moon: 3 }) }, plain, { sky: 'night' }))));
+  check(lucky.every(v => !/ id="|<text|https?:|href=/.test(v)), 'with luck too, no ids, no words and nothing loaded');
+  const tiles = keys.map(k => S.sightTile(k));
+  check(tiles.every(t => /^<svg class="sight" viewBox="[\d. ]+" aria-hidden="true"/.test(t) && !/ id="|<text|https?:|href=/.test(t)),
+    'each sight has its sticker, hidden from screen readers, with no ids, words or links');
+  check(tiles.every((t, i) => { const b = S.TICKET_SIGHTS[keys[i]].box.split(' ').map(Number); return Math.abs(b[2] / b[3] - 5 / 3) < .01; }),
+    'all cut to the same shape, so the album\'s stickers line up');
+  check(S.sightTile('nothing-like-it') === '', 'and an unknown sight draws nothing');
+  // The coach flies two flags on the flag days. Held to the same rules as
+  // the monument's: blue above red, the triangle at the hoist, 2:1.
+  const flags = S.TICKET_SIGHTS.flags.draw();
+  const pairs = [...flags.matchAll(/<rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)" fill="(#0038a8|#ce1126)"\/>/g)].map(m => ({ x: +m[1], y: +m[2], w: +m[3], h: +m[4], c: m[5] }));
+  const tris = [...flags.matchAll(/<path d="M([\d.]+) ([\d.]+)L([\d.]+) ([\d.]+)L([\d.]+) ([\d.]+)Z" fill="#fff"\/>/g)].map(m => m.slice(1).map(Number));
+  const ok = pairs.length === 4 && tris.length === 2 && [0, 2].every((i, j) => {
+    const blue = pairs[i], red = pairs[i + 1], t = tris[j], hoist = blue.x + blue.w;
+    return blue.c === '#0038a8' && red.c === '#ce1126' && blue.y < red.y && blue.w === 2 * (blue.h + red.h) &&
+      t[0] === hoist && t[4] === hoist && t[2] < hoist;
+  });
+  check(ok, 'the flags on the coach fly blue above red, the triangle at the hoist, twice as long as high');
+}
 
 console.log('\n=== 7. the copies in other pages are current ===');
 const expect = { 'how-to.html': 1, 'flyer.html': 1, 'for-operators.html': 1, 'tools/app-icons.html': 0 };
@@ -220,6 +271,71 @@ const guideStamps = [...guide.matchAll(/<span class="stamp [a-z]+ s\d" aria-hidd
 const skyFor = guideStamps.includes('Madaling araw') ? 'dawn' : guideStamps.includes('Gabi na') ? 'night' : 'day';
 check(art.length === 1 && punched.join(',') === [art[0].from, art[0].to].join(',') && art[0].sky === skyFor,
   'and it shows the two stops the ticket punches, under the sky its stamps give', art.length ? `${art[0].from} → ${art[0].to}, ${art[0].sky}` : '');
+
+// The guide's pictures of your bus are busSvg() itself, drawn in by the tool:
+// one with what sharing earns, one dressed from the shop in a paint.
+const bus = tool.buses(guide, S);
+const busStale = bus.filter(b => b.current !== b.wanted);
+check(bus.length === 2 && !busStale.length && bus.every(b => b.keys.length > 0),
+  'how-to.html: its pictures of your bus are drawn by the tracker\'s own code, as it is now',
+  bus.length !== 2 ? bus.length + ' pictures' : busStale.length ? 'stale (run node tools/make-pictures.js)' : bus.map(b => b.paint + ': ' + b.keys.join(' ')).join(' / '));
+check(bus.some(b => b.paint !== 'klasiko' && b.keys.some(k => /^(dice|antenna|visor|mirror|exhaust|flames|underglow|goldrims)$/.test(k))),
+  'and one of them is painted and wears something from the shop, as "Dress it up" says');
+// And its popup's picture is rideSvg(), on the road through the town its line
+// names, plain because that sharer has not chosen to show their bus.
+const ride = tool.rides(guide, S);
+const popupMark = (/<div class="kw">(<svg class="mark"[^]*?<\/svg>)/.exec(guide) || [])[1];
+check(ride.length === 1 && ride[0].current === ride[0].wanted,
+  'how-to.html: its popup\'s bus on the road is drawn by the tracker\'s own code, as it is now',
+  ride.length !== 1 ? ride.length + ' pictures' : ride[0].current === ride[0].wanted ? 'current' : 'stale (run node tools/make-pictures.js)');
+check(ride.length === 1 && ride[0].views.length === 1 && popupMark === S.markSvg(ride[0].views[0]) &&
+  ride[0].keys.length === 0 && ride[0].paint === 'klasiko' && ride[0].wanted.startsWith('<svg class="rideart" viewBox="' + S.RIDE_FRAMES.popup + '"'),
+  'and it passes the place its town line is about, as a plain bus, framed as the popup frames it',
+  ride.length ? ride[0].views.join(',') + ', ' + ride[0].paint : '');
+
+console.log('\n=== 8. the ride ===');
+// The ride's moving parts, as the stylesheet runs them. The page works out
+// where in its loop each part is from RIDE_LOOPS, so the two must agree, and
+// every loop must end where it began or the picture jumps once a lap.
+const rideCss = src => {
+  const out = {};
+  for (const [cls, name] of [['rr', 'road'], ['rp', 'posts'], ['rb', 'bush'], ['rw', 'wheel'], ['rk', 'rock']]) {
+    const rule = new RegExp('\\.rideart \\.' + cls + '\\{[^}]*animation:(ride\\w+) ([\\d.]+)s').exec(src);
+    const kf = rule && new RegExp('@keyframes ' + rule[1] + '\\{([^@]*?)\\}\\}').exec(src);
+    out[name] = rule ? { secs: +rule[2], frames: kf ? kf[1] : '' } : null;
+  }
+  return out;
+};
+const css = rideCss(html);
+check(Object.keys(S.RIDE_LOOPS).every(k => css[k] && css[k].secs === S.RIDE_LOOPS[k]),
+  'each moving part runs for the time RIDE_LOOPS says, so a redrawn popup carries on where it was',
+  Object.keys(S.RIDE_LOOPS).map(k => k + ' ' + (css[k] && css[k].secs) + '/' + S.RIDE_LOOPS[k]).join(', '));
+const shift = k => -Number((/translateX\((-?[\d.]+)px\)/.exec(css[k].frames) || [])[1]);
+const turn = Number((/rotate\(([\d.]+)deg\)/.exec(css.wheel.frames) || [])[1]);
+const road = S.rideSvg({ sky: 'day' });
+const dash = (/class="rr"[^>]*stroke-dasharray="([\d.]+) ([\d.]+)"/.exec(road) || []).slice(1).map(Number);
+const roadEnd = Number((/class="rr"[^>]*d="M0 68\.5H([\d.]+)"/.exec(road) || [])[1]);
+const postXs = [...((/class="rp"[^>]*d="([^"]*)"/.exec(road) || [])[1] || '').matchAll(/M([\d.]+) /g)].map(m => +m[1]);
+const bushXs = [...((/class="rb"[^>]*>(.*?)<\/g>/.exec(road) || [])[1] || '').matchAll(/cx="([\d.]+)"/g)].map(m => +m[1]);
+const postGap = postXs[1] - postXs[0];
+check(dash.length === 2 && shift('road') % (dash[0] + dash[1]) === 0 && shift('posts') % postGap === 0 && shift('bush') % 150 === 0 && turn % 90 === 0,
+  'every loop ends where it began: whole dashes, whole gaps between posts and bushes, whole quarter turns of the four spokes',
+  `road ${shift('road')} by ${dash[0] + dash[1]}, posts ${shift('posts')} by ${postGap}, bushes ${shift('bush')}, wheels ${turn}°`);
+// Posts and bushes come in a repeating pattern with gaps, so what matters
+// is where the next one that is not drawn would be: past the frame's right
+// edge even at the end of a lap.
+const nextPost = Math.max(...postXs) + postGap, nextBush = bushXs[0] + 150 * (bushXs.length / 5);
+check(roadEnd - shift('road') >= 300 && nextPost - shift('posts') > 306 && nextBush - shift('bush') > 306,
+  'and nothing runs out of road before the loop starts again', `road to ${roadEnd}, next post at ${nextPost}, next bushes at ${nextBush}`);
+// Speeds in the scene's own units a second. The wheel is 14.5 of the coach's
+// 364 units, drawn 88 wide, so a turn covers 2 pi 14.5 88/364 of road.
+const roadSpeed = shift('road') / css.road.secs, postSpeed = shift('posts') / css.posts.secs, bushSpeed = shift('bush') / css.bush.secs;
+const wheelSpeed = turn / 360 * 2 * Math.PI * 14.5 * 88 / 364 / css.wheel.secs;
+check(Math.abs(roadSpeed - 60) <= 3 && Math.abs(postSpeed - roadSpeed) <= 3 && Math.abs(wheelSpeed - roadSpeed) / roadSpeed <= .1 && bushSpeed < roadSpeed,
+  'the road, the posts and the wheels all go at about 60 a second, the maintainer\'s 60 km/h, and the bushes behind go slower',
+  `road ${roadSpeed.toFixed(0)}, posts ${postSpeed.toFixed(0)}, wheels ${wheelSpeed.toFixed(0)}, bushes ${bushSpeed.toFixed(0)}`);
+const guideCss = rideCss(guide);
+check(JSON.stringify(guideCss) === JSON.stringify(css), 'and the guide\'s copy moves the same way');
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);

@@ -660,7 +660,7 @@
   .ride.here{box-shadow:0 0 0 3px var(--mine-soft);}
   .ride.here .ride-big .num{font-size:var(--fs-title);}
   /* The optional buzz. A per-visit choice, kept in sessionStorage like the
-     blue dot's switch, so it never becomes a fifth remembered thing. Only
+     blue dot's switch, so it never becomes a seventh remembered thing. Only
      drawn where the browser can vibrate at all, which leaves out iPhones. */
   .buzz{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
@@ -902,7 +902,10 @@
   }
   .buspop .leaflet-popup-content{margin:9px 12px; font-size:var(--fs-small); line-height:1.5;}
   .buspop .leaflet-popup-tip{background:var(--surface);}
-  .buspop .pdir{font-size:var(--fs-cap); font-weight:800; letter-spacing:.06em;}
+  .buspop .pdir{font-weight:800;}
+  .buspop .pname .page{font-size:var(--fs-small); font-weight:600;}
+  /* The bus on the road through where it is (popupRide), above its words. */
+  .buspop .pride{width:100%; margin:0 0 7px; border-radius:var(--r-s); overflow:hidden;}
   .buspop .nb .pdir{color:var(--gold-deep);}
   .buspop .sb .pdir{color:var(--brand-ink);}
   .buspop .pname{font-weight:800; font-size:var(--fs-body); margin-top:1px;}
@@ -1045,6 +1048,7 @@
   input[type=text]:focus, input[type=time]:focus, select:focus{outline:none; border-color:var(--brand-ink);}
   .fielderr{font-size:var(--fs-label); color:var(--lost-ink); font-weight:700; margin-top:8px;}
   .hint{font-size:var(--fs-label); color:var(--muted); margin-top:10px; line-height:1.55;}
+  .hint:empty{display:none;}
   .badge{
     display:inline-block; font-size:var(--fs-cap); padding:3px 9px; border-radius:999px;
     background:var(--maroon-soft); color:var(--brand-ink); font-weight:800; letter-spacing:.06em;
@@ -1182,6 +1186,13 @@
          radial-gradient(circle 6px at 50% 100%, transparent 98%, #000) 0 100%/16px 51% repeat-x;
   }
   .tkt::before{content:''; position:absolute; left:0; right:0; top:0; height:6px; background:var(--gold);}
+  /* A ticket's luck (ticketLook): the colour of its paper, the shape its
+     stops were punched with, and gold foil on one in fifteen. Pale papers,
+     all of them, so the maroon print reads the same on every one. */
+  .pp-pink{--tp:#f9e4e3;} .pp-blue{--tp:#e3eef5;} .pp-green{--tp:#e6f0de;} .pp-yellow{--tp:#fbf0c6;}
+  .tkt.foil::before, .tktmini.foil::before{background:linear-gradient(90deg,#b8860b,#f7e08a 30%,#c99a2e 55%,#fff1b8 75%,#b8860b);}
+  .tkt.foil{box-shadow:var(--sh-3), inset 0 0 0 3px #e3b23c;}
+  .tktmini.foil{box-shadow:var(--sh-1), inset 0 0 0 2px #e3b23c;}
   .tkt-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-top:4px;}
   .tkt-kick{font-size:var(--fs-cap); font-weight:900; letter-spacing:.16em;}
   .tkt-date{font-size:var(--fs-cap); font-weight:800; letter-spacing:.06em; opacity:.75; font-family:ui-monospace,Menlo,Consolas,monospace;}
@@ -1204,11 +1215,21 @@
     content:''; position:absolute; top:-6px; right:-6px; width:14px; height:14px; border-radius:50%;
     background:#3a2a26; box-shadow:inset 0 2px 3px rgba(0,0,0,.6), 0 0 0 1.5px var(--tp);
   }
+  .pu-square .tkt-grid span.on::after{border-radius:0;}
+  .pu-tri .tkt-grid span.on::after{border-radius:0; clip-path:polygon(50% 0, 100% 100%, 0 100%);}
+  .pu-diamond .tkt-grid span.on::after{border-radius:0; clip-path:polygon(50% 0, 100% 50%, 50% 100%, 0 50%);}
   .tkt-big{font-size:var(--fs-small); font-weight:700; line-height:1.3;}
   .tkt-dur{margin-top:2px; font-size:var(--fs-number); font-weight:900; letter-spacing:-.02em; line-height:1.05;}
   .tkt-dur small{font-size:var(--fs-body); font-weight:800; letter-spacing:0;}
   .tkt-ty{display:flex; align-items:center; gap:9px; margin-top:12px; font-size:var(--fs-small); font-weight:800; color:#1d5e3c;}
   .tkt-greet{margin-bottom:4px; font-size:var(--fs-title); font-weight:900; letter-spacing:-.01em;}
+  /* A trip that put something new on the sharer's bus says so, with the bus. */
+  .tkt-all{margin-top:8px; font-size:var(--fs-label); font-weight:800; letter-spacing:.02em; opacity:.85;}
+  .tkt-new{display:flex; align-items:center; gap:10px; margin-top:12px; padding:8px; border-radius:var(--r-s);
+    background:rgba(227,154,28,.16); font-size:var(--fs-small); font-weight:700; line-height:1.3;}
+  .tkt-new .mybus{flex:0 0 96px; width:96px; height:auto; border-radius:var(--r-s);}
+  .tkt-new b{font-weight:900;}
+  .tkt-new small{display:block; margin-top:2px; font-size:var(--fs-label); font-weight:600; opacity:.8;}
   .tkt-fine{font-size:var(--fs-label); line-height:1.45; font-weight:600; opacity:.8;}
   /* A stamp that does not fit beside its line drops below it, at the right,
      rather than squeezing the words onto two lines. */
@@ -1271,7 +1292,7 @@
   .albumrow .chev{flex:0 0 auto; display:flex; color:var(--muted);}
   .albumrow .chev .gi{width:18px; height:18px;}
   .modal-card.album{max-width:420px;}
-  .alb-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+  .alb-stats{display:grid; grid-template-columns:repeat(4,1fr); gap:8px;}
   .alb-stats div{padding:10px 4px 9px; border-radius:var(--r-m); background:var(--paper); border:1px solid var(--line); text-align:center;}
   .alb-stats b{display:block; font-size:var(--fs-headline); font-weight:900; line-height:1; color:var(--brand-ink); font-variant-numeric:tabular-nums;}
   .alb-stats b small{font-size:var(--fs-small); font-weight:800; color:var(--muted);}
@@ -1292,11 +1313,65 @@
   .alb-stamp b{font-size:var(--fs-label); font-weight:900; letter-spacing:.04em;}
   .alb-stamp.yet .stamp{opacity:.2;}
   .alb-stamp.yet b{font-weight:700; opacity:.6;}
+  .alb-bus{padding:10px;}
+  .alb-bus .mybus{display:block; width:100%; height:auto; border-radius:var(--r-s);}
+  .alb-totals{display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-top:10px;}
+  .alb-totals span{padding:3px 9px; border-radius:999px; background:rgba(227,154,28,.22);
+    font-size:var(--fs-label); font-weight:800; letter-spacing:.02em;}
+  .alb-decor{display:grid; grid-template-columns:1fr 1fr; gap:6px 10px; margin:10px 0 0; padding:0; list-style:none;}
+  .alb-decor li{display:flex; flex-direction:column; min-width:0; padding:6px 8px; border-radius:var(--r-s); border:1.3px dashed rgba(109,26,37,.35);}
+  .alb-decor li.got{border-style:solid; border-color:var(--ti);}
+  .alb-decor li.on{background:rgba(227,154,28,.18);}
+  .alb-decor b{font-size:var(--fs-label); font-weight:900;}
+  .alb-decor span{font-size:var(--fs-cap); font-weight:600; opacity:.8; line-height:1.3;}
+  .alb-decor i{margin-top:2px; font-style:normal; font-size:var(--fs-cap); font-weight:900; letter-spacing:.04em;}
+  .alb-decor li:not(.got) b, .alb-decor li:not(.got) i{opacity:.6;}
+  /* Each decoration on its own part of the bus: in colour once earned; until
+     then a dashed outline over a faded coach, a look at what is coming. The
+     outline's width is in screen pixels, so every card draws it the same. */
+  .alb-decor .decor-art{display:block; width:100%; height:auto; margin-bottom:6px; border-radius:var(--r-s);}
+  .alb-decor li:not(.got) .decor-art .dc{opacity:.3;}
+  .alb-decor li:not(.got) .decor-art .dg *{fill:none; stroke:var(--ti); stroke-width:1.3px; stroke-dasharray:3 2;
+    vector-effect:non-scaling-stroke;}
+  .alb-none{margin:16px 0 0;}
+  /* The bus on the road (rideSvg): the road, the posts and the bushes go
+     by, the wheels turn and the coach rocks, all at one decorative pace.
+     Stopped for a bus not heard from lately; the reduced-motion blanket
+     below ends every loop where it started, so the scene stands still. */
+  .rideart{display:block; width:100%; height:auto;}
+  .rideart .rr{animation:rideroad 1.3s linear infinite;}
+  .rideart .rp{animation:rideposts 1s linear infinite;}
+  .rideart .rb{animation:ridebush 5s linear infinite;}
+  .rideart .rw{transform-box:fill-box; transform-origin:50% 50%; animation:ridewheel 1.1s linear infinite;}
+  .rideart .rk{animation:riderock .8s ease-in-out infinite;}
+  .rideart.still .rr, .rideart.still .rp, .rideart.still .rb, .rideart.still .rw, .rideart.still .rk{animation-play-state:paused;}
+  .rideart .rv{opacity:0; transition:opacity var(--dur-3) var(--ease);}
+  .rideart .rv.on{opacity:1;}
+  @keyframes rideroad{to{transform:translateX(-78px);}}
+  @keyframes rideposts{to{transform:translateX(-60px);}}
+  @keyframes ridebush{to{transform:translateX(-150px);}}
+  @keyframes ridewheel{to{transform:rotate(1080deg);}}
+  @keyframes riderock{50%{transform:translateY(-.35px);}}
+  .busnew-art{display:flex; gap:10px; margin:4px 0 12px;}
+  .busnew-art figure{flex:1; min-width:0; margin:0;}
+  .busnew-art .decor-art{display:block; width:100%; height:auto; border-radius:var(--r-m);}
+  .busnew-art figcaption{margin-top:5px; text-align:center; font-size:var(--fs-label); font-weight:800;}
+  .busnew p{margin:0 0 14px; line-height:1.45;}
+  .busnew .lookq{margin-bottom:14px;}
+  .alb-sights{display:grid; grid-template-columns:repeat(4,1fr); gap:12px 8px; padding:12px 10px;}
+  .alb-sight{display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; text-align:center;}
+  .alb-sight > i:first-child{display:block; width:100%; border-radius:var(--r-s); overflow:hidden; line-height:0;
+    box-shadow:inset 0 0 0 1px rgba(109,26,37,.25);}
+  .alb-sight .sight{display:block; width:100%; height:auto;}
+  .alb-sight b{font-size:var(--fs-cap); font-weight:800; letter-spacing:.02em; line-height:1.15;}
+  .alb-sight span{font-size:var(--fs-cap); font-weight:900; letter-spacing:.04em;}
+  .alb-sight.yet .sight{opacity:.2; filter:grayscale(1);}
+  .alb-sight.yet b, .alb-sight.yet span{font-weight:700; opacity:.55;}
   .alb-list{display:grid; grid-template-columns:1fr 1fr; gap:12px 10px;}
   .tktmini{
     position:relative; display:flex; flex-direction:column; gap:3px; min-width:0; padding:10px 8px 9px;
     border:none; border-radius:var(--r-s); cursor:pointer; text-align:left; font-family:inherit;
-    color:#6d1a25; background:#fbf4e4; box-shadow:var(--sh-1);
+    color:#6d1a25; background:var(--tp, #fbf4e4); box-shadow:var(--sh-1);
   }
   .tktmini::before{content:''; position:absolute; left:0; right:0; top:0; height:4px; border-radius:var(--r-s) var(--r-s) 0 0; background:var(--gold);}
   .tktmini:nth-child(odd){transform:rotate(-.8deg);}
@@ -1312,13 +1387,63 @@
   .tm-st i.red{color:#b0281c;} .tm-st i.blue{color:#2a3a9e;} .tm-st i.green{color:#1d6a43;}
   .alb-more{margin-top:14px;}
   .alb-since{margin-top:14px; text-align:center; font-size:var(--fs-label); font-weight:700; color:var(--muted);}
-  .alb-end{display:flex; align-items:center; gap:12px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line);}
-  .alb-end .hint{flex:1; margin:0; font-size:var(--fs-label);}
+  .alb-end{margin-top:16px; padding-top:4px; border-top:1px solid var(--line);}
+  .alb-end .hint{margin:0 0 10px; font-size:var(--fs-label);}
   .alb-clear{
-    flex:0 0 auto; min-height:var(--tap); padding:0 14px; border-radius:var(--r-m); cursor:pointer;
+    display:block; width:100%; margin-top:12px; min-height:var(--tap); padding:0 14px; border-radius:var(--r-m); cursor:pointer;
     border:1.5px solid var(--line); background:var(--paper); color:var(--lost-ink);
     font-family:inherit; font-size:var(--fs-label); font-weight:800;
   }
+  /* Your progress: save, copy, restore. */
+  .alb-keep{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
+  .alb-btn{min-height:var(--tap); padding:0 10px; border-radius:var(--r-m); cursor:pointer; border:1.5px solid var(--line);
+    background:var(--paper); color:var(--ink); font-family:inherit; font-size:var(--fs-label); font-weight:800;}
+  .alb-restore{display:flex; flex-direction:column; gap:6px; margin-top:10px;}
+  .alb-restore label{font-size:var(--fs-label); font-weight:700; color:var(--muted);}
+  /* The browser's own file picker, dressed as the buttons beside it. */
+  .alb-restore input[type=file]{max-width:100%; font-family:inherit; font-size:var(--fs-label); color:var(--muted);}
+  .alb-restore input[type=file]::file-selector-button{min-height:var(--tap); margin-right:10px; padding:0 14px; border-radius:var(--r-m);
+    cursor:pointer; border:1.5px solid var(--line); background:var(--paper); color:var(--ink); font-family:inherit; font-size:var(--fs-label); font-weight:800;}
+  .alb-restore textarea{width:100%; padding:8px; border-radius:var(--r-s); border:1.5px solid var(--line); background:var(--paper);
+    color:var(--ink); font-family:ui-monospace,Menlo,Consolas,monospace; font-size:var(--fs-cap);}
+  .alb-msg{margin:8px 0 0; font-size:var(--fs-label); font-weight:700; color:var(--ok-ink);}
+  .alb-msg:empty{display:none;}
+  /* The garage: the bus on the road, its paints, the shop, the trophies. */
+  .alb-ride{border-radius:var(--r-s); overflow:hidden;}
+  .alb-paints{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:10px;}
+  .alb-paint{display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; padding:6px 4px; border-radius:var(--r-s); cursor:pointer;
+    border:1.3px dashed rgba(109,26,37,.35); background:transparent; color:var(--ti); font-family:inherit;}
+  .alb-paint i{display:block; width:100%; height:26px; border-radius:var(--r-s); box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);}
+  .alb-paint b{font-size:var(--fs-label); font-weight:900;}
+  .alb-paint span{font-size:var(--fs-cap); font-weight:800; opacity:.8;}
+  .alb-paint.on{border-style:solid; border-color:var(--ti); background:rgba(227,154,28,.18);}
+  .alb-paint.short{opacity:.5;}
+  .alb-act{margin-top:6px; min-height:34px; padding:4px 8px; border-radius:var(--r-s); cursor:pointer; border:1.3px solid var(--ti);
+    background:transparent; color:var(--ti); font-family:inherit; font-size:var(--fs-cap); font-weight:900; letter-spacing:.02em;}
+  .alb-act.buy{background:var(--gold); border-color:var(--gold); color:#2b2320;}
+  .alb-act.buy.short{background:transparent; border-color:rgba(109,26,37,.35); color:var(--ti); opacity:.6; cursor:default;}
+  .alb-show{display:flex; align-items:center; gap:10px; margin-top:10px; padding:8px 10px; border-radius:var(--r-s); background:rgba(227,154,28,.14);}
+  .alb-show span{flex:1; min-width:0;}
+  .alb-show b{display:block; font-size:var(--fs-label); font-weight:900;}
+  .alb-toggle{flex:0 0 auto; min-width:58px; min-height:34px; border-radius:999px; cursor:pointer; border:1.5px solid var(--ti);
+    background:transparent; color:var(--ti); font-family:inherit; font-size:var(--fs-label); font-weight:900;}
+  .alb-toggle.on{background:var(--ti); color:#fbf4e4;}
+  /* The question whether to show the bus, asked once. */
+  .lookq{display:flex; flex-direction:column; gap:4px; margin-top:10px; padding:10px; border-radius:var(--r-s);
+    border:1.5px solid var(--gold); background:rgba(227,154,28,.12); color:#6d1a25; text-align:left;}
+  .lookq b{font-size:var(--fs-small); font-weight:900;}
+  .lookq .lookq-acts{display:flex; gap:8px; margin-top:4px;}
+  .lookq button{flex:1; min-height:var(--tap); border-radius:var(--r-m); cursor:pointer; font-family:inherit; font-size:var(--fs-small); font-weight:900;}
+  .lookq .lookq-yes{border:1.5px solid var(--gold); background:var(--gold); color:#2b2320;}
+  .lookq .lookq-no{border:1.5px solid rgba(109,26,37,.35); background:transparent; color:#6d1a25;}
+  .lookq.done{border-style:dashed;}
+  /* Spare parts: a steel nut beside the number, wherever there is a count
+     or a price (partsTag). Bigger on a ticket and on the tour's card. */
+  .parts{white-space:nowrap;}
+  .gpart{width:1.15em; height:1.15em; vertical-align:-.2em; margin-right:.12em;}
+  .tkt-parts{display:flex; align-items:baseline; flex-wrap:wrap; gap:2px 8px; margin-top:10px; font-size:var(--fs-body); font-weight:900; color:#7a5a12;}
+  .tkt-parts .gpart{width:1.35em; height:1.35em; vertical-align:-.3em;}
+  .tkt-parts small{font-size:var(--fs-label); font-weight:600; opacity:.85;}
 
   /* ---- Pasko: a parol and a string of lights --------------------------
      September to early January, the season the whole country decorates for
@@ -1753,6 +1878,7 @@
          behind it: the gold or maroon of a badge, the card under a tab. The
          curved rabbit-ear mirrors are what make it a provincial bus rather
          than the bus symbol every map app uses. -->
+    <symbol id="i-part" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2.4l8.3 4.8v9.6L12 21.6l-8.3-4.8V7.2zM12 8.3a3.7 3.7 0 1 0 0 7.4a3.7 3.7 0 1 0 0-7.4z" fill="#cfd5db" stroke="#5f6870" stroke-width="1.5" stroke-linejoin="round"/><path d="M6.6 8.4L12 5.3" stroke="#fff" stroke-width="1.1" stroke-linecap="round" opacity=".85"/></symbol>
     <symbol id="i-coach" viewBox="0 0 24 24"><path d="M5.4 4.75C3.1 3.7 1.55 5.25 1.65 8.2H2.95C2.9 6.35 3.65 5.55 4.85 6.05Z"/><path d="M18.6 4.75C20.9 3.7 22.45 5.25 22.35 8.2H21.05C21.1 6.35 20.35 5.55 19.15 6.05Z"/><rect x="1.3" y="7.9" width="2" height="3.3" rx=".8"/><rect x="20.7" y="7.9" width="2" height="3.3" rx=".8"/><rect x="6.4" y="17" width="3.6" height="3.8" rx="1.1"/><rect x="14" y="17" width="3.6" height="3.8" rx="1.1"/><path fill-rule="evenodd" d="M7.6 2.6h8.8q3 0 3 3v10q0 3 -3 3h-8.8q-3 0 -3 -3v-10q0 -3 3 -3zM7.3 4.1h9.4q0.7 0 0.7 0.7v0.5q0 0.7 -0.7 0.7h-9.4q-0.7 0 -0.7 -0.7v-0.5q0 -0.7 0.7 -0.7zM7.6 7.1h8.8q1.3 0 1.3 1.3v3q0 1.3 -1.3 1.3h-8.8q-1.3 0 -1.3 -1.3v-3q0 -1.3 1.3 -1.3zM7.3 14.1h1.4q0.7 0 0.7 0.7v0.1q0 0.7 -0.7 0.7h-1.4q-0.7 0 -0.7 -0.7v-0.1q0 -0.7 0.7 -0.7zM15.3 14.1h1.4q0.7 0 0.7 0.7v0.1q0 0.7 -0.7 0.7h-1.4q-0.7 0 -0.7 -0.7v-0.1q0 -0.7 0.7 -0.7z"/></symbol>
   </defs>
 </svg>
@@ -1768,15 +1894,15 @@
       <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the location button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the tab.</p>
       <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the tab, and is never sent either.</p>
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
-      <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number, and it never adds up across trips: <b>no running total is kept for any driver or any bus, anywhere.</b></p>
+      <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number. On our side it never adds up across trips: <b>no running total is kept for any driver or any bus on the server.</b> The sharer's own phone adds theirs up for their bus in My tickets, and that never leaves it.</p>
       <p>“Send a link to this bus”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do.</p>
 
       <h4 class="ok">If you share from the bus</h4>
-      <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
+      <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip, plus, only if you switched on “Show customized bus to riders”, a short code for how your bus is painted and dressed. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
       <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop.</p>
-      <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and it goes when the trip does. Nothing keeps a total for you, so there is no score to go up or down.</p>
-      <p>When you tap Stop, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>it is not sent anywhere</b>. Close it and it is gone.</p>
-      <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Remove all” in My tickets deletes every copy.</p>
+      <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and on our side it goes when the trip does. Your phone adds it to your bus in My tickets, a total only you can see.</p>
+      <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>it is not sent anywhere</b>. Close it and it is gone.</p>
+      <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Start from scratch” in My tickets deletes every copy.</p>
 
       <div id="privSightings">
         <h4 class="ok">Sightings</h4>
@@ -1801,7 +1927,11 @@
 
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
-      <p>Four small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, and the tickets you chose to keep, if you kept any. All four stay in your browser, are never sent anywhere, and are not linked to anything. Clearing your browser data removes them, “Remove my stop” in the stop picker deletes the third one on its own, and “Remove all” in My tickets the fourth.</p>
+      <p>Six small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it. All six stay in your browser, are never sent anywhere, and are not linked to anything.</p>
+      <p>Your bus is the coach your trips decorate in My tickets, and it is <b>totals and choices, never a diary</b>: how many trips you shared, how many of them were first on the map, end to end, before 5 AM or after dark, which directions, which places on the route, whether you finished each tour, your time on the map and the salamat you received in all, and how many weeks in a row you have shared, with the week of your last trip to count it from; and the spare parts it has (the app's own points, drawn as a nut: never bought with money, never sent), what they got, which paint and accessories it wears, whether you show it to riders, and, for the cap of three earning trips a day, the day of your last one. Totals, never a list: no clock times and no bus numbers, so it can say how much you have shared and the last day you did, but never a timetable of when you worked. The trip you are sharing is kept so that a page that reloads or closes mid-trip can carry on with the same bus, or still give you its ticket: when it started, roughly where it began and last was on the route, and the trip's random ID. It is deleted the moment the trip ends, or, if the page closed mid-trip, the next time the page opens.</p>
+      <p><b>Showing your bus to riders</b> is off unless you switch it on, in My tickets or when the app first asks, once there is something on your bus to show. While it is on and you share, riders who tap your bus see it as you dressed it. The honest cost: they will be able to tell it is yours from one trip to the next. The code that carries it is letters from the app's own lists, never words or colours of anyone's choosing, and it is deleted with the trip, like the position.</p>
+      <p><b>A backup</b>, from Your progress in My tickets, is a small file of your kept tickets and your bus, made on this phone and handed to you to keep wherever you like. The app never sends it anywhere. Restore reads one back.</p>
+      <p>Clearing your browser data removes them all, “Remove my stop” in the stop picker deletes the third on its own, and “Start from scratch” in My tickets the fourth and fifth.</p>
     </div>
     <div class="modal-foot">
       <button class="big btn-ghost" onclick="closeModal('privModal')">Close</button>
@@ -1831,6 +1961,20 @@
   </div>
 </div>
 
+<!-- A tour finished: what it put on the reader's bus, and where the bus is.
+     Filled by walkFinished(). -->
+<div class="modal hidden" id="busNewModal" role="dialog" aria-modal="true" aria-labelledby="busNewTitle">
+  <div class="modal-card busnew">
+    <h3 id="busNewTitle"><svg class="gi" aria-hidden="true"><use href="#i-coach"/></svg>New on your bus
+      <button class="modal-x" onclick="closeModal('busNewModal')" aria-label="Close"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>
+    </h3>
+    <div id="busNewBody"></div>
+    <div class="modal-actions">
+      <button class="big btn-primary" onclick="seeMyBus()">See my bus</button>
+    </div>
+  </div>
+</div>
+
 <!-- My tickets: the tickets a sharer chose to keep, on this phone only.
      Filled by renderAlbum(). Before the ticket's own dialog on purpose, so a
      kept ticket opened from here draws over the album, not under it. -->
@@ -1841,9 +1985,25 @@
     </h3>
     <div class="modal-scroll">
       <div id="albumBody"></div>
+      <!-- Your progress: a backup made on this phone and kept wherever its
+           owner puts it, a restore from one, and starting from scratch. -->
       <div class="alb-end">
-        <p class="hint">Kept on this phone only and never sent anywhere. Clearing this browser’s data removes them.</p>
-        <button type="button" class="alb-clear" id="albumClear" onclick="clearAlbum()">Remove all</button>
+        <div class="alb-h">Your progress</div>
+        <p class="hint">Only on this phone. Save a backup to keep it.</p>
+        <div class="alb-keep">
+          <button type="button" class="alb-btn" onclick="saveBackup()">Save a backup</button>
+          <button type="button" class="alb-btn" onclick="copyBackup()">Copy as text</button>
+          <button type="button" class="alb-btn" onclick="openRestore()">Restore</button>
+        </div>
+        <div class="alb-restore hidden" id="bkRestore">
+          <label for="bkFile">A backup file</label>
+          <input type="file" id="bkFile" accept=".json,application/json,text/plain">
+          <label for="bkText">or a backup pasted as text</label>
+          <textarea id="bkText" rows="3" spellcheck="false" autocomplete="off"></textarea>
+          <button type="button" class="alb-btn" id="bkGo" onclick="restoreBackup()">Restore from this backup</button>
+        </div>
+        <p class="alb-msg" id="bkMsg" role="status"></p>
+        <button type="button" class="alb-clear" id="albumClear" onclick="clearAlbum()">Start from scratch</button>
       </div>
     </div>
   </div>
@@ -1871,7 +2031,7 @@
     <h3 id="stopTitle"><svg class="gi" aria-hidden="true"><use href="#i-pin"/></svg>Where do you wait?
       <button class="modal-x" onclick="closeModal('stopModal')" aria-label="Close"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>
     </h3>
-    <p class="hint" style="margin:0 0 10px;">Pick your usual stop to see how far the bus is from it. Saved on this phone only, never sent anywhere.</p>
+    <p class="hint" style="margin:0 0 10px;">Saved on this phone only.</p>
     <input type="text" class="stopsearch" id="stopSearch" placeholder="Type a few letters, e.g. Imus" autocomplete="off" oninput="renderStopList()">
     <div class="pickrow">
       <button type="button" id="nearestBtn" onclick="pickNearestStop()">Use my current location</button>
@@ -1888,7 +2048,7 @@
 <div class="gate hidden" id="gate">
   <form class="card gate-card" onsubmit="event.preventDefault(); submitKey();">
     <h2><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg>Bus Tracker</h2>
-    <p id="gateMsg">Watching the map needs no key. Sharing from the bus needs the access key or PIN from the group chat, or the full link posted there.</p>
+    <p id="gateMsg">Watching needs no key. To share, use the PIN or link from the group chat.</p>
     <div style="height:6px"></div>
     <input type="text" id="gateKey" placeholder="Access key or PIN" autocomplete="off" autofocus>
     <div style="height:10px"></div>
@@ -1996,7 +2156,7 @@
             <span><span class="sw" style="background:var(--gold)"></span>Northbound ▲</span>
             <span><span class="sw" style="background:var(--maroon)"></span>Southbound ▼</span>
             <span><span class="sw" style="background:var(--paper); border:1.5px solid var(--maroon); width:8px; height:8px;"></span>Stops (zoom in, tap for name)</span>
-            <span id="sightLegend"><span class="sw" style="background:var(--gold); opacity:.5; width:18px; height:9px; border-radius:var(--r-s);"></span>A glow on the strip = a reported sighting, not GPS: where that bus probably is by now, from past trips. Densest where it most likely is; wider and fainter the longer ago it was seen</span>
+            <span id="sightLegend"><span class="sw" style="background:var(--gold); opacity:.5; width:18px; height:9px; border-radius:var(--r-s);"></span>Glow = a bus someone saw</span>
             <!-- The ring is marked on this strip too, so it is explained on
                  this tab too. Shown only while sharing, by setShareUI(): a
                  legend line for a mark nobody can see is noise. -->
@@ -2084,9 +2244,7 @@
          when something has actually been posted. -->
     <div class="privacybar">
       <button type="button" onclick="openModal('privModal')">
-        <svg class="gi" aria-hidden="true"><use href="#i-lock"/></svg><b>No account. No name.</b> Your location is never needed and never
-        leaves your phone. Positions are volunteer-reported, so they can be
-        wrong or missing.
+        <svg class="gi" aria-hidden="true"><use href="#i-lock"/></svg><b>No account.</b> Your location stays on your phone.
         <span class="more">How your data is handled</span>
       </button>
     </div>
@@ -2103,7 +2261,7 @@
         <div class="statusdot" id="onbusDot"></div>
         <div>
           <div style="font-weight:800; font-size:var(--fs-body);" id="onbusStatusText">Not sharing</div>
-          <div class="hint" style="margin-top:2px;" id="gpsLiveHint">Shares only while this page is open and the screen is on.</div>
+          <div class="hint" style="margin-top:2px;" id="gpsLiveHint"></div>
         </div>
       </div>
 
@@ -2119,7 +2277,6 @@
         </div>
         <div style="font-size:var(--fs-small); font-weight:800; margin:2px 0 6px;">Bus number <span style="font-weight:600; color:var(--muted);">(optional, but it helps)</span></div>
         <input type="text" id="busLabel" maxlength="12" placeholder="e.g. 98018">
-        <div class="hint" style="margin-top:6px;">If two people share the same bus, the number shows it as one bus, not two.</div>
         <div style="height:10px"></div>
         <button class="big btn-primary" id="onbusStartBtn" type="submit">Start sharing my location</button>
       </form>
@@ -2129,14 +2286,10 @@
 
       <div class="noticebar hidden" id="controlHiddenNote">
         <div class="tag">BUTTON MISSING</div>
-        <div style="margin-top:2px;">A content blocker in this browser is hiding the button that starts sharing. Blockers with a social filter list hide anything that looks like a share widget, and this button gets caught by mistake. In Brave, tap the lion in the address bar and turn Shields down for this site. Any other ad blocker: allow this site. Then reload.</div>
+        <div style="margin-top:2px;">A blocker is hiding Start. Allow this site (Brave: tap the lion, Shields down), then reload.</div>
       </div>
 
-      <div class="hint">
-        For the driver, conductor, or any rider. <span id="gpsSetupHint">Keep the screen on — GPS pauses
-        if it locks.</span> Only the bus's position and direction are shared, never
-        anything about you.
-      </div>
+      <div class="hint">Anyone on the bus can share. <span id="gpsSetupHint">Keep the screen on.</span></div>
       <button type="button" class="walklink" onclick="startWalk('share')"><svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>First time? Try a practice run. Nothing is shared</button>
     </div>
 
@@ -2161,7 +2314,7 @@
         <div class="track sb"><div class="rail"></div><div class="pills sb"></div></div>
         <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
       </div>
-      <div class="hint">Yours is the bus with the green ring. Nothing to post in the group chat.</div>
+      <div class="hint">Yours has the green ring.</div>
       <!-- Drawn only once somebody has tapped, never as a zero. See
            thanksWords(). aria-live so it is announced when it arrives
            rather than only found by someone who goes looking. -->
@@ -2173,8 +2326,9 @@
          following this phone's own bus to the stop its sharer gets off at. -->
     <div class="mystop tripstop hidden" id="tripStop"></div>
 
-    <!-- The tickets this phone has kept. Drawn by syncAlbumRow() only once
-         there is one, so nobody is offered an empty album or a zero. -->
+    <!-- The tickets this phone has kept, and its bus. Always offered, so a
+         sharer can see what there is to collect before the first trip;
+         syncAlbumRow() words it without a zero while there is nothing yet. -->
     <button type="button" class="card albumrow hidden" id="albumRow" onclick="openAlbum()">
       <span class="ico" aria-hidden="true"><svg class="gi"><use href="#i-tkt"/></svg></span>
       <span class="lbl"><span class="cap">My tickets</span><span class="val" id="albumRowVal"></span></span>
@@ -2577,13 +2731,190 @@ const TICKET_VIEWS = {
       '<path d="M240 60V27M234 30H245" stroke="' + c.pole + '" stroke-width="1.6"/>';
   }
 };
+// A ticket's luck (October 2026): what is on the road and in the sky, the
+// weather, the moon that night, the season's decorations and, now and then,
+// something rare. Which of them a ticket has is decided in the album block
+// (ticketLook), from the four things a kept ticket keeps, so its copy draws
+// the same; this only draws them. Each is drawn where it stands in the
+// 300 by 84 picture, and box is the corner of the picture the album looks
+// at to show it on its own (sightTile). sky is the time of day its sticker
+// is drawn at; ctx is what is drawn behind it there. Nothing in here is about
+// how the bus was driven.
+function hasOwn(o, k){ return Object.prototype.hasOwnProperty.call(o, k); }
+function rainbowArcs(r0, w, cols){
+  return cols.map(function(col, i){
+    const r = r0 - i * w;
+    return '<path d="M' + (205 - r) + ' 66A' + r + ' ' + r + ' 0 0 1 ' + (205 + r) + ' 66" fill="none" stroke="' + col + '" stroke-width="' + w + '"/>';
+  }).join('');
+}
+const BOW = ['#e8483f', '#f39a2d', '#f2c230', '#5fa055', '#3d7cc9'];
+// The moon on the night of the ticket, by its eighth of the month: 0 new,
+// 2 first quarter, 4 full, 6 last quarter. In the night sky's place for it.
+function moonSvg(phase, c){
+  const d = ['', 'M112 7a8 8 0 1 1 0 16a5 8 0 1 0 0-16z', 'M112 7a8 8 0 1 1 0 16z', 'M112 7a8 8 0 1 1 0 16a4 8 0 1 1 0-16z',
+             '', 'M112 7a8 8 0 1 0 0 16a4 8 0 1 0 0-16z', 'M112 7a8 8 0 1 0 0 16z', 'M112 7a8 8 0 1 0 0 16a5 8 0 1 1 0-16z'][phase];
+  if (phase === 4) return '<circle cx="112" cy="15" r="8" fill="' + c.orb + '"/>' +
+    '<g fill="' + c.sky + '" opacity=".14"><circle cx="109" cy="12.5" r="2.2"/><circle cx="114.5" cy="17.5" r="1.6"/><circle cx="115" cy="11.5" r="1.1"/></g>';
+  return d ? '<path d="' + d + '" fill="' + c.orb + '"/>' : '';
+}
+const TICKET_SIGHTS = {
+  // Oncoming, in the far lane: a jeepney in its chrome and stripes, a horse
+  // on the hood. Lit up at night like everything else on the road.
+  jeepney: { box:'188 46 50 30', sky:'day', ctx:'road', draw:function(c, k){
+    const n = k === 'night', body = n ? '#8a828c' : '#eceae4', glass = n ? '#f3c56b' : '#3b5566';
+    return '<g transform="translate(196 52)">' + (n ? '<path d="M1 8L-16 4V13Z" fill="rgba(255,243,196,.3)"/>' : '') +
+      '<rect x="7" y="0" width="26" height="2" rx="1" fill="#5a514c"/>' +
+      '<rect x="7" y="1.5" width="26" height="9.5" rx="1.2" fill="' + body + '"/>' +
+      '<path d="M1.5 11V7.6Q1.5 6.2 3 6.2H8V11Z" fill="' + body + '"/>' +
+      '<rect x="8.4" y="3" width="23.2" height="3.4" fill="' + glass + '"/>' +
+      '<path d="M13.2 3V6.4M18.2 3V6.4M23.2 3V6.4M28.2 3V6.4" stroke="' + body + '" stroke-width=".9"/>' +
+      '<rect x="1.5" y="7.4" width="31.5" height="1.3" fill="#d7262c"/><rect x="1.5" y="8.7" width="31.5" height=".9" fill="#f2c230"/>' +
+      '<path d="M3.4 6.2V4.6l1.3-.9" fill="none" stroke="#c9ccd1" stroke-width=".8" stroke-linecap="round"/>' +
+      '<rect x=".5" y="10.2" width="4" height="1.6" rx=".8" fill="#c9ccd1"/>' +
+      '<circle cx="2.4" cy="8.1" r=".9" fill="' + (n ? '#fff3c4' : '#e8dfc8') + '"/>' +
+      '<g fill="#2b2320"><circle cx="7.5" cy="12.4" r="2.5"/><circle cx="27" cy="12.4" r="2.5"/></g>' +
+      '<g fill="#c9ccd1"><circle cx="7.5" cy="12.4" r="1"/><circle cx="27" cy="12.4" r="1"/></g></g>';
+  } },
+  // A tricycle: the sidecar and the motorbike, its driver in red.
+  tricycle: { box:'190 46 50 30', sky:'day', ctx:'road', draw:function(c, k){
+    const n = k === 'night';
+    return '<g transform="translate(206 55)">' + (n ? '<path d="M.5 8L-12 5V12Z" fill="rgba(255,243,196,.28)"/>' : '') +
+      '<path d="M.5 2.4Q1 .8 3.4 .8H11.4V2.2H1Z" fill="#f2c230"/>' +
+      '<path d="M1 10V4.4Q1 2.2 3.4 2.2H10.6V10Z" fill="#2f6fb0"/>' +
+      '<rect x="2.6" y="3.4" width="6.2" height="3" rx=".6" fill="' + (n ? '#f3c56b' : '#3b5566') + '"/>' +
+      '<rect x="1" y="7.2" width="9.6" height=".9" fill="#f3ecdf" opacity=".85"/>' +
+      '<circle cx="1.6" cy="8.6" r=".7" fill="' + (n ? '#fff3c4' : '#e8dfc8') + '"/>' +
+      '<path d="M10.6 9.6H16.4L17.4 7.4H13.6L12.2 5.6H10.6Z" fill="#2b2320"/>' +
+      '<circle cx="14.6" cy="2.4" r="1.4" fill="#3a2a26"/><path d="M13.6 3.8L13 7.4H15.6L15.4 3.8Z" fill="#c0392b"/>' +
+      '<g fill="#2b2320"><circle cx="3.6" cy="10.4" r="1.8"/><circle cx="15.6" cy="10.4" r="1.8"/></g></g>';
+  } },
+  // By the road on the near side: a carabao with an egret on its back.
+  carabao: { box:'196 56 50 30', sky:'day', ctx:'road', draw:function(){
+    return '<g transform="translate(210 69)">' +
+      '<path d="M7.6 8.4V12M10 8.6V12M14.6 8.6V12M16.8 8.4V12" stroke="#4a4248" stroke-width="1.4" stroke-linecap="round"/>' +
+      '<path d="M6 3.2Q11 1.6 17 3.2Q19.2 4 19 6.4Q18.6 8.6 16.4 8.8H7.6Q5.4 8.6 5 6.4Z" fill="#4a4248"/>' +
+      '<path d="M1.2 5.2Q1 3 3.4 2.6Q5.6 2.4 6.4 4.2L6 7.4Q4.2 8.4 2.4 7.6Z" fill="#4a4248"/>' +
+      '<path d="M2.6 2.8Q.2 2.2 .6 .4M5.2 2.6Q7.4 1.6 6.8 .2" fill="none" stroke="#e6dccb" stroke-width="1" stroke-linecap="round"/>' +
+      '<path d="M18.8 4.4Q20.4 6 19.8 8.4" fill="none" stroke="#4a4248" stroke-width=".8" stroke-linecap="round"/>' +
+      '<path d="M11.4 2.3Q12 .2 13.8 .6L14.6 1.6Q13.4 1.4 13 2.3Z" fill="#fff"/><path d="M14.4 1.2L16 .8" stroke="#e39a1c" stroke-width=".6"/></g>';
+  } },
+  // A sorbetes cart, red and yellow, its three lids.
+  sorbetes: { box:'196 56 50 30', sky:'day', ctx:'road', draw:function(){
+    return '<g transform="translate(214 68)">' +
+      '<path d="M12.6 7.6L15 9.4" stroke="#2b2320" stroke-width="1" stroke-linecap="round"/>' +
+      '<rect x="1" y="6" width="12" height="5.4" rx=".8" fill="#e8483f"/><rect x="1" y="8.1" width="12" height="1" fill="#f2c230"/>' +
+      '<path d="M1.6 6Q2.6 2.8 4.6 6ZM5.5 6Q7 1.8 8.5 6ZM9.4 6Q11.4 2.8 12.4 6Z" fill="#f2c230"/>' +
+      '<path d="M3.1 3.7V2.7M7 2.7V1.3M10.9 3.7V2.7" stroke="#2f6fb0" stroke-width=".9" stroke-linecap="round"/>' +
+      '<g fill="#2b2320"><circle cx="3.2" cy="12.4" r="1.6"/><circle cx="10.8" cy="12.4" r="1.6"/></g></g>';
+  } },
+  // A fruit stand under a striped awning: pineapples, buko, bananas.
+  stall: { box:'196 56 50 30', sky:'day', ctx:'road', draw:function(c){
+    return '<g transform="translate(206 68)">' +
+      '<path d="M2 3V14M22 3V14" stroke="' + c.pole + '" stroke-width="1"/>' +
+      '<path d="M3.2 11.5V14M20.8 11.5V14" stroke="#9a5b45" stroke-width="1"/>' +
+      '<rect x="1.5" y="10" width="21" height="1.6" fill="#9a5b45"/>' +
+      '<g fill="#e3a72f"><ellipse cx="4.6" cy="8.4" rx="1.5" ry="1.9"/><ellipse cx="7.8" cy="8.4" rx="1.5" ry="1.9"/></g>' +
+      '<path d="M4.6 6.5l-.8-1.5M4.6 6.5V4.8M4.6 6.5l.8-1.5M7.8 6.5l-.8-1.5M7.8 6.5V4.8M7.8 6.5l.8-1.5" stroke="#4f7d4f" stroke-width=".7" stroke-linecap="round"/>' +
+      '<g fill="#6a9a3a"><circle cx="12.6" cy="8.7" r="1.5"/><circle cx="15.6" cy="8.7" r="1.5"/><circle cx="14.1" cy="7" r="1.4"/></g>' +
+      '<path d="M18.2 9.2q1.6 1.3 3.2 0" fill="none" stroke="#f2c230" stroke-width="1.3" stroke-linecap="round"/>' +
+      '<rect x="0" y="1.8" width="24" height="1.4" fill="#1f6b43"/><path d="M0 3.2H24L22.6 6H1.4Z" fill="#2e8b57"/>' +
+      '<path d="M4.4 3.2l-.4 2.8M8.6 3.2l-.2 2.8M12.8 3.2v2.8M17 3.2l.2 2.8M21 3.2l.4 2.8" stroke="#f3ecdf" stroke-width="1.3"/></g>';
+  } },
+  // Two saranggola, one high above the coach and one over the view.
+  kites: { box:'47 0 50 30', sky:'day', ctx:'', draw:function(c){
+    return '<path d="M72 3L77.5 11L72 19L66.5 11Z" fill="#e8483f"/><path d="M72 3V19M66.5 11H77.5" stroke="#fff" stroke-width=".6" opacity=".8"/>' +
+      '<path d="M72 19q-3 3 0 6q3 3 0 6" fill="none" stroke="' + c.post + '" stroke-width=".6"/>' +
+      '<path d="M70.6 24.4l2.8-.8M70.6 30.2l2.8-.8" stroke="#f2c230" stroke-width="1.4" stroke-linecap="round"/>' +
+      '<path d="M150 2.5L154 7.5L150 13L146 7.5Z" fill="#3d7cc9"/><path d="M150 2.5V13M146 7.5H154" stroke="#fff" stroke-width=".5" opacity=".8"/>' +
+      '<path d="M150 13q-2 2 0 4q2 2 0 4" fill="none" stroke="' + c.post + '" stroke-width=".5"/>' +
+      '<path d="M149 16.8l2-.6" stroke="#e8483f" stroke-width="1.2" stroke-linecap="round"/>';
+  } },
+  birds: { box:'144 0 50 30', sky:'day', ctx:'', draw:function(c, k){
+    return '<path d="M152 9q2.2-2.2 4.4 0q2.2-2.2 4.4 0M164 5.5q1.8-1.8 3.6 0q1.8-1.8 3.6 0M174 11q1.6-1.6 3.2 0q1.6-1.6 3.2 0" fill="none" stroke="' +
+      (k === 'dawn' ? '#5a4039' : '#3f3a40') + '" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>';
+  } },
+  // Ambon: a low sky and a drizzle over everything but the road.
+  rain: { box:'150 0 50 30', sky:'day', ctx:'', draw:function(c, k){
+    let d = '';
+    for (let i = 0; i < 25; i++) for (let j = 0; j < 4; j++) d += 'M' + (6 + i * 12 + (j % 2) * 6) + ' ' + (4 + j * 15 + (i % 3) * 3) + 'l-1.6 5';
+    return '<path d="M.75 9C40 14 70 6 110 11C150 16 190 7 230 12C260 15 280 9 299.25 11V.75H.75Z" fill="' + (k === 'night' ? '#3a3350' : '#b9c4cc') + '" opacity=".9"/>' +
+      '<path d="' + d + '" stroke="' + (k === 'night' ? '#9aa7c7' : '#6f8a9b') + '" stroke-width=".9" stroke-linecap="round" opacity=".55"/>';
+  } },
+  // The fog that comes over the ridge, in bands across the view.
+  fog: { box:'160 24 50 30', sky:'day', ctx:'view', draw:function(c, k){
+    return '<g fill="' + (k === 'night' ? '#8a7f99' : k === 'dawn' ? '#fff4e6' : '#fff') + '" opacity="' + (k === 'night' ? '.35' : '.6') + '">' +
+      '<rect x="118" y="28" width="190" height="5" rx="2.5"/><rect x="140" y="39" width="170" height="4.5" rx="2.25"/><rect x="96" y="50" width="180" height="5" rx="2.5"/></g>';
+  } },
+  rainbow: { box:'150 14 110 66', sky:'day', ctx:'view', draw:function(){
+    return '<g opacity=".55">' + rainbowArcs(48, 3, BOW) + '</g>';
+  } },
+  fullmoon: { box:'97 6 30 18', sky:'night', ctx:'stars', draw:function(c){ return moonSvg(4, c); } },
+  // A parol on a string from the top of the picture, lit after dark.
+  parol: { box:'176 0 40 24', sky:'night', ctx:'stars', draw:function(c, k){
+    const n = k === 'night';
+    return '<path d="M196 0V7.6" stroke="' + c.pole + '" stroke-width=".6"/>' + (n ? '<circle cx="196" cy="14" r="10" fill="rgba(255,210,122,.22)"/>' : '') +
+      '<path d="M193 19l-1.4 6M196 16.7V25M199 19l1.4 6" stroke="' + (n ? '#ffcf5a' : '#e39a1c') + '" stroke-width=".7" stroke-linecap="round"/>' +
+      '<path d="M196 7.6L197.6 11.8L202.1 12L198.6 14.8L199.8 19.2L196 16.7L192.2 19.2L193.4 14.8L189.9 12L194.4 11.8Z" fill="' +
+        (n ? '#ffcf5a' : '#e8483f') + '" stroke="#e3b23c" stroke-width=".7" stroke-linejoin="round"/>' +
+      '<circle cx="196" cy="13.9" r="1.4" fill="' + (n ? '#fff3c4' : '#f2c230') + '"/>';
+  } },
+  // Fiesta in May: a string of banderitas across the sky.
+  banderitas: { box:'100 0 50 30', sky:'day', ctx:'', draw:function(c){
+    let f = '';
+    for (let i = 0; i < 29; i++){
+      const x = 8 + i * 10, t = (x - .75) / 298.5, y = 3 + 36 * t * (1 - t);
+      f += '<path d="M' + (x - 3) + ' ' + y.toFixed(1) + 'H' + (x + 3) + 'L' + x + ' ' + (y + 5).toFixed(1) + 'Z" fill="' + BOW[i % 5] + '"/>';
+    }
+    return '<path d="M.75 3Q150 21 299.25 3" fill="none" stroke="' + c.pole + '" stroke-width=".6"/>' + f;
+  } },
+  // The flag days, 28 May to 12 June: two flags on the coach's roof, flying
+  // back from the pole as it drives. Blue above red, as in time of peace,
+  // the triangle at the hoist, twice as long as it is high.
+  flags: { box:'80 26 40 24', sky:'day', ctx:'coach', draw:function(){
+    return [96, 118].map(function(x){
+      return '<path d="M' + x + ' 41V29.6" stroke="#5a514c" stroke-width=".7"/>' +
+        '<rect x="' + (x - 8) + '" y="30" width="8" height="2" fill="#0038a8"/>' +
+        '<rect x="' + (x - 8) + '" y="32" width="8" height="2" fill="#ce1126"/>' +
+        '<path d="M' + x + ' 30L' + (x - 3.5) + ' 32L' + x + ' 34Z" fill="#fff"/>' +
+        '<circle cx="' + (x - 1.2) + '" cy="32" r=".55" fill="#fcd116"/>';
+    }).join('');
+  } },
+  // The two rare ones: a shooting star at night, two rainbows by day.
+  meteor: { box:'195 0 50 30', sky:'night', ctx:'stars', draw:function(){
+    return '<circle cx="244" cy="6" r="1.8" fill="#fff8de"/><path d="M244 6L230 12.4" stroke="#fff8de" stroke-width="1.6" stroke-linecap="round"/>' +
+      '<path d="M230 12.4L216 18.8" stroke="#fff8de" stroke-width="1.1" stroke-linecap="round" opacity=".55"/>' +
+      '<path d="M216 18.8L204 24.2" stroke="#fff8de" stroke-width=".7" stroke-linecap="round" opacity=".25"/>';
+  } },
+  double: { box:'150 14 110 66', sky:'day', ctx:'view', draw:function(){
+    return '<g opacity=".3">' + rainbowArcs(60, 2.2, BOW.slice().reverse()) + '</g><g opacity=".55">' + rainbowArcs(48, 3, BOW) + '</g>';
+  } }
+};
+// One sight on its own, as a sticker for the album: its corner of a picture,
+// with the road, the view or the night sky behind it.
+function sightTile(key){
+  if (!hasOwn(TICKET_SIGHTS, key)) return '';
+  const s = TICKET_SIGHTS[key], c = TICKET_SKIES[s.sky];
+  const back = s.ctx === 'road'
+    ? '<rect x="0" y="73" width="300" height="20" fill="' + c.ground + '"/><rect x="0" y="64" width="300" height="9" fill="' + c.road + '"/>' +
+      '<path d="M0 68.5H300" stroke="#fbf4e4" stroke-width="1.4" stroke-dasharray="7 6" opacity=".55"/>'
+    : s.ctx === 'view' ? TICKET_VIEWS.volcano(c) + '<path d="M0 60C60 57.5 120 60.5 180 58.5C230 57 270 59.5 300 58.5V90H0Z" fill="' + c.hill + '"/>'
+    : s.ctx === 'coach' ? '<svg x="62" y="37.5" width="88" height="33" viewBox="0 0 364 136">' + COACH_SIDE + '</svg>'
+    : s.ctx === 'stars' ? '<path d="M100 4h0M122 3h0M180 6h0M210 3h0M226 9h0M186 20h0M236 22h0" stroke="' + c.orb + '" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>'
+    : '';
+  return '<svg class="sight" viewBox="' + s.box + '" aria-hidden="true" focusable="false" style="' + c.coach + '">' +
+    '<rect x="-20" y="-20" width="340" height="124" fill="' + (key === 'rain' ? '#d3dde3' : c.sky) + '"/>' + back + s.draw(c, s.sky) + '</svg>';
+}
 // t: { from, to } mark names ('' for a place without one, which gets a plain
 // station ring like the strip's and the plain hills behind), sky, and one:
 // true when the trip began and ended by the same place, which is one sign
-// rather than two of the same.
+// rather than two of the same. look, when given, is the ticket's luck
+// (ticketLook): without it the picture is the plain one, as it always was.
 function ticketArtSvg(t){
   t = t || {};
-  const k = TICKET_SKIES[t.sky] ? t.sky : 'day', c = TICKET_SKIES[k];
+  const k = TICKET_SKIES[t.sky] ? t.sky : 'day', look = t.look || null;
+  const wet = !!look && look.weather === 'rain';
+  const c = wet && k !== 'night' ? Object.assign({}, TICKET_SKIES[k], { sky:'#d3dde3' }) : TICKET_SKIES[k];
+  const piece = function(name){ return look && name && hasOwn(TICKET_SIGHTS, name) ? TICKET_SIGHTS[name].draw(c, k) : ''; };
   const own = function(o, key){ return Object.prototype.hasOwnProperty.call(o, key); };
   const sign = function(cx, mark){
     const key = String(mark || '').toLowerCase();
@@ -2598,9 +2929,10 @@ function ticketArtSvg(t){
   // The coach sits left of centre, so the view it is heading for has the
   // middle of the picture to itself.
   const bx = 62;
-  const sky = k === 'night'
+  const sky = wet ? ''
+    : k === 'night'
     ? '<path d="M24 7h0M70 20h0M88 6h0M140 11h0M160 5h0M196 8h0M226 4h0M286 22h0M252 3h0M130 26h0" stroke="' + c.orb + '" stroke-width="2" stroke-linecap="round" opacity=".85"/>' +
-      '<path d="M112 7a8 8 0 1 0 0 16a6.2 8 0 1 1 0-16z" fill="' + c.orb + '"/>'
+      (look && look.moon >= 0 ? moonSvg(look.moon, c) : '<path d="M112 7a8 8 0 1 0 0 16a6.2 8 0 1 1 0-16z" fill="' + c.orb + '"/>')
     : k === 'dawn'
     ? '<path d="M118 22.5v-4.5M106 26.5l-3.2-3.2M130 26.5l3.2-3.2M101 34.5h-4.5M135 34.5h4.5" stroke="' + c.orb + '" stroke-width="1.6" stroke-linecap="round"/>' +
       '<circle cx="118" cy="36" r="9" fill="' + c.orb + '"/>'
@@ -2612,14 +2944,292 @@ function ticketArtSvg(t){
     ? TICKET_VIEWS[dest](c) + '<path d="M.75 60C60 57.5 120 60.5 180 58.5C230 57 270 59.5 299.25 58.5V66H.75Z" fill="' + c.hill + '"/>'
     : '<path d="M.75 58C40 50 80 54 120 50C170 45 220 54 260 49C280 47 292 50 299.25 50V66H.75Z" fill="' + c.hill + '"/>';
   const beam = k === 'night' ? '<path d="M' + (bx + 87) + ' 61L' + (bx + 128) + ' 55V71Z" fill="rgba(255,243,196,.32)"/>' : '';
+  // The luck in layers: a rainbow and what flies behind the view, fog and
+  // banderitas in front of it, the road's own on the road, the flags and
+  // the parol over the coach, and rain over everything but the road.
+  const L = look || {};
+  const behind = look ? piece(L.weather === 'rainbow' || L.weather === 'double' ? L.weather : '') + piece(L.meteor ? 'meteor' : '') + piece(L.air) : '';
+  const before = look ? piece(L.weather === 'fog' ? 'fog' : '') + piece(L.season === 'banderitas' ? 'banderitas' : '') : '';
+  const onTop = look ? piece(L.season === 'flags' || L.season === 'parol' ? L.season : '') + piece(wet ? 'rain' : '') : '';
+  const gold = look && look.rare
+    ? '<rect x=".75" y=".75" width="298.5" height="82.5" rx="9" fill="none" stroke="#d4a017" stroke-width="2.6"/>' +
+      '<rect x="3.2" y="3.2" width="293.6" height="77.6" rx="7" fill="none" stroke="#f2d27a" stroke-width=".8"/>'
+    : '<rect x=".75" y=".75" width="298.5" height="82.5" rx="9" fill="none" stroke="' + c.edge + '" stroke-width="1.3"/>';
   return '<svg class="tktart" viewBox="0 0 300 84" aria-hidden="true" focusable="false" style="' + c.coach + '">' +
-    '<rect x=".75" y=".75" width="298.5" height="82.5" rx="9" fill="' + c.sky + '"/>' + sky + view +
+    '<rect x=".75" y=".75" width="298.5" height="82.5" rx="9" fill="' + c.sky + '"/>' + sky + behind + view + before +
     '<path d="M.75 64H299.25V74.25a9 9 0 0 1-9 9H9.75a9 9 0 0 1-9-9Z" fill="' + c.ground + '"/>' +
     '<rect x=".75" y="64" width="298.5" height="9" fill="' + c.road + '"/>' +
     '<path d="M8 68.5H292" stroke="#fbf4e4" stroke-width="1.4" stroke-dasharray="7 6" opacity=".55"/>' +
-    (t.one ? sign(266, t.to || t.from) : sign(34, t.from) + sign(266, t.to)) + beam +
-    '<svg x="' + bx + '" y="37.5" width="88" height="33" viewBox="0 0 364 136">' + COACH_SIDE + '</svg>' +
-    '<rect x=".75" y=".75" width="298.5" height="82.5" rx="9" fill="none" stroke="' + c.edge + '" stroke-width="1.3"/></svg>';
+    (t.one ? sign(266, t.to || t.from) : sign(34, t.from) + sign(266, t.to)) + beam + (look ? piece(L.road) : '') +
+    '<svg x="' + bx + '" y="37.5" width="88" height="33" viewBox="0 0 364 136">' + COACH_SIDE + '</svg>' + onTop + gold + '</svg>';
+}
+// Your bus (October 2026): the coach a sharer's trips decorate, one thing at
+// a time, the way a driver dresses a provincial bus. Which decorations are
+// earned is decided in the album block (DECOR, busEarned); this draws them,
+// each in the coach's own drawing space, over COACH_SIDE. On the sharer's
+// own phone only: a decorated bus on everyone's map would tell the road which
+// phone has shared the most, and link one person's trips across days.
+const BUS_DECOR = {
+  // A sampaguita garland across the windscreen, its pendant hanging.
+  sampaguita: '<path d="M309 36Q323.5 52 338 36M323.5 44V55" fill="none" stroke="#5f8f68" stroke-width="1.1"/>' +
+    '<g fill="#fff" stroke="#d9cfbe" stroke-width=".5"><circle cx="310.7" cy="37.8" r="2"/><circle cx="313.3" cy="40" r="2"/><circle cx="315.8" cy="41.8" r="2"/>' +
+    '<circle cx="318.4" cy="43" r="2"/><circle cx="320.9" cy="43.8" r="2"/><circle cx="323.5" cy="44" r="2"/><circle cx="326.1" cy="43.8" r="2"/>' +
+    '<circle cx="328.6" cy="43" r="2"/><circle cx="331.2" cy="41.8" r="2"/><circle cx="333.7" cy="40" r="2"/><circle cx="336.3" cy="37.8" r="2"/>' +
+    '<circle cx="323.5" cy="48.5" r="1.8"/><circle cx="323.5" cy="52" r="1.8"/></g><path d="M322 55h3l-1.5 4z" fill="#d7262c"/>',
+  // Kampanilya: the bell by the door, the one a rider rings for "Para po!",
+  // for finishing the map's tour.
+  bell: '<path d="M317 76.4V79.6" stroke="#5a514c" stroke-width=".7"/>' +
+    '<path d="M313.5 86.5Q313.5 79.5 317 79.5Q320.5 79.5 320.5 86.5Z" fill="#e3b23c" stroke="#a8761c" stroke-width=".6"/>' +
+    '<rect x="312.6" y="86.2" width="8.8" height="1.6" rx=".8" fill="#c99a2e"/><circle cx="317" cy="88.6" r="1" fill="#a8761c"/>',
+  // Plaka ng ruta: the route board in the windscreen, for finishing the
+  // sharing tour. Lettered in dashes, like the ticket's art: no words.
+  placard: '<rect x="307" y="60" width="33" height="11" rx="1.2" fill="#fbf4e4" stroke="#6d1a25" stroke-width=".8"/>' +
+    '<path d="M310 63.6h11M324 63.6h13" stroke="#6d1a25" stroke-width="1.4"/><path d="M310 67.6h7M320 67.6h17" stroke="#b8322a" stroke-width="1.4"/>',
+  // Mud flaps behind both wheels, red with a white band and a reflector.
+  flaps: '<g fill="#b8322a"><rect x="60" y="106" width="9" height="26" rx="1.5"/><rect x="254" y="106" width="9" height="26" rx="1.5"/></g>' +
+    '<g fill="#fff"><rect x="60" y="123" width="9" height="2.6"/><rect x="254" y="123" width="9" height="2.6"/></g>' +
+    '<g fill="#f2c230"><circle cx="64.5" cy="113" r="1.8"/><circle cx="258.5" cy="113" r="1.8"/></g>',
+  // Busina: a pair of chrome air horns on the roof.
+  horns: '<rect x="246" y="17" width="32" height="5" rx="2" fill="#8a929a"/>' +
+    '<g fill="#e3e7eb" stroke="#8a929a" stroke-width=".8" stroke-linejoin="round"><path d="M248 13H266L279 8.5V17.5L266 13Z"/><path d="M254 8H270L283 3.5V12.5L270 8Z"/></g>',
+  // Borlas: a fringe of tassels along the top of the windows.
+  fringe: (function(){
+    const col = ['#d7262c', '#f2c230', '#2e8b57'];
+    let o = '<path d="M38 31.6H300" stroke="#e39a1c" stroke-width="1.6"/>';
+    for (let i = 0; i < 64; i++) o += '<path d="M' + (41 + i * 4) + ' 32.4h2.4v4.2l-1.2 1.4l-1.2-1.4z" fill="' + col[i % 3] + '"/>';
+    return o;
+  })(),
+  // Kromo: chrome hubcaps with their spokes.
+  chrome: [88, 282].map(function(x){
+    return '<circle cx="' + x + '" cy="120" r="9.5" fill="#e9edf1" stroke="#9aa3ab"/>' +
+      '<path d="M' + x + ' 111.5V128.5M' + (x - 8.5) + ' 120H' + (x + 8.5) + 'M' + (x - 6) + ' 114L' + (x + 6) + ' 126M' + (x + 6) + ' 114L' + (x - 6) + ' 126" stroke="#9aa3ab"/>' +
+      '<circle cx="' + x + '" cy="120" r="2.4" fill="#9aa3ab"/>';
+  }).join(''),
+  // A row of coloured marker lights along the roof's edge.
+  lights: (function(){
+    const col = ['#ffb22e', '#e8483f', '#5fa055', '#3d7cc9'];
+    let o = '';
+    for (let i = 0; i < 17; i++) o += '<circle cx="' + (44 + i * 16) + '" cy="26.5" r="2.3" fill="' + col[i % 4] + '"/>';
+    return o;
+  })(),
+  // Kabayo: the chrome horse over the front, for the hundredth trip.
+  horse: '<path d="M318 24L319.5 14Q318.5 7 325 5L331.5 3.5L334.5 7L330 8.8L328.8 15L331.5 24Z" fill="#e3e7eb" stroke="#8a929a" stroke-width=".9" stroke-linejoin="round"/>' +
+    '<path d="M322 7Q318.5 11 319.8 17" fill="none" stroke="#8a929a" stroke-width=".9"/><circle cx="328.6" cy="6.6" r=".9" fill="#2b2320"/>',
+  // Tandang: a rooster on the skirt, the first to crow, for being the
+  // first bus on the map.
+  rooster: '<g transform="translate(-6 30)">' +
+    '<path d="M156 84Q148 74 154 70Q152 77 159 80Z" fill="#2e8b57"/><path d="M157 83Q151 71 158 68Q156 75 161 79Z" fill="#3d7cc9"/>' +
+    '<path d="M158 84Q158 77 166 77Q172 77 173 72L176 71Q178 76 175 81Q172 87 164 87Q159 87 158 84Z" fill="#e39a1c"/>' +
+    '<circle cx="175.5" cy="70" r="2.8" fill="#e39a1c"/><path d="M173.5 67.6Q174 65 175.4 66.4Q176 64.4 177.4 66.2Q178.6 65.6 178 68Z" fill="#d7262c"/>' +
+    '<path d="M178 69.6L181 70.6L178 71.4Z" fill="#f2c230"/><path d="M177.4 72Q178 74.4 176.6 74Z" fill="#d7262c"/>' +
+    '<path d="M165 87V91M168 87V91" stroke="#c98a1c" stroke-width="1.2"/></g>',
+  // Guhit: a gold sweep along the maroon band, for riding end to end.
+  stripe: '<path d="M30 74C80 80 120 88 170 88.5C230 89 300 86 346 84" fill="none" stroke="#f2c230" stroke-width="2.2"/>' +
+    '<path d="M44 81C90 86 128 91.4 170 91.6C230 91.8 300 89.4 346 88" fill="none" stroke="#fbf4e4" stroke-width=".9" opacity=".8"/>',
+  // Araw: a rising sun on the back, for the trips before five.
+  sunrise: '<path d="M37 92A9 9 0 0 1 55 92Z" fill="#f2c230"/>' +
+    '<path d="M46 80.5V78M36.6 84.6L34.8 82.8M55.4 84.6L57.2 82.8M33.4 92H31M58.6 92H61" stroke="#f2c230" stroke-width="1.6" stroke-linecap="round"/>',
+  // Patay-sindi: a string of lights under the windows, for the trips home
+  // after dark.
+  string: (function(){
+    const col = ['#ffb22e', '#e8483f', '#5fa055', '#3d7cc9', '#f39ac0'];
+    let w = 'M40 76', b = '';
+    for (let i = 0; i < 22; i++){
+      const x = 40 + i * 12;
+      w += 'Q' + (x + 6) + ' 80 ' + (x + 12) + ' 76';
+      b += '<circle cx="' + (x + 6) + '" cy="79.4" r="1.7" fill="' + col[i % 5] + '"/>';
+    }
+    return '<path d="' + w + '" fill="none" stroke="#3a2a26" stroke-width=".6"/>' + b;
+  })(),
+  // Bulaklak: flowers in a vase in the front side window, for ten salamat.
+  flowers: '<path d="M291 64.6V57M289 64.6L286 58.4M293 64.6L296 58.6M290.2 64.6L288.2 54.4M291.8 64.6L294 55" stroke="#4f7d4f" stroke-width=".8" fill="none"/>' +
+    '<path d="M287 73L288.4 64.6H293.6L295 73Z" fill="#3d7cc9"/>' +
+    '<circle cx="291" cy="56" r="2.2" fill="#f39ac0"/><circle cx="286" cy="57.6" r="1.9" fill="#fff"/><circle cx="296" cy="57.8" r="1.9" fill="#f2c230"/>' +
+    '<circle cx="288.2" cy="53.6" r="1.7" fill="#e8483f"/><circle cx="294" cy="54.2" r="1.7" fill="#fff"/>' +
+    '<g fill="#f2c230"><circle cx="291" cy="56" r=".7"/><circle cx="286" cy="57.6" r=".6"/><circle cx="294" cy="54.2" r=".5"/></g>',
+  // Laso: ribbons streaming back from the mirror, for fifty.
+  ribbons: '<path d="M348 21Q340 24 334 22T322 24" fill="none" stroke="#e8483f" stroke-width="1.6" stroke-linecap="round"/>' +
+    '<path d="M348 21.5Q341 27 335 26T324 29" fill="none" stroke="#f2c230" stroke-width="1.6" stroke-linecap="round"/>' +
+    '<path d="M348 22Q343 30 337 30T328 33" fill="none" stroke="#3d7cc9" stroke-width="1.6" stroke-linecap="round"/>' +
+    '<circle cx="348" cy="21.4" r="1.6" fill="#d7262c"/>',
+  // Gintong bituin: a gold star on the front, for a hundred.
+  goldstar: '<circle cx="340" cy="86" r="8.4" fill="#7a1f2b" stroke="#e3b23c" stroke-width="1"/>' +
+    '<path d="M340 79.4L341.6 83.7L346.3 84L342.7 86.9L343.9 91.3L340 88.8L336.1 91.3L337.3 86.9L333.7 84L338.4 83.7Z" fill="#f2c230" stroke="#b8860b" stroke-width=".5" stroke-linejoin="round"/>',
+  // Bagahe: luggage on the roof rack, for ten hours on the map.
+  luggage: '<path d="M122 13V9M234 13V9M122 9H234" stroke="#5a514c" stroke-width="1.2"/>' +
+    '<rect x="132" y="2" width="22" height="11" rx="2" fill="#9a5b45"/><path d="M132 7h22" stroke="#6d3a2a" stroke-width=".8"/>' +
+    '<rect x="158" y="4" width="18" height="9" rx="2" fill="#3d7cc9"/><path d="M167 4V2.6" stroke="#2a3a9e" stroke-width="1.4"/>' +
+    '<path d="M180 13Q179 3 188 3Q197 3 196 13Z" fill="#d9cfbe"/><path d="M185 4.6h6" stroke="#9a8c7a" stroke-width="1"/>' +
+    '<path d="M200 13V6h14v7Z" fill="#e3a72f"/><path d="M200 9.5h14M207 6v7" stroke="#b8860b" stroke-width=".8"/>',
+  // Pinta: a sunset with palm trees on the back window, for a hundred hours.
+  mural: '<path d="M41 64C50 62 58 66 66 63S78 62 83 64V70H41Z" fill="#e8483f" opacity=".55"/>' +
+    '<path d="M53 60A9 9 0 0 1 71 60Z" fill="#f39a2d" opacity=".9"/><path d="M41 60H83" stroke="#f39a2d" stroke-width="1"/>' +
+    '<g fill="none" stroke="#1d1a17" stroke-linecap="round"><path d="M48 70Q47 58 50 46" stroke-width="1.6"/>' +
+    '<path d="M50 46q-6-1-9 3M50 46q-5-4-8-3M50 46q2-5 7-5M50 46q6-1 8 3M50 46q1 4-1 7" stroke-width="1.2"/>' +
+    '<path d="M76 70Q77 62 75 55" stroke-width="1.3"/><path d="M75 55q-5 0-7 3M75 55q-3-4-6-3M75 55q2-4 6-3M75 55q4 1 5 4" stroke-width="1"/></g>',
+  // Kurtina: curtains gathered in every side window, for fifty hours.
+  curtains: [[40, 84], [89, 132], [137, 180], [185, 228], [233, 298]].map(function(p){
+    const a = p[0], b = p[1];
+    return '<path d="M' + (a + 1) + ' 31.5H' + (a + 9) + 'Q' + (a + 5) + ' 44 ' + (a + 2) + ' 54Z" fill="#b23a4b"/>' +
+      '<path d="M' + (b - 1) + ' 31.5H' + (b - 9) + 'Q' + (b - 5) + ' 44 ' + (b - 2) + ' 54Z" fill="#b23a4b"/>' +
+      '<path d="M' + (a + 4) + ' 33Q' + (a + 4.5) + ' 42 ' + (a + 2.6) + ' 50M' + (b - 4) + ' 33Q' + (b - 4.5) + ' 42 ' + (b - 2.6) + ' 50" stroke="#d9667a" stroke-width=".8" fill="none"/>';
+  }).join(''),
+  // Fog lamps under the front, for four weeks in a row.
+  foglamps: '<g fill="#ffd27a" stroke="#8a929a" stroke-width=".8"><circle cx="336" cy="118" r="2.8"/><circle cx="345" cy="118" r="2.8"/></g>',
+  // Bandera: a pennant flying from the back of the roof, for twelve.
+  pennant: '<path d="M40 22V3" stroke="#5a514c" stroke-width="1.2"/><path d="M40 4L20 8.5L40 13Z" fill="#7a1f2b"/><path d="M40 6.5L28 8.5L40 10.5Z" fill="#e39a1c"/>',
+  // Balikan: chrome bumpers at both ends, for riding both ways.
+  bumpers: '<g fill="#e3e7eb" stroke="#8a929a" stroke-width=".8"><rect x="329" y="109" width="23" height="7" rx="3"/><rect x="16" y="109" width="16" height="7" rx="3"/></g>',
+  // Mapa: the route along the skirt, a station for each place, for having
+  // ridden past every one.
+  route: '<path d="M190 114H254" stroke="#6d1a25" stroke-width="1.6"/><g fill="#fbf4e4" stroke="#6d1a25" stroke-width="1.2">' +
+    [0, 1, 2, 3, 4, 5, 6].map(function(i){ return '<circle cx="' + (190 + i * 64 / 6).toFixed(1) + '" cy="114" r="2.2"/>'; }).join('') + '</g>',
+  // The shop's, got with parts rather than earned (SHOP in the album
+  // block). Dais: a pair of dice hanging in the front side window.
+  dice: '<path d="M296 31.5V36.5M299.5 31.5V39.5" stroke="#5a514c" stroke-width=".6"/>' +
+    '<rect x="293.5" y="36.4" width="5" height="5" rx="1" fill="#fff" stroke="#8a929a" stroke-width=".4"/>' +
+    '<rect x="297" y="39.4" width="5" height="5" rx="1" fill="#d7262c"/>' +
+    '<g fill="#2b2320"><circle cx="295" cy="37.9" r=".5"/><circle cx="297" cy="39.9" r=".5"/></g>' +
+    '<g fill="#fff"><circle cx="298.5" cy="40.9" r=".5"/><circle cx="300.5" cy="42.9" r=".5"/><circle cx="299.5" cy="41.9" r=".5"/></g>',
+  // Antena: a whip antenna on the roof, a streamer at its tip.
+  antenna: '<path d="M296 22.5L291 1.6" stroke="#5a514c" stroke-width=".9" stroke-linecap="round"/><circle cx="291" cy="1.6" r="1.1" fill="#e8483f"/>' +
+    '<path d="M291.4 3.2Q287.5 4.4 284.6 2.6" fill="none" stroke="#f2c230" stroke-width="1.2" stroke-linecap="round"/>',
+  // Visor: a sun visor over the windscreen.
+  visor: '<path d="M299 23.6V21.4Q299 19.4 301 19.4H340Q347.5 19.4 352.5 24.6Z" fill="#3a3f45"/>' +
+    '<path d="M301 20.6H339.6Q345.6 20.6 349.6 23.2" fill="none" stroke="#8a929a" stroke-width=".7"/>',
+  // Salaming kromo: the mirror, in chrome, with a round bug-eye head.
+  mirror: '<path d="M333 27C350 17 363 28 358 44" fill="none" stroke="#cfd5db" stroke-width="2.6" stroke-linecap="round"/>' +
+    '<ellipse cx="357.3" cy="50" rx="5.2" ry="8.4" fill="#e3e7eb" stroke="#8a929a" stroke-width=".8"/>' +
+    '<path d="M354.6 45.6Q355.8 43.6 358 43.8" fill="none" stroke="#fff" stroke-width="1" stroke-linecap="round"/>',
+  // Tambutso: a chrome exhaust stack up the back.
+  exhaust: '<rect x="29" y="16" width="4" height="54" rx="1.6" fill="#cfd5db" stroke="#8a929a" stroke-width=".6"/>' +
+    '<path d="M28 16.4H34L33 13H29Z" fill="#8a929a"/><path d="M30 20V66" stroke="#fff" stroke-width=".7" opacity=".7"/>',
+  // Apoy: flames on the front of the skirt, streaming back.
+  flames: '<path d="M331 103C321 103 314 99.5 303 101.5C311 103.5 313 105.5 307 108C317 107 321 110 313 114.5C323 112.5 327 115 331 117.5Z" fill="#d7262c"/>' +
+    '<path d="M331 105.5C323 105.5 318 103.5 311 104.6C317 106 318 107.6 314 109.4C321 109 324 111 319 113.6C325 112.6 328 114 331 115.4Z" fill="#f39a2d"/>' +
+    '<path d="M331 108C326 108 323 107 319 107.6C322 108.6 322.6 109.6 320.6 110.8C324.6 110.6 327 111.6 331 112.6Z" fill="#f2c230"/>',
+  // Ilaw sa ilalim: a glow under the skirt, between and beyond the wheels.
+  underglow: '<path d="M30 125H72M104 125H266M298 125H344" stroke="#5ff0b8" stroke-width="6" opacity=".22" stroke-linecap="round"/>' +
+    '<path d="M32 121.6H70M106 121.6H264M300 121.6H342" stroke="#5ff0b8" stroke-width="2.6" opacity=".8" stroke-linecap="round"/>',
+  // Gintong gulong: gold wheels.
+  goldrims: [88, 282].map(function(x){
+    return '<circle cx="' + x + '" cy="120" r="9.5" fill="#e3b23c" stroke="#a8761c"/><circle cx="' + x + '" cy="120" r="5.6" fill="#f2d27a"/>' +
+      '<path d="M' + x + ' 114.4V125.6M' + (x - 5.6) + ' 120H' + (x + 5.6) + '" stroke="#a8761c" stroke-width="1.2"/>' +
+      '<circle cx="' + x + '" cy="120" r="1.8" fill="#a8761c"/>';
+  }).join('')
+};
+// Where each decoration sits on the coach, as the corner of it a card in My
+// tickets looks at (x y w h, all twice as wide as tall, in the coach's own
+// drawing space), so a decoration can be shown on its own: in colour once
+// earned, as an outline over a faded coach while it is still to come.
+const DECOR_BOX = {
+  bell:'296 70 44 22', placard:'296 44 56 28', sampaguita:'294 28 64 32', flaps:'50 100 64 32', horns:'236 0 56 28', fringe:'40 24 64 32',
+  chrome:'58 104 60 30', lights:'40 14 64 32', horse:'300 0 48 24', rooster:'128 94 64 32',
+  stripe:'150 70 64 32', sunrise:'22 68 56 28', string:'40 62 64 32', bumpers:'306 96 56 28',
+  route:'184 100 76 38', flowers:'266 50 48 24', ribbons:'318 10 48 24', goldstar:'320 72 40 20',
+  luggage:'116 0 96 48', mural:'30 26 64 32', curtains:'30 24 64 32', foglamps:'316 100 48 24', pennant:'14 0 48 24',
+  dice:'276 26 40 20', antenna:'272 0 40 20', visor:'294 8 64 32', mirror:'320 16 88 44', exhaust:'0 0 72 36',
+  flames:'294 94 48 24', underglow:'96 104 80 40', goldrims:'58 104 60 30'
+};
+function decorTile(key){
+  if (!hasOwn(BUS_DECOR, key) || !hasOwn(DECOR_BOX, key)) return '';
+  const c = TICKET_SKIES.day;
+  return '<svg class="decor-art" viewBox="' + DECOR_BOX[key] + '" aria-hidden="true" focusable="false" style="' + c.coach + '">' +
+    '<rect x="-10" y="-10" width="440" height="160" fill="' + c.sky + '"/>' +
+    '<g class="dc">' + COACH_SIDE + '</g><g class="dg">' + BUS_DECOR[key] + '</g></svg>';
+}
+// The paint jobs a bus can wear: body, roof and skirt, the band, and the
+// trim. Klasiko is the app's own maroon and gold, the coach as it is drawn
+// everywhere else. Presets only, never a colour picker, so nobody can paint
+// a bus to pass for an operator's or to say something on everyone's map.
+const BUS_PAINTS = {
+  klasiko: ['#f3ecdf', '#e6dccb', '#d9cfbe', '#7a1f2b', '#e39a1c'],
+  dagat:   ['#f4f6f8', '#e2e8ee', '#d3dbe3', '#1f5f9e', '#f2c230'],
+  gubat:   ['#f1efe2', '#e2dfcc', '#d5d1ba', '#2e6b45', '#e3b23c'],
+  kahel:   ['#fbf3ea', '#efe2d2', '#e2d2bf', '#d9661c', '#7a1f2b'],
+  lila:    ['#f3eff8', '#e3dcee', '#d6cde4', '#5b3a8e', '#c9a7e8'],
+  uling:   ['#3a3539', '#2f2a2e', '#28242a', '#b8322a', '#e3b23c'],
+  ginto:   ['#f6ead0', '#ead9b4', '#dcc79c', '#b8860b', '#7a1f2b']
+};
+// The coach's colours for a time of day, in a paint job: the sky's own
+// glass, lamps and wheels, the paint's body, band and trim.
+function paintStyle(paint, sky){
+  const p = BUS_PAINTS[hasOwn(BUS_PAINTS, paint) ? paint : 'klasiko'];
+  const base = (TICKET_SKIES[sky] || TICKET_SKIES.day).coach;
+  return base.replace(/--c-body:[^;]*/, '--c-body:' + p[0]).replace(/--c-roof:[^;]*/, '--c-roof:' + p[1])
+    .replace(/--c-skirt:[^;]*/, '--c-skirt:' + p[2]).replace(/--c-band:[^;]*/, '--c-band:' + p[3])
+    .replace(/--c-gold:[^;]*/, '--c-gold:' + p[4]);
+}
+function decorOn(keys){
+  return (keys || []).filter(function(k){ return hasOwn(BUS_DECOR, k); }).map(function(k){ return BUS_DECOR[k]; }).join('');
+}
+// The coach wearing the decorations named, in the order given, by day.
+function busSvg(keys, paint){
+  const c = TICKET_SKIES.day;
+  const d = decorOn(keys);
+  return '<svg class="mybus" viewBox="0 0 400 170" aria-hidden="true" focusable="false" style="' + paintStyle(paint, 'day') + '">' +
+    '<rect width="400" height="170" fill="' + c.sky + '"/>' +
+    '<path d="M0 118C60 104 120 112 190 104C260 96 330 110 400 102V170H0Z" fill="' + c.hill + '"/>' +
+    '<rect y="146" width="400" height="12" fill="' + c.road + '"/><rect y="158" width="400" height="12" fill="' + c.ground + '"/>' +
+    '<path d="M6 152H394" stroke="#fbf4e4" stroke-width="1.6" stroke-dasharray="9 8" opacity=".55"/>' +
+    '<svg x="18" y="12.5" width="364" height="136" viewBox="0 0 364 136">' + COACH_SIDE + d + '</svg></svg>';
+}
+// A bus on the road through a place, moving (October 2026): the scene in a
+// bus's popup, and My tickets' own bus. The road's dashes, the posts by it
+// and the bushes behind scroll past, the wheels turn and the coach rocks a
+// little; the view is the place's (TICKET_VIEWS, by the mark of the
+// checkpoint the bus is nearest), held still the way a far landmark is. The
+// pace is decorative and the same for every bus, about 60 km/h to the eye:
+// nothing sends a bus's real speed, and a scene that went faster or slower
+// would read as a promise of when it arrives. Each loop is at least 0.8s
+// (test-tokens.js) and covers more road instead: the road's dashes 78 units
+// in 1.3s, a post every second, the bushes behind at half that, and three
+// turns of the wheels, which is what 60 units a second turns them. t: { views (marks; more than one are stacked, and the
+// page fades from one to the next), sky, worn (decorations, in order),
+// paint, still (stopped, for a bus not heard from lately), now (milliseconds;
+// where in its loop each moving part is, so a popup redrawn by a poll
+// carries on rather than jumping back), close (framed closer, for My
+// tickets, where the bus is what is being looked at), frame (a name in
+// RIDE_FRAMES, over close) }. No ids.
+const RIDE_LOOPS = { road:1.3, posts:1, bush:5, wheel:1.1, rock:.8 };
+// Where the camera stands. A popup is 216 pixels across on a phone, so it
+// stands closest there, with some road ahead of the bus and sky above it:
+// the bus about 160 pixels long, where the My tickets framing left it 100.
+const RIDE_FRAMES = { wide:'0 0 300 84', close:'34 22 186 52', popup:'49 23 118 52' };
+function rideSvg(t){
+  t = t || {};
+  const k = TICKET_SKIES[t.sky] ? t.sky : 'day', c = TICKET_SKIES[k];
+  const at = function(loop){ return ' style="animation-delay:-' + (((+t.now || 0) / 1000) % RIDE_LOOPS[loop]).toFixed(2) + 's"'; };
+  const views = (t.views && t.views.length ? t.views : ['']).slice(0, 12).map(function(v, i){
+    const key = String(v || '').toLowerCase();
+    return '<g class="rv' + (i === 0 ? ' on' : '') + '">' + (hasOwn(TICKET_VIEWS, key)
+      ? TICKET_VIEWS[key](c) + '<path d="M0 60C60 57.5 120 60.5 180 58.5C230 57 270 59.5 300 58.5V66H0Z" fill="' + c.hill + '"/>'
+      : '<path d="M0 58C40 50 80 54 120 50C170 45 220 54 260 49C280 47 292 50 300 50V66H0Z" fill="' + c.hill + '"/>') + '</g>';
+  }).join('');
+  const sky = k === 'night'
+    ? '<path d="M24 7h0M70 20h0M88 6h0M140 11h0M160 5h0M196 8h0M226 4h0M286 22h0M252 3h0" stroke="' + c.orb + '" stroke-width="2" stroke-linecap="round" opacity=".85"/>' +
+      '<path d="M112 7a8 8 0 1 0 0 16a6.2 8 0 1 1 0-16z" fill="' + c.orb + '"/>'
+    : k === 'dawn' ? '<circle cx="118" cy="36" r="9" fill="' + c.orb + '"/>'
+    : '<circle cx="100" cy="15" r="6.5" fill="' + c.orb + '"/><path d="M126 20a4 4 0 0 1 4-4a5.5 5.5 0 0 1 10.5-1.5a4 4 0 0 1 3.5 5.5z" fill="#fff" opacity=".9"/>' +
+      '<path d="M238 11a3 3 0 0 1 3-3a4 4 0 0 1 7.6-1a3 3 0 0 1 2.4 4z" fill="#fff" opacity=".8"/>';
+  let bush = '', posts = '';
+  for (let x = 0; x < 450; x += 150){
+    bush += '<circle cx="' + (x + 20) + '" cy="62" r="4.5"/><circle cx="' + (x + 27) + '" cy="61" r="5.5"/><circle cx="' + (x + 34) + '" cy="62.5" r="3.8"/>' +
+            '<circle cx="' + (x + 96) + '" cy="62" r="3.6"/><circle cx="' + (x + 101) + '" cy="61.6" r="4.4"/>';
+  }
+  for (let x = 0; x < 420; x += 60) posts += 'M' + (x + 12) + ' 79V71.5';
+  const wheel = function(x){ return '<g class="rw"' + at('wheel') + '><path d="M' + x + ' 106.5V112.5M' + x + ' 127.5V133.5M' + (x - 13.5) + ' 120H' + (x - 7.5) + 'M' + (x + 7.5) + ' 120H' + (x + 13.5) + '" stroke="var(--c-hub)" stroke-width="2.2" opacity=".75"/></g>'; };
+  const beam = k === 'night' ? '<path d="M145 61L186 55V71Z" fill="rgba(255,243,196,.32)"/>' : '';
+  const frame = hasOwn(RIDE_FRAMES, t.frame) ? RIDE_FRAMES[t.frame] : t.close ? RIDE_FRAMES.close : RIDE_FRAMES.wide;
+  return '<svg class="rideart' + (t.still ? ' still' : '') + '" viewBox="' + frame +
+    '" aria-hidden="true" focusable="false" style="' + paintStyle(t.paint, k) + '">' +
+    '<rect width="300" height="84" fill="' + c.sky + '"/>' + sky + views +
+    '<g class="rb"' + at('bush') + ' fill="' + c.shrub + '" opacity=".9">' + bush + '</g>' +
+    '<rect y="64" width="300" height="20" fill="' + c.ground + '"/><rect y="64" width="300" height="9" fill="' + c.road + '"/>' +
+    '<path class="rr"' + at('road') + ' d="M0 68.5H390" stroke="#fbf4e4" stroke-width="1.4" stroke-dasharray="7 6" opacity=".55"/>' +
+    '<path class="rp"' + at('posts') + ' d="' + posts + '" stroke="' + c.post + '" stroke-width="1.6"/>' + beam +
+    '<g class="rk"' + at('rock') + '><svg x="58" y="37.5" width="88" height="33" viewBox="0 0 364 136">' + COACH_SIDE + decorOn(t.worn) +
+      wheel(88) + wheel(282) + '</svg></g></svg>';
 }
 // ---- END PICTURES ---------------------------------------------------------
 
@@ -3437,7 +4047,9 @@ function stampOf(k, s){
   const d = STAMPS[k];
   return { k:k, t:d.t, s:s || d.s, c:d.c };
 }
-function ticketStamps(t){
+// Every stamp a trip earned, then the two a ticket has room for.
+function ticketStamps(t){ return tripStamps(t).slice(0, 2); }
+function tripStamps(t){
   const out = [];
   const last = t.lastIdx;
   if ((t.fromIdx === 0 && t.toIdx === last) || (t.fromIdx === last && t.toIdx === 0))
@@ -3445,7 +4057,7 @@ function ticketStamps(t){
   if (t.startMins < 300) out.push(stampOf('dawn'));
   else if (t.endMins >= 1110 || t.endMins < t.startMins) out.push(stampOf('night'));
   if (t.othersAtStart === 0) out.push(stampOf('first'));
-  return out.slice(0, 2);
+  return out;
 }
 function ticketWorthShowing(t){
   return !!t && t.writes > 0 && t.mins >= 5;
@@ -3538,6 +4150,406 @@ function ticketSky(st){
   st = st || [];
   return st.indexOf('dawn') >= 0 ? 'dawn' : st.indexOf('night') >= 0 ? 'night' : 'day';
 }
+// The ticket's luck (October 2026): its paper, the shape its stops were
+// punched with, and what is in its picture besides the trip itself. Three
+// more rules, with the ten above:
+//
+// 11. Worked out, never drawn at random: from the day, the direction and the
+//     two ends, which a kept ticket keeps, so its copy draws the same and
+//     nothing new is stored. It also means a trip cannot be re-rolled by
+//     stopping and starting again: a different ticket takes a different ride
+//     on a different day.
+// 12. Nothing about how the bus was driven, how long it took or how many
+//     said salamat goes in. Those are the driver numbers again, and luck that
+//     followed them would be a score.
+// 13. A sight not yet spotted is shown faint with "not yet", never a zero.
+//
+// The sights a ticket can have, as the album names them.
+const SIGHTS = {
+  jeepney:    { t:'Jeepney',           s:'on the road' },
+  tricycle:   { t:'Tricycle',          s:'on the road' },
+  carabao:    { t:'Kalabaw',           s:'by the road' },
+  sorbetes:   { t:'Sorbetes',          s:'by the road' },
+  stall:      { t:'Prutasan',          s:'by the road' },
+  kites:      { t:'Saranggola',        s:'in the sky' },
+  birds:      { t:'Ibon',              s:'in the sky' },
+  fog:        { t:'Hamog',             s:'fog' },
+  rain:       { t:'Ambon',             s:'drizzle' },
+  rainbow:    { t:'Bahaghari',         s:'rainbow' },
+  fullmoon:   { t:'Bilog na buwan',    s:'full moon' },
+  parol:      { t:'Parol',             s:'Sep to Jan 6' },
+  banderitas: { t:'Banderitas',        s:'fiesta, May' },
+  flags:      { t:'Watawat',           s:'flag days' },
+  meteor:     { t:'Bulalakaw',         s:'rare', rare:true },
+  double:     { t:'Dobleng bahaghari', s:'rare', rare:true }
+};
+// FNV-1a over what a kept ticket keeps, and a mix of it with a salt for
+// each choice, so the choices do not follow each other.
+function ticketSeed(e){
+  const str = e.d + '|' + e.dir + '|' + e.from + '|' + e.to;
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return h >>> 0;
+}
+function luck(seed, salt, n){
+  let h = (seed ^ Math.imul(salt + 1, 2654435761)) >>> 0;
+  h = Math.imul(h ^ (h >>> 16), 2246822507) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 3266489909) >>> 0;
+  return ((h ^ (h >>> 16)) >>> 0) % n;
+}
+// The moon's eighth of its month on the evening of a day (8 PM in Manila),
+// counted from the new moon of 6 January 2000: 0 new, 4 full.
+function moonPhase(d){
+  const p = d.split('-').map(Number), L = 29.530588853;
+  const days = (Date.UTC(p[0], p[1] - 1, p[2], 12) - Date.UTC(2000, 0, 6, 18, 14)) / 86400000;
+  return Math.floor((((days % L) + L) % L) / L * 8 + .5) % 8;
+}
+// The season a day falls in: the parol from 1 September to Three Kings, as
+// in the header (inParolSeason); the flag days from 28 May to Independence
+// Day; and May, the month of fiestas, before them.
+function ticketSeason(d){
+  const p = d.split('-').map(Number), m = p[1], day = p[2];
+  if (m >= 9 || (m === 1 && day <= 6)) return 'parol';
+  if ((m === 5 && day >= 28) || (m === 6 && day <= 12)) return 'flags';
+  return m === 5 ? 'banderitas' : '';
+}
+// e: a kept ticket, or the entry Keep would keep.
+function ticketLook(e){
+  const seed = ticketSeed(e), sky = ticketSky(e.st), night = sky === 'night';
+  const r = function(salt, n){ return luck(seed, salt, n); };
+  const pp = r(1, 20), w = r(5, 20), road = r(3, 10), air = r(4, 10);
+  const look = {
+    paper: pp < 8 ? 'cream' : pp < 11 ? 'pink' : pp < 14 ? 'blue' : pp < 17 ? 'green' : 'yellow',
+    punch: ['round', 'square', 'tri', 'diamond'][r(2, 4)],
+    road: road < 3 ? '' : road < 5 ? 'jeepney' : road < 7 ? 'tricycle' : night ? '' : ['carabao', 'sorbetes', 'stall'][road - 7],
+    weather: night ? (w < 2 ? 'rain' : '') : sky === 'dawn' ? (w < 6 ? 'fog' : '') : w < 2 ? 'rain' : w < 4 ? 'rainbow' : w < 7 ? 'fog' : '',
+    air: '', season: ticketSeason(e.d), moon: night ? moonPhase(e.d) : -1,
+    rare: r(6, 15) === 0, meteor: false, sights: []
+  };
+  // The sky holds one thing at a time: the season's decorations, or else
+  // kites or birds, and nothing flies in the rain.
+  if (!night && look.weather !== 'rain' && !look.season) look.air = air < 2 ? 'kites' : air < 5 ? 'birds' : '';
+  // One ticket in fifteen is gold, with something rare in it.
+  if (look.rare){ if (night) look.meteor = true; else look.weather = 'double'; }
+  [look.road, look.air, look.weather, look.moon === 4 ? 'fullmoon' : '', look.season, look.meteor ? 'meteor' : '']
+    .forEach(function(k){ if (k && owns(SIGHTS, k)) look.sights.push(k); });
+  return look;
+}
+// What the kept tickets have spotted between them, and how many are gold.
+function albumSights(list){
+  const seen = {};
+  let gold = 0;
+  list.forEach(function(e){
+    const l = ticketLook(e);
+    if (l.rare) gold++;
+    l.sights.forEach(function(k){ seen[k] = (seen[k] || 0) + 1; });
+  });
+  return { seen:seen, gold:gold };
+}
+// Your bus (October 2026). A sharer's trips decorate a coach of their own,
+// a thing at a time, the way a driver dresses a provincial bus. The
+// decorations are earned from counts the phone keeps as wt-bus, and three
+// more rules hold them:
+//
+// 14. Counted from every trip that drew a ticket and went somewhere, its two
+//     ends different places, kept or not. Numbers and place names only:
+//     never a list of days or times, nothing per bus. A trip that went
+//     nowhere counts for nothing, so sitting at a stop with sharing on is no
+//     way to dress a bus, and no reason to put a bus on the map that isn't
+//     one.
+// 15. Earned once and kept: the counts only grow, and decorations for a
+//     streak follow the best one, so a broken streak takes nothing away.
+//
+// Since October 2026, by the maintainer's decision, the bus also keeps what
+// was refused at first: the time on the map in all, the salamat received in
+// all, and a streak of weeks with a trip in them (the week of the last trip,
+// the streak and the best). Each is a single number on the sharer's own
+// phone and never sent; the server still adds nothing up, and thanks_now
+// still dies with its trip. Weeks, not days: commuters do not ride on
+// Sundays, and a streak that broke every weekend would be a punishment.
+// 16. A decoration not yet earned is "not yet", never a zero.
+//
+// Two more come from the tours, one each for finishing them (to their last
+// step), so a new sharer's bus has something on it before the first trip
+// and they see how it works. Earned once: replaying a tour adds nothing, and
+// a tour puts nothing on the map, so there is nothing to farm.
+//
+// c is the count it is earned by, goal how many; the route's own length
+// for every place on it.
+const DECOR = [
+  { k:'bell',       id:'a', pay:10,  t:'Kampanilya',     s:'the map\u2019s tour, finished',  c:'tw',     goal:1 },
+  { k:'placard',    id:'b', pay:10,  t:'Plaka ng ruta',  s:'the sharing tour, finished',    c:'ts',     goal:1 },
+  { k:'sampaguita', id:'c', pay:10,  t:'Sampaguita',     s:'your first trip shared',        c:'n',      goal:1 },
+  { k:'flaps',      id:'d', pay:10,  t:'Mud flaps',      s:'3 trips shared',                c:'n',      goal:3 },
+  { k:'horns',      id:'e', pay:15,  t:'Busina',         s:'5 trips shared',                c:'n',      goal:5 },
+  { k:'fringe',     id:'f', pay:20,  t:'Borlas',         s:'10 trips shared',               c:'n',      goal:10 },
+  { k:'chrome',     id:'g', pay:30,  t:'Kromo',          s:'25 trips shared',               c:'n',      goal:25 },
+  { k:'lights',     id:'h', pay:50,  t:'Ilaw sa bubong', s:'50 trips shared',               c:'n',      goal:50 },
+  { k:'horse',      id:'i', pay:100, t:'Kabayo',         s:'100 trips shared',              c:'n',      goal:100 },
+  { k:'rooster',    id:'j', pay:20,  t:'Tandang',        s:'first bus on the map, 3 times', c:'first',  goal:3 },
+  { k:'stripe',     id:'k', pay:15,  t:'Guhit',          s:'a trip end to end',             c:'full',   goal:1 },
+  { k:'sunrise',    id:'l', pay:20,  t:'Araw',           s:'3 trips before 5 AM',           c:'dawn',   goal:3 },
+  { k:'string',     id:'m', pay:20,  t:'Patay-sindi',    s:'3 trips after dark',            c:'night',  goal:3 },
+  { k:'bumpers',    id:'n', pay:15,  t:'Balikan',        s:'both directions',               c:'ways',   goal:2 },
+  { k:'route',      id:'o', pay:30,  t:'Mapa',           s:'every place on the route',      c:'places', goal:0 },
+  { k:'flowers',    id:'p', pay:15,  t:'Bulaklak',       s:'10 salamat received',           c:'ty',     goal:10 },
+  { k:'ribbons',    id:'q', pay:40,  t:'Laso',           s:'50 salamat received',           c:'ty',     goal:50 },
+  { k:'goldstar',   id:'r', pay:80,  t:'Gintong bituin', s:'100 salamat received',          c:'ty',     goal:100 },
+  { k:'luggage',    id:'s', pay:20,  t:'Bagahe',         s:'10 hours on the map',           c:'hours',  goal:10 },
+  { k:'mural',      id:'t', pay:100, t:'Pinta',          s:'100 hours on the map',          c:'hours',  goal:100 },
+  { k:'curtains',   id:'u', pay:50,  t:'Kurtina',        s:'50 hours on the map',           c:'hours',  goal:50 },
+  { k:'foglamps',   id:'v', pay:30,  t:'Fog lamps',      s:'4 weeks in a row',              c:'best',   goal:4 },
+  { k:'pennant',    id:'w', pay:80,  t:'Bandera',        s:'12 weeks in a row',             c:'best',   goal:12 }
+];
+// ---- Spare parts (October 2026) -------------------------------------------
+// Achievements earn spare parts (piyesa), and parts get accessories and
+// paint in the shop. They are drawn as a steel nut beside a number, never
+// named on screen (partsTag). They were barya, coins, until the maintainer
+// saw that riders might think real money was involved; stars were turned
+// down because they read as a driver's rating, and gems because games sell
+// them for load. Three more rules, with the guardrails the maintainer asked
+// for so nobody can farm them at everyone else's cost:
+//
+// 17. Parts come only from achievements, each paid once (paid), and from
+//     trips that drew a ticket and went somewhere: PARTS_TRIP a trip, for at
+//     most PARTS_TRIPS_A_DAY a day. Every farmed trip would be a bus on
+//     everyone's map that isn't one, so a trip earns little and the day's
+//     earnings stop. Never bought with money, never sent, never traded.
+// 18. The achievements' own decorations are trophies: earned, never for
+//     sale. The shop sells other things (SHOP) and paint (PAINTS), presets
+//     only, so nothing anyone puts on a bus is words or a colour of their
+//     own making.
+// 19. A bus is shown to riders only if its sharer says so (show), asked
+//     once, when there is first something on it to show, and only while
+//     sharing; what goes is a code of the paint and what is worn (busLook),
+//     letters from these lists and nothing else, and it dies with the trip.
+const PARTS_TRIP = 5, PARTS_TRIPS_A_DAY = 3;
+const SHOP = [
+  { k:'dice',      id:'F', price:10, t:'Dais',           s:'a pair of dice in the window' },
+  { k:'antenna',   id:'G', price:15, t:'Antena',         s:'with a streamer' },
+  { k:'visor',     id:'A', price:20, t:'Visor',          s:'over the windscreen' },
+  { k:'mirror',    id:'H', price:25, t:'Salaming kromo', s:'a chrome mirror' },
+  { k:'exhaust',   id:'C', price:30, t:'Tambutso',       s:'a stack up the back' },
+  { k:'flames',    id:'B', price:40, t:'Apoy',           s:'flames on the front' },
+  { k:'underglow', id:'D', price:60, t:'Ilaw sa ilalim', s:'a glow under the bus' },
+  { k:'goldrims',  id:'E', price:80, t:'Gintong gulong', s:'gold wheels' }
+];
+const PAINTS = [
+  { k:'klasiko', id:'0', price:0,  t:'Klasiko' },
+  { k:'dagat',   id:'1', price:10, t:'Dagat' },
+  { k:'gubat',   id:'2', price:10, t:'Gubat' },
+  { k:'kahel',   id:'3', price:20, t:'Kahel' },
+  { k:'lila',    id:'4', price:30, t:'Lila' },
+  { k:'uling',   id:'5', price:40, t:'Uling' },
+  { k:'ginto',   id:'6', price:60, t:'Ginto' }
+];
+function findIn(list, k){ for (let i = 0; i < list.length; i++) if (list[i].k === k) return list[i]; return null; }
+// The trophies as My tickets lists them: by what earns them, in DECOR's
+// order of kinds, and the nearest first within a kind. DECOR's own order is
+// the order they are drawn in, which is not always the order they come in:
+// the mural goes on before the curtains that hang over it.
+function decorShown(){
+  const kind = function(d){ for (let i = 0; i < DECOR.length; i++) if (DECOR[i].c === d.c) return i; return 0; };
+  return DECOR.slice().sort(function(a, b){ return kind(a) - kind(b) || a.goal - b.goal; });
+}
+// The order a bus wears things in, which is the order they are drawn: the
+// glow under it first, the trophies, then the shop's.
+const WEAR_ORDER = ['underglow'].concat(DECOR.map(function(d){ return d.k; }),
+  SHOP.filter(function(x){ return x.k !== 'underglow'; }).map(function(x){ return x.k; }));
+const BUS_COUNTS = ['n', 'first', 'full', 'dawn', 'night', 'north', 'south', 'tw', 'ts', 'mins', 'ty', 'wk', 'streak', 'best',
+                    'c', 'day', 'dayn', 'show', 'asked'];
+// Yes or no, kept as a count of one.
+const BUS_FLAGS = ['tw', 'ts', 'show', 'asked'];
+// Days since 1 January 1970, for the day's cap on a trip's parts.
+function dayIndex(d){
+  return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+}
+// Weeks since the Monday of 5 January 1970, for a streak counted in weeks.
+function weekIndex(d){
+  return Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(1970, 0, 5)) / 604800000);
+}
+// What came back out of storage: only the counts, whole and not negative,
+// and a short list of short place names.
+function busClean(raw){
+  const b = { places:[] };
+  const o = raw && typeof raw === 'object' ? raw : {};
+  BUS_COUNTS.forEach(function(k){
+    const v = o[k];
+    b[k] = typeof v === 'number' && isFinite(v) && v > 0 ? Math.floor(Math.min(v, BUS_FLAGS.indexOf(k) >= 0 ? 1 : 1e6)) : 0;
+  });
+  if (Array.isArray(o.places)) b.places = o.places.filter(function(x, i, a){
+    return typeof x === 'string' && x && a.indexOf(x) === i;
+  }).slice(0, 40).map(function(x){ return x.slice(0, 24); });
+  // Only names from these lists, each once: anything else in storage, or in
+  // a restored backup, is dropped.
+  const only = function(list, keys){
+    return Array.isArray(list) ? list.filter(function(x, i, a){ return typeof x === 'string' && keys.indexOf(x) >= 0 && a.indexOf(x) === i; }) : [];
+  };
+  b.own = only(o.own, SHOP.map(function(x){ return x.k; }));
+  b.paints = only(o.paints, PAINTS.slice(1).map(function(x){ return x.k; }));
+  b.off = only(o.off, WEAR_ORDER);
+  b.paid = only(o.paid, DECOR.map(function(d){ return d.k; }));
+  b.paint = o.paint === 'klasiko' || b.paints.indexOf(o.paint) >= 0 ? o.paint : 'klasiko';
+  return b;
+}
+// t: { dir, stamps (every stamp the trip earned, by name), fromIdx, toIdx,
+// mins on the map, thanks (the salamat it got), week (weekIndex of its end) }.
+// The counts after one more trip; unchanged for a trip that went nowhere.
+function busAdd(b, t, cps){
+  b = busClean(b);
+  if (!(t.fromIdx >= 0 && t.toIdx >= 0 && t.fromIdx !== t.toIdx && t.fromIdx < cps.length && t.toIdx < cps.length)) return b;
+  const st = t.stamps || [];
+  b.n++;
+  b.mins += Math.max(0, Math.round(+t.mins || 0));
+  b.ty += Math.max(0, (+t.thanks || 0) | 0);
+  // The streak: weeks in a row with a trip in them. A second trip in the
+  // same week adds nothing, the next week adds one, a week missed starts
+  // again at one, and a trip from an older week (a ticket handed over late)
+  // leaves it alone. The best is kept, and decorations follow the best.
+  const w = (+t.week || 0) | 0;
+  if (w > 0){
+    if (!b.wk || w > b.wk + 1) b.streak = 1;
+    else if (w === b.wk + 1) b.streak++;
+    if (w > b.wk) b.wk = w;
+    if (b.streak > b.best) b.best = b.streak;
+  }
+  ['first', 'full', 'dawn', 'night'].forEach(function(k){ if (st.indexOf(k) >= 0) b[k]++; });
+  if (t.dir === 'south') b.south++; else b.north++;
+  for (let i = Math.min(t.fromIdx, t.toIdx); i <= Math.max(t.fromIdx, t.toIdx); i++){
+    const name = cps[i].short || cps[i].name;
+    if (b.places.indexOf(name) < 0) b.places.push(name);
+  }
+  return b;
+}
+// The two tours, finished: tw the map's, ts the sharing one's. A yes or no
+// each, kept as a count of one, and never the reason for anything else.
+function busToured(b, names){
+  b = busClean(b);
+  if ((names || []).indexOf('watch') >= 0) b.tw = 1;
+  if ((names || []).indexOf('share') >= 0) b.ts = 1;
+  return b;
+}
+// The streak as it stands this week: alive while last week or this one has
+// a trip, otherwise none.
+function busStreak(b, week){
+  b = busClean(b);
+  return b.wk && week - b.wk <= 1 ? b.streak : 0;
+}
+function busCount(b, d, cps){
+  if (d.c === 'ways') return (b.north > 0 ? 1 : 0) + (b.south > 0 ? 1 : 0);
+  if (d.c === 'hours') return Math.floor((b.mins || 0) / 60);
+  if (d.c === 'places') return cps.filter(function(c){ return b.places.indexOf(c.short || c.name) >= 0; }).length;
+  return b[d.c] || 0;
+}
+function busGoal(d, cps){ return d.c === 'places' ? cps.length : d.goal; }
+// The decorations earned, in DECOR's order, which is the order they are put on.
+function busEarned(b, cps){
+  b = busClean(b);
+  return DECOR.filter(function(d){ const g = busGoal(d, cps); return g > 0 && busCount(b, d, cps) >= g; })
+              .map(function(d){ return d.k; });
+}
+// Pays what is owed: each achievement earned and not yet paid, once (rule
+// 17). Returns the bus after, the parts and which achievements paid.
+function busSettle(b, cps){
+  b = busClean(b);
+  const due = busEarned(b, cps).filter(function(k){ return b.paid.indexOf(k) < 0; });
+  let got = 0;
+  due.forEach(function(k){ got += findIn(DECOR, k).pay; b.paid.push(k); });
+  b.c = Math.min(b.c + got, 1e6);
+  return { b:b, got:got, keys:due };
+}
+// A counted trip's own parts, for at most PARTS_TRIPS_A_DAY a day.
+function busTripPay(b, day){
+  b = busClean(b);
+  if (b.day !== day){ b.day = day; b.dayn = 0; }
+  if (b.dayn >= PARTS_TRIPS_A_DAY) return { b:b, got:0 };
+  b.dayn++;
+  b.c = Math.min(b.c + PARTS_TRIP, 1e6);
+  return { b:b, got:PARTS_TRIP };
+}
+function busOwns(b, k, cps){
+  return busEarned(b, cps).indexOf(k) >= 0 || busClean(b).own.indexOf(k) >= 0;
+}
+// Buys one thing from the shop or one paint, and puts it on. Null when it
+// cannot be bought: unknown, owned already, a trophy (rule 18), or more
+// parts than there are.
+function busBuy(b, k){
+  b = busClean(b);
+  const item = findIn(SHOP, k), paint = findIn(PAINTS, k);
+  if (item){
+    if (b.own.indexOf(k) >= 0 || b.c < item.price) return null;
+    b.c -= item.price; b.own.push(k);
+    b.off = b.off.filter(function(x){ return x !== k; });
+    return b;
+  }
+  if (paint && paint.price > 0){
+    if (b.paints.indexOf(k) >= 0 || b.c < paint.price) return null;
+    b.c -= paint.price; b.paints.push(k); b.paint = k;
+    return b;
+  }
+  return null;
+}
+// Puts something owned on, or takes it off into the garage.
+function busWear(b, k, on, cps){
+  b = busClean(b);
+  if (!busOwns(b, k, cps)) return b;
+  b.off = b.off.filter(function(x){ return x !== k; });
+  if (!on) b.off.push(k);
+  return b;
+}
+function busUsePaint(b, k){
+  b = busClean(b);
+  if (k === 'klasiko' || b.paints.indexOf(k) >= 0) b.paint = k;
+  return b;
+}
+// What the bus is wearing, in the order it is drawn.
+function busWorn(b, cps){
+  b = busClean(b);
+  const owned = busEarned(b, cps).concat(b.own);
+  return WEAR_ORDER.filter(function(k){ return owned.indexOf(k) >= 0 && b.off.indexOf(k) < 0; });
+}
+// Something to show: worn, or a paint that is not the plain one.
+function busHasLook(b, cps){
+  b = busClean(b);
+  return busWorn(b, cps).length > 0 || b.paint !== 'klasiko';
+}
+// The bus as riders see it (rule 19): a digit for the paint, then a letter
+// for each thing worn, sorted. Letters only from DECOR and SHOP, so the code
+// can carry nothing else.
+function busLook(b, cps){
+  b = busClean(b);
+  return findIn(PAINTS, b.paint).id + busWorn(b, cps).map(function(k){
+    return (findIn(DECOR, k) || findIn(SHOP, k)).id;
+  }).sort().join('');
+}
+// A code read back, from a server row anyone could have written: the paint
+// and what is worn, in drawing order. Null for anything not shaped like one;
+// a letter it does not know is skipped.
+function lookRead(code){
+  if (typeof code !== 'string' || !/^[0-9][A-Za-z]{0,40}$/.test(code)) return null;
+  let paint = 'klasiko';
+  PAINTS.forEach(function(p){ if (p.id === code[0]) paint = p.k; });
+  const ids = code.slice(1);
+  return { paint:paint, worn:WEAR_ORDER.filter(function(k){ return ids.indexOf((findIn(DECOR, k) || findIn(SHOP, k)).id) >= 0; }) };
+}
+// Whether a bus is as a new phone's is, with nothing earned, bought, worn,
+// chosen or counted: what restoring a backup over it would lose is nothing.
+function busIsNew(b){
+  return JSON.stringify(busClean(b)) === JSON.stringify(busClean(null));
+}
+// A backup: the kept tickets and the bus, as a file the sharer keeps where
+// they like. Made on the phone and sent nowhere by the app.
+function backupMake(list, bus, when){
+  return JSON.stringify({ app:'bus-tracker', v:1, made:ymd(when), tickets:albumClean(list), bus:busClean(bus) });
+}
+// A backup read back, cleaned the way storage is: null unless it is one.
+function backupRead(text){
+  if (typeof text !== 'string' || text.length > 400000) return null;
+  let o = null;
+  try{ o = JSON.parse(text.trim()); }catch(e){ return null; }
+  if (!o || o.app !== 'bus-tracker' || o.v !== 1 || !Array.isArray(o.tickets) || !o.bus || typeof o.bus !== 'object') return null;
+  return { tickets:albumClean(o.tickets), bus:busClean(o.bus) };
+}
 function keptGreeting(st){
   return (st || []).indexOf('night') >= 0 ? 'Ingat pauwi!' : 'Ingat sa biyahe!';
 }
@@ -3554,7 +4566,7 @@ function keptSince(d){
 
 // Which buses this tab has already thanked. sessionStorage, not local: it
 // belongs to the visit, like the map's blue dot and the watcher id, and it
-// is deliberately NOT one of the four things the privacy panel promises are
+// is deliberately NOT one of the six things the privacy panel promises are
 // remembered between visits. Losing it costs nothing — the server drops a
 // repeat on its own, so the worst case is a button that offers itself twice.
 let THANKED = null;
@@ -3739,18 +4751,39 @@ function aboardControl(b, linkable){
     : '<button type="button" class="buslink" onclick="boardBus(\''+b.id+'\')">'+COACH_GLYPH+'I’m on this bus</button>';
 }
 const COACH_GLYPH = '<svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg>';
+// The time of day the scenes are drawn in, by this phone's clock.
+function skyNow(){
+  const h = new Date().getHours();
+  return h < 5 || h >= 19 ? 'night' : h < 7 ? 'dawn' : 'day';
+}
+// The bus in its popup, on the road through the place it is nearest: as its
+// sharer dressed it if they chose to show it (lookRead of the row's look),
+// a sharer's own as they dressed it whatever they chose, and plain
+// otherwise. Stopped for a bus not heard from lately.
+function popupRide(b, fresh){
+  let look = null;
+  if (b.self && !WALK){ const own = loadBus(); look = { paint:own.paint, worn:busWorn(own, CHECKPOINTS) }; }
+  else look = lookRead(b.look);
+  const i = nearestCheckpoint(routeProgressKm({ lat:b.lat, lng:b.lng }, CHECKPOINTS, ROUTE_CHAIN));
+  return '<div class="pride">' + rideSvg({ views:[(CHECKPOINTS[i] && CHECKPOINTS[i].mark) || ''], sky:skyNow(),
+    worn: look ? look.worn : [], paint: look ? look.paint : 'klasiko', still: fresh === 'delayed', now: Date.now(), frame:'popup' }) + '</div>';
+}
 function busPopupHtml(b){
   const fresh = freshness(b.ts);
   const pl = busPlace(b, CHECKPOINTS, ROUTE_CHAIN);
   const story = storyFor(pl, b.direction, CHECKPOINTS);
   // Same strict check as the strip's pills before an id goes into a handler.
   const linkable = b.id && /^[A-Za-z0-9\-]+$/.test(b.id);
-  return '<div class="'+(b.direction==='north'?'nb':'sb')+'">'+
-    '<div class="pdir">'+(b.direction==='north'?'▲ NORTHBOUND':'▼ SOUTHBOUND')+'</div>'+
-    (b.label ? '<div class="pname">'+escapeHtml(b.label)+'</div>' : '')+
+  // Two lines under the picture, which took the room of two more: the way it
+  // is going with the bus's number (or the way, spelled out, without one) and
+  // how fresh, then where it is. The arrow is the chips' and the strip's.
+  const way = b.direction==='north' ? 'Northbound' : 'Southbound';
+  return '<div class="'+(b.direction==='north'?'nb':'sb')+'">'+ popupRide(b, fresh) +
+    '<div class="pname"><span class="pdir" aria-hidden="true">'+(b.direction==='north'?'▲':'▼')+'</span> '+
+      (b.label ? '<span class="vh">'+way+' </span>'+escapeHtml(b.label) : way)+
+      ' <span class="page">· '+(fresh==='live' ? 'live' : timeAgo(b.ts)+' ago')+
+      ((b.count&&b.count>1) ? ' · '+(b.count|0)+' sharing' : '')+'</span></div>'+
     '<div>'+escapeHtml(pl ? pl.label : 'position unclear')+'</div>'+
-    '<div class="page">'+(fresh==='live' ? 'live' : timeAgo(b.ts)+' ago')+
-    ((b.count&&b.count>1) ? ' · '+(b.count|0)+' sharing' : '')+'</div>'+
     (story ? '<div class="kw">'+markSvg(story.mark)+'<span><b>'+story.lead+'</b>'+escapeHtml(story.name+', '+story.about)+'</span></div>' : '')+
     thanksControl(b.id, b.self, thanksDone(b))+
     aboardControl(b, linkable)+
@@ -4263,13 +5296,14 @@ function aboardWords(info){
 
 // ---- My stop: storage, the picker, and the marks on the map -----------
 // The saved stop is the THIRD thing this app keeps between visits, after the
-// guide-seen dot and the theme choice; the kept tickets are the fourth. All
-// four are named in the privacy panel, and the panel is the promise the code
-// is only the implementation of: a fifth means editing that panel in the same
-// commit as the feature.
+// guide-seen dot and the theme choice; the kept tickets are the fourth, your
+// bus the fifth and the trip in progress the sixth. All six are named in the
+// privacy panel, and the panel is the promise the code is only the
+// implementation of: a seventh means editing that panel in the same commit
+// as the feature.
 //
 // Whether the blue dot is switched on is kept in sessionStorage instead, so
-// it dies with the tab and never becomes a fifth remembered thing. Opting
+// it dies with the tab and never becomes a seventh remembered thing. Opting
 // in again next visit is a small price for a permission that stays a
 // per-visit decision.
 let MYSTOP = null;        // {name, lat, lng}, in this browser and nowhere else
@@ -4396,8 +5430,8 @@ function myStopCardHtml(shown, all){
     RIDE_LAST = '';
     return '<button type="button" class="mystop-btn" onclick="openStopPicker()">' +
       '<span class="pin">' + PIN_GLYPH + '</span><span>' + (riding
-        ? 'Set the stop you’re getting off at — see how many stops are left'
-        : 'Set your stop — see how far the bus is from it') + '</span></button>';
+        ? 'Set where you get off'
+        : 'Set your stop') + '</span></button>';
   }
   MYSTOP_KM = routeProgressKm({lat:MYSTOP.lat, lng:MYSTOP.lng}, CHECKPOINTS, ROUTE_CHAIN);
   const placed = function(b){
@@ -4412,14 +5446,14 @@ function myStopCardHtml(shown, all){
     return quietStopCard(
       !mine ? (sharing ? 'Your bus shows here once it is on the map.' : 'Your bus isn’t on the map right now.')
       : !info ? 'Your bus can’t be placed on the route right now.'
-      : 'Your stop is behind this bus. Change it to the one you’re getting off at.', !sharing);
+      : 'This bus has passed your stop.', !sharing);
   }
   const info = approachInfo(shown.map(placed), MYSTOP_KM, STOP_KMS, 'all');
   if (info) return rideCardHtml(info, false);
   RIDE_LAST = '';
   return quietStopCard(shown.length
     ? 'No bus on the map is heading your way right now.'
-    : 'Nobody is sharing GPS right now.', false);
+    : 'Nobody is sharing right now.', false);
 }
 // "I got off" is offered only to a rider who chose their bus from its popup.
 // A sharer gets off by tapping Stop sharing, which is the same moment.
@@ -4549,7 +5583,7 @@ function pickNearestStop(){
     }
     setMyStop(best.s.name, best.s.lat, best.s.lng);
   }, function(){
-    err.textContent = 'Could not get your location. You can pick a stop from the list instead.';
+    err.textContent = 'Couldn’t find you. Pick a stop instead.';
   }, { enableHighAccuracy:false, maximumAge:30000, timeout:15000 });
 }
 
@@ -4588,7 +5622,7 @@ function toggleMyLocation(){
     showMyLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
   }, function(err){
     stopMyLocation(err && err.code === 1
-      ? 'Location permission was declined, so the map cannot show where you are. Setting your stop above works without it.'
+      ? 'Location is blocked.'
       : 'Could not get your location.');
   }, { enableHighAccuracy:false, maximumAge:15000, timeout:20000 });
   setLocatePressed(true);
@@ -4669,13 +5703,14 @@ function clusterBuses(list){
       // either of them is you.
       if (b.self) target.self=true;
       if (!target.label && b.bus_label) target.label=b.bus_label;
+      if (!target.look && b.look) target.look=b.look;
       if (b.ts>target.ts){              // keep the freshest position
         target.lat=b.lat; target.lng=b.lng; target.ts=b.ts; target.speed=b.speed;
       }
     } else {
       clusters.push({ id:b.pub_id, lat:b.lat, lng:b.lng, ts:b.ts, speed:b.speed,
                       direction:b.direction, label:b.bus_label||'', count:1,
-                      self:!!b.self, members:[b.pub_id] });
+                      self:!!b.self, members:[b.pub_id], look:b.look||'' });
     }
   });
   return clusters;
@@ -4707,7 +5742,7 @@ function syncBusMarkers(all) {
       // above popups: without it, a bus near the middle of the map opened a
       // popup whose first words were under the controls.
       m.bindPopup(busPopupHtml(b),
-        { closeButton:false, className:'buspop', maxWidth:220,
+        { closeButton:false, className:'buspop', maxWidth:240,
           autoPanPaddingTopLeft:[66,18], autoPanPaddingBottomRight:[18,18] });
       busMarkers[b.id] = m.addTo(map);
       // Fade a genuinely new badge in. Added here, at creation, because the
@@ -4973,12 +6008,12 @@ function renderBuses() {
     sub.textContent = !dirsOpen
       ? 'Outside operating hours. Next departures: '+(nextTrip('north', nowMins())||'see schedule')+' from Mendez, '+(nextTrip('south', nowMins())||'see schedule')+' from One Ayala.'
       : !sightingsOn()
-      ? 'Nobody is sharing GPS right now. Ask in the group chat, or check the operating hours below.'
+      ? 'Nobody is sharing right now.'
       : bands.length
-      ? 'Nobody is sharing GPS. ' + departedSentence(bands[0])
+      ? 'Nobody is sharing right now. ' + departedSentence(bands[0])
       : trackGhosts.length
-      ? 'Nobody is sharing GPS. The glowing marks on the strip are buses people reported seeing, where they were seen.'
-      : 'Nobody is sharing GPS right now. Post a sighting below if you see one, or ask in the group.';
+      ? 'Nobody is sharing right now.'
+      : 'Nobody is sharing right now. Seen one? Post it below.';
   }
   revealSightings(shown.length === 0);
 }
@@ -5093,7 +6128,7 @@ function renderMapNote(anyBus){
   } else {
     html = '<div class="ic">' + BUS_GLYPH.replace('<svg ', '<svg fill="currentColor" ') + '</div><div><div class="t">Nobody is sharing right now</div>' +
            '<div class="s">' + (st === 'enroute' ? 'The last trips may still be on the road.' : 'It’s within operating hours.') +
-           ' On a bus now? Put it on the map for everyone at your stop.</div>' +
+           ' On a bus? Put it on the map.</div>' +
            '<button type="button" class="go" onclick="switchTab(\'share\')">' + BUS_GLYPH + ' I’m on the bus</button></div>';
   }
   if (kind !== 'open') html = '<div class="tx">' + html + '</div>' + sceneSvg(time, 'mapscene');
@@ -5156,7 +6191,7 @@ async function sendBusLink(id){
   }
   let copied = false;
   try{ await navigator.clipboard.writeText(url); copied = true; }catch(e){}
-  showToast(copied ? 'Link copied. Whoever opens it follows this bus.' : 'Copy this link: ' + url);
+  showToast(copied ? 'Link copied.' : 'Copy this link: ' + url);
 }
 let toastTimer = null;
 function showToast(msg){
@@ -5219,7 +6254,9 @@ async function pollPositions() {
   const rows = (res.data||[]).filter(drawableRow);
   BUSES = rows.map(function(v){
     return { pub_id:v.pub_id, lat:v.lat, lng:v.lng, speed:v.speed, self:!!v.is_self,
-             direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at) };
+             direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at),
+             // A sharer's bus, if they chose to show it (sql/13-bus-look.sql).
+             look: typeof v.look === 'string' ? v.look : '' };
   });
   // Only ever set from our own row. The server sends null for every other
   // bus (sql/07-thanks.sql), so there is nothing here to put on the map even
@@ -5230,7 +6267,7 @@ async function pollPositions() {
   // trip nobody has thanked yet, and is worth saying once.
   if (mine && !('thanks' in mine)) thanksTrouble('get_positions returned no thanks column');
   MY_THANKS = mine ? (mine.thanks|0) : 0;
-  if (TRIP && sharing){ TRIP.maxThanks = Math.max(TRIP.maxThanks, MY_THANKS); }
+  if (TRIP && sharing && MY_THANKS > TRIP.maxThanks){ TRIP.maxThanks = MY_THANKS; saveTrip(); }
   // markers are one per clustered bus rather than per sharing session, which
   // is why renderBuses owns them: it is the one place that clusters.
   renderBuses();
@@ -5491,38 +6528,38 @@ function pickDir(d){
   s.setAttribute('aria-pressed', d==='south');
 }
 function gpsErrorMessage(err){
-  if (err.code===1) return 'Location is off or blocked. Turn on your phone\'s location (GPS), allow location for this site, then tap Start again.';
-  if (err.code===2) return 'Can\'t get a GPS fix. Make sure location is on with clear signal, then tap Start again.';
-  if (err.code===3) return 'GPS timed out. Check location is on and try Start again.';
-  return 'GPS error. Turn on location and tap Start again.';
+  if (err.code===1) return 'Location is off. Turn it on, then tap Start.';
+  if (err.code===2) return 'No GPS signal yet. Tap Start to try again.';
+  if (err.code===3) return 'GPS took too long. Tap Start to try again.';
+  return 'GPS error. Turn on location, then tap Start.';
 }
 
 // Turn the server's raw error into something a person can act on.
 function writeErrorMessage(err){
   const m = ((err && (err.message || err.hint || err.details)) || '').toLowerCase();
   if (m.indexOf('too many active sessions')>=0)
-    return 'Too many people are sharing on this route right now. Try again in a few minutes, or ask the organizer.';
+    return 'Too many sharing right now. Try again soon.';
   if (m.indexOf('rate limited')>=0)
-    return 'Sending updates too quickly, this usually settles by itself. Still sharing.';
+    return 'A short hiccup. Still sharing.';
   if (m.indexOf('position off route')>=0)
-    return 'Your location looks outside the Mendez to Makati route, so it wasn\'t shared. This can happen if GPS is inaccurate indoors.';
+    return 'You seem to be off the route, so this wasn\'t shared.';
   if (m.indexOf('implausible speed')>=0)
-    return 'GPS reported an impossible speed, so that update was skipped. Usually fixes itself.';
+    return 'GPS hiccup. One update skipped.';
   if (m.indexOf('session blocked')>=0)
-    return 'An organizer stopped this share. If you think that was a mistake, message them in the group chat.';
+    return 'An organizer stopped this share.';
   if (m.indexOf('open sharing is off')>=0)
-    return 'The organizer has switched off sharing without the key, so this bus was taken off the map. To share, open the link from the group chat.';
+    return 'Sharing now needs the key. Open the link from the group chat.';
   if (m.indexOf('too many tries')>=0)
-    return 'Too many wrong PIN tries on this route just now, so new trips are paused for a few minutes. Try again shortly. A trip already sharing is not affected.';
+    return 'Too many wrong PINs on this route. Paused for a few minutes.';
   if (m.indexOf('invalid key')>=0)
-    return 'This access key is no longer valid (it may have been changed by the organizer). Get the current link from the group chat.';
+    return 'This key has changed. Get the new link from the group chat.';
   if (m.indexOf('invalid direction')>=0)
-    return 'Please pick a direction (northbound or southbound) and start again.';
+    return 'Pick a direction, then start again.';
   if (m.indexOf('label too long')>=0)
-    return 'Bus number is too long. Use 12 characters or fewer.';
+    return 'Bus number: 12 characters at most.';
   if (m.indexOf('invalid session')>=0)
-    return 'Session problem. Please reload the page and start again.';
-  return 'Couldn\'t send your location. Check your connection, it will retry automatically.';
+    return 'Please reload the page and start again.';
+  return 'No connection. Retrying.';
 }
 
 // ---- Screen wake lock -------------------------------------------------
@@ -5633,14 +6670,16 @@ document.addEventListener('visibilitychange', function(){
 function showAppHints(){
   if (!inApp()) return;
   const a=document.getElementById('gpsSetupHint'), b=document.getElementById('gpsLiveHint');
-  if (a) a.textContent='The screen can lock and you can switch apps: sharing keeps going, with a notification showing while it does.';
-  if (b) b.textContent='Keeps sharing with the screen off. Tap Stop sharing when you get off.';
+  if (a) a.textContent='Keeps sharing with the screen locked.';
+  if (b) b.textContent='';
 }
 
 // Set by a write that failed and cleared by the next one to land. While it is
 // set, a GPS fix does not put "Sharing live" back over the error: the fix is
 // not what reaches anybody, the write is.
 let writeFailing=false;
+// Cleared for the rest of the visit by a database that does not know p_look.
+let LOOK_SENDS = true;
 async function writePosition(coords){
   // Nothing goes out for a trip that has ended, whatever asked.
   if (guardPaused || !sharing) return;
@@ -5661,14 +6700,32 @@ async function writePosition(coords){
   // the count survives. It is turned into an error here, like any other.
   args.p_slug = CFG.ROUTE_SLUG;
   if (keyed) args.p_key = accessKey;
-  let res = await rpc(keyed ? 'set_keyed_position' : 'set_open_position', args);
+  // The bus's look, only when its sharer has said to show it (rule 19).
+  const bus = loadBus();
+  if (LOOK_SENDS && bus.show && busHasLook(bus, CHECKPOINTS)) args.p_look = busLook(bus, CHECKPOINTS);
+  const writer = keyed ? 'set_keyed_position' : 'set_open_position';
+  let res = await rpc(writer, args);
+  // A database from before sql/13-bus-look.sql refuses the argument it does
+  // not know: the same position goes again without it, and no look is sent
+  // for the rest of the visit. The bus shows plain; the trip is unaffected.
+  if (res.error && args.p_look && /p_look|could not find the function|PGRST202/i.test(
+        (res.error.message || '') + ' ' + (res.error.code || '') + ' ' + (res.error.hint || ''))){
+    LOOK_SENDS = false;
+    delete args.p_look;
+    res = await rpc(writer, args);
+  }
   if (!res.error && typeof res.data === 'string' && res.data) res = { error:{ message:res.data } };
   // The trip ended while this was on its way: nobody is left to tell.
   if (!sharing) return;
   if (!res.error){
     // The first to land is the moment the server knows this bus, so the strip
     // is fetched then rather than at the next slow poll.
-    if (TRIP){ TRIP.writes++; if (TRIP.writes===1) refreshOnbusStrip(); }
+    if (TRIP){
+      TRIP.writes++; TRIP.lastAt = Date.now();
+      TRIP.lastKm = routeProgressKm({ lat:coords.latitude, lng:coords.longitude }, CHECKPOINTS, ROUTE_CHAIN);
+      saveTrip();
+      if (TRIP.writes===1) refreshOnbusStrip();
+    }
     if (writeFailing){ writeFailing=false; if (!guardPaused) setShareUI('on', shareLabel()); }
     return;
   }
@@ -5683,7 +6740,7 @@ async function writePosition(coords){
   // A changed key is dropped as well, so the next Start asks for the new one
   // instead of trying the dead one again.
   if (raw.indexOf('session blocked')>=0){
-    await stopSharing({ quiet:true, blocked:true });
+    await stopSharing({ blocked:true });
     setShareUI('error', msg);
     return;
   }
@@ -5693,7 +6750,7 @@ async function writePosition(coords){
     // say open, so they are corrected now, or the next Start would skip the
     // key and be refused again.
     if (raw.indexOf('open sharing is off')>=0) SET.open_sharing = false;
-    await stopSharing({ quiet:true });
+    await stopSharing();
     if (raw.indexOf('invalid key')>=0) forgetKey();
     setShareUI('error', msg);
     return;
@@ -5763,19 +6820,19 @@ function checkTripGuards(coords){
 function onWrongDirection(hit){
   askOpen=true; guardPaused=true;
   // take the bus off the map while the question is open: a bus shown going
-  // the wrong way is worse for a waiting commuter than no bus at all
-  rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:getSessionId() });
+  // the wrong way is worse for a waiting commuter than no bus at all. The
+  // .then is what sends it: supabase-js only makes the request once
+  // something asks for the answer, and without it this had never gone out.
+  rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:getSessionId() }).then(function(){}, function(){});
   setShareUI('on','Paused, checking direction');
   const other = shareDir==='north' ? 'south' : 'north';
   const towards = shareDir==='north' ? 'Mendez / Tagaytay' : 'One Ayala';
   showAsk({
     icon:'i-compass', title:'Which way is this bus going?',
-    body:'This bus has moved about '+hit.km.toFixed(1)+' km toward '+towards+
-         ', but the direction picked was '+(shareDir==='north'?'northbound':'southbound')+
-         '. Nothing is being shared until you answer.',
+    body:'It\'s heading to '+towards+'.',
     yesLabel:'Switch to '+(other==='north'?'▲ northbound':'▼ southbound'),
     onYes:function(){ pickDir(other); dirGuardReset(dirGuard); resumeAfterCheck(); },
-    noLabel:'The direction is right, keep sharing',
+    noLabel:'Keep '+(shareDir==='north'?'▲ northbound':'▼ southbound'),
     onNo:function(){ if (dirGuard) dirGuard.off=true; resumeAfterCheck(); }
   });
 }
@@ -5784,7 +6841,7 @@ function onLongIdle(){
   askOpen=true;
   showAsk({
     icon:'i-coach', title:'Still on the bus?',
-    body:'This bus has not moved for about 20 minutes. That can just be traffic or a wait at the terminal, so nothing has changed. If you have already gotten off, tap Stop sharing so it leaves everyone\'s map.',
+    body:'Not moving for 20 minutes.',
     yesLabel:'Yes, still on the bus',
     onYes:function(){ resetIdleRef(); },
     noLabel:'Stop sharing',
@@ -5797,7 +6854,7 @@ function onTripFinished(){
   const dest = shareDir==='north' ? 'One Ayala' : 'Mendez / Tagaytay';
   showAsk({
     icon:'i-flag', title:'Is this trip finished?',
-    body:'This bus has been parked at '+dest+' for a few minutes, which usually means the trip is over. Sharing will stop by itself in 5 minutes unless you say it is still going.',
+    body:'Parked at '+dest+'. Sharing stops in 5 minutes.',
     yesLabel:'Stop sharing',
     onYes:function(){ stopSharing(); },
     noLabel:'Still going, keep sharing',
@@ -5849,15 +6906,11 @@ function showDuplicateWarning(found){
   pendingCoords = lastCoords;
   const box=document.getElementById('dupBody');
   if (found.sameLabel){
-    box.textContent = 'Someone is already sharing bus '+found.label+
-      '. If that\'s this same bus, you don\'t need to share, it\'s already on the map.';
+    box.textContent = 'Bus '+found.label+' is already on the map. Same bus?';
   } else if (found.label){
-    box.textContent = 'Someone nearby is sharing bus '+found.label+
-      ', going the same direction. Is that this bus? If yes, no need to share again.';
+    box.textContent = 'Someone nearby is sharing bus '+found.label+'. Same bus?';
   } else {
-    box.textContent = 'Someone nearby is already sharing in the same direction. '+
-      'If you\'re on the same bus, it will show as two buses on the map. '+
-      'If it\'s a different bus, go ahead. Adding your bus number helps tell them apart.';
+    box.textContent = 'Someone nearby is already sharing. Same bus?';
   }
   openModal('dupModal');
 }
@@ -5905,8 +6958,8 @@ function startSharing(){
 // runs at a real trip start — a guard pausing and resuming mid-trip never
 // comes back through here, so the welcome cannot repeat itself at someone
 // forty minutes into sharing. Everything is per-trip state in memory: this
-// deliberately stores nothing, so the privacy panel's list of four stays
-// four.
+// deliberately stores nothing beyond the trip itself, so the privacy
+// panel's list of six stays six.
 let helloT1=null, helloT2=null;
 function showTripHello(){
   const el=document.getElementById('tyHello');
@@ -5933,16 +6986,50 @@ function endTripHello(){
   if (el){ el.classList.add('hidden'); el.classList.remove('bye'); }
   if (card) card.classList.remove('hello');
 }
+// GPS that drops out is not GPS that is off. A covered terminal, a cutting,
+// a phone slow to wake: watchPosition reports those as an error, no fix or
+// none within 20 seconds, and carries on watching. One of them used to end
+// the trip there and then. Now the trip waits for as long as the server keeps
+// a bus on the map without an update (bus_expiry_min), saying so on the
+// sharing tab; the heartbeat holds back meanwhile, so the bus fades on
+// everyone's map as last seen instead of looking live, and the first fix puts
+// everything back. Only if none comes does the trip end, the way Stop ends
+// one, ticket and all.
+let gpsLostAt=null, gpsLostTimer=null;
+function gpsLost(msg){
+  if (gpsLostAt) return;   // already waiting for it
+  gpsLostAt=Date.now();
+  if (!guardPaused) setShareUI('error', 'GPS lost. Still sharing.');
+  gpsLostTimer=setTimeout(function(){ gpsLostTimer=null; if (sharing && gpsLostAt) gpsGaveUp(msg); },
+                          (+SET.bus_expiry_min || 10) * 60000);
+}
+function gpsFound(){
+  if (gpsLostTimer){ clearTimeout(gpsLostTimer); gpsLostTimer=null; }
+  gpsLostAt=null;
+}
+// GPS giving up ends the trip, so it ends the way Stop ends one: the bus
+// leaves the map now rather than at expiry, any question still open is
+// closed, the sharer gets the ticket the trip had earned so far, and the
+// next trip gets a session of its own.
+function gpsGaveUp(msg){
+  gpsFound();
+  stopSharing().then(function(){ setShareUI('error', msg); });
+}
 function beginWatch(firstCoords){
   // One trip, one watch: whatever led here, nothing from before may still be
   // running beside it, because Stop only ends the one it can see.
   if (stopWatch){ stopWatch(); stopWatch=null; }
   if (hbTimer){ clearInterval(hbTimer); hbTimer=null; }
+  gpsFound();
   sharing=true; writeFailing=false;
   guardPaused=false; endAsked=false; dirGuard=makeDirGuard();
-  tripBegin(firstCoords);
+  // A trip carried over from a page that closed goes on as itself, without
+  // the welcome a new trip gets.
+  const resumed = !!RESUME;
+  if (resumed){ TRIP = RESUME; RESUME = null; } else tripBegin(firstCoords);
+  saveTrip();
   setShareUI('on', shareLabel());
-  showTripHello();
+  if (!resumed) showTripHello();
   if (firstCoords){
     lastCoords=firstCoords;
     idleRef={ lat:firstCoords.latitude, lng:firstCoords.longitude, t:Date.now() };
@@ -5950,6 +7037,7 @@ function beginWatch(firstCoords){
   }
   stopWatch=watchTripGps(function(pos){
     if (!sharing) return;
+    if (gpsLostAt) gpsFound();
     lastCoords=pos.coords;
     checkTripGuards(pos.coords);
     if (!sharing || guardPaused) return;
@@ -5959,15 +7047,18 @@ function beginWatch(firstCoords){
     lastWrite=Date.now();
     writePosition(pos.coords);
   }, function(err){
-    // GPS giving up ends the trip, so it ends the way Stop ends one: the bus
-    // leaves the map now rather than at expiry, any question still open is
-    // closed, and the next trip gets a session of its own.
+    if (!sharing) return;
     const msg=gpsErrorMessage(err);
-    stopSharing({ quiet:true }).then(function(){ setShareUI('error', msg); });
+    // Location switched off or blocked is the one GPS error that ends the
+    // trip at once: nothing will come back without the sharer.
+    if (err && err.code===1){ gpsGaveUp(msg); return; }
+    gpsLost(msg);
   });
-  // heartbeat: a bus idling at a stop doesn't fire watchPosition; re-send last fix
+  // heartbeat: a bus idling at a stop doesn't fire watchPosition; re-send last
+  // fix. Not while the GPS is lost, though: that fix is no longer confirmed,
+  // and re-sending it would keep a guess looking live on everyone's map.
   hbTimer=setInterval(function(){
-    if (sharing && !guardPaused && lastCoords && Date.now()-lastWrite>20000){
+    if (sharing && !guardPaused && !gpsLostAt && lastCoords && Date.now()-lastWrite>20000){
       lastWrite=Date.now(); writePosition(lastCoords);
     }
   }, 21000);
@@ -5994,25 +7085,38 @@ function registerUnloadCleanup(){
 }
 async function stopSharing(opts){
   const trip = TRIP, endCoords = lastCoords;
-  TRIP = null;
+  TRIP = null; RESUME = null;
+  dropTrip();
   sharing=false;
   guardPaused=false; dirGuard=null; idleRef=null;
   if (askOpen) hideAsk();
   if (stopWatch){ stopWatch(); stopWatch=null; }
   if (hbTimer){ clearInterval(hbTimer); hbTimer=null; }
+  gpsFound();
   releaseWakeLock();
   writeFailing=false;
-  await rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:getSessionId() });
+  const session = getSessionId();
   // The next trip gets a session id of its own, unless an organizer stopped
   // this one: the block is on the session id, so keeping it is what makes
   // the block hold on this phone.
   if (!(opts && opts.blocked)) endSession();
   setShareUI('off','Not sharing');
-  if (!(opts && opts.quiet)) showTicket(trip, endCoords);
+  // Every end gets its ticket, not only Stop: GPS giving up, a key changed
+  // or open sharing switched off mid-trip, the end-of-line question left
+  // unanswered. A sharer who kept a bus on the map earned it however the trip
+  // ended, and ticketWorthShowing() still decides whether it was long enough.
+  // The one exception is an organizer's Stop: a bus taken off the map as
+  // wrong is not thanked for having been on it. The ticket comes before the
+  // network, because it is made on this phone, and at the end of the line
+  // the request below can take a minute to answer, long enough for the
+  // phone to be back in a pocket; and nothing about drawing it may keep the
+  // bus on everyone's map.
+  if (!(opts && opts.blocked)){ try{ endTicket(trip, endCoords); }catch(e){} }
+  await rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:session });
 }
 // ---- The salamat ticket ---------------------------------------------
 // What this phone remembers about the trip it is sharing, for the ticket it
-// shows at Stop: when it started, roughly where (on the chain, not a
+// shows when the trip ends: when it started, roughly where (on the chain, not a
 // position), how many other buses were on the map at that moment, whether a
 // write ever landed, and the highest salamat count it saw. It lives in this
 // variable and nowhere else, and stopSharing() drops it as it draws the
@@ -6020,12 +7124,88 @@ async function stopSharing(opts){
 // read off the last fix at Stop.
 let TRIP = null;
 function tripBegin(first){
+  const km = first ? routeProgressKm({ lat:first.latitude, lng:first.longitude }, CHECKPOINTS, ROUTE_CHAIN) : null;
   TRIP = {
     start: Date.now(),
-    startKm: first ? routeProgressKm({ lat:first.latitude, lng:first.longitude }, CHECKPOINTS, ROUTE_CHAIN) : null,
+    startKm: km,
     others: BUSES.filter(function(b){ return !b.self; }).length,
-    writes: 0, maxThanks: 0, polled: false
+    writes: 0, maxThanks: 0, polled: false,
+    lastAt: 0, lastKm: km
   };
+}
+// The trip outlives the page (October 2026). A tab reloaded, a browser that
+// swapped the page out behind another app, an app the phone closed to save
+// memory: each used to lose the trip and its ticket together, and leave the
+// bus on everyone's map until it expired. So while a trip runs, TRIP is also
+// kept in localStorage as wt-trip, beside what carrying on needs: the session
+// (which bus on the map is this phone's), the direction and the bus number.
+// Still no trail: every save overwrites the last, the end is one number on
+// the chain like the start, and the key goes the moment the trip ends.
+function saveTrip(){
+  if (!TRIP || WALK) return;
+  try{
+    localStorage.setItem('wt-trip', JSON.stringify({ trip:TRIP, session:getSessionId(), dir:shareDir,
+      label:document.getElementById('busLabel').value.trim() }));
+  }catch(e){}
+}
+function dropTrip(){ try{ localStorage.removeItem('wt-trip'); }catch(e){} }
+function loadTrip(){
+  let r = null;
+  try{ r = JSON.parse(localStorage.getItem('wt-trip') || 'null'); }catch(e){ return null; }
+  if (!r || typeof r !== 'object' || !r.trip || typeof r.trip !== 'object' || typeof r.session !== 'string') return null;
+  const t = r.trip, num = function(v){ return typeof v === 'number' && isFinite(v) ? v : null; };
+  if (num(t.start) === null) return null;
+  return { session:r.session.slice(0, 64), dir:r.dir === 'south' ? 'south' : 'north', label:String(r.label || '').slice(0, 12),
+    trip:{ start:t.start, startKm:num(t.startKm), others:num(t.others) || 0, writes:num(t.writes) || 0,
+           maxThanks:num(t.maxThanks) || 0, polled:!!t.polled, lastAt:num(t.lastAt) || 0, lastKm:num(t.lastKm) } };
+}
+// Opened again with a trip still in wt-trip. Recent enough that its bus is
+// still on the map: ask whether to carry on, which goes on as the same trip
+// and the same bus. Older, or answered "I got off": the bus comes off the map
+// and the ticket is drawn as the trip stood when the page closed.
+let RESUME = null;   // a trip carried over, waiting for Start to pick it up
+function recoverTrip(){
+  if (WALK || sharing) return;
+  const r = loadTrip();
+  if (!r) return;
+  const t = r.trip, age = Date.now() - (t.lastAt || t.start);
+  let mine = false;
+  try{ mine = sessionStorage.getItem('wt-session') === r.session; }catch(e){}
+  // Another tab of this browser may still be sharing it, saving at least
+  // every 21 seconds with the heartbeat. Looked at again in a minute, by
+  // which time a page that is really gone has stopped saving.
+  if (!mine && age < 45000){
+    if (!recoverTrip.again){ recoverTrip.again = true; setTimeout(recoverTrip, 60000); }
+    return;
+  }
+  pickDir(r.dir);
+  document.getElementById('busLabel').value = r.label;
+  switchTab('share');
+  if (t.writes > 0 && age < (+SET.bus_expiry_min || 10) * 60000){
+    const mins = Math.round(age / 60000);
+    askOpen = true;
+    showAsk({
+      icon:'i-coach', title:'Still on the bus?',
+      body:'Sharing paused ' + (mins < 1 ? 'just now' : mins === 1 ? 'a minute ago' : mins + ' minutes ago') + '.',
+      yesLabel:'Keep sharing', onYes:function(){ resumeTrip(r); },
+      noLabel:'I got off', onNo:function(){ endLostTrip(r); }
+    });
+    return;
+  }
+  endLostTrip(r);
+}
+function resumeTrip(r){
+  sessionId = r.session;
+  try{ sessionStorage.setItem('wt-session', r.session); }catch(e){}
+  RESUME = r.trip;
+  startSharing();
+}
+function endLostTrip(r){
+  dropTrip();
+  RESUME = null;
+  rpc('clear_bus_position', { p_slug:CFG.ROUTE_SLUG, p_session:r.session }).then(function(){}, function(){});
+  if (getSessionId() === r.session) endSession();
+  try{ endTicket(r.trip, null, r.trip.lastAt || r.trip.start); }catch(e){}
 }
 function nearestCheckpoint(km){
   if (km === null || km === undefined || isNaN(km) || !ROUTE_CHAIN.length) return -1;
@@ -6040,17 +7220,28 @@ function clockText(d){
   const h = d.getHours(), m = d.getMinutes();
   return fmtHM((h<10?'0':'')+h+':'+(m<10?'0':'')+m);
 }
-function showTicket(trip, end){
-  if (!trip) return;
-  const now = new Date(), began = new Date(trip.start);
-  const mins = Math.round((now - began) / 60000);
-  if (!ticketWorthShowing({ mins:mins, writes:trip.writes })) return;
-  const endKm = end ? routeProgressKm({ lat:end.latitude, lng:end.longitude }, CHECKPOINTS, ROUTE_CHAIN) : null;
+// What a trip comes to at its end. end is the last fix; endAt is given only
+// for a trip whose page closed under it, which ends where and when its last
+// update reached the map.
+function ticketFacts(trip, end, endAt){
+  const now = endAt ? new Date(endAt) : new Date(), began = new Date(trip.start);
+  const endKm = end ? routeProgressKm({ lat:end.latitude, lng:end.longitude }, CHECKPOINTS, ROUTE_CHAIN)
+                    : typeof trip.lastKm === 'number' ? trip.lastKm : null;
   const fromIdx = nearestCheckpoint(trip.startKm), toIdx = nearestCheckpoint(endKm);
   const short = function(i){ return (CHECKPOINTS[i] && CHECKPOINTS[i].short) || ''; };
-  const startMins = hhmm(began), endMins = hhmm(now);
-  const stamps = ticketStamps({ fromIdx:fromIdx, toIdx:toIdx, lastIdx:CHECKPOINTS.length-1,
-    fromShort:short(fromIdx), toShort:short(toIdx), startMins:startMins, endMins:endMins, othersAtStart:trip.others });
+  const t = { fromIdx:fromIdx, toIdx:toIdx, lastIdx:CHECKPOINTS.length-1, fromShort:short(fromIdx), toShort:short(toIdx),
+              startMins:hhmm(began), endMins:hhmm(now), othersAtStart:trip.others };
+  return { now:now, began:began, mins:Math.round((now - began) / 60000), fromIdx:fromIdx, toIdx:toIdx,
+           endMins:t.endMins, stamps:ticketStamps(t), all:tripStamps(t) };
+}
+// fresh: the decorations this trip has just put on the sharer's bus; gain:
+// the parts it brought.
+function showTicket(trip, end, endAt, fresh, gain){
+  if (!trip) return;
+  const f = ticketFacts(trip, end, endAt);
+  if (!ticketWorthShowing({ mins:f.mins, writes:trip.writes })) return;
+  const now = f.now, began = f.began, mins = f.mins, fromIdx = f.fromIdx, toIdx = f.toIdx, endMins = f.endMins;
+  const stamps = f.stamps;
   // "4:12–7:03 AM", or both halves in full when the trip crosses noon.
   const a = clockText(began), b = clockText(now);
   const times = a.slice(-2) === b.slice(-2) ? a.slice(0, -3) + '–' + b : a + '–' + b;
@@ -6069,34 +7260,124 @@ function showTicket(trip, end){
   // albumEntry() makes of this trip, and none of the times printed below.
   TKT_KEEP = albumEntry({ when:now, dir:shareDir, fromShort:tktPlace(fromIdx), toShort:tktPlace(toIdx),
                           stamps:stamps, thanked:trip.maxThanks > 0 });
+  const look = ticketLook(TKT_KEEP);
+  tktPaper(look);
   document.getElementById('tktCard').innerHTML =
-    '<div class="tkt-head"><span class="tkt-kick" id="tktKick">SALAMAT TICKET</span>' +
+    '<div class="tkt-head"><span class="tkt-kick" id="tktKick">' + tktKicker(look) + '</span>' +
       '<span class="tkt-date">' + TKT_DAYS[now.getDay()] + ' ' + now.getDate() + ' ' + TKT_MONTHS[now.getMonth()] + '</span></div>' +
     '<div class="tkt-org">Community bus tracker · unofficial</div>' +
     '<hr>' +
     '<div class="tkt-route"><span>' + (shareDir === 'south' ? '▼ SOUTHBOUND' : '▲ NORTHBOUND') +
       (label ? ' · BUS ' + escapeHtml(label.toUpperCase()) : '') + '</span><span class="tkt-times">' + times + '</span></div>' +
-    tktArt(fromIdx, toIdx, TKT_KEEP.st) + tktGrid(fromIdx, toIdx) +
+    tktArt(fromIdx, toIdx, TKT_KEEP) + tktGrid(fromIdx, toIdx) +
     '<hr>' +
     '<div class="tkt-big">You kept the bus on everyone’s map for</div>' +
     '<div class="tkt-row"><div class="tkt-dur">' + (hrs ? hrs + '<small> h </small>' : '') + rem + '<small> min</small></div>' + stamp(0) + '</div>' +
     (ty ? '<div class="tkt-ty"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg><span>' + ty + '</span></div>' : '') +
+    tktParts(gain) + tktFresh(fresh) + (Array.isArray(fresh) ? tktTotals(now) : '') +
     '<hr>' +
     '<div class="tkt-row"><div class="tkt-greet">' + ticketGreeting(endMins) + '</div>' + stamp(1) + '</div>' +
-    '<div class="tkt-fine">Made on this phone and sent nowhere. It is gone when you close it, unless you keep it.</div>';
+    '<div class="tkt-fine">Keep it, or it’s gone.</div>';
   tktMode('live');
   openModal('tktModal');
 }
+// Every end of a trip comes through here, with or without its page. A trip
+// that earned a ticket and went somewhere is counted on the sharer's bus
+// (rule 14), and what that puts on the bus is shown on the ticket.
+function endTicket(trip, end, endAt){
+  if (!trip) return;
+  const f = ticketFacts(trip, end, endAt);
+  let fresh = [], gain = null;
+  if (!WALK && ticketWorthShowing({ mins:f.mins, writes:trip.writes })){
+    const before = loadBus();
+    let after = busAdd(before, { dir:shareDir, stamps:f.all.map(function(x){ return x.k; }), fromIdx:f.fromIdx, toIdx:f.toIdx,
+                                 mins:f.mins, thanks:trip.maxThanks, week:weekIndex(f.now) }, CHECKPOINTS);
+    if (after.n > before.n){
+      // The trip's own parts, capped for the day (rule 17), then whatever
+      // the trip has just earned, paid once.
+      const trip5 = busTripPay(after, dayIndex(f.now)), due = busSettle(trip5.b, CHECKPOINTS);
+      after = due.b;
+      if (saveBus(after)){
+        const had = busEarned(before, CHECKPOINTS);
+        fresh = busEarned(after, CHECKPOINTS).filter(function(k){ return had.indexOf(k) < 0; });
+        gain = { trip:trip5.got, got:due.got, keys:due.keys };
+      }
+    }
+  }
+  showTicket(trip, end, endAt, fresh, gain);
+  syncAlbumRow();
+}
+// The line on the ticket for a trip that earned a decoration: the bus as it
+// is now, and what is new on it.
+function tktFresh(fresh){
+  if (!fresh || !fresh.length) return '';
+  const names = DECOR.filter(function(d){ return fresh.indexOf(d.k) >= 0; }), bus = loadBus();
+  return '<div class="tkt-new">' + busSvg(busWorn(bus, CHECKPOINTS), bus.paint) +
+    '<span>New on your bus: <b>' + names.map(function(d){ return escapeHtml(d.t); }).join(', ') + '</b>' +
+    '<small>' + names.map(function(d){ return escapeHtml(d.s); }).join(' · ') + '</small></span></div>' +
+    // The first thing on the bus is the moment to ask whether to show it.
+    (!bus.asked && busHasLook(bus, CHECKPOINTS) ? lookQuestion() : '');
+}
+// Spare parts on screen: the nut and the number, with the word for a screen
+// reader only. plus marks parts coming in.
+const PART_GLYPH = '<svg class="gi gpart" aria-hidden="true"><use href="#i-part"/></svg>';
+function partsTag(n, plus){
+  return '<span class="parts">' + PART_GLYPH + (plus ? '+' : '') + (n | 0) + '<span class="vh"> parts</span></span>';
+}
+// What the trip brought in parts: its own, for one of the day's first few,
+// and each trophy's, once.
+function tktParts(c){
+  if (!c) return '';
+  const total = c.trip + c.got;
+  if (!total) return '<div class="tkt-all">No ' + PART_GLYPH + '<span class="vh">parts</span> this time: ' + PARTS_TRIPS_A_DAY + ' trips a day earn them.</div>';
+  const parts = [];
+  if (c.trip) parts.push(c.trip + ' for the trip');
+  c.keys.forEach(function(k){ const d = findIn(DECOR, k); parts.push(d.pay + ' for ' + d.t); });
+  return '<div class="tkt-parts">' + partsTag(total, true) + '<small>' + escapeHtml(parts.join(' · ')) + '</small></div>';
+}
+// The bus's totals in words, without a zero: time on the map, salamat, and a
+// streak once there are two weeks in it.
+function busTotalsWords(b, now){
+  const out = [], h = Math.floor(b.mins / 60), live = busStreak(b, weekIndex(now));
+  if (b.mins) out.push(h ? h + ' h on the map' : b.mins + ' min on the map');
+  if (b.ty) out.push(b.ty + ' salamat');
+  if (live > 1) out.push(live + ' weeks in a row');
+  return out;
+}
+// The line under the trip's own numbers, on a ticket a real trip ended with:
+// what the sharer's bus has gathered in all.
+function tktTotals(now){
+  const words = busTotalsWords(loadBus(), now);
+  return words.length ? '<div class="tkt-all">In all: ' + words.join(' · ') + '</div>' : '';
+}
+// Your bus's counts, the fifth thing the privacy panel says the app keeps.
+function loadBus(){
+  try{ return busClean(JSON.parse(localStorage.getItem('wt-bus') || 'null')); }catch(e){ return busClean(null); }
+}
+function saveBus(b){
+  try{ localStorage.setItem('wt-bus', JSON.stringify(busClean(b))); return true; }catch(e){ return false; }
+}
+function dropBus(){ try{ localStorage.removeItem('wt-bus'); }catch(e){} }
 // The two ends of a trip as checkpoints: the picture of them, and every stop
 // on the route with the pair of them punched, each carrying its mark.
 function tktPlace(i){
   const c = CHECKPOINTS[i];
   return c ? (c.short || c.name) : '';
 }
-function tktArt(fromIdx, toIdx, st){
+// e is the kept ticket, or what Keep would keep: its stamps give the sky and
+// all four of its first things its luck. What the picture shows is said in
+// words too, for whoever cannot see it.
+function tktArt(fromIdx, toIdx, e){
   const mark = function(i){ return (CHECKPOINTS[i] && CHECKPOINTS[i].mark) || ''; };
-  return ticketArtSvg({ from:mark(fromIdx), to:mark(toIdx), sky:ticketSky(st), one:fromIdx >= 0 && fromIdx === toIdx });
+  const look = ticketLook(e);
+  return ticketArtSvg({ from:mark(fromIdx), to:mark(toIdx), sky:ticketSky(e.st), one:fromIdx >= 0 && fromIdx === toIdx, look:look }) +
+    (look.sights.length ? '<i class="vh">In the picture: ' + look.sights.map(function(k){ return SIGHTS[k].t; }).join(', ') + '.</i>' : '');
 }
+// The paper it is printed on, the shape of its punch, and gold for a rare one.
+function tktPaper(look){
+  document.getElementById('tktCard').className = 'tkt pp-' + look.paper + ' pu-' + look.punch + (look.rare ? ' foil' : '');
+}
+function tktKicker(look){ return look.rare ? 'GINTONG TICKET' : 'SALAMAT TICKET'; }
 function tktGrid(fromIdx, toIdx){
   return '<div class="tkt-grid">' + CHECKPOINTS.map(function(c, i){
     return '<span' + (i === fromIdx || i === toIdx ? ' class="on"' : '') + '>' + markSvg(c.mark) +
@@ -6173,15 +7454,17 @@ function showKeptTicket(i){
   const stamps = e.st.map(function(k, j){ return stampHtml(stampOf(k, k === 'full' ? e.from + ' → ' + e.to : ''), 's' + (j+1)); }).join('');
   const middle = (stamps ? '<div class="tkt-stamprow">' + stamps + '</div>' : '') +
     (e.ty ? '<div class="tkt-ty"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg><span>Someone said salamat</span></div>' : '');
+  const look = ticketLook(e);
+  tktPaper(look);
   document.getElementById('tktCard').innerHTML =
-    '<div class="tkt-head"><span class="tkt-kick" id="tktKick">SALAMAT TICKET</span><span class="tkt-date">' + keptDate(e.d) + '</span></div>' +
+    '<div class="tkt-head"><span class="tkt-kick" id="tktKick">' + tktKicker(look) + '</span><span class="tkt-date">' + keptDate(e.d) + '</span></div>' +
     '<div class="tkt-org">Community bus tracker · unofficial</div>' +
     '<hr>' +
     '<div class="tkt-route"><span>' + (e.dir === 's' ? '▼ SOUTHBOUND' : '▲ NORTHBOUND') + '</span><span class="tkt-times">' + ends + '</span></div>' +
-    tktArt(a, b, e.st) + tktGrid(a, b) +
+    tktArt(a, b, e) + tktGrid(a, b) +
     '<hr>' + (middle ? middle + '<hr>' : '') +
     '<div class="tkt-greet">' + keptGreeting(e.st) + '</div>' +
-    '<div class="tkt-fine">Kept on this phone only: the day, the places and the stamps. No times, no bus number, no count.</div>';
+    '<div class="tkt-fine">Kept on this phone only.</div>';
   TKT_KEEP = null; TKT_SHOWN = i; TKT_SHOWN_AS = JSON.stringify(e);
   tktMode('kept');
   openModal('tktModal');
@@ -6194,39 +7477,265 @@ function dropKeptTicket(){
   if (at >= 0){ list.splice(at, 1); saveAlbum(list); }
   closeTicket();
   syncAlbumRow();
-  if (list.length) renderAlbum(); else closeModal('albumModal');
+  renderAlbum();
 }
 // The row on the sharing tab. Drawn only once a ticket has been kept: an
 // empty album is not something anyone needs to be shown.
+// Always there, so a sharer can find what there is to collect before the
+// first trip; with nothing yet it says what starts it, never a zero.
 function syncAlbumRow(){
   const row = document.getElementById('albumRow');
   if (!row) return;
-  const list = loadAlbum();
-  row.classList.toggle('hidden', !list.length);
-  if (!list.length) return;
-  const st = albumStats(list, CHECKPOINTS);
-  document.getElementById('albumRowVal').textContent =
-    st.tickets + (st.tickets === 1 ? ' ticket' : ' tickets') + ' · ' + st.places + ' of ' + st.of + ' places on the route';
+  const list = loadAlbum(), dec = busEarned(loadBus(), CHECKPOINTS).length;
+  row.classList.remove('hidden');
+  if (!list.length && !dec){
+    document.getElementById('albumRowVal').textContent = 'Your bus, your tickets, and what there is to collect. Your first trip starts them.';
+    return;
+  }
+  const st = albumStats(list, CHECKPOINTS), parts = [];
+  if (list.length) parts.push(st.tickets + (st.tickets === 1 ? ' ticket' : ' tickets') + ' · ' + st.places + ' of ' + st.of + ' places on the route');
+  if (dec) parts.push(dec + (dec === 1 ? ' decoration' : ' decorations') + ' on your bus');
+  const c = loadBus().c;
+  document.getElementById('albumRowVal').innerHTML = parts.map(escapeHtml).join(' · ') + (c ? (parts.length ? ' · ' : '') + partsTag(c) : '');
 }
 function openAlbum(){
-  ALB_SHOW = 24; ALB_CLEAR_ARMED = false;
-  document.getElementById('albumClear').textContent = 'Remove all';
+  ALB_SHOW = 24; ALB_CLEAR_ARMED = false; ALB_BUY_ARMED = ''; BK_ARMED = false;
+  document.getElementById('albumClear').textContent = 'Start from scratch';
+  // Anything earned and not yet paid is paid now: trophies won before
+  // there were parts, or brought back by a restored backup.
+  if (!WALK){ const due = busSettle(loadBus(), CHECKPOINTS); if (due.got) saveBus(due.b); }
+  bkReset();
   renderAlbum();
+  albumRideStart();
   const sc = document.querySelector('#albumModal .modal-scroll');
   if (sc) sc.scrollTop = 0;
   openModal('albumModal');
 }
 function albumMore(){ ALB_SHOW += 24; renderAlbum(); }
-// Remove all asks twice too, and says how many it is about to remove.
+// Start from scratch: every kept ticket and the whole bus, its parts and
+// what it bought included, after a second tap that says what goes.
 function clearAlbum(){
+  if (WALK) return;
   const btn = document.getElementById('albumClear');
-  if (!ALB_CLEAR_ARMED){ ALB_CLEAR_ARMED = true; btn.textContent = 'Tap again to remove all ' + loadAlbum().length; return; }
+  const n = loadAlbum().length;
+  if (!ALB_CLEAR_ARMED){
+    ALB_CLEAR_ARMED = true;
+    btn.textContent = 'Tap again to delete ' + (n ? n + (n === 1 ? ' ticket' : ' tickets') + ' and ' : '') + 'your bus';
+    return;
+  }
   ALB_CLEAR_ARMED = false;
   saveAlbum([]);
+  dropBus();
   syncAlbumRow();
   closeModal('albumModal');
+  showToast('Started fresh.');
 }
 function attrText(s){ return escapeHtml(s).replace(/"/g, '&quot;'); }
+// ---- Your bus, as a garage (October 2026) ------------------------------
+let ALB_BUY_ARMED = '';    // the shop item or paint one more tap buys
+let ALB_RIDE_T = null;     // moves My tickets' bus on from place to place
+// Every kind of place on the route that has a view, in route order: the bus
+// in My tickets drives past each in turn.
+function rideViews(){
+  const out = [];
+  CHECKPOINTS.forEach(function(c){ if (c.mark && out.indexOf(c.mark) < 0) out.push(c.mark); });
+  return out.length ? out : [''];
+}
+function albumBusHtml(bus){
+  const worn = busWorn(bus, CHECKPOINTS), earned = busEarned(bus, CHECKPOINTS);
+  const act = function(k, on){
+    return '<button type="button" class="alb-act" data-wear="' + k + '">' + (on ? 'Take off' : 'Put on') + '</button>';
+  };
+  const paints = PAINTS.map(function(p){
+    const owned = p.k === 'klasiko' || bus.paints.indexOf(p.k) >= 0, using = bus.paint === p.k, c = BUS_PAINTS[p.k];
+    const words = using ? 'on your bus' : owned ? 'use it' : ALB_BUY_ARMED === p.k ? 'tap again' : partsTag(p.price);
+    return '<button type="button" class="alb-paint' + (using ? ' on' : '') + (owned || bus.c >= p.price ? '' : ' short') + '" data-paint="' + p.k +
+      '" aria-pressed="' + using + '"><i aria-hidden="true" style="background:linear-gradient(' + c[0] + ' 0 48%, ' + c[3] + ' 48% 80%, ' + c[4] + ' 80%)"></i>' +
+      '<b>' + escapeHtml(p.t) + '</b><span>' + words + '</span></button>';
+  }).join('');
+  const shop = SHOP.map(function(x){
+    const owned = bus.own.indexOf(x.k) >= 0, on = owned && worn.indexOf(x.k) >= 0, can = bus.c >= x.price;
+    return '<li class="' + (owned ? 'got' : 'yet') + (on ? ' on' : '') + '">' + decorTile(x.k) + '<b>' + escapeHtml(x.t) + '</b><span>' + escapeHtml(x.s) + '</span>' +
+      (owned ? act(x.k, on) : '<button type="button" class="alb-act buy' + (can ? '' : ' short') + '" data-buy="' + x.k + '"' + (can ? '' : ' disabled') + '>' +
+        (ALB_BUY_ARMED === x.k ? 'Tap again' : 'Get · ' + partsTag(x.price)) + '</button>') + '</li>';
+  }).join('');
+  const trophies = decorShown().map(function(d){
+    const g = busGoal(d, CHECKPOINTS), n = busCount(bus, d, CHECKPOINTS), got = earned.indexOf(d.k) >= 0, on = got && worn.indexOf(d.k) >= 0;
+    return '<li class="' + (got ? 'got' : 'yet') + (on ? ' on' : '') + '">' + decorTile(d.k) + '<b>' + escapeHtml(d.t) + '</b><span>' + escapeHtml(d.s) + '</span>' +
+      (got ? act(d.k, on) : '<i>' + (n ? n + ' of ' + g : 'not yet') + ' · ' + partsTag(d.pay, true) + '</i>') + '</li>';
+  }).join('');
+  return '<div class="alb-h">Your bus<span>' + (bus.n ? bus.n + (bus.n === 1 ? ' trip' : ' trips') + ' shared' :
+      earned.length ? 'your first trip is next' : 'starts with your first trip') + '</span></div>' +
+    '<div class="alb-paper alb-bus"><div class="alb-ride">' +
+      rideSvg({ views:rideViews(), sky:skyNow(), worn:worn, paint:bus.paint, now:Date.now(), close:true }) + '</div>' + albTotals(bus) +
+      (busHasLook(bus, CHECKPOINTS) ? (bus.asked ? showSwitch(bus) : lookQuestion()) : '') + '</div>' +
+    '<div class="alb-h">Paint<span>' + (bus.c ? partsTag(bus.c) : PART_GLYPH + ' from trips and trophies') + '</span></div>' +
+    '<div class="alb-paper alb-paints">' + paints + '</div>' +
+    '<div class="alb-h">Shop<span>' + partsTag(PARTS_TRIP, true) + ' a trip · ' + PARTS_TRIPS_A_DAY + ' trips a day</span></div>' +
+    '<div class="alb-paper"><ul class="alb-decor alb-shop">' + shop + '</ul></div>' +
+    '<div class="alb-h">Trophies<span>earned, never for sale</span></div>' +
+    '<div class="alb-paper"><ul class="alb-decor alb-trophies">' + trophies + '</ul></div>';
+}
+// The question (rule 19), asked once, where the first thing to show appears:
+// on the ticket or the tour's card that brings it, or at the top of My
+// tickets after a first purchase. One line and two buttons: the maintainer's
+// rule is that nobody reads a paragraph at this moment. What showing costs
+// is said in the privacy panel.
+function lookQuestion(){
+  return '<div class="lookq"><b>Show customized bus to riders?</b>' +
+    '<span class="lookq-acts"><button type="button" class="lookq-yes" onclick="setShowBus(1)">Show it</button>' +
+    '<button type="button" class="lookq-no" onclick="setShowBus(0)">Not now</button></span></div>';
+}
+// Once asked, the same choice as a switch under the bus.
+function showSwitch(bus){
+  return '<div class="alb-show"><span><b>Show customized bus to riders</b></span>' +
+    '<button type="button" class="alb-toggle' + (bus.show ? ' on' : '') + '" onclick="setShowBus(' + (bus.show ? 0 : 1) + ')" aria-pressed="' + !!bus.show + '">' +
+    (bus.show ? 'On' : 'Off') + '</button></div>';
+}
+function setShowBus(on){
+  if (WALK) return;
+  const b = loadBus();
+  b.show = on ? 1 : 0; b.asked = 1;
+  if (!saveBus(b)) return;
+  [].slice.call(document.querySelectorAll('.lookq')).forEach(function(el){
+    el.className = 'lookq done';
+    el.innerHTML = '<b>' + (on ? 'Riders will see it' : 'Only you will see it') + '</b>';
+  });
+  const album = document.getElementById('albumModal');
+  if (album && !album.classList.contains('hidden')) renderAlbum();
+}
+function albumBuy(k){
+  if (WALK) return;
+  if (ALB_BUY_ARMED !== k){ ALB_BUY_ARMED = k; renderAlbum(); return; }
+  ALB_BUY_ARMED = '';
+  const before = loadBus(), after = busBuy(before, k);
+  if (after && saveBus(after)){
+    const paint = findIn(PAINTS, k), item = paint || findIn(SHOP, k);
+    showToast(paint ? 'Painted ' + item.t + '.' : item.t + ' is on your bus.');
+    // The first thing to show is the moment to ask, at the top of the bus.
+    if (!after.asked && !busHasLook(before, CHECKPOINTS)){
+      renderAlbum(); syncAlbumRow();
+      const q = document.querySelector('#albumBody .lookq');
+      if (q && q.scrollIntoView) q.scrollIntoView({ block:'center' });
+      return;
+    }
+  }
+  renderAlbum(); syncAlbumRow();
+}
+function albumWear(k){
+  if (WALK) return;
+  const b = loadBus();
+  saveBus(busWear(b, k, busWorn(b, CHECKPOINTS).indexOf(k) < 0, CHECKPOINTS));
+  renderAlbum();
+}
+function albumPaint(k){
+  if (WALK) return;
+  const b = loadBus();
+  if (k === 'klasiko' || b.paints.indexOf(k) >= 0){ saveBus(busUsePaint(b, k)); renderAlbum(); return; }
+  albumBuy(k);
+}
+// ---- Backup, restore ----------------------------------------------------
+// A backup is a small file of the kept tickets and the bus (backupMake),
+// made on this phone. The app hands it to the phone, to save or to send to
+// wherever its owner likes, and never sends it anywhere itself.
+let BK_ARMED = false;
+function bkSay(text){ const m = document.getElementById('bkMsg'); if (m) m.textContent = text || ''; }
+function bkReset(){
+  BK_ARMED = false; bkSay('');
+  const r = document.getElementById('bkRestore'), go = document.getElementById('bkGo'), t = document.getElementById('bkText'), f = document.getElementById('bkFile');
+  if (r) r.classList.add('hidden');
+  if (go) go.textContent = 'Restore from this backup';
+  if (t) t.value = '';
+  if (f) f.value = '';
+}
+function backupName(){ return 'bus-tracker-backup-' + ymd(new Date()) + '.json'; }
+async function saveBackup(){
+  if (WALK) return;
+  const text = backupMake(loadAlbum(), loadBus(), new Date()), name = backupName();
+  // The phone's own sheet where it can take a file (save to Files, Drive, a
+  // message to yourself), and a download where it cannot.
+  try{
+    const file = new File([text], name, { type:'application/json' });
+    if (navigator.canShare && navigator.canShare({ files:[file] })){
+      await navigator.share({ files:[file], title:'Bus Tracker backup' });
+      bkSay('Backup saved.');
+      return;
+    }
+  }catch(e){ if (e && e.name === 'AbortError') return; }
+  try{
+    const url = URL.createObjectURL(new Blob([text], { type:'application/json' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    bkSay('Saved to your downloads.');
+  }catch(e){ bkSay('This browser would not save a file. Use Copy as text instead.'); }
+}
+async function copyBackup(){
+  if (WALK) return;
+  const text = backupMake(loadAlbum(), loadBus(), new Date());
+  try{
+    await navigator.clipboard.writeText(text);
+    bkSay('Copied.');
+  }catch(e){
+    // No clipboard: show it to be copied by hand.
+    openRestore();
+    const t = document.getElementById('bkText');
+    t.value = text; t.focus(); t.select();
+    bkSay('Copy the text in the box.');
+  }
+}
+function openRestore(){
+  const r = document.getElementById('bkRestore');
+  if (r) r.classList.remove('hidden');
+}
+async function restoreBackup(){
+  if (WALK) return;
+  const f = document.getElementById('bkFile'), t = document.getElementById('bkText'), go = document.getElementById('bkGo');
+  let text = t ? t.value : '';
+  if (f && f.files && f.files[0]){
+    try{ text = await f.files[0].text(); }catch(e){ text = ''; }
+  }
+  const got = backupRead(text);
+  if (!got){ bkSay('That is not a Bus Tracker backup.'); return; }
+  // It replaces what is here, so a phone with anything of its own asks
+  // twice: a ticket, a trip, parts, or what a tour's bell paid for.
+  const here = loadAlbum().length || !busIsNew(loadBus());
+  if (here && !BK_ARMED){
+    BK_ARMED = true;
+    go.textContent = 'Tap again: this replaces what is on this phone';
+    return;
+  }
+  BK_ARMED = false;
+  if (!saveAlbum(got.tickets) || !saveBus(got.bus)){ bkSay('This browser would not let the page keep it.'); return; }
+  bkReset();
+  bkSay('Restored: ' + got.tickets.length + (got.tickets.length === 1 ? ' ticket' : ' tickets') + ' and your bus.');
+  syncAlbumRow();
+  renderAlbum();
+}
+// While My tickets is open its bus drives on to the next place every few
+// seconds; still for a reader who asked for less motion.
+function albumRideStart(){
+  clearInterval(ALB_RIDE_T); ALB_RIDE_T = null;
+  if (reducedMotion()) return;
+  ALB_RIDE_T = setInterval(function(){
+    const modal = document.getElementById('albumModal');
+    if (!modal || modal.classList.contains('hidden')){ clearInterval(ALB_RIDE_T); ALB_RIDE_T = null; return; }
+    const views = [].slice.call(document.querySelectorAll('#albumBody .alb-ride .rv'));
+    if (views.length < 2) return;
+    const i = views.findIndex(function(v){ return v.classList.contains('on'); });
+    views[i < 0 ? 0 : i].classList.remove('on');
+    views[(i + 1) % views.length].classList.add('on');
+  }, 5000);
+}
+// Under the bus: its totals, and the best streak once it is longer than the
+// one running. Nothing is drawn for a total that is still nothing.
+function albTotals(b){
+  const now = new Date(), words = busTotalsWords(b, now), live = busStreak(b, weekIndex(now));
+  if (b.best > 1 && b.best > live) words.push('best ' + b.best + ' weeks in a row');
+  const chips = (b.c ? [partsTag(b.c)] : []).concat(words.map(escapeHtml));
+  return chips.length ? '<div class="alb-totals">' + chips.map(function(w){ return '<span>' + w + '</span>'; }).join('') + '</div>' : '';
+}
 function renderAlbum(){
   const list = loadAlbum(), st = albumStats(list, CHECKPOINTS);
   const kinds = Object.keys(STAMPS), got = kinds.filter(function(k){ return st.stamps[k] > 0; }).length;
@@ -6244,28 +7753,63 @@ function renderAlbum(){
       '<b aria-hidden="true">' + (n ? '×' + n : 'not yet') + '</b>' +
       '<i class="vh">' + escapeHtml(s.t + ', ' + s.s + ': ' + (n ? n + (n === 1 ? ' ticket' : ' tickets') : 'not yet')) + '</i></div>';
   }).join('');
+  // The sights, as stickers: spotted ones in colour with how many kept
+  // tickets have them, the rest faint with "not yet", the same as stamps.
+  const sg = albumSights(list), skeys = Object.keys(SIGHTS);
+  const spotted = skeys.filter(function(k){ return sg.seen[k] > 0; }).length;
+  const sights = skeys.map(function(k){
+    const n = sg.seen[k] || 0, x = SIGHTS[k];
+    return '<div class="alb-sight' + (n ? '' : ' yet') + '"><i>' + sightTile(k) + '</i><b aria-hidden="true">' + escapeHtml(x.t) + '</b>' +
+      '<span aria-hidden="true">' + (n ? (x.rare ? 'rare · ' : '') + '×' + n : 'not yet') + '</span>' +
+      '<i class="vh">' + escapeHtml(x.t + ', ' + x.s + ': ' + (n ? n + (n === 1 ? ' ticket' : ' tickets') : 'not yet')) + '</i></div>';
+  }).join('');
   const order = list.map(function(e, i){ return i; }).reverse();
   const minis = order.slice(0, ALB_SHOW).map(function(i){
-    const e = list[i], a = cpIndex(CHECKPOINTS, e.from), b = cpIndex(CHECKPOINTS, e.to);
+    const e = list[i], a = cpIndex(CHECKPOINTS, e.from), b = cpIndex(CHECKPOINTS, e.to), look = ticketLook(e);
     const dir = e.dir === 's' ? 'southbound' : 'northbound';
-    return '<button type="button" class="tktmini" data-i="' + i + '" aria-label="' +
-        attrText(keptDate(e.d) + ', ' + dir + ', ' + (e.from || '?') + ' to ' + (e.to || '?') + (e.ty ? ', someone said salamat' : '')) + '">' +
-      tktArt(a, b, e.st) +
+    return '<button type="button" class="tktmini pp-' + look.paper + (look.rare ? ' foil' : '') + '" data-i="' + i + '" aria-label="' +
+        attrText(keptDate(e.d) + ', ' + dir + ', ' + (e.from || '?') + ' to ' + (e.to || '?') + (look.rare ? ', a gold ticket' : '') +
+                 (e.ty ? ', someone said salamat' : '')) + '">' +
+      tktArt(a, b, e) +
       '<span class="tm-date">' + keptDate(e.d) + (e.ty ? '<svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>' : '') + '</span>' +
       '<span class="tm-route">' + (e.dir === 's' ? '▼ ' : '▲ ') + escapeHtml(e.from || '?') + ' → ' + escapeHtml(e.to || '?') + '</span>' +
       (e.st.length ? '<span class="tm-st">' + e.st.map(function(k){ return '<i class="' + STAMPS[k].c + '">' + escapeHtml(STAMPS[k].t) + '</i>'; }).join('') + '</span>' : '') +
     '</button>';
   }).join('');
-  document.getElementById('albumBody').innerHTML =
+  // Your bus first, as a garage: the bus as it is dressed now, its paint,
+  // the shop, and the trophies with what earns each. Shown before the first
+  // trip too, plain, with everything still to come: this is where a sharer
+  // finds out what there is to earn.
+  const bus = loadBus();
+  const busPart = albumBusHtml(bus);
+  const clear = document.getElementById('albumClear');
+  if (clear) clear.classList.toggle('hidden', !list.length && busIsNew(bus));
+  // Nothing kept yet: what a kept ticket can collect, all of it faint, and
+  // how to start. No counts, so no zeros.
+  if (!list.length){
+    document.getElementById('albumBody').innerHTML = busPart +
+      '<p class="hint alb-none">No tickets yet. Tap Keep after a trip.</p>' +
+      '<div class="alb-h">Places on the route</div>' +
+      '<div class="alb-paper"><div class="tkt-grid">' + places + '</div></div>' +
+      '<div class="alb-h">Stamps</div>' +
+      '<div class="alb-paper alb-stamps">' + stamps + '</div>' +
+      '<div class="alb-h">Sights<span>what was in the picture</span></div>' +
+      '<div class="alb-paper alb-sights">' + sights + '</div>';
+    return;
+  }
+  document.getElementById('albumBody').innerHTML = busPart +
     '<div class="alb-stats">' +
       '<div><b>' + st.tickets + '</b><span>' + (st.tickets === 1 ? 'ticket' : 'tickets') + '</span></div>' +
       '<div><b>' + st.places + '<small>/' + st.of + '</small></b><span>places</span></div>' +
       '<div><b>' + got + '<small>/' + kinds.length + '</small></b><span>stamps</span></div>' +
+      '<div><b>' + spotted + '<small>/' + skeys.length + '</small></b><span>sights</span></div>' +
     '</div>' +
     '<div class="alb-h">Places on the route</div>' +
     '<div class="alb-paper"><div class="tkt-grid">' + places + '</div></div>' +
     '<div class="alb-h">Stamps</div>' +
     '<div class="alb-paper alb-stamps">' + stamps + '</div>' +
+    '<div class="alb-h">Sights<span>' + (sg.gold ? sg.gold + (sg.gold === 1 ? ' gold ticket' : ' gold tickets') : 'what was in the picture') + '</span></div>' +
+    '<div class="alb-paper alb-sights">' + sights + '</div>' +
     '<div class="alb-h">Tickets<span><i aria-hidden="true">▲ </i>' + st.north + '<i class="vh"> northbound,</i> · <i aria-hidden="true">▼ </i>' +
       st.south + '<i class="vh"> southbound</i></span></div>' +
     '<div class="alb-list">' + minis + '</div>' +
@@ -6276,7 +7820,13 @@ function renderAlbum(){
   const body = document.getElementById('albumBody');
   if (body) body.addEventListener('click', function(ev){
     const b = ev.target.closest('.tktmini');
-    if (b) showKeptTicket(+b.getAttribute('data-i'));
+    if (b){ showKeptTicket(+b.getAttribute('data-i')); return; }
+    const getting = ev.target.closest('[data-buy]');
+    if (getting){ albumBuy(getting.getAttribute('data-buy')); return; }
+    const wear = ev.target.closest('[data-wear]');
+    if (wear){ albumWear(wear.getAttribute('data-wear')); return; }
+    const paint = ev.target.closest('[data-paint]');
+    if (paint) albumPaint(paint.getAttribute('data-paint'));
   });
 })();
 
@@ -6301,35 +7851,35 @@ function renderAlbum(){
 const WALKS = {
   watch: [
     { id:'hello', tab:'track', title:'How the map works',
-      words:'This is a practice bus, so nothing you do here is sent. Real buses come back when you finish.' },
+      words:'A practice bus. Nothing you tap is sent.' },
     { id:'strip', tab:'track', at:'#trackStrip',
-      words:'The whole route as a line. Each badge is a bus: top line to {north}, bottom line to {south}.' },
+      words:'The route as a line. Top line to {north}, bottom line to {south}.' },
     { id:'bus', tab:'track', at:'@bus', tap:'Tap the bus', view:'bus', need:'map',
       words:'Here is the same bus on the map.' },
     { id:'popup', tab:'track', at:'.buspop .leaflet-popup-content-wrapper', popup:true, view:'bus', need:'map',
-      words:'<b>Say salamat</b> thanks whoever is sharing from this bus. <b>Send a link</b> lets someone follow it.' },
+      words:'<b>Say salamat</b> to whoever is sharing. <b>Send a link</b> so others can follow.' },
     { id:'stop', tab:'track', at:'#myStop',
-      words:'Save your stop, and this card counts the stops to it. <b>Malapit na!</b> means it’s close. This one is practice.' },
+      words:'Save your stop to count the stops to it. <b>Malapit na!</b> means close.' },
     { id:'filter', tab:'track', at:'#dirSeg',
-      words:'Going one way only? Pick it, and buses going the other way hide.' },
+      words:'Going one way? Pick it to hide the rest.' },
     { id:'fresh', tab:'track', at:'#busList',
-      words:'Each bus says when it last moved. An old one fades out, because it has moved on since.' },
+      words:'Each bus shows when it last moved. Old ones fade.' },
     { id:'next', tab:'track', at:'#tabOnbus', alt:'share',
-      words:'On a bus yourself? This tab puts it on the map for everyone.' }
+      words:'On a bus? This tab puts it on the map.' }
   ],
   share: [
     { id:'hello', tab:'track', title:'Sharing from the bus',
-      words:'This is practice, so nothing gets shared. Sharing for real may need the key or PIN from the group chat.' },
+      words:'Practice only. Nothing is shared.' },
     { id:'tab', tab:'track', at:'#tabOnbus', tap:'Tap I’m on the bus',
       words:'On a bus, open this tab.' },
     { id:'dir', tab:'share', at:'.dirpick', patch:'#pickNorth', tap:'Tap Northbound',
-      words:'Pick where the bus is going. Get it right, or people wait on the wrong side of the road.' },
+      words:'Pick where the bus is going.' },
     { id:'number', tab:'share', dir:'north', at:'#busLabel',
-      words:'Type the bus number if you can see it. Then two phones on one bus show as one bus.' },
+      words:'Type the bus number if you see it.' },
     { id:'start', tab:'share', dir:'north', at:'#onbusStartBtn',
-      words:'Tap Start and allow your location. <b>Keep the screen on</b>, or sharing stops.' },
+      words:'Tap Start. <b>Keep the screen on.</b>' },
     { id:'ticket', tab:'share', dir:'north', at:'#tktCard', ticket:true,
-      words:'When you get off, tap Stop. You get a ticket for the trip, made on your phone and sent nowhere.' },
+      words:'When you get off, tap Stop. You get a ticket.' },
     { id:'bye', tab:'share', alt:'watch',
       words:'That’s all. Salamat for helping everyone waiting at the stops!' }
   ]
@@ -6429,8 +7979,11 @@ function startWalk(name){
   const kmOf = function(p){ return routeProgressKm({ lat:p.lat, lng:p.lng }, CHECKPOINTS, ROUTE_CHAIN); };
   const prac = walkPractice(CHECKPOINTS, STOPS, kmOf);
   const first = CHECKPOINTS[0], last = CHECKPOINTS[CHECKPOINTS.length - 1];
+  // A tour switched to from the last step of the other carries that one's
+  // finish along, to be counted when the run ends.
+  const finished = WALK ? WALK.finished : [];
   WALK = {
-    name:name, steps:walkSteps(name, !!map), i:0, saved:saved, ticket:false, el:null, key:'',
+    name:name, steps:walkSteps(name, !!map), i:0, saved:saved, ticket:false, el:null, key:'', finished:finished,
     names:{ north: last ? last.name : '', south: first ? first.name : '' },
     buses: prac ? [{ pub_id:WALK_ID, lat:prac.bus.lat, lng:prac.bus.lng, speed:null, self:false,
                      direction:'north', bus_label:'Practice', ts:Date.now() - 9000 }] : [],
@@ -6454,7 +8007,7 @@ function walkSave(){
 }
 function endWalk(){
   if (!WALK) return;
-  const s = WALK.saved, hadTicket = WALK.ticket;
+  const s = WALK.saved, hadTicket = WALK.ticket, finished = WALK.finished;
   WALK = null;
   if (hadTicket) closeTicket();
   if (map) map.closePopup();
@@ -6471,6 +8024,33 @@ function endWalk(){
   }
   window.scrollTo(0, s.y);
   if (s.focus && s.focus.focus && s.focus.getClientRects().length) s.focus.focus();
+  // Counted now, with the run over: nothing is stored while one is on.
+  walkFinished(finished);
+}
+// A tour taken to its last step decorates the reader's bus, once, and says
+// so with the bus and where to find it.
+function walkFinished(names){
+  if (WALK || !names || !names.length) return;
+  const before = loadBus(), toured = busToured(before, names);
+  const had = busEarned(before, CHECKPOINTS), fresh = busEarned(toured, CHECKPOINTS).filter(function(k){ return had.indexOf(k) < 0; });
+  if (!fresh.length) return;
+  const due = busSettle(toured, CHECKPOINTS), after = due.b;
+  if (!saveBus(after)) return;
+  syncAlbumRow();
+  const names2 = DECOR.filter(function(d){ return fresh.indexOf(d.k) >= 0; });
+  // Close up, the way its card in My tickets shows it: on the whole bus a
+  // bell is a few pixels.
+  document.getElementById('busNewBody').innerHTML = '<div class="busnew-art">' +
+    names2.map(function(d){ return '<figure>' + decorTile(d.k) + '<figcaption>' + escapeHtml(d.t) + '</figcaption></figure>'; }).join('') + '</div>' +
+    '<p>For finishing ' + (names.length > 1 ? 'both tours' : 'the tour') + '.</p>' +
+    (due.got ? '<div class="tkt-parts">' + partsTag(due.got, true) + '</div>' : '') +
+    (!after.asked && busHasLook(after, CHECKPOINTS) ? lookQuestion() : '');
+  openModal('busNewModal');
+}
+function seeMyBus(){
+  closeModal('busNewModal');
+  switchTab('share');
+  openAlbum();
 }
 function walkGo(d){
   if (!WALK) return;
@@ -6484,6 +8064,7 @@ function walkShow(i){
   WALK.i = i; WALK.el = null; WALK.key = '';
   walkScene(st);
   const n = WALK.steps.length, last = i === n - 1;
+  if (last && WALK.finished.indexOf(WALK.name) < 0) WALK.finished.push(WALK.name);
   const title = document.getElementById('walkTitle');
   title.textContent = st.title || '';
   title.classList.toggle('hidden', !st.title);
@@ -6613,7 +8194,7 @@ document.addEventListener('keydown', function(e){
 // The first visit is offered the tour once, at the foot of the screen, where
 // it covers nothing the page was opened for. Answering it either way is
 // remembered under the same key as the guide's dot, which is the first of
-// the four things the privacy panel names, so this adds nothing to that
+// the six things the privacy panel names, so this adds nothing to that
 // list: both are "has this phone been shown around yet".
 function walkSeen(){
   try{ localStorage.setItem('wt-guide-seen','1'); }catch(e){}
@@ -6872,19 +8453,16 @@ function renderHours(){
   // One number for the route, unless the windows carry their own: then each
   // line above says its interval and this only covers the ones that do not.
   document.getElementById('headwayNote').textContent = anyWindowHeadway()
-    ? 'Intervals are rough. A window without one runs about every '+routeHeadway()+' minutes. Times above are departure windows from each end.'
-    : 'Trips roughly every '+routeHeadway()+' minutes. Times above are departure windows from each end.';
+    ? 'Otherwise about every '+routeHeadway()+' minutes.'
+    : 'Leaves each end about every '+routeHeadway()+' minutes.';
   function humanMins(m){ m=parseInt(m,10)||0; return m>=60 ? (m/60)+(m===60?' hour':' hours') : m+' min'; }
   document.getElementById('busExpiryNote').textContent =
     'Buses show "live" under 45s, then their age; they disappear about '+humanMins(SET.bus_expiry_min)+' after their last update.';
   // The folded card's summary already asks the question; this line only adds
   // the mechanics.
   if (sightingsOn()) document.getElementById('sightingIntro').textContent =
-    (TRAVEL.length
-      ? 'A sighting shows on the strip as a glow where that bus probably is by now, from how long past trips took: densest where it most likely is, and wider and fainter the longer ago it was seen. It moves along until the slowest past trip would have arrived. '
-      : 'A sighting shows on the strip as a glow where the bus was seen, for one trip interval ('+humanMins(routeHeadway())+
-        (anyWindowHeadway() ? ' unless its window says otherwise' : '')+'). ') +
-    'It stays on this board for '+humanMins(SET.sighting_expiry_min)+'.';
+    (TRAVEL.length ? 'A sighting glows where that bus probably is now.' : 'A sighting glows where the bus was seen.') +
+    ' It stays here for '+humanMins(SET.sighting_expiry_min)+'.';
 }
 function start(){
   document.getElementById('gate').classList.add('hidden');
@@ -6903,6 +8481,8 @@ function start(){
     initMap(); buildTicks(); buildSightingPlaces(); renderHours();
     renderSourceLink(); renderContactLine(); showAppHints(); mapReady=true;
     walkFromLink();
+    // After a tour asked for in the link has had its chance to start.
+    setTimeout(recoverTrip, 600);
   }
   if (running) return;
   running=true;
@@ -6925,8 +8505,9 @@ applyTheme(themePref());
 
 // The gold dot on the guide link is a first-visit nudge, not a setting. It
 // was once the only thing this app kept between visits; it is now one of
-// four, with the theme choice, the saved stop and the kept tickets. All four
-// stay on the device, all four are named in the privacy panel, and losing this one
+// six, with the theme choice, the saved stop, the kept tickets, your bus and
+// the trip in progress. All six stay on the device, all six are named in the
+// privacy panel, and losing this one
 // costs nothing but one extra dot.
 (function(){
   const link=document.getElementById('guideLink');

@@ -85,6 +85,7 @@ psql -d bustest -f ../sql/09-window-headway.sql
 psql -d bustest -f ../sql/10-weekend-hours.sql
 psql -d bustest -f ../sql/11-open-sharing.sql
 psql -d bustest -f ../sql/12-share-pin.sql
+psql -d bustest -f ../sql/13-bus-look.sql
 ```
 
 Then run one suite against it:
@@ -100,6 +101,7 @@ psql -d bustest -f db/07-thanks-tests.sql      # 38 checks, saying salamat
 psql -d bustest -f db/08-position-tests.sql    # 36 checks, what a position write refuses
 psql -d bustest -f db/09-open-sharing-tests.sql # 34 checks, sharing without the key
 psql -d bustest -f db/10-share-pin-tests.sql   # 78 checks, a PIN and the limit on guessing it
+psql -d bustest -f db/11-bus-look-tests.sql    # 20 checks, a bus shown to riders, and only the app's own codes
 ```
 
 `dropdb bustest` and build it again between suites. Apply **all** the migration

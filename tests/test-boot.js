@@ -641,7 +641,7 @@ function run(page, include, label, configText, setup) {
     check(ok.d.querySelectorAll('[id="buzzBox"]').length === 0,
       'the card written twice repeats no id');
     ok.w.renderMyStop([near, { ...mineBus, self: true, lat: cpAt(6).lat, lng: cpAt(6).lng }]);
-    check(/behind this bus/.test(tripBox.textContent),
+    check(/passed your stop/.test(tripBox.textContent),
       'a sharer heading away from their saved stop is asked for the one they get off at');
     ok.w.eval('sharing = false');
     ok.w.setShareUI('off', 'Not sharing');
@@ -652,19 +652,31 @@ function run(page, include, label, configText, setup) {
 
   // The panel is the promise and the code is only the implementation. This is
   // that rule made mechanical: every key the app writes to localStorage has to
-  // be one the panel has told the reader about. A fifth remembered thing
+  // be one the panel has told the reader about. A seventh remembered thing
   // fails here until the paragraph is rewritten in the same commit, as the
-  // fourth, the kept tickets, was.
+  // fifth and sixth, your bus and the trip in progress, were.
   const appSrc = fs.readFileSync(path.join(APP, 'index.html'), 'utf8');
   const keys = [...new Set([...appSrc.matchAll(/localStorage\.(?:setItem|removeItem)\(\s*'([^']+)'/g)]
     .map(m => m[1]))].sort();
-  check(keys.join(',') === 'wt-guide-seen,wt-mystop,wt-theme,wt-tickets',
-    'the app keeps exactly the four things the privacy panel names', keys.join(',') || 'none');
+  check(keys.join(',') === 'wt-bus,wt-guide-seen,wt-mystop,wt-theme,wt-tickets,wt-trip',
+    'the app keeps exactly the six things the privacy panel names', keys.join(',') || 'none');
+  // supabase-js sends a request only when something asks for its answer, so
+  // an rpc() nobody awaits or .then()s never leaves the phone. The wrong-way
+  // pause's clear_bus_position was one, and had never gone out.
+  const bare = appSrc.split('\n').filter(l => /\brpc\(/.test(l) && !/await rpc\(|= rpc\(|return rpc\(|const rpc = |\)\.then\(/.test(l));
+  check(bare.length === 0, 'every request the page makes is one something waits for, so it is really sent', bare.join(' | ').trim());
   const panel = ok.d.getElementById('privModal').textContent.replace(/\s+/g, ' ');
-  check(/Four small things are remembered on your own device/.test(panel),
-    'and the panel counts them out loud, so a fifth cannot slip in quietly');
+  check(/Six small things are remembered on your own device/.test(panel),
+    'and the panel counts them out loud, so a seventh cannot slip in quietly');
+  check(/your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it/.test(panel) &&
+        /Totals, never a list: no clock times and no bus numbers/.test(panel) && /deleted the moment the trip ends/.test(panel),
+    'naming your bus as totals only, never a list of times, and the trip in progress as gone when it ends');
+  check(/Showing your bus to riders<\/b> is off unless you switch it on/.test(panel.replace(/<[^b\/][^>]*>/g, '')) || /Showing your bus to riders is off unless you switch it on/.test(panel),
+    'and showing the bus to riders as off unless switched on, with what it costs', '');
+  check(/tell it is yours from one trip to the next/.test(panel) && /never bought with money, never sent/.test(panel) && /The app never sends it anywhere/.test(panel),
+    'saying riders can recognise a shown bus, parts are never money, and a backup is never sent');
   check(/the stop you saved/i.test(panel), 'naming the saved stop among them');
-  check(/the tickets you chose to keep/i.test(panel) && /Remove all.{0,4} in My tickets/.test(panel),
+  check(/the tickets you chose to keep/i.test(panel) && /Start from scratch.{0,4} in My tickets deletes every copy/.test(panel),
     'and the kept tickets, with the way to delete them');
   check(/Nothing is ever kept unless you tap Keep/.test(panel) && /leaves out the times, how long the trip took, the bus number and how many riders thanked you/.test(panel),
     'saying a ticket is kept only on a tap, and what a kept one leaves out');
@@ -691,7 +703,59 @@ function run(page, include, label, configText, setup) {
     const hidden = el => !el || el.className.includes('hidden');
     w.localStorage.removeItem('wt-tickets');
     w.syncAlbumRow();
-    check(hidden(row), 'with nothing kept, the sharing tab offers no album at all');
+    w.localStorage.removeItem('wt-bus');
+    w.syncAlbumRow();
+    check(!hidden(row) && /first trip starts them/.test(row.textContent) && !/\b0\b/.test(row.textContent),
+      'with nothing kept or earned, the sharing tab still offers My tickets, saying what starts it, with no zero', row.textContent.replace(/\s+/g, ' ').trim());
+    w.openAlbum();
+    const empty = d.getElementById('albumBody');
+    check(/starts with your first trip/.test(empty.textContent) && empty.querySelectorAll('.alb-trophies li').length === 23 &&
+          empty.querySelectorAll('.alb-shop li').length === 8 && empty.querySelectorAll('.alb-shop [data-buy][disabled]').length === 8 &&
+          empty.querySelectorAll('.alb-decor li.on').length === 0 && empty.querySelectorAll('.alb-sight.yet').length === 16 &&
+          !!empty.querySelector('.alb-ride svg.rideart') && !empty.querySelector('.lookq') &&
+          empty.querySelectorAll('.alb-stamp.yet').length === 4 && !/×0|\b0 of\b|\b0 tickets?\b/.test(empty.textContent) &&
+          hidden(d.getElementById('albumClear')),
+      'and opened, it shows the plain bus on the road, every trophy, shop item, stamp and sight still to come, no zero, nothing to remove and nothing to ask');
+    w.closeModal('albumModal');
+
+    // Your progress: a backup copied as text (this DOM has no clipboard, so
+    // the text is shown to be copied by hand), Start from scratch, and a
+    // restore, which asks twice before replacing progress already here.
+    w.localStorage.setItem('wt-bus', JSON.stringify({ n: 2, c: 15, places: ['MENDEZ', 'TGY'], paid: ['sampaguita'], own: ['dice'] }));
+    w.localStorage.setItem('wt-tickets', JSON.stringify([{ d: '2026-10-09', dir: 'n', from: 'MENDEZ', to: 'TGY', st: [], ty: false }]));
+    w.openAlbum();
+    await w.copyBackup();
+    const bkText = d.getElementById('bkText'), bkMsg = () => d.getElementById('bkMsg').textContent, bkGo = d.getElementById('bkGo');
+    const copied = bkText.value;
+    check(!!w.backupRead(copied) && JSON.parse(copied).tickets.length === 1 && JSON.parse(copied).bus.own.join(',') === 'dice' &&
+          /Copy the text/.test(bkMsg()), 'a backup holds the tickets and the bus, shown to be copied where there is no clipboard', bkMsg());
+    const clearBtn = d.getElementById('albumClear');
+    check(!hidden(clearBtn) && /Start from scratch/.test(clearBtn.textContent), 'Start from scratch is offered when there is something to delete');
+    clearBtn.click();
+    check(/Tap again to delete 1 ticket and your bus/.test(clearBtn.textContent) && w.localStorage.getItem('wt-bus') !== null,
+      'the first tap says what goes, and deletes nothing', clearBtn.textContent);
+    clearBtn.click();
+    check(w.localStorage.getItem('wt-bus') === null && w.localStorage.getItem('wt-tickets') === null && hidden(d.getElementById('albumModal')),
+      'the second deletes everything My tickets held');
+    w.openAlbum();
+    w.openRestore();
+    bkText.value = '{"hello":1}';
+    await w.restoreBackup();
+    check(/not a Bus Tracker backup/.test(bkMsg()) && w.localStorage.getItem('wt-bus') === null, 'something that is not a backup restores nothing');
+    bkText.value = copied;
+    await w.restoreBackup();
+    check(JSON.parse(w.localStorage.getItem('wt-tickets') || '[]').length === 1 && JSON.parse(w.localStorage.getItem('wt-bus') || '{}').own.join(',') === 'dice' &&
+          /Restored: 1 ticket and your bus/.test(bkMsg()), 'a restore on an empty phone puts it all back at once', bkMsg());
+    w.openRestore();
+    bkText.value = copied;
+    await w.restoreBackup();
+    check(/Tap again: this replaces/.test(bkGo.textContent), 'over progress already here it asks first', bkGo.textContent);
+    await w.restoreBackup();
+    check(/Restored/.test(bkMsg()), 'and restores on the second tap');
+    w.closeModal('albumModal');
+    w.localStorage.removeItem('wt-bus');
+    w.localStorage.removeItem('wt-tickets');
+    w.syncAlbumRow();
     w.switchTab('share');
     w.pickDir('north');
     d.getElementById('busLabel').value = '98019';
@@ -704,7 +768,7 @@ function run(page, include, label, configText, setup) {
     check(!hidden(keepBtn) && hidden(dropBtn), 'and Keep under it, not Remove');
     check(w.localStorage.getItem('wt-tickets') === null, 'showing it keeps nothing');
     w.closeTicket();
-    check(w.localStorage.getItem('wt-tickets') === null && hidden(row), 'and closing it without Keep leaves nothing behind');
+    check(w.localStorage.getItem('wt-tickets') === null && /first trip starts them/.test(row.textContent), 'and closing it without Keep leaves nothing behind');
 
     w.showTicket(trip(), end);
     keepBtn.click();
@@ -732,7 +796,9 @@ function run(page, include, label, configText, setup) {
     check(w.localStorage.getItem('wt-tickets') !== null && /again/.test(dropBtn.textContent), 'Remove asks twice');
     dropBtn.click();
     check(w.localStorage.getItem('wt-tickets') === null, 'and the second tap removes it, leaving no key behind');
-    check(hidden(row) && hidden(album) && hidden(modal), 'with the album gone from the tab again');
+    check(/first trip starts them/.test(row.textContent) && /No tickets yet/.test(d.getElementById('albumBody').textContent) && hidden(modal),
+      'with the album back to what there is still to collect');
+    w.closeModal('albumModal');
   }
 
   console.log('\n=== 13. the tour: a practice run on the real page ===');
@@ -787,6 +853,14 @@ function run(page, include, label, configText, setup) {
     check(seen.join(' ') === w.eval('walkSteps("watch", !!map).map(function(s){ return s.id; }).join(" ")'),
       'it steps through every step of the map tour in order', seen.join(' '));
     check(walking() === null && hidden(d.getElementById('walk')), 'and Done on the last one closes it');
+    // Finished, the tour hangs the bell on the reader's bus, once, and says
+    // where the bus is.
+    const busNew = d.getElementById('busNewModal');
+    const busRec = () => JSON.parse(w.localStorage.getItem('wt-bus') || 'null');
+    check(!hidden(busNew) && /Kampanilya/.test(busNew.textContent) && /See my bus/.test(busNew.textContent) &&
+          !!busNew.querySelector('svg.decor-art') && busRec() && busRec().tw === 1 && busRec().n === 0,
+      'and finishing it puts the bell on the reader\'s bus, shown with the bus and a button to it', busNew.textContent.replace(/\s+/g, ' ').trim().slice(0, 120));
+    w.closeModal('busNewModal');
     check(w.eval('MYSTOP && MYSTOP.name') === 'My own stop' && w.eval('dirFilter') === 'south',
       'the reader\'s own stop and filter are back');
     check(!/Practice/.test(d.getElementById('busList').textContent) && !d.querySelector('#trackStrip .buspill'),
@@ -808,11 +882,31 @@ function run(page, include, label, configText, setup) {
     check(!hidden(d.getElementById('trackView')) && w.eval('shareDir') === null && d.getElementById('busLabel').value === '',
       'back on the map tab, with no direction picked and no bus number left in the field');
 
+    check(hidden(busNew) && busRec().ts === 0, 'a tour closed before its last step earns nothing');
+
+    // The sharing tour to its last step: the route board, then nothing more
+    // for taking it again.
+    w.startWalk('share');
+    for (let i = 0; i < 12 && walking(); i++) {
+      if (/\/(tab|dir)$/.test(walking())) w.walkGo(1); else d.getElementById('walkNext').click();
+    }
+    check(walking() === null && !hidden(busNew) && /Plaka ng ruta/.test(busNew.textContent) && busRec().ts === 1,
+      'finishing the sharing tour puts the route board up');
+    w.closeModal('busNewModal');
+    w.startWalk('watch');
+    for (let i = 0; i < 14 && walking(); i++) {
+      if (/^watch\/(bus|tab|dir)$/.test(walking())) w.walkGo(1); else d.getElementById('walkNext').click();
+    }
+    check(walking() === null && hidden(busNew), 'and a tour taken again adds nothing and says nothing');
+    w.switchTab('track'); w.pickDir(null); d.getElementById('busLabel').value = '';
+
     check(sent.every(f => /^get_/.test(f)), 'the only requests made were the reads the map makes anyway',
       [...new Set(sent)].join(' ') || 'none');
     const added = storedKeys().split(',').filter(k => k && !keysBefore.split(',').includes(k));
-    check(added.every(k => k === 'wt-guide-seen') && w.localStorage.getItem('wt-mystop') === storedStop,
-      'and nothing was kept but the guide\'s own "shown around" flag', added.join(' ') || 'nothing new');
+    check(added.every(k => k === 'wt-guide-seen' || k === 'wt-bus') && w.localStorage.getItem('wt-mystop') === storedStop &&
+          busRec().n === 0 && Object.keys(busRec()).every(k => !/time|date|when/.test(k)),
+      'and nothing was kept but the guide\'s "shown around" flag and the two tours finished on the bus, no trip counted', added.join(' ') || 'nothing new');
+    w.localStorage.removeItem('wt-bus');
 
     // The first visit's note: shown once, answered once, kept under the
     // guide's own key so the privacy panel's four things stay four.
@@ -870,7 +964,7 @@ function run(page, include, label, configText, setup) {
       request(){ native.wakeLocks++; return Promise.resolve({ addEventListener(){}, release(){} }); }
     } });
   });
-  check(/sharing keeps going/.test(inApp.d.getElementById('gpsSetupHint').textContent),
+  check(/Keeps sharing with the screen locked/.test(inApp.d.getElementById('gpsSetupHint').textContent),
     'the setup hint says the screen can lock');
   inApp.w.pickDir('north');
   inApp.w.startSharing();
@@ -918,6 +1012,9 @@ function run(page, include, label, configText, setup) {
         let args = {};
         try { args = JSON.parse((o && o.body) || '{}'); } catch (e) {}
         sim.calls.push({ fn: m[1], args });
+        // A call held back, like a request at the end of the line that has
+        // not been answered yet; let go with sim.hold[fn].forEach(f => f()).
+        if (sim.hold && sim.hold[m[1]]) return new Promise(r => sim.hold[m[1]].push(() => r(new Response(null, { status: 204 }))));
         const r = sim.reply[m[1]] ? sim.reply[m[1]](args) : null;
         if (r && r.error) return Promise.resolve(json({ code: 'P0001', message: r.error, details: null, hint: null }, 400));
         return Promise.resolve(r && 'data' in r ? json(r.data) : new Response(null, { status: 204 }));
@@ -977,9 +1074,9 @@ function run(page, include, label, configText, setup) {
     check(w.eval('sharing') === true, 'a failed write does not end the trip');
     check(!isHidden('onbusActive') && isHidden('onbusSetup'),
       'and Stop stays on screen, with no Start beside it');
-    check(/Couldn't send/.test(status()), 'the status says the write failed', status());
+    check(/No connection/.test(status()), 'the status says the write failed', status());
     sim.watches[0].onPos(here);
-    check(/Couldn't send/.test(status()), 'and the next GPS fix does not paper over it with "Sharing live"', status());
+    check(/No connection/.test(status()), 'and the next GPS fix does not paper over it with "Sharing live"', status());
     w.startSharing();
     await pause(80);
     check(watchesOpen() === 1 && sim.watches.length === 1, 'a second Start mid-trip opens no second GPS watch',
@@ -990,21 +1087,26 @@ function run(page, include, label, configText, setup) {
 
     // Stop: the watch ends, the bus is cleared, and the session goes with the trip.
     const trip1 = first.args.p_session;
-    await w.stopSharing({ quiet: true });
+    await w.stopSharing();
     check(watchesOpen() === 0, 'Stop ends the only GPS watch there was', `${watchesOpen()} still open`);
     check(of('clear_bus_position').some(c => c.args.p_session === trip1), 'and clears that trip\'s bus');
     check(w.sessionStorage.getItem('wt-session') === null, 'and forgets its session id');
     const second = await startTrip();
     check(!!second && second.args.p_session !== trip1,
       'so the next trip is a different session, and a different bus on the map');
-    await w.stopSharing({ quiet: true });
+    await w.stopSharing();
 
     // An organiser's Stop is the one end that keeps the session, because the
     // block is on it.
-    sim.reply.set_keyed_position = () => ({ error: 'session blocked' });
+    // Stopped half an hour in, it is also the one end without a ticket.
     const blocked = await startTrip();
+    w.eval('TRIP.start -= 30 * 60000');
+    sim.reply.set_keyed_position = () => ({ error: 'session blocked' });
+    w.eval('lastWrite = 0');
+    sim.watches[sim.watches.length - 1].onPos(here);
     await waitFor(() => w.eval('sharing') === false);
     check(!w.eval('sharing') && watchesOpen() === 0, 'a blocked session ends the trip and its watch');
+    check(isHidden('tktModal'), 'and draws no ticket, however long it was on the map: a bus an organizer took off is not thanked for it');
     check(w.sessionStorage.getItem('wt-session') === blocked.args.p_session,
       'and keeps its session id, so the block holds on this phone');
     const again = await startTrip();
@@ -1017,7 +1119,7 @@ function run(page, include, label, configText, setup) {
     await waitFor(() => w.eval('sharing') === false);
     check(!w.eval('sharing') && watchesOpen() === 0 && isHidden('onbusActive') && !isHidden('onbusSetup'),
       'a full route ends the trip, and Start comes back for trying later');
-    check(/Too many people/.test(status()), 'saying why', status());
+    check(/Too many sharing/.test(status()), 'saying why', status());
     check(w.eval('accessKey') === 'TESTKEY', 'and the key is kept, since nothing is wrong with it');
 
     // A changed key: dropped everywhere it was kept, so the next Start asks.
@@ -1030,7 +1132,7 @@ function run(page, include, label, configText, setup) {
     check(w.eval('accessKey') === null && w.sessionStorage.getItem('wt-key') === null && !/k=/.test(w.location.hash),
       'and is forgotten, from memory, the tab\'s storage and the address bar',
       `accessKey=${w.eval('accessKey')} hash=${w.location.hash}`);
-    check(/no longer valid/.test(status()), 'saying so', status());
+    check(/key has changed/.test(status()), 'saying so', status());
     w.startSharing();
     check(!isHidden('gate'), 'the next Start asks for the new key');
     // The key only ever arrives inside a link, so a pasted link has to work.
@@ -1053,7 +1155,7 @@ function run(page, include, label, configText, setup) {
     check(await w.tryKey('0000') === false && /not recognized/.test(d.getElementById('gateErr').textContent),
       'a wrong PIN is refused at the gate', d.getElementById('gateErr').textContent);
     sim.reply.check_share_key = () => ({ data: 'too many tries' });
-    check(await w.tryKey('0001') === false && /paused/.test(d.getElementById('gateErr').textContent),
+    check(await w.tryKey('0001') === false && /paused/i.test(d.getElementById('gateErr').textContent),
       'and a paused route says so, rather than calling the PIN wrong', d.getElementById('gateErr').textContent);
     w.closeModal('gate');
     sim.reply.check_share_key = () => ({ data: 'ok' });
@@ -1062,7 +1164,7 @@ function run(page, include, label, configText, setup) {
     await waitFor(() => w.eval('sharing') === false);
     check(!!pausedTrip && pausedTrip.args.p_slug === w.eval('CFG.ROUTE_SLUG') && pausedTrip.args.p_key === 'NEW-KEY-456',
       'a keyed trip sends the slug with the key', pausedTrip && JSON.stringify(pausedTrip.args));
-    check(!w.eval('sharing') && watchesOpen() === 0 && /paused/.test(status()),
+    check(!w.eval('sharing') && watchesOpen() === 0 && /paused/i.test(status()),
       'a paused route ends the trip and says why', status());
     check(w.eval('accessKey') === 'NEW-KEY-456', 'and keeps the PIN, since nothing is wrong with it');
     sim.reply.get_settings = () => ({ data: { settings: {}, share_pin: false, notice: null } });
@@ -1070,19 +1172,228 @@ function run(page, include, label, configText, setup) {
     check(d.getElementById('gateKey').getAttribute('inputmode') === 'text', 'a long key gets the keyboard back');
     delete sim.reply.set_keyed_position;
 
-    // GPS giving up ends the trip the way Stop does: the bus is cleared now,
-    // not left on everyone's map until it expires.
+    // GPS that drops out is waited out, not obeyed: a timeout or no fix
+    // leaves the trip running and says so, and the next fix puts it back.
     const lost = await startTrip();
     const clearsBefore = of('clear_bus_position').length;
     const clearedSince = () => of('clear_bus_position').slice(clearsBefore)
       .some(c => c.args.p_session === lost.args.p_session);
     sim.watches[sim.watches.length - 1].onErr({ code: 3 });
+    await pause(60);
+    check(w.eval('sharing') === true && watchesOpen() === 1 && !clearedSince(),
+      'a GPS timeout does not end the trip or take the bus off the map');
+    check(/GPS lost/.test(status()) && !isHidden('onbusActive'),
+      'the status says the signal is lost, with Stop still on screen', status());
+    check(w.eval('gpsLostAt') !== null, 'and the heartbeat holds back the old fix while it is lost');
+    await writeNow();
+    check(w.eval('gpsLostAt') === null && /^Sharing live/.test(status()),
+      'the first fix back puts "Sharing live" back', status());
+
+    // GPS that never comes back is waited out for as long as the server
+    // would keep the bus anyway, then ends the trip the way Stop does: the
+    // bus is cleared now, not left on everyone's map until it expires.
+    w.eval('SET.bus_expiry_min = 0.002');
+    sim.watches[sim.watches.length - 1].onErr({ code: 2 });
     await waitFor(clearedSince);
     await pause(60);
-    check(clearedSince(), 'a GPS error clears the bus from the map');
-    check(!w.eval('sharing') && watchesOpen() === 0 && /GPS timed out/.test(status()),
+    check(clearedSince(), 'GPS that never comes back ends the trip and clears the bus from the map');
+    check(!w.eval('sharing') && watchesOpen() === 0 && /No GPS signal/.test(status()),
       'ends the trip, and says why', status());
     check(w.sessionStorage.getItem('wt-session') === null, 'and the next trip gets a session of its own');
+    check(isHidden('tktModal'), 'a trip that lost its GPS in its first minute gets no ticket: too short to have helped anyone');
+    w.eval('SET.bus_expiry_min = 10');
+
+    // Location switched off is the one GPS error that ends a trip at once.
+    const off = await startTrip();
+    const offCleared = of('clear_bus_position').length;
+    sim.watches[sim.watches.length - 1].onErr({ code: 1 });
+    await waitFor(() => of('clear_bus_position').slice(offCleared).some(c => c.args.p_session === off.args.p_session));
+    await pause(60);
+    check(!w.eval('sharing') && watchesOpen() === 0 && /Location is off/.test(status()),
+      'location switched off ends the trip straight away, and says why', status());
+
+    // Half an hour in, it gets the ticket Stop would have given, and does not
+    // wait for the network to give it: at the end of the line the request
+    // that takes the bus off the map can be slow to answer.
+    await startTrip();
+    w.eval('TRIP.start -= 30 * 60000');
+    sim.hold = { clear_bus_position: [] };
+    sim.watches[sim.watches.length - 1].onErr({ code: 1 });
+    await waitFor(() => !isHidden('tktModal') && sim.hold.clear_bus_position.length > 0);
+    check(!isHidden('tktModal') && /map for\s*30 min/.test(d.getElementById('tktCard').textContent),
+      'a half-hour trip whose GPS gave up gets its ticket', d.getElementById('tktCard').textContent.replace(/\s+/g, ' ').slice(0, 160));
+    check(sim.hold.clear_bus_position.length === 1, 'drawn while the bus is still being taken off the map, not after');
+    sim.hold.clear_bus_position.forEach(f => f());
+    delete sim.hold;
+    await waitFor(() => /Location is off/.test(status()));
+    check(!w.eval('sharing') && /Location is off/.test(status()),
+      'and under it, the status says why the trip ended', status());
+    w.closeTicket();
+
+    // The trip outlives its page. While it runs it is kept as wt-trip, and a
+    // page opened again with one there carries on or hands over the ticket.
+    {
+      const live = await startTrip();
+      const kept = JSON.parse(w.localStorage.getItem('wt-trip') || 'null');
+      check(!!kept && kept.session === live.args.p_session && kept.dir === 'north' && kept.trip.writes >= 1 &&
+            typeof kept.trip.lastKm === 'number' && !Array.isArray(kept.trip.lastKm),
+        'a running trip is kept on the phone: its record, its session and its direction', JSON.stringify(kept));
+      await w.stopSharing();
+      check(w.localStorage.getItem('wt-trip') === null, 'and the record goes when the trip does');
+      w.closeTicket();
+
+      const askShown = () => !isHidden('askModal') && /Still on the bus/.test(d.getElementById('askTitle').textContent);
+      const seed = (o) => {
+        const rec = Object.assign({ session: 'reloaded-' + Math.random().toString(36).slice(2), dir: 'north', label: '98019',
+          trip: { start: Date.now() - 30 * 60000, startKm: 0, others: 1, writes: 40, maxThanks: 2, polled: true,
+                  lastAt: Date.now() - 60000, lastKm: 3 } }, o || {});
+        w.localStorage.setItem('wt-trip', JSON.stringify(rec));
+        return rec;
+      };
+
+      // Reloaded a minute ago, in this tab: asked, and Keep sharing carries
+      // on as the same trip and the same bus.
+      let rec = seed();
+      w.sessionStorage.setItem('wt-session', rec.session); w.eval('sessionId = null');
+      w.recoverTrip();
+      check(askShown() && /minute ago/.test(d.getElementById('askBody').textContent),
+        'a page opened on a trip whose bus is still on the map asks whether you are still on the bus', d.getElementById('askBody').textContent);
+      const before = of('set_keyed_position').length;
+      w.askYes();
+      await waitFor(() => of('set_keyed_position').length > before);
+      await pause(60);
+      const resumed = of('set_keyed_position')[before];
+      check(!!resumed && resumed.args.p_session === rec.session && w.eval('TRIP.start') === rec.trip.start,
+        'Keep sharing goes on as the same trip, on the same bus', resumed && resumed.args.p_session);
+      check(w.eval('TRIP.writes') === 41 && w.eval('TRIP.maxThanks') === 2, 'with everything it had counted so far');
+      await w.stopSharing();
+      check(!isHidden('tktModal') && /map for\s*30 min/.test(d.getElementById('tktCard').textContent),
+        'and its ticket at Stop counts from when it really started');
+      // Your bus: a trip that went somewhere is counted, kept or not, and
+      // its ticket says what that put on the bus.
+      const bus = () => JSON.parse(w.localStorage.getItem('wt-bus') || 'null');
+      check(!!bus() && bus().n === 1 && /New on your bus: Sampaguita/.test(d.getElementById('tktCard').textContent),
+        'the first trip that went somewhere counts on your bus, and the ticket shows the garland it earned', JSON.stringify(bus()));
+      check(!!d.querySelector('#tktCard .tkt-new svg.mybus') && !isHidden('albumRow') && /1 decoration on your bus/.test(d.getElementById('albumRowVal').textContent),
+        'with the bus drawn beside it, and My tickets offered for it though nothing was kept', d.getElementById('albumRowVal').textContent);
+      w.closeTicket();
+
+      // I got off: the bus comes off the map, and the ticket is the trip as
+      // it stood when the page closed.
+      rec = seed({ trip: { start: Date.now() - 41 * 60000, startKm: 0, others: 0, writes: 30, maxThanks: 0, polled: true,
+                           lastAt: Date.now() - 3 * 60000, lastKm: 3 } });
+      w.sessionStorage.setItem('wt-session', rec.session); w.eval('sessionId = null');
+      w.recoverTrip();
+      check(askShown(), 'asked again for the next one');
+      const clears = of('clear_bus_position').length;
+      w.askNo();
+      await waitFor(() => of('clear_bus_position').length > clears);
+      check(of('clear_bus_position').slice(clears).some(c => c.args.p_session === rec.session),
+        'I got off takes that bus off the map');
+      const card = d.getElementById('tktCard').textContent;
+      check(!isHidden('tktModal') && /map for\s*38 min/.test(card),
+        'and hands over its ticket, ending when its last update landed', card.replace(/\s+/g, ' ').slice(0, 200));
+      check(w.localStorage.getItem('wt-trip') === null && w.sessionStorage.getItem('wt-session') === null && !w.eval('sharing'),
+        'leaving no record, no session and no trip behind');
+      check(bus().n === 2 && !/New on your bus/.test(card), 'counted on your bus too, with nothing new to say');
+      w.closeTicket();
+
+      // Too old for its bus to be on the map: no question, just the ticket.
+      rec = seed({ trip: { start: Date.now() - 5 * 3600000, startKm: 0, others: 0, writes: 90, maxThanks: 1, polled: true,
+                           lastAt: Date.now() - 3 * 3600000, lastKm: 3 } });
+      w.recoverTrip();
+      check(isHidden('askModal') && !isHidden('tktModal') && w.localStorage.getItem('wt-trip') === null,
+        'a trip whose bus has long left the map gets its ticket without a question');
+      check(bus().n === 3 && /New on your bus: Mud flaps/.test(d.getElementById('tktCard').textContent), 'and the third trip puts the mud flaps on');
+      const all = (d.querySelector('#tktCard .tkt-all') || {}).textContent || '';
+      check(/^In all: \d+ h on the map · 3 salamat$/.test(all) && bus().ty === 3 && bus().mins > 0 && bus().streak === 1,
+        'and the ticket says what the bus has gathered in all: time on the map and salamat, no streak of one', all);
+      w.closeTicket();
+      w.openAlbum();
+      const albumText = d.getElementById('albumBody').textContent;
+      check(/Your bus3 trips shared/.test(albumText) && d.querySelectorAll('#albumBody .alb-decor li.on').length === 2 &&
+            /not yet/.test(albumText) && !/\b0 of\b|×0/.test(albumText) && /No tickets yet/.test(albumText),
+        'My tickets shows the bus, what is on it and what is still to come, and no zeros, with nothing kept', albumText.slice(0, 120));
+      w.closeModal('albumModal');
+
+      // The garage (rules 17 to 19). Parts in hand, getting something takes two
+      // taps; the bus already wears trophies, so My tickets asks whether to
+      // show it, once; and a trip then carries its look.
+      const shopBefore = bus();
+      check(shopBefore.paid.join(',') === 'sampaguita,flaps' && shopBefore.c > 0,
+        'trips that won trophies paid them as they ended', JSON.stringify({ paid: shopBefore.paid, c: shopBefore.c }));
+      // As if the trophies had been won before there were parts.
+      w.localStorage.setItem('wt-bus', JSON.stringify(Object.assign({}, shopBefore, { c: 40, paid: [] })));
+      w.openAlbum();
+      // Opening My tickets pays any trophy earned and not yet paid: here the
+      // garland and the mud flaps, won before this visit.
+      const cOpen = bus().c;
+      check(cOpen === 40 + 10 + 10 && bus().paid.join(',') === 'sampaguita,flaps', 'opening My tickets pays the trophies not yet paid, once', String(cOpen));
+      const buyDice = () => d.querySelector('#albumBody [data-buy="dice"]');
+      buyDice().click();
+      check(/Tap again/.test(buyDice().textContent) && bus().own.length === 0 && bus().c === cOpen, 'the first tap on Buy only asks');
+      buyDice().click();
+      check(bus().own.includes('dice') && bus().c === cOpen - 10 && !d.querySelector('#albumBody [data-buy="dice"]') &&
+            /Take off/.test(d.querySelector('#albumBody .alb-shop li.on').textContent),
+        'the second gets the dice, for 10 parts, and puts them on', JSON.stringify({ own: bus().own, c: bus().c }));
+      const lookq = d.querySelector('#albumBody .lookq');
+      check(!!lookq && lookq.querySelector('b').textContent === 'Show customized bus to riders?' &&
+            lookq.textContent.replace(/Show it|Not now/g, '').trim() === 'Show customized bus to riders?',
+        'with something on the bus and nothing asked yet, My tickets asks whether to show it, in one line and nothing more');
+      lookq.querySelector('.lookq-yes').click();
+      check(bus().show === 1 && bus().asked === 1 && !!d.querySelector('#albumBody .alb-show .alb-toggle.on') && !d.querySelector('#albumBody .lookq'),
+        'Show it turns showing on, and a switch takes the question\'s place');
+      w.closeModal('albumModal');
+      const lookNow = w.eval('busLook(loadBus(), CHECKPOINTS)');
+      const shown = await startTrip();
+      check(!!shown && shown.args.p_look === lookNow && /^[0-9][A-Za-z]+$/.test(lookNow) && lookNow.includes('F'),
+        'a trip then carries the bus\'s look with its position', shown && shown.args.p_look);
+      w.setShowBus(0);
+      await writeNow();
+      const plainWrite = of('set_keyed_position').slice(-1)[0];
+      check(!('p_look' in plainWrite.args), 'switched off, the next position goes without it');
+      w.setShowBus(1);
+      // A database from before sql/13-bus-look.sql: refused, sent again without.
+      sim.reply.set_keyed_position = args => ('p_look' in args)
+        ? { error: 'Could not find the function public.set_keyed_position(p_direction, p_key, p_label, p_lat, p_lng, p_look, p_session, p_slug, p_speed) in the schema cache' }
+        : null;
+      const n0 = of('set_keyed_position').length;
+      w.eval('lastWrite = 0');
+      sim.watches[sim.watches.length - 1].onPos(here);
+      await waitFor(() => of('set_keyed_position').length >= n0 + 2);
+      await pause(60);
+      const pair = of('set_keyed_position').slice(n0);
+      check(pair.length === 2 && 'p_look' in pair[0].args && !('p_look' in pair[1].args) && w.eval('LOOK_SENDS') === false &&
+            /^Sharing live/.test(status()),
+        'a database that does not know the look gets the same position again without it, and the trip goes on', status());
+      await writeNow();
+      check(!('p_look' in of('set_keyed_position').slice(-1)[0].args), 'and no look is sent for the rest of the visit');
+      delete sim.reply.set_keyed_position;
+      w.eval('LOOK_SENDS = true');
+      await w.stopSharing();
+      w.closeTicket();
+      // A rider's popup draws a shown bus as it was dressed, and any other plain.
+      const cpRide = CONFIG.split(/\r?\n/).filter(l => l.trim().startsWith('CHECKPOINT ='))[2].split('=')[1].split('|').map(x => x.trim());
+      const popOf = look => w.busPopupHtml({ id: 'cd'.repeat(16), lat: +cpRide[2], lng: +cpRide[3], direction: 'north', label: '',
+                                             ts: Date.now(), count: 1, self: false, look });
+      const dressed = popOf('1Fc'), plain = popOf(''), junk = popOf('1<b>x</b>');
+      check(/class="pride"><svg class="rideart/.test(dressed) && dressed.includes(w.eval('BUS_DECOR.dice')) && dressed.includes('--c-band:#1f5f9e'),
+        'a bus shown by its sharer rides through its popup as they dressed it, paint and all');
+      check(/class="pride"><svg class="rideart/.test(plain) && !plain.includes(w.eval('BUS_DECOR.dice')) && plain.includes('--c-band:#7a1f2b') &&
+            !junk.includes('<b>x</b>') && junk.includes('--c-band:#7a1f2b'),
+        'any other bus rides through plain, and a look that is not one is no look at all');
+      check(!/class="rideart still"/.test(dressed) && /class="rideart still"/.test(w.busPopupHtml({ id: 'ef'.repeat(16), lat: +cpRide[2], lng: +cpRide[3],
+              direction: 'north', label: '', ts: Date.now() - 10 * 60000, count: 1, self: false, look: '' })),
+        'a bus heard from lately moves; one not heard from for minutes stands still');
+
+      // Another tab still sharing it: left alone.
+      rec = seed({ trip: { start: Date.now() - 20 * 60000, startKm: 0, others: 0, writes: 12, maxThanks: 0, polled: true,
+                           lastAt: Date.now() - 5000, lastKm: 3 } });
+      w.recoverTrip();
+      check(isHidden('askModal') && isHidden('tktModal') && w.localStorage.getItem('wt-trip') !== null,
+        'a trip another tab is still saving is left to that tab');
+      w.localStorage.removeItem('wt-trip');
+    }
 
     // Open sharing (sql/11-open-sharing.sql): with the switch on, a page
     // with no key shares by the public slug, and one with the key still
@@ -1095,7 +1406,7 @@ function run(page, include, label, configText, setup) {
     const keyedOpen = await startTrip();
     check(!!keyedOpen && keyedOpen.args.p_key === 'NEW-KEY-456' && of('set_open_position').length === 0,
       'a page with the key still shares with it, not by the open path', keyedOpen && JSON.stringify(Object.keys(keyedOpen.args)));
-    await w.stopSharing({ quiet: true });
+    await w.stopSharing();
     w.forgetKey();
     const openBefore = of('set_open_position').length;
     w.startSharing();
@@ -1106,6 +1417,7 @@ function run(page, include, label, configText, setup) {
     check(!!keyless && keyless.args.p_slug === w.eval('CFG.ROUTE_SLUG') && !('p_key' in keyless.args)
         && keyless.args.p_speed === null,
       'sending the route\'s public slug, no key and no speed', keyless && JSON.stringify(keyless.args));
+    w.eval('TRIP.start -= 20 * 60000');
     sim.reply.set_open_position = () => ({ error: 'open sharing is off' });
     const offBefore = of('set_open_position').length;
     w.eval('lastWrite = 0');
@@ -1113,7 +1425,9 @@ function run(page, include, label, configText, setup) {
     await waitFor(() => w.eval('sharing') === false);
     check(of('set_open_position').length > offBefore && !w.eval('sharing') && watchesOpen() === 0,
       'switched off mid-trip, the keyless trip ends');
-    check(/switched off sharing without the key/.test(status()), 'saying why', status());
+    check(/needs the key/.test(status()), 'saying why', status());
+    check(!isHidden('tktModal'), 'with the ticket for the twenty minutes it was on the map');
+    w.closeTicket();
     sim.reply.get_settings = () => ({ data: { settings: {}, notice: null } });
     w.startSharing();
     check(!isHidden('gate'), 'and the next Start asks for the key, without waiting for the settings poll');

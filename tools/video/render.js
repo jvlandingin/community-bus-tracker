@@ -27,8 +27,9 @@
 // moved on by one frame's worth before each screenshot, and every CSS
 // animation on the page is paused and put at the same time (__vseek). So
 // nothing stutters however long a frame takes to draw, and two renders look
-// the same: a tap still reaches the page by the wall clock, so what it opens
-// can show a frame earlier or later, and that is all that differs. The buses
+// the same. They are not identical to the bit: drawing leaves noise too faint
+// to see (52 dB or better, measured), and a tap still reaches the page by the
+// wall clock, so what it opens can show a frame earlier or later. The buses
 // move in time-lapse, much faster than a bus: their positions are worked out
 // from the video's time.
 //

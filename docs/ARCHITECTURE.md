@@ -1517,8 +1517,10 @@ and the end card says so again.
 **Frame-exact.** Each phone's clock is Playwright's fake one, paused and moved
 on one frame at a time, and every CSS animation on the page is paused and
 set to the same time before the screenshot. So it never stutters, and two
-renders differ only in when a tap's result shows, by a frame either way,
-because a tap still reaches the page by the wall clock. The buses move in
+renders look the same, though not to the bit: drawing leaves noise too faint
+to see (52 dB or better between two renders, measured), and a tap still
+reaches the page by the wall clock, so what it opens can show a frame
+earlier or later. The buses move in
 time-lapse, from positions
 worked out from the video's time; the half hour of the trip passes inside
 an interlude, in six-second steps so the page's own timers fire as they

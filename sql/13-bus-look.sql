@@ -18,7 +18,7 @@
 --  every write and deleted with the row when the trip ends or expires,
 --  exactly like the position. No history of it is kept.
 --
---  The honest cost, which the app says where the switch is: riders can
+--  The honest cost, which the app's privacy panel states: riders can
 --  recognise a decorated bus from one trip to the next. That is why it is
 --  the sharer's choice and off unless they make it.
 --

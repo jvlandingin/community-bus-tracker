@@ -6262,6 +6262,9 @@ function drawableRow(v){
 }
 
 let lastPositionsAt = 0;
+// The public ids of the buses this phone stopped sharing (stopSharing). Each
+// trip has its own, so one gone is gone for good.
+const GONE = Object.create(null);
 async function pollPositions() {
   if (!shouldPoll(lastPositionsAt)) return;
   lastPositionsAt = Date.now();
@@ -6282,7 +6285,7 @@ async function pollPositions() {
   // pub_id, not the session id: see sql/04-session-id-privacy.sql. It is
   // stable for the length of a trip, which is all the map needs it for.
   positionsLoaded = true;
-  const rows = (res.data||[]).filter(drawableRow);
+  const rows = (res.data||[]).filter(function(v){ return drawableRow(v) && (v.is_self || !GONE[v.pub_id]); });
   BUSES = rows.map(function(v){
     return { pub_id:v.pub_id, lat:v.lat, lng:v.lng, speed:v.speed, self:!!v.is_self,
              direction:v.direction, bus_label:v.bus_label, ts:Date.parse(v.updated_at),
@@ -7142,6 +7145,12 @@ async function stopSharing(opts){
   // this one: the block is on the session id, so keeping it is what makes
   // the block hold on this phone.
   if (!(opts && opts.blocked)) endSession();
+  // The bus this phone was sharing is off its map from now. Left in BUSES
+  // until the next poll, the card, back to waiting, counted it as a bus
+  // coming to the stop its sharer had just got off at: Sakay na!, and a
+  // buzz. GONE keeps it off if a poll answers before the clear lands.
+  BUSES.forEach(function(b){ if (b.self && b.pub_id) GONE[b.pub_id] = 1; });
+  BUSES = BUSES.filter(function(b){ return !b.self; });
   setShareUI('off','Not sharing');
   // Every end gets its ticket, not only Stop: GPS giving up, a key changed
   // or open sharing switched off mid-trip, the end-of-line question left

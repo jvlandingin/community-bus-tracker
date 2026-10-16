@@ -1096,6 +1096,40 @@ function run(page, include, label, configText, setup) {
       'so the next trip is a different session, and a different bus on the map');
     await w.stopSharing();
 
+    // Stop near the stop you get off at, with the buzz on. Found filming the
+    // showcase video: the bus just left stayed in BUSES until the next poll,
+    // so the card, back to waiting, counted it as one coming to that very
+    // stop, said Sakay na! and buzzed. And a poll answered before the clear
+    // lands brings the same bus back, no longer marked as this phone's.
+    {
+      // The card's buzz is a pattern; the trip's start is one short tick, not counted.
+      const buzzes = [];
+      Object.defineProperty(w.navigator, 'vibrate', { value: p => { if (Array.isArray(p)) buzzes.push(p); return true; }, configurable: true });
+      w.sessionStorage.setItem('wt-buzz', '1');
+      w.setMyStop('Monterey', 14.3040, 120.9100);
+      await startTrip();
+      const mineRow = selfFlag => ({ data: [{ pub_id: 'cd'.repeat(16), lat: 14.2912, lng: 120.9068, direction: 'north',
+        bus_label: '', updated_at: new Date().toISOString(), is_self: selfFlag, thanks: 0, look: null }] });
+      sim.reply.get_positions = () => mineRow(true);
+      w.eval('lastPositionsAt = 0');
+      await w.pollPositions();
+      check(buzzes.length === 1 && /Bababa na!/.test(d.getElementById('tripStop').textContent),
+        'riding to the next stop, the card says Bababa na! and buzzes once', buzzes.length + ' buzzes');
+      await w.stopSharing();
+      check(buzzes.length === 1, 'Stop buzzes nothing more', buzzes.length + ' buzzes');
+      check(!/Sakay na!/.test(d.getElementById('myStop').textContent) && !w.eval('BUSES').some(b => b.self),
+        'and the card does not count the bus just left as one coming', d.getElementById('myStop').textContent.slice(0, 80));
+      sim.reply.get_positions = () => mineRow(false);
+      w.eval('lastPositionsAt = 0');
+      await w.pollPositions();
+      check(buzzes.length === 1 && !w.eval('BUSES').some(b => b.pub_id === 'cd'.repeat(16)),
+        'nor when a poll brings it back before the clear has landed', buzzes.length + ' buzzes');
+      sim.reply.get_positions = () => ({ data: [] });
+      w.clearMyStop();
+      w.sessionStorage.removeItem('wt-buzz');
+      delete w.navigator.vibrate;
+    }
+
     // An organiser's Stop is the one end that keeps the session, because the
     // block is on it.
     // Stopped half an hour in, it is also the one end without a ticket.

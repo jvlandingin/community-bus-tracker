@@ -195,24 +195,30 @@ function serveRepo(route, url){
   if (!f.startsWith(ROOT + path.sep) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) return route.fulfill({ status:404, body:'' });
   let body = fs.readFileSync(f);
   if (p === '/config.txt' && KEY) body = Buffer.from(body.toString().replace(/^CARTO_API_KEY\s*=.*$/m, 'CARTO_API_KEY = ' + KEY));
-  if (p === '/index.html') body = Buffer.from(filmGlide(body.toString()));
+  if (p === '/index.html') body = Buffer.from(filmPage(body.toString()));
   return route.fulfill({ status:200, contentType:TYPES[path.extname(f)] || 'application/octet-stream', body });
 }
-// The saved stop's picture glides to each new position in a second, eased,
-// which suits a phone that hears every few seconds. The film polls twice a
-// second (POLL_FRAMES), so there the glide would start and stop twice a
-// second. In the copy of index.html the film is served, the glide lasts one
-// poll and goes at an even pace instead, so each ends where the next begins
-// and the bus comes on steadily. Presentation only: nothing else about the
-// page changes, and a change to those lines in index.html stops the render
-// rather than quietly filming the stutter again.
-const POLL_FRAMES = 15, GLIDE_MS = Math.round(POLL_FRAMES / FPS * 1000);
-function filmGlide(html){
+// The film's own pace, in the copy of index.html it is served. The film polls
+// twice a second (POLL_FRAMES) where a phone polls every few, so the buses
+// move in small steps; two things in the page are paced for the slower feed
+// and would stutter at the film's:
+//   - The saved stop's picture glides to each new position in a second,
+//     eased: twice a second it would start and stop. Here it glides for one
+//     poll at an even pace, so each glide ends where the next begins.
+//   - The sharing phone sends its position at most every five seconds, so on
+//     board the card would stand still and then jump. Here it sends a little
+//     oftener than the film polls, so its own bus comes on with the others.
+// Presentation only: nothing else about the page changes, and a change to
+// those lines in index.html stops the render rather than quietly filming
+// the stutter again.
+const POLL_FRAMES = 15, GLIDE_MS = Math.round(POLL_FRAMES / FPS * 1000), WRITE_MS = Math.round(GLIDE_MS * .9);
+function filmPage(html){
   const swaps = [['STOP_GLIDE_MS = 1000', 'STOP_GLIDE_MS = ' + GLIDE_MS],
                  ['animation:stopglide 1s var(--ease-move) both', 'animation:stopglide ' + GLIDE_MS / 1000 + 's linear both'],
-                 ['* u * u * (3 - 2 * u)', '* u']];
+                 ['* u * u * (3 - 2 * u)', '* u'],
+                 ['if (Date.now()-lastWrite<5000) return;', 'if (Date.now()-lastWrite<' + WRITE_MS + ') return;']];
   swaps.forEach(function(s){
-    if (html.split(s[0]).length !== 2) throw new Error('index.html no longer has "' + s[0] + '" once: see filmGlide in render.js');
+    if (html.split(s[0]).length !== 2) throw new Error('index.html no longer has "' + s[0] + '" once: see filmPage in render.js');
     html = html.replace(s[0], s[1]);
   });
   return html;

@@ -514,9 +514,10 @@ tracker's controls by their ids and classes and names this route's stops, so
 changing those screens means re-rendering it; a control renamed or moved
 off the screen makes that step fail with its name rather than tap something
 else. Every request the page makes is answered by the script, never by the
-database, and the page is the commit's but for one thing: the saved stop's
-picture glides for one of the film's half-second polls, at an even pace, so
-the bus comes on smoothly (`filmGlide()`). It carries no "demo" label and one caption says coins, both the
+database, and the page is the commit's but for its pace: the saved stop's
+picture glides for one of the film's half-second polls, at an even pace,
+and the sharing phone sends its position that often, so the buses come on
+smoothly (`filmPage()`). It carries no "demo" label and one caption says coins, both the
 maintainer's decision (October 2026), and its only sounds are the
 interface's, made by `tools/video/sounds.js`. `docs/ARCHITECTURE.md`, "The
 showcase video".

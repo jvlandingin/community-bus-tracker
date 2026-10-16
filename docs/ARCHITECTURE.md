@@ -1597,16 +1597,18 @@ worked out from the video's time; the half hour of the trip passes inside
 an interlude, in six-second steps so the page's own timers fire as they
 would.
 
-**One line of the page is the film's own.** The page polls twice a second
-in the film rather than every six, so the buses move in small steps. At
-that rate the saved stop's picture, which glides to each new position in a
-second and eases in and out, started and stopped twice a second. The
-maintainer asked for the bus to come on smoothly, for presentation. So the
-copy of `index.html` the film is served (`filmGlide()` in `render.js`)
-glides for one poll at an even pace, and each glide ends where the next
-begins. Nothing else in the page differs from the commit, and the render
-stops if those lines change in `index.html`, rather than quietly filming
-the stutter again.
+**The page's pace is the film's own.** The page polls twice a second in
+the film rather than every six, so the buses move in small steps. Two
+things in the page are paced for the slower feed. The saved stop's picture
+glides to each new position in a second, easing in and out, so it started
+and stopped twice a second. The sharing phone sends its position at most
+every five seconds, so on board the card stood still and then jumped to
+Bababa na!. The maintainer asked for both to move smoothly, for
+presentation. So the copy of `index.html` the film is served (`filmPage()`
+in `render.js`) glides for one poll at an even pace, and lets the phone
+send a little oftener than the film polls. Nothing else in the page
+differs from the commit, and the render stops if those lines change in
+`index.html`, rather than quietly filming the stutter again.
 
 **Saving the stop takes four seconds** (the maintainer's ask, October 2026).
 The camera closes on the picker while the whole name is typed. After the

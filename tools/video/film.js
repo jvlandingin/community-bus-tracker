@@ -105,12 +105,13 @@ function buses(world){
 // The sharer's GPS. 700 m past the stop when Start is tapped: the card still
 // has the stop they waited at, and within 300 m of it (AT_STOP_KM) it would
 // say "Bababa na!" and spend the trip's one buzz there. Along the road in
-// time-lapse, three stops short of getting off by the end of the interlude,
-// then still, so the page sends nothing more (it sends a position at most
-// every five seconds, and the clock has run on well past that), until the
-// last stretch at 3s into 'getoff', which goes out at once.
+// time-lapse, three stops short of getting off by the end of the interlude;
+// then on through 'getoff', where the card counts down as the bus goes
+// (filmPage lets the phone send twice a second): Malapit na! and its buzz
+// at 32.0 km, a stop to go at 32.6, the next stop yours at 34.4, Bababa na!
+// at 35.2 about 3s in, then slowing towards the sign.
 const GPS = R.keys([[T.share + 1.9, WAIT_KM + .7], [T.share + DUR.share, 26.4], [T.trip + DUR.trip - .25, 31.0],
-                    [T.getoff + 2.98, 31.0], [T.getoff + 2.9801, 35.7], [T.getoff + DUR.getoff, 35.9], [1000, 35.9]]);
+                    [T.getoff + .3, 31.4], [T.getoff + 2.6, 34.6], [T.getoff + 3.3, 35.3], [T.getoff + DUR.getoff, 35.9], [1000, 35.9]]);
 
 // ---- Captions ---------------------------------------------------------------
 // One plain sentence each. *word* is drawn in gold.

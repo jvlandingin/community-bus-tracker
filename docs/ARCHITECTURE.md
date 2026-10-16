@@ -1228,10 +1228,13 @@ anything else as nothing rather than refusing the position, on the trip's own
 row, so it is overwritten with every write and goes with the trip. A watcher's
 popup reads it back with `lookRead()`, which ignores any letter it does not
 know. The honest cost is the one that kept decorations off the map at first,
-riders can tell the bus is the same sharer's from one trip to the next, and
-it is stated where the switch is, in the privacy panel and in
-`for-operators.html`. A sharer's own popup shows their bus as they dressed it,
-whether or not they show it to anyone else.
+riders can tell the bus is the same sharer's from one trip to the next. It is
+stated in the privacy panel and in `for-operators.html`, not at the question:
+the question is one line, "Show customized bus to riders?", and the switch
+says the same, because the maintainer's rule is that nobody reads a paragraph
+in the middle of a moment like that (a first version explained the cost in
+three sentences there and was cut). A sharer's own popup shows their bus as
+they dressed it, whether or not they show it to anyone else.
 
 Order of deployment does not matter. The two writers gain `p_look` with a
 default, so a page from before it calls them as it always did and shows plain

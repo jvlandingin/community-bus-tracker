@@ -25,7 +25,7 @@ they were written in that order against a live deployment, and keeping the
 history visible is more honest than pretending the first version was right.
 
 `13` can be run in either order too. Until it is applied, a sharer who has
-switched on "Show my bus to riders" has their write refused for the argument the
+switched on "Show customized bus to riders" has their write refused for the argument the
 database does not know yet; the page sends the same position again without it,
 stops asking for the rest of the visit, and their bus shows plain. Pages that
 send no look are untouched either way.

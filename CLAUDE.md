@@ -226,7 +226,7 @@ everyone's map that isn't one. `busTripPay()` and `busSettle()` are the only
 things that add, and the day of the last paid trip is the one date kept for
 it. Barya buy the shop's accessories and paint, presets only, never words or
 free colours; the decorations sharing earns are trophies and never for sale.
-"Show my bus to riders" is off until switched on and asked only where there is
+"Show customized bus to riders" is off until switched on and asked only where there is
 something to show: in My tickets, and when the first decoration or purchase
 arrives, never on the tracking tab. While on, each position carries
 `busLook()`, a paint digit and a letter per thing worn, kept on the trip's row

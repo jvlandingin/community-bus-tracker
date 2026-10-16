@@ -1423,7 +1423,6 @@
   .alb-show{display:flex; align-items:center; gap:10px; margin-top:10px; padding:8px 10px; border-radius:var(--r-s); background:rgba(227,154,28,.14);}
   .alb-show span{flex:1; min-width:0;}
   .alb-show b{display:block; font-size:var(--fs-label); font-weight:900;}
-  .alb-show small{display:block; font-size:var(--fs-cap); font-weight:600; line-height:1.35; opacity:.85;}
   .alb-toggle{flex:0 0 auto; min-width:58px; min-height:34px; border-radius:999px; cursor:pointer; border:1.5px solid var(--ti);
     background:transparent; color:var(--ti); font-family:inherit; font-size:var(--fs-label); font-weight:900;}
   .alb-toggle.on{background:var(--ti); color:#fbf4e4;}
@@ -1431,7 +1430,6 @@
   .lookq{display:flex; flex-direction:column; gap:4px; margin-top:10px; padding:10px; border-radius:var(--r-s);
     border:1.5px solid var(--gold); background:rgba(227,154,28,.12); color:#6d1a25; text-align:left;}
   .lookq b{font-size:var(--fs-small); font-weight:900;}
-  .lookq span{font-size:var(--fs-label); font-weight:600; line-height:1.4;}
   .lookq .lookq-acts{display:flex; gap:8px; margin-top:4px;}
   .lookq button{flex:1; min-height:var(--tap); border-radius:var(--r-m); cursor:pointer; font-family:inherit; font-size:var(--fs-small); font-weight:900;}
   .lookq .lookq-yes{border:1.5px solid var(--gold); background:var(--gold); color:#2b2320;}
@@ -1895,7 +1893,7 @@
       <p>“Send a link to this bus”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do.</p>
 
       <h4 class="ok">If you share from the bus</h4>
-      <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip, plus, only if you switched on “Show my bus to riders”, a short code for how your bus is painted and dressed. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
+      <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip, plus, only if you switched on “Show customized bus to riders”, a short code for how your bus is painted and dressed. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
       <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop.</p>
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and on our side it goes when the trip does. Your phone adds it to your bus in My tickets, a total only you can see.</p>
       <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>it is not sent anywhere</b>. Close it and it is gone.</p>
@@ -7568,17 +7566,17 @@ function albumBusHtml(bus){
 }
 // The question (rule 19), asked once, where the first thing to show appears:
 // on the ticket or the tour's card that brings it, or at the top of My
-// tickets after a first purchase.
+// tickets after a first purchase. One line and two buttons: the maintainer's
+// rule is that nobody reads a paragraph at this moment. What showing costs
+// is said in the privacy panel.
 function lookQuestion(){
-  return '<div class="lookq"><b>Show your bus to riders?</b><span>When you share, riders who tap your bus on the map will see it as you dressed it. ' +
-    'They will be able to tell it is yours from one trip to the next. You can change this any time in My tickets.</span>' +
+  return '<div class="lookq"><b>Show customized bus to riders?</b>' +
     '<span class="lookq-acts"><button type="button" class="lookq-yes" onclick="setShowBus(1)">Show it</button>' +
     '<button type="button" class="lookq-no" onclick="setShowBus(0)">Not now</button></span></div>';
 }
 // Once asked, the same choice as a switch under the bus.
 function showSwitch(bus){
-  return '<div class="alb-show"><span><b>Show my bus to riders</b><small>Riders who tap your bus while you share see it as you dressed it, ' +
-    'and can tell it is yours from one trip to the next.</small></span>' +
+  return '<div class="alb-show"><span><b>Show customized bus to riders</b></span>' +
     '<button type="button" class="alb-toggle' + (bus.show ? ' on' : '') + '" onclick="setShowBus(' + (bus.show ? 0 : 1) + ')" aria-pressed="' + !!bus.show + '">' +
     (bus.show ? 'On' : 'Off') + '</button></div>';
 }
@@ -7589,7 +7587,7 @@ function setShowBus(on){
   if (!saveBus(b)) return;
   [].slice.call(document.querySelectorAll('.lookq')).forEach(function(el){
     el.className = 'lookq done';
-    el.innerHTML = '<b>' + (on ? 'Riders will see your bus while you share' : 'Your bus stays on your phone') + '</b><span>You can change this any time in My tickets.</span>';
+    el.innerHTML = '<b>' + (on ? 'Riders will see it' : 'Only you will see it') + '</b>';
   });
   const album = document.getElementById('albumModal');
   if (album && !album.classList.contains('hidden')) renderAlbum();

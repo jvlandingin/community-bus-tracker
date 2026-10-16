@@ -50,7 +50,7 @@ design.** Unique on `(route_slug, session_id)`.
 refuse NULL.
 
 `look` (since `13-bus-look.sql`) is NULL unless the sharer has switched on
-"Show my bus to riders" in the app. Then it is a code for their decorated bus:
+"Show customized bus to riders" in the app. Then it is a code for their decorated bus:
 a digit for the paint and up to 40 letters, one per thing worn, from the app's
 own fixed lists (`^[0-9][A-Za-z]{0,40}$`, enforced by a check constraint, and
 anything else is stored as NULL rather than refused, so a bad look never costs a

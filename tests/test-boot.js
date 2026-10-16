@@ -1337,8 +1337,9 @@ function run(page, include, label, configText, setup) {
             /On your bus/.test(d.querySelector('#albumBody .alb-shop li.on').textContent),
         'the second buys the dice, for 10 barya, and puts them on', JSON.stringify({ own: bus().own, c: bus().c }));
       const lookq = d.querySelector('#albumBody .lookq');
-      check(!!lookq && /Show your bus to riders/.test(lookq.textContent) && /from one trip to the next/.test(lookq.textContent),
-        'with something on the bus and nothing asked yet, My tickets asks whether to show it, saying riders will recognise it');
+      check(!!lookq && lookq.querySelector('b').textContent === 'Show customized bus to riders?' &&
+            lookq.textContent.replace(/Show it|Not now/g, '').trim() === 'Show customized bus to riders?',
+        'with something on the bus and nothing asked yet, My tickets asks whether to show it, in one line and nothing more');
       lookq.querySelector('.lookq-yes').click();
       check(bus().show === 1 && bus().asked === 1 && !!d.querySelector('#albumBody .alb-show .alb-toggle.on') && !d.querySelector('#albumBody .lookq'),
         'Show it turns showing on, and a switch takes the question\'s place');

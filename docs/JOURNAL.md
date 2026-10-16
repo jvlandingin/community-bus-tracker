@@ -25,6 +25,29 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-16 — A video to show what the tracker does
+
+The maintainer asked for a short, high-level video of the main features:
+watching the buses, the alarms for waiting and for getting off, sharing,
+dressing the bus and collecting tickets, and showing the bus to other
+riders. The plan was settled before anything was made: one rider's trip
+rather than a list of features, real screens with short drawn interludes
+rather than a drawing of the whole app, vertical for Facebook, TikTok and
+Reels, English captions kept simple, no sound. The maintainer asked
+specifically that the English be easy to read, so each caption is one short
+sentence of common words.
+
+It is filmed from the real `index.html` with made-up buses and labelled as a
+demo throughout; nothing it does reaches the route's database.
+`tools/render-video.sh` makes it, and the video itself is not committed: it
+is about 16 MB, and every re-render would add another copy to the history
+for good. The parol was left out so that a video posted now still looks
+right after Three Kings.
+
+Filming it showed one small fault in the app, noted rather than fixed in the
+same change: just after Stop the waiting card treats the bus the sharer has
+just left as one coming to their stop, and buzzes once, until the next poll.
+
 ## 2026-10-16 — A bus waiting at the terminal, and a ticket for going nowhere
 
 The maintainer asked two things. Could the bus in a popup move with the bus's

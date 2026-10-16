@@ -57,7 +57,9 @@ const SOUNDS = {
     const r = noise(7);
     return make(.06, function(t){ return .5 * Math.sin(TAU * 1650 * t) * decay(t, .011) + .35 * r() * decay(t, .0025); });
   },
-  // The phone buzzing to the app's own pattern: on, off, on, in ms.
+  // The phone buzzing to the app's own pattern: on, off, on, in ms. A low,
+  // round hum rather than a rasp: the first cut's square wave was what a
+  // viewer remembered, and not kindly (the maintainer: too annoying).
   buzz: function(o){
     const pattern = o.pattern || [180, 90, 180];
     const total = pattern.reduce(function(s, x){ return s + x; }, 0) / 1000 + .03;
@@ -70,11 +72,11 @@ const SOUNDS = {
         acc += len;
       }
       if (!on) return 0;
-      const f = 168;
-      const body = Math.sign(Math.sin(TAU * f * t)) * .5 + Math.sin(TAU * 2 * f * t) * .35 + r() * .18;
-      return body * edge * (.85 + .15 * Math.sin(TAU * 31 * t));
+      const f = 160;
+      const body = Math.sin(TAU * f * t) * .7 + Math.sin(TAU * 2 * f * t) * .18 + r() * .05;
+      return body * edge * (.88 + .12 * Math.sin(TAU * 27 * t));
     });
-    return lowpass(buf, 1400);
+    return lowpass(buf, 600);
   },
   // "Malapit na!" coming up on the card: a quick rising pop.
   pop: function(){
@@ -187,7 +189,7 @@ const SOUNDS = {
   }
 };
 // How loud each sits in the mix, under music someone else will add.
-const LEVEL = { tap:.45, buzz:.55, pop:.6, chime:.55, start:.45, sparkle:.5, ticket:.5, stamp:.7, open:.3,
+const LEVEL = { tap:.45, buzz:.2, pop:.6, chime:.55, start:.45, sparkle:.5, ticket:.5, stamp:.7, open:.3,
                 coins:.5, switch:.5, dress:.4, whoosh:.32, board:.45, outro:.55 };
 
 // Every event, { t (seconds), kind, pattern for a buzz }, on one track of

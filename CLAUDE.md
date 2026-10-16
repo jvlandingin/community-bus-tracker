@@ -22,7 +22,7 @@ node tests/test-guard.js      # wrong-direction detection on simulated trips
 node tests/test-strip.js      # progress strip position and wording, the town lines in the popup
 node tests/test-prompts.js    # idle, end-of-trip and direction prompts
 node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
-node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its luck, your bus; barya, the shop, the look, backups
+node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its luck, your bus; spare parts, the shop, the look, backups
 node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the mark
 node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride
 node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
@@ -219,13 +219,17 @@ streak from, and eight of the decorations come from them; the kept tickets
 still add up none of it. `docs/ARCHITECTURE.md`, "Collecting", and "Rules
 revisited" for what was changed to allow it and what was kept.
 
-**Trips earn barya, which dress the bus, and a sharer may show it** (October
-2026, rules 17 to 19). Each decoration pays barya once, and a trip that went
-somewhere pays 5 for at most 3 a day: every farmed trip would be a bus on
-everyone's map that isn't one. `busTripPay()` and `busSettle()` are the only
-things that add, and the day of the last paid trip is the one date kept for
-it. Barya buy the shop's accessories and paint, presets only, never words or
-free colours; the decorations sharing earns are trophies and never for sale.
+**Trips earn spare parts, which dress the bus, and a sharer may show it**
+(October 2026, rules 17 to 19). Each decoration gives parts once, and a trip
+that went somewhere gives 5 for at most 3 a day: every farmed trip would be a
+bus on everyone's map that isn't one. `busTripPay()` and `busSettle()` are the
+only things that add, and the day of the last trip that earned parts is the
+one date kept for it. Parts are a drawn steel nut beside a number
+(`partsTag()`), never coins and never named as money: they were *barya* until
+riders might have thought real money was involved, and `test-thanks.js` fails
+if barya, coins or buy appear on screen. Parts get the shop's accessories and
+paint, presets only, never words or free colours; the decorations sharing
+earns are trophies and never for sale.
 "Show customized bus to riders" is off until switched on and asked only where there is
 something to show: in My tickets, and when the first decoration or purchase
 arrives, never on the tracking tab. While on, each position carries
@@ -235,7 +239,9 @@ it is the same sharer's bus from trip to trip, which is why it is a choice.
 A page against a database without that migration resends without the look
 (`LOOK_SENDS`). A bus's popup and My tickets draw the bus moving through the
 view of the place it is nearest (`rideSvg()`), at a fixed pace and never the
-bus's speed, and still when the bus has gone quiet. A backup is a file the
+bus's speed (about 60 km/h to the eye, `test-pictures.js` section 8), and
+still when the bus has gone quiet; the popup frames it closer than My tickets
+does (`RIDE_FRAMES`). A backup is a file the
 sharer saves or copies from My tickets and restores by file or paste, cleaned
 like storage on the way in (`backupRead()`); "Start from scratch" deletes the
 tickets and the bus. `docs/ARCHITECTURE.md`, "Dressing the bus".
@@ -265,7 +271,7 @@ a ghost bus.
 **The app keeps exactly six things between visits**, all on the device and
 all named in the privacy panel: whether this phone has been shown around (the
 guide or the tour), the light/dark/system theme choice, the reader's saved stop, the tickets a
-sharer chose to keep, your bus (its counts, its barya and what it wears), and
+sharer chose to keep, your bus (its counts, its parts and what it wears), and
 the trip in progress while it runs. A backup is those tickets and that bus in
 a file the sharer holds, never a seventh key. Adding one means editing that panel in the same
 commit — the panel is the promise, not the code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
@@ -287,6 +293,15 @@ names are `walk*`, never `tour`, `tooltip` or `onboard`: filter lists hide
 onboarding libraries by those names, and a hidden bubble over a dimmed page has
 no way out. `test-tour.js` holds the steps, the words and the refusals;
 `test-boot.js` section 13 runs both tours on the booted page.
+
+**Say it in a few words** (October 2026). The maintainer's rule: assume riders
+will not read a paragraph, least of all at a bus stop or mid-trip. Every
+message, prompt, hint and button says one short thing, with no reasons
+attached ("Location is off. Turn it on, then tap Start.", "Show customized bus
+to riders?"); the reasons live in the guide's "More" folds, in the privacy
+panel and in these docs. The privacy panel is the one place that stays long,
+because it is opened on purpose and it is the promise. A new feature's words
+get the same treatment before they ship.
 
 **The guide says it in a line and shows it in a picture** (October 2026).
 `how-to.html` was paragraphs; it is now a line, a drawing and a "More" fold per

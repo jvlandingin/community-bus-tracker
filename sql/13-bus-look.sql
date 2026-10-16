@@ -2,8 +2,8 @@
 --  PATCH: a sharer may show their bus to riders
 --
 --  The app lets a sharer dress a drawing of a bus on their own phone:
---  decorations earned by sharing, accessories and paint bought with the
---  app's barya. It is theirs alone unless they switch on "Show customized
+--  decorations earned by sharing, accessories and paint got with the
+--  app's spare parts. It is theirs alone unless they switch on "Show customized
 --  bus to riders" in the app, which is off unless they do. Then each position
 --  their phone sends carries a short code for that bus, and a rider who
 --  taps the bus on the map sees it.

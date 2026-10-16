@@ -34,10 +34,11 @@
 //   <!-- mybus keys=sampaguita,horns paint=dagat -->  ...  <!-- /mybus -->
 //
 // And a bus on the road through a place, as a bus's popup draws it, with the
-// views of the places it passes (marks, comma-separated), its sky, close=1
-// for the popup's framing, and keys and paint for a bus shown as dressed:
+// views of the places it passes (marks, comma-separated), its sky, a frame
+// from RIDE_FRAMES (popup, close) or close=1, and keys and paint for a bus
+// shown as dressed:
 //
-//   <!-- ride views=coffee sky=day close=1 -->  ...  <!-- /ride -->
+//   <!-- ride views=coffee sky=day frame=popup -->  ...  <!-- /ride -->
 //
 // Change the words, or the drawing in index.html, then run:
 //
@@ -65,7 +66,7 @@ function renderer() {
     'S.SIGN_FONT=SIGN_FONT;S.signGlyph=signGlyph;S.signLayout=signLayout;S.signboardSvg=signboardSvg;' +
     'S.COACH_SIDE=COACH_SIDE;S.SCENE_TIMES=SCENE_TIMES;S.sceneSvg=sceneSvg;S.MARKS=MARKS;S.markSvg=markSvg;' +
     'S.TICKET_SKIES=TICKET_SKIES;S.TICKET_VIEWS=TICKET_VIEWS;S.ticketArtSvg=ticketArtSvg;' +
-    'S.TICKET_SIGHTS=TICKET_SIGHTS;S.sightTile=sightTile;S.moonSvg=moonSvg;S.BUS_DECOR=BUS_DECOR;S.busSvg=busSvg;S.DECOR_BOX=DECOR_BOX;S.decorTile=decorTile;S.BUS_PAINTS=BUS_PAINTS;S.paintStyle=paintStyle;S.rideSvg=rideSvg;')(S);
+    'S.TICKET_SIGHTS=TICKET_SIGHTS;S.sightTile=sightTile;S.moonSvg=moonSvg;S.BUS_DECOR=BUS_DECOR;S.busSvg=busSvg;S.DECOR_BOX=DECOR_BOX;S.decorTile=decorTile;S.BUS_PAINTS=BUS_PAINTS;S.paintStyle=paintStyle;S.rideSvg=rideSvg;S.RIDE_LOOPS=RIDE_LOOPS;S.RIDE_FRAMES=RIDE_FRAMES;')(S);
   return S;
 }
 
@@ -163,11 +164,12 @@ function rides(src, S) {
     const opts = {};
     for (const part of m[1].trim().split(/\s+/).filter(Boolean)) { const [k, v] = part.split('='); opts[k] = v; }
     if (!(opts.sky in S.TICKET_SKIES)) throw new Error('no ride sky called ' + opts.sky);
+    if (opts.frame && !(opts.frame in S.RIDE_FRAMES)) throw new Error('no ride frame called ' + opts.frame);
     const views = (opts.views || '').split(',').filter(Boolean);
     const unknown = views.filter(v => !(v in S.TICKET_VIEWS));
     if (unknown.length) throw new Error('no view called ' + unknown.join(', '));
     const { keys, paint } = dressOf(opts, S);
-    const svg = S.rideSvg({ views, sky: opts.sky, worn: keys, paint, close: opts.close === '1', still: opts.still === '1', now: 0 });
+    const svg = S.rideSvg({ views, sky: opts.sky, worn: keys, paint, frame: opts.frame, close: opts.close === '1', still: opts.still === '1', now: 0 });
     out.push({ start: m.index, end: m.index + m[0].length, open: '<!-- ride' + m[1] + ' -->', close: '<!-- /ride -->',
       views, sky: opts.sky, keys, paint, current: m[2], wanted: svg });
   }

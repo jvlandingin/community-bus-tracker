@@ -289,9 +289,53 @@ check(ride.length === 1 && ride[0].current === ride[0].wanted,
   'how-to.html: its popup\'s bus on the road is drawn by the tracker\'s own code, as it is now',
   ride.length !== 1 ? ride.length + ' pictures' : ride[0].current === ride[0].wanted ? 'current' : 'stale (run node tools/make-pictures.js)');
 check(ride.length === 1 && ride[0].views.length === 1 && popupMark === S.markSvg(ride[0].views[0]) &&
-  ride[0].keys.length === 0 && ride[0].paint === 'klasiko' && /^<svg class="rideart" viewBox="34 22 186 52"/.test(ride[0].wanted),
+  ride[0].keys.length === 0 && ride[0].paint === 'klasiko' && ride[0].wanted.startsWith('<svg class="rideart" viewBox="' + S.RIDE_FRAMES.popup + '"'),
   'and it passes the place its town line is about, as a plain bus, framed as the popup frames it',
   ride.length ? ride[0].views.join(',') + ', ' + ride[0].paint : '');
+
+console.log('\n=== 8. the ride ===');
+// The ride's moving parts, as the stylesheet runs them. The page works out
+// where in its loop each part is from RIDE_LOOPS, so the two must agree, and
+// every loop must end where it began or the picture jumps once a lap.
+const rideCss = src => {
+  const out = {};
+  for (const [cls, name] of [['rr', 'road'], ['rp', 'posts'], ['rb', 'bush'], ['rw', 'wheel'], ['rk', 'rock']]) {
+    const rule = new RegExp('\\.rideart \\.' + cls + '\\{[^}]*animation:(ride\\w+) ([\\d.]+)s').exec(src);
+    const kf = rule && new RegExp('@keyframes ' + rule[1] + '\\{([^@]*?)\\}\\}').exec(src);
+    out[name] = rule ? { secs: +rule[2], frames: kf ? kf[1] : '' } : null;
+  }
+  return out;
+};
+const css = rideCss(html);
+check(Object.keys(S.RIDE_LOOPS).every(k => css[k] && css[k].secs === S.RIDE_LOOPS[k]),
+  'each moving part runs for the time RIDE_LOOPS says, so a redrawn popup carries on where it was',
+  Object.keys(S.RIDE_LOOPS).map(k => k + ' ' + (css[k] && css[k].secs) + '/' + S.RIDE_LOOPS[k]).join(', '));
+const shift = k => -Number((/translateX\((-?[\d.]+)px\)/.exec(css[k].frames) || [])[1]);
+const turn = Number((/rotate\(([\d.]+)deg\)/.exec(css.wheel.frames) || [])[1]);
+const road = S.rideSvg({ sky: 'day' });
+const dash = (/class="rr"[^>]*stroke-dasharray="([\d.]+) ([\d.]+)"/.exec(road) || []).slice(1).map(Number);
+const roadEnd = Number((/class="rr"[^>]*d="M0 68\.5H([\d.]+)"/.exec(road) || [])[1]);
+const postXs = [...((/class="rp"[^>]*d="([^"]*)"/.exec(road) || [])[1] || '').matchAll(/M([\d.]+) /g)].map(m => +m[1]);
+const bushXs = [...((/class="rb"[^>]*>(.*?)<\/g>/.exec(road) || [])[1] || '').matchAll(/cx="([\d.]+)"/g)].map(m => +m[1]);
+const postGap = postXs[1] - postXs[0];
+check(dash.length === 2 && shift('road') % (dash[0] + dash[1]) === 0 && shift('posts') % postGap === 0 && shift('bush') % 150 === 0 && turn % 90 === 0,
+  'every loop ends where it began: whole dashes, whole gaps between posts and bushes, whole quarter turns of the four spokes',
+  `road ${shift('road')} by ${dash[0] + dash[1]}, posts ${shift('posts')} by ${postGap}, bushes ${shift('bush')}, wheels ${turn}°`);
+// Posts and bushes come in a repeating pattern with gaps, so what matters
+// is where the next one that is not drawn would be: past the frame's right
+// edge even at the end of a lap.
+const nextPost = Math.max(...postXs) + postGap, nextBush = bushXs[0] + 150 * (bushXs.length / 5);
+check(roadEnd - shift('road') >= 300 && nextPost - shift('posts') > 306 && nextBush - shift('bush') > 306,
+  'and nothing runs out of road before the loop starts again', `road to ${roadEnd}, next post at ${nextPost}, next bushes at ${nextBush}`);
+// Speeds in the scene's own units a second. The wheel is 14.5 of the coach's
+// 364 units, drawn 88 wide, so a turn covers 2 pi 14.5 88/364 of road.
+const roadSpeed = shift('road') / css.road.secs, postSpeed = shift('posts') / css.posts.secs, bushSpeed = shift('bush') / css.bush.secs;
+const wheelSpeed = turn / 360 * 2 * Math.PI * 14.5 * 88 / 364 / css.wheel.secs;
+check(Math.abs(roadSpeed - 60) <= 3 && Math.abs(postSpeed - roadSpeed) <= 3 && Math.abs(wheelSpeed - roadSpeed) / roadSpeed <= .1 && bushSpeed < roadSpeed,
+  'the road, the posts and the wheels all go at about 60 a second, the maintainer\'s 60 km/h, and the bushes behind go slower',
+  `road ${roadSpeed.toFixed(0)}, posts ${postSpeed.toFixed(0)}, wheels ${wheelSpeed.toFixed(0)}, bushes ${bushSpeed.toFixed(0)}`);
+const guideCss = rideCss(guide);
+check(JSON.stringify(guideCss) === JSON.stringify(css), 'and the guide\'s copy moves the same way');
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);

@@ -23,7 +23,7 @@ new Function('S', src + albumSrc + 'S.thanksWords=thanksWords;S.thanksControl=th
   'S.ticketSky=ticketSky;S.keptGreeting=keptGreeting;S.keptDate=keptDate;S.keptSince=keptSince;' +
   'S.tripStamps=tripStamps;S.SIGHTS=SIGHTS;S.ticketLook=ticketLook;S.moonPhase=moonPhase;S.ticketSeason=ticketSeason;S.albumSights=albumSights;' +
   'S.DECOR=DECOR;S.busClean=busClean;S.busAdd=busAdd;S.busCount=busCount;S.busGoal=busGoal;S.busEarned=busEarned;S.busToured=busToured;' +
-  'S.weekIndex=weekIndex;S.busStreak=busStreak;S.SHOP=SHOP;S.PAINTS=PAINTS;S.WEAR_ORDER=WEAR_ORDER;S.BARYA_TRIP=BARYA_TRIP;S.BARYA_TRIPS_A_DAY=BARYA_TRIPS_A_DAY;' +
+  'S.weekIndex=weekIndex;S.busStreak=busStreak;S.SHOP=SHOP;S.PAINTS=PAINTS;S.WEAR_ORDER=WEAR_ORDER;S.PARTS_TRIP=PARTS_TRIP;S.PARTS_TRIPS_A_DAY=PARTS_TRIPS_A_DAY;' +
   'S.dayIndex=dayIndex;S.busSettle=busSettle;S.busTripPay=busTripPay;S.busOwns=busOwns;S.busBuy=busBuy;S.busWear=busWear;S.busUsePaint=busUsePaint;' +
   'S.busWorn=busWorn;S.busHasLook=busHasLook;S.busLook=busLook;S.lookRead=lookRead;S.backupMake=backupMake;S.backupRead=backupRead;S.busIsNew=busIsNew;S.decorShown=decorShown;')(S);
 // The drawings the luck and the bus are drawn with, from the same file.
@@ -623,8 +623,8 @@ console.log('\n=== 19. your bus: counted, never a timesheet ===');
   check(JSON.stringify(nowhere) === JSON.stringify(z), 'and a trip that went nowhere adds no time, no salamat and no week');
 }
 
-console.log('\n=== 20. barya: earned, capped, spent, never farmed ===');
-// Rules 17 to 19, with the guardrails the maintainer asked for: barya come
+console.log('\n=== 20. spare parts: earned, capped, spent, never farmed ===');
+// Rules 17 to 19, with the guardrails the maintainer asked for: parts come
 // from achievements (once each) and from a few trips a day, the trophies are
 // never for sale, and what a rider can see of somebody's bus is a code of
 // letters from fixed lists.
@@ -636,33 +636,33 @@ console.log('\n=== 20. barya: earned, capped, spent, never farmed ===');
   b = trip(b, 0, 3);
   let r = S.busSettle(b, cps);
   check(r.got === 10 && r.keys.join(',') === 'sampaguita' && r.b.c === 10 && r.b.paid.join(',') === 'sampaguita',
-    'the first trip\'s garland pays 10 barya', JSON.stringify(r.keys) + ' ' + r.got);
+    'the first trip\'s garland gives 10 parts', JSON.stringify(r.keys) + ' ' + r.got);
   r = S.busSettle(r.b, cps);
   check(r.got === 0 && r.b.c === 10, 'and settling again pays nothing: an achievement pays once');
-  // Trip barya: a few a day, then nothing.
+  // A trip's parts: a few a day, then nothing.
   b = r.b;
   const pays = [];
   for (let i = 0; i < 6; i++){ const t = S.busTripPay(b, 20000); b = t.b; pays.push(t.got); }
-  check(pays.join(',') === [5, 5, 5, 0, 0, 0].join(',') && b.c === 25 && S.BARYA_TRIP === 5 && S.BARYA_TRIPS_A_DAY === 3,
-    'trips pay 5 barya, for three a day at most: a fourth trip that day pays nothing', pays.join(','));
+  check(pays.join(',') === [5, 5, 5, 0, 0, 0].join(',') && b.c === 25 && S.PARTS_TRIP === 5 && S.PARTS_TRIPS_A_DAY === 3,
+    'trips give 5 parts, for three a day at most: a fourth trip that day gives nothing', pays.join(','));
   const t2 = S.busTripPay(b, 20001);
   check(t2.got === 5 && t2.b.dayn === 1, 'and the next day pays again');
   b = t2.b;
   check(S.dayIndex(new Date(2026, 9, 15)) + 1 === S.dayIndex(new Date(2026, 9, 16)), 'days are counted on the phone\'s calendar');
   // The shop.
-  check(S.busBuy(b, 'goldrims') === null, 'gold wheels cost more than the barya there are: not bought');
+  check(S.busBuy(b, 'goldrims') === null, 'gold wheels cost more parts than there are: not got');
   check(S.busBuy(b, 'horse') === null && S.busBuy(b, 'sampaguita') === null && S.SHOP.every(x => !S.DECOR.some(d => d.k === x.k)),
     'a trophy can never be bought, and the shop sells none of them');
   let after = S.busBuy(b, 'dice');
   check(!!after && after.c === b.c - 10 && after.own.join(',') === 'dice' && S.busWorn(after, cps).includes('dice'),
-    'dice bought for 10 barya, and put straight on the bus');
+    'dice got for 10 parts, and put straight on the bus');
   check(S.busBuy(after, 'dice') === null, 'and cannot be bought twice');
   after = S.busBuy(after, 'dagat');
   check(!!after && after.paint === 'dagat' && after.paints.join(',') === 'dagat' && after.c === b.c - 20, 'a paint job bought is the one on the bus');
   check(S.busUsePaint(after, 'klasiko').paint === 'klasiko' && S.busUsePaint(after, 'ginto').paint === 'dagat',
     'the plain paint is always there to go back to; one not bought cannot be used');
   check(S.busBuy(S.busClean({ c: 9 }), 'dice') === null && S.busBuy(S.busClean({ c: 1e6 }), 'nothing') === null,
-    'nine barya buy nothing worth ten, and nothing unknown can be bought');
+    'nine parts get nothing worth ten, and nothing unknown can be got');
   // Wearing.
   let w = S.busWear(after, 'sampaguita', false, cps);
   check(!S.busWorn(w, cps).includes('sampaguita') && S.busOwns(w, 'sampaguita', cps), 'a trophy taken off goes to the garage and is still owned');
@@ -703,7 +703,7 @@ console.log('\n=== 20. barya: earned, capped, spent, never farmed ===');
     'anything that is not one of these backups is refused');
   const forged = S.backupRead(JSON.stringify({ app: 'bus-tracker', v: 1, tickets: [{ d: 'never' }], bus: { own: ['horse'], c: 'lots', paint: 'gold' } }));
   check(!!forged && forged.tickets.length === 0 && forged.bus.own.length === 0 && forged.bus.c === 0 && forged.bus.paint === 'klasiko',
-    'and one edited by hand is cleaned like storage: no trophy bought, no barya from nowhere');
+    'and one edited by hand is cleaned like storage: no trophy bought, no parts from nowhere');
   // My tickets lists the trophies nearest first within each kind, whatever
   // order they are drawn in.
   const shown = S.decorShown();
@@ -714,12 +714,19 @@ console.log('\n=== 20. barya: earned, capped, spent, never farmed ===');
     'the trophies are listed by kind, each kind from the nearest to the furthest: 10 hours, 50, then 100',
     shown.filter(d => d.c === 'hours').map(d => d.goal).join(' '));
   // Restoring replaces what is on the phone, so it asks twice whenever there
-  // is anything at all to lose, not only trips or barya.
+  // is anything at all to lose, not only trips or parts.
   check(S.busIsNew(null) && S.busIsNew({}) && S.busIsNew({ c: 0, own: ['horse'] }) &&
         !S.busIsNew({ tw: 1 }) && !S.busIsNew({ own: ['dice'] }) && !S.busIsNew({ paints: ['dagat'], paint: 'dagat' }) &&
         !S.busIsNew({ asked: 1 }) && !S.busIsNew({ places: ['IMUS'] }),
     'a bus is new only with nothing earned, bought, chosen or counted: a tour\'s bell spent on dice is still something to lose');
   check(/busIsNew\(loadBus\(\)\)/.test(fn('restoreBackup')), 'and restoring asks twice over anything that is not new');
+  // Parts are never named as money: drawn as a nut beside a number, with the
+  // word for a screen reader, and no coin or barya anywhere a rider can read.
+  check(/PART_GLYPH/.test(fn('partsTag')) && /class="vh"> parts/.test(fn('partsTag')) && /<symbol id="i-part"/.test(html),
+    'parts are a drawn nut and a number, and a screen reader hears "parts"');
+  const onScreen = html.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/\s\/\/ .*$/gm, '');
+  check(!/barya|\bcoins?\b|\bbuy\b/i.test(onScreen.replace(/data-buy|albumBuy|busBuy|ALB_BUY_ARMED|alb-act buy|\.buy\b/g, '')),
+    'and nothing on screen says barya, coins or buy', (onScreen.match(/.{30}(?:barya|\bcoins?\b|\bbuy\b).{30}/i) || [''])[0]);
   // The page asks before it shows, and only sends while sharing.
   check(/args\.p_look = /.test(fn('writePosition')) && /bus\.show/.test(fn('writePosition')),
     'the look goes with a position only when the sharer has said to show it');

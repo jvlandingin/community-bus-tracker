@@ -1146,7 +1146,8 @@ for a reason:
   worked; a list of dated trips could, which is why kept tickets never held
   times and this never holds a list of days. It holds two single dates, each
   overwritten by the next: the week of the last trip, to count the streak
-  from, and the day of the last paid trip, for barya's daily cap (below).
+  from, and the day of the last trip that earned parts, for their daily cap
+  (below).
 - *Kept or not.* Milestones that needed Keep tapped every time would make Keep
   a default in practice. Counts with no list of dates are not the thing rule
   10 was protecting.
@@ -1178,7 +1179,7 @@ for a reason:
   schedule kept by anyone watching. That is still true, and is now the
   sharer's to decide: see "Dressing the bus".
 
-## Dressing the bus: barya, the shop, and showing it
+## Dressing the bus: spare parts, the shop, and showing it
 
 Later in October 2026 the maintainer asked for coins earned by achievements
 and spent on accessories, a change of colour, a backup and restore with a way
@@ -1188,21 +1189,32 @@ guardrails, so that nobody can farm any of it at everyone else's cost, and
 nothing added to the tracking tab. Rules 17 to 19 in the album block hold it,
 `test-thanks.js` section 20 tests the logic and `test-boot.js` the screens.
 
-**Barya** (rule 17), the conductor's word for coins. Each achievement pays
-once, when it is earned (`DECOR`'s `pay`, 10 for the first trip up to 100 for
-the hundredth; `paid` keeps which have), and a trip that drew a ticket and went
-somewhere pays `BARYA_TRIP`, 5, for at most `BARYA_TRIPS_A_DAY`, 3, a day.
+**Spare parts** (rule 17), *piyesa*. Each achievement gives parts once,
+when it is earned (`DECOR`'s `pay`, 10 for the first trip up to 100 for the
+hundredth; `paid` keeps which have), and a trip that drew a ticket and went
+somewhere gives `PARTS_TRIP`, 5, for at most `PARTS_TRIPS_A_DAY`, 3, a day.
 `busTripPay()` and `busSettle()` are the only things that add. The guardrails
-are about the map, not the coins: every trip farmed for barya would be a bus
+are about the map, not the parts: every trip farmed for them would be a bus
 on everyone's map that isn't one, so a trip earns little, earns nothing past
-the third of a day, and only if it went somewhere, and the achievements pay
-most. Nothing a sharer can do with barya changes what anyone else sees except
-through rule 19, which only carries presets. Barya are never bought with
+the third of a day, and only if it went somewhere, and the achievements give
+most. Nothing a sharer can do with parts changes what anyone else sees except
+through rule 19, which only carries presets. They are never bought with
 money, never sent and cannot be given to anyone: there is no balance on the
 server, so there is nothing to sell or steal. Someone who edits their own
-storage, or a backup, can give themselves any amount; it changes their own
-drawing and nothing else, which is why that is accepted rather than
-prevented.
+storage, or a backup, can give themselves any amount, and a backup passed
+round a group chat gives everyone who restores it the same bus; it changes
+their own drawing and nothing else, which is why that is accepted rather
+than prevented. Stopping it would take a record per sharer on the server,
+which this app avoids on purpose.
+
+They were *barya*, coins, at first. The maintainer saw that riders might
+think real money was involved, so they became something that is plainly not
+money, shown as a drawn steel nut beside a number (`partsTag()`, the
+`i-part` icon), with the word for screen readers only and "Get" where a
+button said "Buy". Stars were considered and turned down because a star
+beside a trip reads as a driver's rating, the thing this app refuses, and
+gems because in the Philippines they are what games sell for load;
+`test-thanks.js` fails if barya, coins or buy appear anywhere on screen.
 
 **The shop and the paint** (rule 18). Eight accessories (`SHOP`: dice, an
 antenna, a visor, a chrome mirror, an exhaust stack, flames, a glow under the
@@ -1253,14 +1265,26 @@ Decided:
 
 - *A pace, not a speed.* The loops run at fixed durations (`RIDE_LOOPS`), never
   the bus's speed: a scene that sped up with the bus would put the driver
-  metric on every rider's screen.
+  metric on every rider's screen. The pace is about 60 km/h to the eye: the
+  first version read as 20, and the maintainer asked for 60. No loop may be
+  under 0.8 seconds (`test-tokens.js`), so each covers more road instead:
+  78 units of dashes in 1.3 seconds, a post a second, the bushes behind at
+  half that, three turns of the wheels a loop. `test-pictures.js` section 8
+  holds the road, the posts and the wheels to the same 60 units a second and
+  every loop to ending where it began.
 - *Still when the bus has gone quiet.* A bus not heard from lately stops on
   the road, so the picture never claims movement the data does not.
 - *Phase-aligned.* The popup is redrawn with every refresh; each loop's
   negative `animation-delay` is worked out from the clock, so a redraw
   carries on where the last one was instead of jumping back.
-- *Close up in the popup.* `close` frames the coach and a little road, because
-  at 240 pixels the full scene leaves the bus a few pixels long.
+- *Close up in the popup.* The popup is 240 pixels wide on a phone, and the
+  map is too narrow for a wider one. Framed as My tickets frames it
+  (`close`), the bus was about 114 pixels long and the dice a few pixels; the
+  maintainer found a framing tight on the bus (212 pixels) too much, so the
+  popup's own (`RIDE_FRAMES.popup`) leaves some road ahead and sky above, the
+  bus about 180 pixels. The picture is taller, so the four lines under it
+  became two ("▲ 98018 · live", then where it is) and the popup still fits
+  the map.
 - Under reduced motion the stylesheet's blanket ends every loop where it
   started, and My tickets does not cycle its views.
 
@@ -1294,7 +1318,7 @@ would unlock. What changed, and what was kept and why:
 - **Changed after that, by the maintainer:** a running salamat total, time on
   the map in all, and a streak (in weeks), all on the sharer's own phone
   only, as single numbers. See "Collecting" for why and what shape they keep.
-- **And after that:** barya, a shop, paint, a backup, and a decorated bus on
+- **And after that:** spare parts, a shop, paint, a backup, and a decorated bus on
   the live map, by the sharer's choice. See "Dressing the bus" for the
   guardrails.
 - **Kept:** no location history; no watcher location leaves the device; no

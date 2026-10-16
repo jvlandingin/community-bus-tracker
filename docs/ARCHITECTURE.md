@@ -899,8 +899,18 @@ rules above before it was built.
   **no stamp is about how the bus was driven** (no speed, no trip time, nothing
   that compares one run with another — those are the driver numbers
   `for-operators.html` promises the tool cannot produce), a trip under five
-  minutes or that never reached the map gets no ticket, and the salamat line
-  goes through `thanksWords()`, so a quiet trip shows no zero. **Every end of
+  minutes, under a kilometre along the route between its two ends, or that
+  never reached the map gets no ticket, and the salamat line goes through
+  `thanksWords()`, so a quiet trip shows no zero. The kilometre came later in
+  October 2026, when the maintainer saw the gap: half an hour waiting at the
+  terminal with sharing on, then Stop, was a ticket for a trip that went
+  nowhere. It is measured on the chain between the same two ends the ticket
+  names (`ticketFacts()`), the start one number and the end read off the
+  last fix, so the trip record did not grow; a route with no checkpoints to
+  measure along leaves it to the time. The honest cost is a sharer who rides
+  to the far end and back without stopping, who comes out near zero too, but
+  a trip that ends where it began already counted for nothing on the bus
+  (rule 14). **Every end of
   a trip draws it, not only Stop** (October 2026): GPS giving up, a key
   changed or open sharing switched off mid-trip, the end-of-line question left
   to stop by itself. Those ends used to pass `quiet` and show nothing, so a
@@ -1153,7 +1163,8 @@ for a reason:
   10 was protecting.
 - *Only trips that went somewhere.* Otherwise sitting at a stop with sharing on
   for five minutes would dress the bus, and every such sitting is a bus on the
-  map that isn't one.
+  map that isn't one. Since the kilometre rule above, such a sitting gets no
+  ticket either.
 - *Totals and streaks, on the phone only* (changed later in October 2026).
   At first there were no streaks, no salamat total and no time on the map
   summed: a streak on a crew member's phone is an attendance sheet, and
@@ -1274,6 +1285,29 @@ Decided:
   every loop to ending where it began.
 - *Still when the bus has gone quiet.* A bus not heard from lately stops on
   the road, so the picture never claims movement the data does not.
+- *Still when the bus is standing* (October 2026). A sharer can start at the
+  terminal while the bus waits to leave, and its popup drove past the town
+  all the while. The maintainer asked whether the picture could follow the
+  bus's speed instead. It cannot, for the reason in the first point, and it
+  did not need to: whether a bus is moving at all is a yes or no every rider
+  can already read off the map, where its badge stays put. So the rider's
+  page remembers one place and one time for each bus on the map, where it was
+  when it was last seen to move and when, by the bus's own report times
+  (`rideStand()`). Two minutes of reports within 150 m of that place and the
+  picture stands still; the first from further on and it drives again. The
+  place it remembers is never more than 150 m from where the bus is now, so
+  it is "here, since then" and never a place the bus has left, and standing
+  is never put into words: "standing for 12 minutes" would be a driver's
+  breaks timed on every rider's screen, and `test-pictures.js` fails if
+  anything but the popup's picture reads it. The positions come with every
+  poll anyway, nothing is sent or kept, the record is rebuilt from each poll
+  so a bus that leaves the map leaves nothing behind, and the speed the GPS
+  reports is still thrown away before anything goes out (`p_speed: null`).
+  A bus that stops reporting is not called standing, because its report time
+  does not move: that stays `freshness()`'s to stop, as before. A page just
+  opened needs those two minutes of reports before it can tell, so a bus
+  that has waited for an hour still drives on in its popup for the page's
+  first two minutes.
 - *Phase-aligned.* The popup is redrawn with every refresh; each loop's
   negative `animation-delay` is worked out from the clock, so a redraw
   carries on where the last one was instead of jumping back.

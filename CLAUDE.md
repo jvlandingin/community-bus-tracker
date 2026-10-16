@@ -179,8 +179,10 @@ on and off (the two places' marks as roadside signs, the coach between, the view
 at the destination behind it, the sky from its stamps), how long the bus was on
 the map, how many said salamat, a stamp or two. Made on the phone and sent nowhere. Fenced the same way as the count: no
 stamp may be about how the bus was driven (speed, trip time, comparisons — the
-driver metric again), no ticket for a trip under five minutes or one that never
-reached the map, no zero. Every other end draws one, GPS failure and a refused
+driver metric again), no ticket for a trip under five minutes, under a kilometre
+along the route between its two ends (a bus that waited at the terminal with
+sharing on went nowhere), or one that never reached the map, no zero. Every
+other end draws one, GPS failure and a refused
 key included; only an organizer's Stop does not. GPS that drops out is waited
 out for `bus_expiry_min` (only "location off" ends a trip at once), and a trip
 outlives its page: kept as `wt-trip` while it runs, so a page opened again
@@ -240,7 +242,9 @@ A page against a database without that migration resends without the look
 (`LOOK_SENDS`). A bus's popup and My tickets draw the bus moving through the
 view of the place it is nearest (`rideSvg()`), at a fixed pace and never the
 bus's speed (about 60 km/h to the eye, `test-pictures.js` section 8), and
-still when the bus has gone quiet; the popup frames it closer than My tickets
+still when the bus has gone quiet or is standing (`rideStand()`: two minutes of
+its reports within 150 m of one place, worked out on the rider's phone, moving
+or not and never how fast); the popup frames it closer than My tickets
 does (`RIDE_FRAMES`). A backup is a file the
 sharer saves or copies from My tickets and restores by file or paste, cleaned
 like storage on the way in (`backupRead()`); "Start from scratch" deletes the
@@ -394,7 +398,10 @@ not a judgement call mid-task.
 upserted in place. There is no trail table, so the tool cannot be used to review
 a driver's speed, breaks or route — the data does not exist. This is the single
 most important property of the system. The wrong-direction guard tracks progress
-in the sharing phone's memory only and it dies with the tab. Two things outlast
+in the sharing phone's memory only and it dies with the tab. A rider's page keeps
+one place and one time per bus on the map, in memory, to tell a standing bus
+from a moving one (`rideStand()`): overwritten at every poll, dropped when the
+bus leaves the map, never sent or stored. Two things outlast
 a trip, both on the sharer's own phone: a kept ticket, only on a tap, holding a
 date and two checkpoint names, and your bus's counts, numbers and place names
 with no list of dates (only the week of its last trip and the day of its last

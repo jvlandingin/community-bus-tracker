@@ -18,7 +18,7 @@ const albumSrc = html.slice(html.indexOf('// ---- THE TICKET ALBUM (unit tested)
                             html.indexOf('// ---- END ALBUM'));
 const S = {};
 new Function('S', src + albumSrc + 'S.thanksWords=thanksWords;S.thanksControl=thanksControl;' +
-  'S.ticketStamps=ticketStamps;S.ticketWorthShowing=ticketWorthShowing;S.ticketGreeting=ticketGreeting;' +
+  'S.ticketStamps=ticketStamps;S.ticketWorthShowing=ticketWorthShowing;S.TICKET_MIN_KM=TICKET_MIN_KM;S.ticketGreeting=ticketGreeting;' +
   'S.STAMPS=STAMPS;S.albumEntry=albumEntry;S.albumClean=albumClean;S.albumPlaces=albumPlaces;S.albumStats=albumStats;' +
   'S.ticketSky=ticketSky;S.keptGreeting=keptGreeting;S.keptDate=keptDate;S.keptSince=keptSince;' +
   'S.tripStamps=tripStamps;S.SIGHTS=SIGHTS;S.ticketLook=ticketLook;S.moonPhase=moonPhase;S.ticketSeason=ticketSeason;S.albumSights=albumSights;' +
@@ -278,9 +278,25 @@ console.log('\n=== 12. the ticket: stamps are never about the driving ===');
 console.log('\n=== 13. the ticket: when there is one at all ===');
 // Rule 6: a trip too short to have helped anyone gets no ticket.
 check(!S.ticketWorthShowing(null), 'no trip: no ticket');
-check(!S.ticketWorthShowing({ mins: 4, writes: 9 }), 'four minutes: no ticket');
-check(S.ticketWorthShowing({ mins: 5, writes: 1 }), 'five minutes with the bus on the map: a ticket');
-check(!S.ticketWorthShowing({ mins: 90, writes: 0 }), 'an hour and a half that never reached the map: no ticket');
+check(!S.ticketWorthShowing({ mins: 4, writes: 9, km: 6 }), 'four minutes: no ticket');
+check(S.ticketWorthShowing({ mins: 5, writes: 1, km: 3 }), 'five minutes with the bus on the map: a ticket');
+check(!S.ticketWorthShowing({ mins: 90, writes: 0, km: 40 }), 'an hour and a half that never reached the map: no ticket');
+// And a trip that went nowhere: on the map for as long as it liked, waiting
+// at the terminal with sharing on, then stopped where it started.
+check(!S.ticketWorthShowing({ mins: 35, writes: 90, km: 0.2 }), 'thirty-five minutes on the map, 200 m along the route: no ticket');
+check(S.TICKET_MIN_KM === 1 && !S.ticketWorthShowing({ mins: 12, writes: 30, km: 0.95 }) && S.ticketWorthShowing({ mins: 12, writes: 30, km: 1 }),
+  'under a kilometre between its two ends: none; a kilometre: a ticket');
+check(S.ticketWorthShowing({ mins: 12, writes: 30, km: null }) && S.ticketWorthShowing({ mins: 12, writes: 30, km: NaN }),
+  'a route with no checkpoints to measure along leaves it to the time, as before');
+{
+  const facts = fn('ticketFacts');
+  check(/const km = Number\.isFinite\(trip\.startKm\) && Number\.isFinite\(endKm\) \? Math\.abs\(endKm - trip\.startKm\) : null;/.test(facts) &&
+        /const fromIdx = nearestCheckpoint\(trip\.startKm\), toIdx = nearestCheckpoint\(endKm\);/.test(facts) && /km:km,/.test(facts),
+    'measured along the route\'s chain between the same two ends the ticket names, from numbers the trip already keeps');
+  const asks = 'ticketWorthShowing({ mins:f.mins, writes:trip.writes, km:f.km })';
+  check(fn('showTicket').includes(asks) && fn('endTicket').includes(asks) && [...html.matchAll(/ticketWorthShowing\(\{/g)].length === 2,
+    'and the ticket and the count on your bus both ask it, so a trip that went nowhere earns neither');
+}
 check(S.ticketGreeting(18 * 60 + 30) === 'Ingat pauwi!' && S.ticketGreeting(30) === 'Ingat pauwi!',
   'an evening or late-night trip: Ingat pauwi');
 check(S.ticketGreeting(7 * 60) === 'Ingat sa biyahe!' && S.ticketGreeting(4 * 60) === 'Ingat sa biyahe!',

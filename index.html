@@ -1117,6 +1117,9 @@
   .modal-card.tall > h3{margin:0; padding:18px 20px 12px; border-bottom:1px solid var(--line);}
   .modal-card.tall > .modal-scroll{overflow-y:auto; padding:16px 20px; -webkit-overflow-scrolling:touch;}
   .modal-card.tall > .modal-foot{padding:12px 20px 16px; border-top:1px solid var(--line);}
+  /* What sits between the title and the list (the stop picker's search and
+     its two buttons), in from the edges as the rest of the card is. */
+  .modal-card.tall > .modal-top{padding:12px 20px 0;}
   .modal-x{
     margin-left:auto; flex:0 0 auto; width:var(--tap); height:var(--tap);
     background:none; border:none; cursor:pointer; font-family:inherit;
@@ -2015,13 +2018,15 @@
     <h3 id="stopTitle"><svg class="gi" aria-hidden="true"><use href="#i-pin"/></svg>Where do you wait?
       <button class="modal-x" onclick="closeModal('stopModal')" aria-label="Close"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>
     </h3>
-    <p class="hint" style="margin:0 0 10px;">Saved on this phone only.</p>
-    <input type="text" class="stopsearch" id="stopSearch" placeholder="Type a few letters, e.g. Imus" autocomplete="off" oninput="renderStopList()">
-    <div class="pickrow">
-      <button type="button" id="nearestBtn" onclick="pickNearestStop()">Use my current location</button>
-      <button type="button" onclick="startPinMode()">Drop a pin instead</button>
+    <div class="modal-top">
+      <p class="hint" style="margin:0 0 10px;">Saved on this phone only.</p>
+      <input type="text" class="stopsearch" id="stopSearch" placeholder="Type a few letters, e.g. Imus" autocomplete="off" oninput="renderStopList()">
+      <div class="pickrow">
+        <button type="button" id="nearestBtn" onclick="pickNearestStop()">Use my current location</button>
+        <button type="button" onclick="startPinMode()">Drop a pin instead</button>
+      </div>
+      <div class="hint" id="stopPickErr" style="margin-top:8px;"></div>
     </div>
-    <div class="hint" id="stopPickErr" style="margin-top:8px;"></div>
     <div class="modal-scroll"><div class="stoplist" id="stopList"></div></div>
     <div class="modal-foot">
       <button class="big btn-ghost" id="clearStopBtn" onclick="clearMyStop()">Remove my stop</button>

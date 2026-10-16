@@ -1506,7 +1506,9 @@ captions, the interface's own sounds) for Facebook, TikTok and Reels, where the 
 never heard of the tracker are. The story is one sharer's morning: wait at a
 stop until the card says Sakay na!, get on and share the bus, riders say
 salamat, the card says Bababa na!, Stop gives a ticket, the ticket goes into
-My tickets, the bus gets a new paint and "Show customized bus to riders" goes
+My tickets, the bus gets a new paint, tries on five other paints and sets of
+accessories for half a second each (the maintainer's ask: show how much can
+be changed, without the taps), and "Show customized bus to riders" goes
 on; the next morning another rider taps that bus and sees it dressed.
 
 **Real screens, not a drawing of them.** The guide, the flyer and the

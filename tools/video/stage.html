@@ -179,16 +179,16 @@ const V = (function(){
     let from = { z:1, x:0, y:0 }, cur = from;
     cams.forEach(function(c){
       if (c.at > t) return;
-      const to = c.rect ? frameFor(c.rect, c.width || 1000, c.cy || 1080, c.topAt) : { z:1, x:0, y:0 };
+      const to = c.rect ? frameFor(c.rect, c.width || 1000, c.cy || 1080, c.topAt, c.maxZ) : { z:1, x:0, y:0 };
       const p = ease((t - c.at) / (c.dur || .6));
       cur = { z: from.z + (to.z - from.z) * p, x: from.x + (to.x - from.x) * p, y: from.y + (to.y - from.y) * p };
       from = p >= 1 ? to : cur;
     });
     return cur;
   }
-  function frameFor(r, width, cy, topAt){
+  function frameFor(r, width, cy, topAt, maxZ){
     const w = r.w * K, cx = SX + (r.x + r.w / 2) * K, y = SY + (r.y + r.h / 2) * K;
-    const z = clamp(width / w, 1, 1.75);
+    const z = clamp(width / w, 1, maxZ || 1.75);
     if (topAt) cy = topAt + r.h * K * z / 2;
     return { z:z, x: 540 - cx * z, y: cy - y * z };
   }

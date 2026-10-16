@@ -57,6 +57,10 @@ place of "Dress up your bus", knowingly using the word the app gave up for
 spare parts, and the interface's sounds. Music and the bus's own sounds
 they will add themselves.
 
+Then a few seconds more in My tickets: after the new paint, the same bus in
+five other paints and sets of accessories, half a second each, close up and
+without showing the taps, so a viewer sees how much a bus can be dressed.
+
 ## 2026-10-16 — A bus waiting at the terminal, and a ticket for going nowhere
 
 The maintainer asked two things. Could the bus in a popup move with the bus's

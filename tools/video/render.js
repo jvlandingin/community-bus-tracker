@@ -316,6 +316,11 @@ class Phone {
     await this.page.touchscreen.tap(x, y);
     return { x, y };
   }
+  // Pixels per CSS pixel on the screen, for a close look: the page is laid
+  // out the same, only drawn finer, so the camera can go nearer.
+  async resolution(dsf){
+    await this.cdp.send('Emulation.setDeviceMetricsOverride', { width:VIEW.width, height:VIEW.height, deviceScaleFactor:dsf, mobile:true });
+  }
   async gps(p){
     if (this.lastGps && metres(this.lastGps, p) < 1) return;
     this.lastGps = p;

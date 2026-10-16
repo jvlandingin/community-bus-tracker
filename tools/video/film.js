@@ -26,7 +26,7 @@ const R = require('./render.js');
 const S = require('./sounds.js');
 
 // ---- How long each scene runs, in seconds ----------------------------------
-const DUR = { title:3.0, watch:6.4, wait:9.2, share:7.2, trip:3.0, getoff:5.8, ticket:5.6, collect:3.0, dress:4.2, show:2.8, rider:4.2, end:4.8 };
+const DUR = { title:3.0, watch:6.4, wait:9.2, share:7.2, trip:3.0, getoff:5.8, ticket:5.6, collect:3.0, dress:6.8, show:2.8, rider:4.2, end:4.8 };
 const T = {};
 let acc = 0;
 Object.keys(DUR).forEach(k => { T[k] = acc; acc += DUR[k]; });
@@ -129,6 +129,16 @@ const SAY = [
 ];
 // Where a buzz belongs in the story: waiting, and getting off.
 const BUZZ_SCENES = [[T.wait, T.share], [T.getoff - .6, T.ticket]];
+// What else the bus could wear, for the few seconds after the paint is
+// bought: a paint and the things on it, from SHOP and the trophies this bus
+// has earned (an unearned trophy cannot be worn).
+const LOOKS = [
+  { paint:'dagat', worn:['flames', 'goldrims', 'horns', 'sampaguita'] },
+  { paint:'lila',  worn:['underglow', 'mirror', 'fringe', 'flowers'] },
+  { paint:'uling', worn:['flames', 'exhaust', 'antenna', 'stripe'] },
+  { paint:'ginto', worn:['goldrims', 'visor', 'dice', 'horns', 'bumpers'] },
+  { paint:'gubat', worn:['underglow', 'antenna', 'flowers', 'sunrise', 'fringe'] }
+];
 // The frame's own sounds: the board lighting up, the swipes between scenes
 // and the end card.
 const SCORE = [
@@ -257,8 +267,34 @@ function cues(A, B, stage, world, browser, heard){
   at(T.dress + .9, v => cam(A, '.alb-bus', v, { width:1000, cy:1000 }));
   at(T.dress + 1.2, v => tap(A, '.alb-paint[data-paint="kahel"]', v));
   at(T.dress + 1.9, v => tap(A, '.alb-paint[data-paint="kahel"]', v));
+  // Then what else it could wear: the same bus in other paints and with
+  // other things on, half a second each, and back to the one just bought.
+  // Taken from the shop's and the trophies' own lists, put straight into
+  // what the phone remembers and drawn by My tickets itself; nothing is
+  // tapped, and the bus as bought comes back before anything else sees it.
+  let bought = null;
+  // Close on the coach itself, the screen drawn twice as fine meanwhile.
+  at(T.dress + 2.3, async v => {
+    bought = await A.run(() => localStorage.getItem('wt-bus'));
+    await A.resolution(6);
+    await cam(A, '.alb-ride .rk', v, { width:920, cy:1100, maxZ:3, dur:.5 });
+  });
+  LOOKS.forEach((l, i) => at(T.dress + 2.8 + i * .5, async v => {
+    await A.run(l => {
+      const b = loadBus();
+      b.paints = PAINTS.slice(1).map(p => p.k); b.own = SHOP.map(x => x.k); b.paint = l.paint;
+      b.off = busEarned(b, CHECKPOINTS).concat(b.own).filter(k => l.worn.indexOf(k) < 0);
+      saveBus(b); renderAlbum();
+    }, l);
+    heard.push({ t:v, kind:'dress' });
+  }));
+  at(T.dress + 2.8 + LOOKS.length * .5, async v => {
+    await A.run(r => { localStorage.setItem('wt-bus', r); renderAlbum(); }, bought);
+    heard.push({ t:v, kind:'dress' });
+  });
   // show: switch it on, and give the next morning's bus its look.
   at(T.show + .05, v => cam(A, '.alb-show', v, { width:1000, cy:1150, dur:.5 }));
+  at(T.show + .6, () => A.resolution(3));
   at(T.show + .6, v => tap(A, '.alb-toggle', v));
   at(T.show + 1.2, async () => { world.dressed.look = await A.run(() => busLook(loadBus(), CHECKPOINTS)); });
   // rider: another phone; tap the sharer's bus.

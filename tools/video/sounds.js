@@ -152,6 +152,16 @@ const SOUNDS = {
       return c(t, 1150) + c(t - .055, 1700);
     });
   },
+  // The bus changing its look: a quick bright blip up, and a ring.
+  dress: function(){
+    const P = [[1, 1], [2.01, .25]];
+    let ph = 0;
+    return make(.4, function(t){
+      const f = 700 + 900 * (1 - decay(t, .025));
+      ph += TAU * f / RATE;
+      return .55 * Math.sin(ph) * decay(t, .04) * attack(t, .002) + (t > .035 ? .4 * bell(t - .035, 2093, .12, P) : 0);
+    });
+  },
   // Between scenes: air going past.
   whoosh: function(){
     const s = sweptNoise(.42, 260, 2200, .9, 29);
@@ -178,7 +188,7 @@ const SOUNDS = {
 };
 // How loud each sits in the mix, under music someone else will add.
 const LEVEL = { tap:.45, buzz:.55, pop:.6, chime:.55, start:.45, sparkle:.5, ticket:.5, stamp:.7, open:.3,
-                coins:.5, switch:.5, whoosh:.32, board:.45, outro:.55 };
+                coins:.5, switch:.5, dress:.4, whoosh:.32, board:.45, outro:.55 };
 
 // Every event, { t (seconds), kind, pattern for a buzz }, on one track of
 // seconds length, peaking at -3 dBFS.

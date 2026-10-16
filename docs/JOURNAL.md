@@ -44,9 +44,10 @@ is about 16 MB, and every re-render would add another copy to the history
 for good. The parol was left out so that a video posted now still looks
 right after Three Kings.
 
-Filming it showed one small fault in the app, noted rather than fixed in the
-same change: just after Stop the waiting card treats the bus the sharer has
-just left as one coming to their stop, and buzzes once, until the next poll.
+Filming it showed one small fault in the app: just after Stop the waiting
+card treated the bus the sharer had just left as one coming to their stop,
+said Sakay na! and buzzed once, until the next poll. The maintainer asked for
+it to be fixed; Stop now takes that bus off the sharer's own map at once.
 
 After watching the first cut the maintainer asked for four changes, all
 made: no "demo" label anywhere (the first cut carried "Demo · not real

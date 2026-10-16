@@ -380,9 +380,8 @@ async function main(){
     if (B.page && f % 15 === 0) await B.poll();
     // The buzzes the story is about: the switch going on, and the two
     // alarms. The page also buzzes as a trip starts (15 ms, too short to
-    // see), and once more just after Stop, which the stage leaves out: the
-    // waiting card counts the bus just left as one coming, until the next
-    // poll. That one is the app's, reported, and not something to show off.
+    // see or hear), which stays out. It used to buzz once more just after
+    // Stop, for the bus just left; that was the app's, and is fixed there.
     for (const p of await A.buzzes()){
       const ms = p.reduce((s, x) => s + x, 0);
       if (process.env.VIDEO_DEBUG) console.log('  buzz at ' + v.toFixed(2) + 's: ' + JSON.stringify(p));

@@ -824,6 +824,16 @@ a pocket with the screen locked. That is the honest limit of the website; a
 lock-screen alert would belong to the Android app's notification code, and
 has not been built.
 
+**Stop takes the bus off its sharer's own map at once** (October 2026). Until
+then it stayed in `BUSES` until the next poll, so the card, back to waiting
+the moment sharing ended, counted the bus just left as one coming to the
+stop its sharer had just got off at: Sakay na!, and a buzz. `stopSharing()`
+now drops this phone's own row before anything is redrawn, and keeps its
+public id in `GONE`, in memory only, so a poll answered before
+`clear_bus_position` lands cannot bring it back as somebody else's bus. Each
+trip has a public id of its own, so one gone is gone for good. Found while
+filming the showcase video; `test-boot.js` section 14 holds it.
+
 ## Following one bus, and the town lines
 
 October 2026. **Send a link to this bus**, in a bus's popup, hands over a
@@ -1543,10 +1553,9 @@ Tracker and never the company's initials, and the end card's
 "Community-run. Not affiliated with the bus company." One caption is the
 maintainer's own and breaks the spare-parts rule on purpose: "Earn coins and
 dress up your bus." (October 2026). The app still says spare parts and draws
-a nut; the video's word is coins. The stage draws a buzz only in the two alarm scenes. The
-page also buzzes just after Stop, because the waiting card counts the bus
-just left as one coming until the next poll; that is the app's to fix, not
-the video's to show. The parol is switched off in the made-up settings, so the
+a nut; the video's word is coins. The stage draws a buzz only in the two
+alarm scenes. Filming it found the page buzzing just after Stop too, for the
+bus just left; that is fixed in the app ("The reader's own stop"). The parol is switched off in the made-up settings, so the
 video still looks current after the season. The map needs `CARTO_API_KEY`;
 the script writes it only into the copy of `config.txt` it serves, and keeps
 the tiles in `video-out/.tiles` so a re-render asks CARTO for nothing.

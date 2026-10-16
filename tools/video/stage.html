@@ -63,6 +63,10 @@
          border:7px solid rgba(255,255,255,.95); background:rgba(255,255,255,.28); box-shadow:0 0 0 3px rgba(0,0,0,.18);}
   .v-wave{position:absolute; width:40px; height:150px; border:7px solid #ffc24a; border-left:0; border-top-color:transparent; border-bottom-color:transparent; border-radius:50%;}
   .v-wave.l{transform:scaleX(-1);}
+  /* A place on the page pointed out (the saved stop's pin as it lands):
+     rings in the app's own colour for the reader's stop, going out from it. */
+  .v-mark{position:absolute; width:100px; height:100px; margin:-50px 0 0 -50px; border-radius:50%;
+          border:6px solid #4f46b8; box-shadow:0 0 0 3px rgba(255,255,255,.9), inset 0 0 0 3px rgba(255,255,255,.9);}
 
   /* The interludes: full-frame pictures over everything else. */
   .v-int{position:absolute; inset:0; opacity:0; overflow:hidden; will-change:transform;}
@@ -145,7 +149,7 @@ const V = (function(){
   const $ = function(id){ return document.getElementById(id); };
 
   let plan = { captions:[], phone:[], ints:[] };
-  const cams = [], taps = [], buzzes = [];
+  const cams = [], taps = [], buzzes = [], marks = [];
 
   function init(p){
     plan = p;
@@ -160,6 +164,7 @@ const V = (function(){
   function event(e){
     if (e.type === 'camera') cams.push(e);
     else if (e.type === 'tap') taps.push(e);
+    else if (e.type === 'mark') marks.push(e);
     else if (e.type === 'buzz') buzzes.push(e);
   }
   function screen(url){
@@ -254,6 +259,20 @@ const V = (function(){
       const p = toStage(e.x, e.y, camAt(e.at));
       const s = .55 + .55 * easeOut(u), o = u < .15 ? u / .15 : 1 - easeOut((u - .15) / .85);
       html += '<div class="v-tap" style="left:' + (p.x + dx).toFixed(1) + 'px;top:' + (p.y + dy).toFixed(1) + 'px;transform:scale(' + s.toFixed(3) + ');opacity:' + o.toFixed(3) + '"></div>';
+    });
+    // A place pointed out: three rings out from it, a third of a second
+    // apart, for as long as it lasts. They follow the camera, so they stay
+    // on the place while it zooms in.
+    marks.forEach(function(e){
+      const u = t - e.at;
+      if (u < 0 || u > e.dur) return;
+      const p = toStage(e.x, e.y, cam);
+      for (let i = 0; i < 3; i++){
+        const k = ((u + i * .33) % 1);
+        const fade = Math.min(1, (e.dur - u) / .3);
+        html += '<div class="v-mark" style="left:' + (p.x + dx).toFixed(1) + 'px;top:' + (p.y + dy).toFixed(1) + 'px;transform:scale(' +
+          (.35 + 1.1 * easeOut(k)).toFixed(3) + ');opacity:' + ((1 - k) * fade).toFixed(3) + '"></div>';
+      }
     });
     // The buzz: arcs either side of the phone while it shakes.
     buzzes.forEach(function(b){

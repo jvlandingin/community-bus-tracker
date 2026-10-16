@@ -26,7 +26,9 @@ const R = require('./render.js');
 const S = require('./sounds.js');
 
 // ---- How long each scene runs, in seconds ----------------------------------
-const DUR = { title:3.0, watch:6.4, wait:9.2, share:7.2, trip:3.0, getoff:5.8, ticket:5.6, collect:3.0, dress:6.8, show:2.8, rider:4.2, end:4.8 };
+// Saving the stop takes its time, so a viewer reads the name being typed and
+// sees the pin land; the scenes around it are a little quicker for it.
+const DUR = { title:3.0, watch:5.6, wait:11.95, share:6.6, trip:2.6, getoff:5.4, ticket:5.4, collect:3.0, dress:6.45, show:2.8, rider:4.2, end:4.8 };
 const T = {};
 let acc = 0;
 Object.keys(DUR).forEach(k => { T[k] = acc; acc += DUR[k]; });
@@ -75,11 +77,11 @@ const SEED_TICKETS = [
 
 // ---- The buses --------------------------------------------------------------
 function buses(world){
-  // The one the sharer waits for: four stops off when the stop is saved,
-  // two (Malapit na!) about 3.7s later, Sakay na! at 17.0s. It leaves the
-  // map as they board: whoever was sharing it got off there.
+  // The one the sharer waits for: four stops off when the card comes into
+  // view, two (Malapit na!) about 2.9s later, Sakay na! at 18.55s. It leaves
+  // the map as they board: whoever was sharing it got off there.
   world.bus({ id:'a1', phone:'A', dir:'north', label:'1043', road:NORTH, on:[0, T.share + .2], age:5000,
-    km:R.keys([[0, 10.6], [T.wait + 1.6, 15.9], [T.wait + 5.3, 19.3], [T.wait + 7.6, 22.8], [T.wait + 9.0, WAIT_KM - .05]]) });
+    km:R.keys([[0, 10.6], [T.wait + 4.35, 15.9], [T.wait + 8.05, 19.3], [T.wait + 10.35, 22.8], [T.wait + 11.75, WAIT_KM - .05]]) });
   world.bus({ id:'a2', phone:'A', dir:'north', label:null, road:NORTH, on:[0, 1000], age:9000,
     km:R.keys([[0, 40.5], [T.share, 47.0], [T.trip + DUR.trip, 61], [1000, 61]]) });
   world.bus({ id:'a3', phone:'A', dir:'north', label:'1027', road:NORTH, on:[0, 1000], age:7000,
@@ -113,11 +115,11 @@ const GPS = R.keys([[T.share + 1.9, WAIT_KM + .7], [T.share + DUR.share, 26.4], 
 // ---- Captions ---------------------------------------------------------------
 // One plain sentence each. *word* is drawn in gold.
 const SAY = [
-  [T.watch + .25, T.watch + 3.4, 'See the buses *on the map*.'],
-  [T.watch + 3.5, T.wait, 'Shared by *riders on the bus*.'],
-  [T.wait + .1, T.wait + 3.4, 'Save *your stop*.'],
-  [T.wait + 3.5, T.wait + 7.5, 'Know when your bus is *near*.'],
-  [T.wait + 7.6, T.share, 'Time to *get on*!'],
+  [T.watch + .25, T.watch + 3.0, 'See the buses *on the map*.'],
+  [T.watch + 3.1, T.wait, 'Shared by *riders on the bus*.'],
+  [T.wait + .1, T.wait + 4.9, 'Save *your stop*.'],
+  [T.wait + 5.0, T.wait + 10.2, 'Know when your bus is *near*.'],
+  [T.wait + 10.3, T.share, 'Time to *get on*!'],
   [T.share + .1, T.share + 3.6, 'On the bus? *Share it*.'],
   [T.share + 3.7, T.trip, 'Help *other commuters*.'],
   [T.getoff + .1, T.ticket, 'Know when to *get off*.'],
@@ -220,14 +222,27 @@ function cues(A, B, stage, world, browser, heard){
   // wait: save the stop, switch the buzz on, and watch it count down.
   scrolls.push(smooth(A, 0, 120, T.wait + .15, T.wait + .55));
   at(T.wait + .75, v => tap(A, '#myStop .mystop-btn', v));
-  at(T.wait + 1.15, () => type(A, '#stopSearch', 'J'));
-  at(T.wait + 1.3, () => type(A, '#stopSearch', 'Ja'));
-  at(T.wait + 1.45, () => type(A, '#stopSearch', 'Jav'));
-  at(T.wait + 1.8, v => tap(A, '#stopList button[data-name="' + WAIT + '"]', v));
-  at(T.wait + 1.95, centre(A, '#myStop', .45));
-  at(T.wait + 2.45, v => cam(A, '#myStop', v, { width:1010, cy:1170 }));
-  at(T.wait + 3.1, v => tap(A, '#myStop .buzz input', v));
-  at(T.wait + 8.4, v => cam(A, null, v));
+  // Close on the picker, near enough to read what is typed and what it
+  // finds; the whole name, a letter at a time, and a moment on it.
+  at(T.wait + 1.0, v => cam(A, '#stopModal .modal-card', v, { width:1040, topAt:330, maxH:560 }));
+  WAIT.split('').forEach((c, i) => at(T.wait + 1.4 + i * .14, async v => {
+    await type(A, '#stopSearch', WAIT.slice(0, i + 1));
+    heard.push({ t:v, kind:'tap', gain:.35 });
+  }));
+  at(T.wait + 2.95, v => tap(A, '#stopList button[data-name="' + WAIT + '"]', v));
+  // Picked: the camera goes to the pin as it lands on the map, rings go out
+  // from it, and it stays there a second before the card.
+  at(T.wait + 3.1, async v => {
+    const r = await A.rect('.mypin');
+    await cam(A, '.mypin', v, { width:1000, cy:1060, maxZ:2.4, dur:.6 });
+    if (r) await stage.event({ type:'mark', at:v + .3, x:r.x + r.w / 2, y:r.y + r.h / 2, dur:1.5 });
+    heard.push({ t:v + .3, kind:'stamp', gain:.8 });
+  });
+  at(T.wait + 4.75, v => cam(A, null, v, { dur:.45 }));
+  at(T.wait + 4.75, centre(A, '#myStop', .45));
+  at(T.wait + 5.25, v => cam(A, '#myStop', v, { width:1010, cy:1170 }));
+  at(T.wait + 5.9, v => tap(A, '#myStop .buzz input', v));
+  at(T.wait + 11.15, v => cam(A, null, v));
   // On board, off camera for a moment: where to get off.
   at(T.share - .08, async () => {
     await A.tap('#myStop button.edit');
@@ -456,7 +471,7 @@ async function main(){
   fs.unlinkSync(silent);
   // The cover: a frame worth stopping on, for a post's thumbnail.
   try {
-    const at = Math.max(R.FROM, Math.min(T.wait + 6.0, R.TO - .1)) - R.FROM;
+    const at = Math.max(R.FROM, Math.min(T.wait + 8.75, R.TO - .1)) - R.FROM;
     execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(at), '-i', file, '-frames:v', '1', '-q:v', '2', path.join(R.OUT, R.NAME + '-cover.jpg')]);
   } catch (e) {}
   console.log('Calls answered here, none sent to Supabase: ' + JSON.stringify(world.log));

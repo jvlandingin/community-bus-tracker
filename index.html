@@ -6559,7 +6559,17 @@ function writeErrorMessage(err){
     return 'Bus number: 12 characters at most.';
   if (m.indexOf('invalid session')>=0)
     return 'Please reload the page and start again.';
-  return 'No connection. Retrying.';
+  // Anything else the server answered itself is no connection problem, and
+  // saying so sent the maintainer looking at the wrong thing: a database
+  // missing a migration refused every write for a day while this said "No
+  // connection" (October 2026). A fetch that never got an answer has no code.
+  return serverAnswered(err) ? 'Server problem. Tell the organizer.' : 'No connection. Retrying.';
+}
+// Whether an error came from the server rather than the network: the
+// database's five-character codes and PostgREST's own. A failed fetch has
+// none, or a network library's, which is longer.
+function serverAnswered(err){
+  return !!err && /^(?:[0-9A-Z]{5}|PGRST\d{3})$/.test(String(err.code || ''));
 }
 
 // ---- Screen wake lock -------------------------------------------------
@@ -8362,7 +8372,7 @@ async function tryKey(key){
   // check_share_key, not route_exists: a PIN can be guessed, so every wrong
   // one is counted against the route. See sql/12-share-pin.sql.
   try{ res=await rpc('check_share_key',{p_slug:CFG.ROUTE_SLUG, p_key:key}); }catch(e){ res={error:e}; }
-  if (res.error){ showGateError('Could not reach the server. Check your connection and try again.'); return false; }
+  if (res.error){ showGateError(serverAnswered(res.error) ? 'Server problem. Tell the organizer.' : 'Could not reach the server. Check your connection and try again.'); return false; }
   if (res.data === 'too many tries'){ showGateError(writeErrorMessage({ message:'too many tries' })); return false; }
   if (res.data !== 'ok'){ showGateError('That key or PIN is not recognized. Check the one shared in the group.'); return false; }
   accessKey=key;

@@ -32,6 +32,22 @@
 
 begin;
 
+-- 11-open-sharing.sql and 12-share-pin.sql first: the writers below go
+-- through 11's _write_position() and count wrong PINs with 12's helpers.
+-- PL/pgSQL checks the functions a body calls only when it runs, so without
+-- them this installed cleanly and then refused every position: production
+-- ran 13 without 12 in October 2026 and nobody could share until 12 and 13
+-- were applied. It refuses to install instead, and nothing is changed.
+do $$
+begin
+  if to_regprocedure('public._write_position(public.routes, boolean, boolean, text, double precision, double precision, double precision, text, text)') is null
+     or to_regprocedure('public._key_paused(public.routes)') is null
+     or to_regprocedure('public._key_failed(text)') is null
+     or to_regprocedure('public._is_pin(text)') is null then
+    raise exception 'Apply 11-open-sharing.sql and 12-share-pin.sql first, then this file.';
+  end if;
+end $$;
+
 alter table public.bus_positions add column if not exists look text;
 alter table public.bus_positions drop constraint if exists bus_positions_look_shape;
 alter table public.bus_positions add constraint bus_positions_look_shape

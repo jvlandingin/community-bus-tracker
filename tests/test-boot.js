@@ -1016,7 +1016,9 @@ function run(page, include, label, configText, setup) {
         // not been answered yet; let go with sim.hold[fn].forEach(f => f()).
         if (sim.hold && sim.hold[m[1]]) return new Promise(r => sim.hold[m[1]].push(() => r(new Response(null, { status: 204 }))));
         const r = sim.reply[m[1]] ? sim.reply[m[1]](args) : null;
-        if (r && r.error) return Promise.resolve(json({ code: 'P0001', message: r.error, details: null, hint: null }, 400));
+        // No answer at all, as when the phone is offline.
+        if (r && r.network) return Promise.reject(new TypeError('Failed to fetch'));
+        if (r && r.error) return Promise.resolve(json({ code: r.code || 'P0001', message: r.error, details: null, hint: null }, 400));
         return Promise.resolve(r && 'data' in r ? json(r.data) : new Response(null, { status: 204 }));
       };
       Object.defineProperty(window.navigator, 'geolocation', { value: {
@@ -1068,8 +1070,15 @@ function run(page, include, label, configText, setup) {
     check(of('get_positions').length - readsBefore <= 1, 'ten GPS fixes cost no extra reads',
       `${of('get_positions').length - readsBefore} reads for 10 fixes`);
 
+    // A write the server refuses for a reason the page has no words for: the
+    // database missing a migration did exactly this in production, and the
+    // page called it "No connection", which it was not.
+    sim.reply.set_keyed_position = () => ({ error: 'function public._key_paused(routes) does not exist', code: '42883' });
+    await writeNow();
+    check(w.eval('sharing') === true && /Server problem/.test(status()),
+      'a write the server refuses for an unknown reason says it is the server, not the connection, and keeps trying', status());
     // A write that fails mid-trip: an error to read, not the end of the trip.
-    sim.reply.set_keyed_position = () => ({ error: 'upstream timed out' });
+    sim.reply.set_keyed_position = () => ({ network: true });
     await writeNow();
     check(w.eval('sharing') === true, 'a failed write does not end the trip');
     check(!isHidden('onbusActive') && isHidden('onbusSetup'),
@@ -1157,6 +1166,14 @@ function run(page, include, label, configText, setup) {
     sim.reply.check_share_key = () => ({ data: 'too many tries' });
     check(await w.tryKey('0001') === false && /paused/i.test(d.getElementById('gateErr').textContent),
       'and a paused route says so, rather than calling the PIN wrong', d.getElementById('gateErr').textContent);
+    // A database without 12-share-pin.sql has no check_share_key: that is the
+    // server's problem, and the gate says so rather than blaming the phone.
+    sim.reply.check_share_key = () => ({ error: 'Could not find the function public.check_share_key(p_key, p_slug) in the schema cache', code: 'PGRST202' });
+    check(await w.tryKey('0002') === false && /Server problem/.test(d.getElementById('gateErr').textContent),
+      'a gate whose check is missing on the server says it is the server', d.getElementById('gateErr').textContent);
+    sim.reply.check_share_key = () => ({ network: true });
+    check(await w.tryKey('0003') === false && /Could not reach the server/.test(d.getElementById('gateErr').textContent),
+      'and one with no answer at all says it is the connection', d.getElementById('gateErr').textContent);
     w.closeModal('gate');
     sim.reply.check_share_key = () => ({ data: 'ok' });
     sim.reply.set_keyed_position = () => ({ data: 'too many tries' });

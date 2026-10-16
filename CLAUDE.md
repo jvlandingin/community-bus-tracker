@@ -54,6 +54,12 @@ psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 to `main`, deliberately using the same steps as `tests/README.md` so the
 runbook is re-proven on every commit.
 
+A migration whose functions call an earlier migration's helpers checks that
+they exist before changing anything (`12`, `13`): PL/pgSQL resolves calls only
+when they run, so a skipped file otherwise installs cleanly and then fails
+every write. Production ran 13 without 12 in October 2026 and nobody could
+share. Give the next migration the same check; `sql/README.md` has the story.
+
 The Android app builds from `mobile/` (JDK 21 and the Android SDK needed);
 `.github/workflows/android.yml` does it whenever `mobile/` changes:
 

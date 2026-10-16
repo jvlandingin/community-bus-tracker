@@ -24,6 +24,17 @@ If you are setting up fresh, run all of them. They are separate files because
 they were written in that order against a live deployment, and keeping the
 history visible is more honest than pretending the first version was right.
 
+**Skipping one breaks the next, silently, unless it checks.** A function body
+is only checked against the functions it calls when it runs, so a file whose
+functions call an earlier file's helpers installs cleanly without them and then
+fails on every call. That happened in October 2026: production had 01 to 11,
+was given 13, and installed it without complaint. Every keyed write then failed
+on 12's missing `_key_paused()`, and the page said "No connection" (it now
+says "Server problem" when the server answers with an error). `12` and `13`
+now check for what they need before changing anything, and refuse with
+"Apply … first". If you meet that message, run the files it names, in order,
+then the one that refused. All of them are safe to run again.
+
 `13` can be run in either order too. Until it is applied, a sharer who has
 switched on "Show customized bus to riders" has their write refused for the argument the
 database does not know yet; the page sends the same position again without it,

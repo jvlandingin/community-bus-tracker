@@ -41,6 +41,17 @@
 
 begin;
 
+-- 11-open-sharing.sql first: every writer below goes through its
+-- _write_position(). PL/pgSQL checks the functions a body calls only when it
+-- runs, so without it this would install cleanly and then refuse every
+-- position. It refuses to install instead, and nothing is changed.
+do $$
+begin
+  if to_regprocedure('public._write_position(public.routes, boolean, boolean, text, double precision, double precision, double precision, text, text)') is null then
+    raise exception 'Apply 11-open-sharing.sql first, then this file.';
+  end if;
+end $$;
+
 alter table public.routes add column if not exists key_fail_count integer not null default 0;
 alter table public.routes add column if not exists key_fail_since timestamptz;
 alter table public.routes add column if not exists key_paused_until timestamptz;

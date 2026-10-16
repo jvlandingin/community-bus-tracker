@@ -5,7 +5,7 @@
 
   The phone's screen is a screenshot of the real index.html, taken a moment
   before by the same script, and everything else here is the frame around
-  it: the caption, the "Demo" label, the camera, the tap rings, the buzz,
+  it: the caption, the camera, the tap rings, the buzz,
   and the drawn interludes, which are index.html's own pictures (its
   SIGNBOARD and PICTURES blocks, run by render.js the way
   tools/make-pictures.js runs them).
@@ -56,12 +56,6 @@
   #v-cap .c b{color:#ffc24a; font-weight:700;}
   #v-cap.on-sky .c{color:#5a1520; text-shadow:none;}
   #v-cap.on-sky .c b{color:#b35a00;}
-
-  /* "Demo", whenever the phone shows anything: the flyer's "example
-     screen" label, for the same reason. */
-  #v-demo{position:absolute; left:50%; top:305px; transform:translateX(-50%); white-space:nowrap;
-          font:700 26px/1 var(--font-ui); letter-spacing:2.2px; text-transform:uppercase; color:#ffd27a;
-          padding:9px 18px 8px; border:2px solid rgba(255,210,122,.55); border-radius:999px; background:rgba(40,8,13,.55); opacity:0;}
 
   /* Taps and the buzz, drawn over everything at stage positions. */
   #v-fx{position:absolute; inset:0; pointer-events:none;}
@@ -122,7 +116,6 @@
   </div>
   <div id="v-band"></div>
   <div id="v-cap"></div>
-  <div id="v-demo">Demo · not real buses</div>
   <div id="v-fx"></div>
   <div id="v-ints"></div>
 </div>
@@ -151,7 +144,7 @@ const V = (function(){
   const easeOut = function(p){ p = clamp(p, 0, 1); return 1 - Math.pow(1 - p, 3); };
   const $ = function(id){ return document.getElementById(id); };
 
-  let plan = { captions:[], phone:[], demo:[], ints:[] };
+  let plan = { captions:[], phone:[], ints:[] };
   const cams = [], taps = [], buzzes = [];
 
   function init(p){
@@ -251,10 +244,6 @@ const V = (function(){
       el.style.opacity = o.toFixed(3);
       el.style.transform = 'translateY(' + ((1 - pin) * 34).toFixed(1) + 'px)';
     });
-    // "Demo", while a screen with buses on it is shown.
-    const demo = plan.demo.some(function(w){ return t >= w[0] && t < w[1]; });
-    $('v-demo').style.opacity = demo ? '1' : '0';
-    $('v-demo').style.transform = 'translate(calc(-50% + ' + dx.toFixed(1) + 'px),' + dy.toFixed(1) + 'px)';
 
     // Taps: a ring that grows a little and goes.
     const fx = $('v-fx');

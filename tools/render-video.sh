@@ -1,11 +1,12 @@
 #!/bin/sh
-# Renders the showcase video: about a minute, vertical (1080x1920), silent,
-# of the real tracker on a phone with made-up buses.
+# Renders the showcase video: about a minute, vertical (1080x1920), of the
+# real tracker on a phone with made-up buses, with the interface's sounds.
 #
 #   CARTO_API_KEY=... sh tools/render-video.sh [output-directory] [options]
 #
 # Default output directory: video-out/ (ignored by git). It gets
-#   bus-tracker.mp4         the video, H.264, for Facebook, TikTok, Reels
+#   bus-tracker.mp4         the video, H.264 and AAC, for Facebook, TikTok, Reels
+#   bus-tracker-ui-sounds.wav  its sounds alone, to mix under music
 #   bus-tracker-cover.jpg   a still from it, for a post's thumbnail
 #   .tiles/                 the map tiles, kept so a re-render asks CARTO
 #                           for nothing; delete it to fetch them again

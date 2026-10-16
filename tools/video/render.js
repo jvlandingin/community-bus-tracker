@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Renders the showcase video: about a minute, vertical (1080x1920), silent,
-// of the real tracker being used on a phone, with drawn interludes made by
-// the app's own picture code.
+// Renders the showcase video: about a minute, vertical (1080x1920), of the
+// real tracker being used on a phone, with drawn interludes made by the
+// app's own picture code and the interface's sounds (sounds.js).
 //
 //   sh tools/render-video.sh [output-directory]      (default: video-out/)
 //
@@ -13,15 +13,13 @@
 // sharer's GPS, and what the phone remembers from earlier trips. Every
 // request the page makes to Supabase is answered here, by World below, so
 // nothing reaches the route's database: no made-up bus goes on anybody's
-// real map, no watcher is counted, no salamat is sent. That is also why the
-// whole time a screen is shown it carries "Demo · not real buses": the
-// flyer's "example screen" rule, because a mock that could be mistaken for
-// live data is the one thing this project will not do.
+// real map, no watcher is counted, no salamat is sent. There is no "demo"
+// label on it: the maintainer took it out (October 2026).
 //
 // The captions keep to the app's own rules (CLAUDE.md, "Say it in a few
-// words"): one short, plain sentence each, and nothing the app would not
-// say: no minutes or arrival times, because it counts stops and kilometres,
-// and nothing that makes spare parts sound like money.
+// words"): one short, plain sentence each, and no minutes or arrival times,
+// because it counts stops and kilometres. One says coins where the app says
+// spare parts, the maintainer's own words.
 //
 // Frame-exact. Each phone's clock is Playwright's fake one, paused, and
 // moved on by one frame's worth before each screenshot, and every CSS

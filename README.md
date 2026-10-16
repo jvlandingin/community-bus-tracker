@@ -104,10 +104,11 @@ company's name or initials, for the same reason.
   whatever cooperation suits them, up to handing the whole thing over.
 - **Showcase video:** `sh tools/render-video.sh` makes a one-minute vertical
   video for Facebook, TikTok and Reels: the real tracker on a phone, with
-  made-up buses labelled as a demo, waiting for a bus, sharing it, getting
-  off, the ticket, My tickets and a dressed bus, between drawings made by the
-  app's own picture code. Nothing it does reaches the database. It needs
-  ffmpeg, Playwright and the CARTO key, and the video is not committed.
+  made-up buses, waiting for a bus, sharing it, getting off, the ticket, My
+  tickets and a dressed bus, between drawings made by the app's own picture
+  code, with the interface's sounds (taps, the buzz, the chimes) and room
+  left for music. Nothing it does reaches the database. It needs ffmpeg,
+  Playwright and the CARTO key, and the video is not committed.
 
 ## What it deliberately does not do
 

@@ -15,13 +15,15 @@
 // bus on the chain) but looks like a fault on screen.
 //
 // The captions are one short plain sentence each, in English, and never
-// say what the app does not: no minutes, no arrival time, nothing that
-// makes spare parts sound like money.
+// promise what the app does not: no minutes, no arrival time. "Earn coins
+// and dress up your bus." and "Help other commuters." are the maintainer's
+// words; the app itself calls the coins spare parts.
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const R = require('./render.js');
+const S = require('./sounds.js');
 
 // ---- How long each scene runs, in seconds ----------------------------------
 const DUR = { title:3.0, watch:6.4, wait:9.2, share:7.2, trip:3.0, getoff:5.8, ticket:5.6, collect:3.0, dress:4.2, show:2.8, rider:4.2, end:4.8 };
@@ -117,25 +119,58 @@ const SAY = [
   [T.wait + 3.5, T.wait + 7.5, 'Know when your bus is *near*.'],
   [T.wait + 7.6, T.share, 'Time to *get on*!'],
   [T.share + .1, T.share + 3.6, 'On the bus? *Share it*.'],
-  [T.share + 3.7, T.trip, 'Riders can say *salamat*.'],
+  [T.share + 3.7, T.trip, 'Help *other commuters*.'],
   [T.getoff + .1, T.ticket, 'Know when to *get off*.'],
   [T.ticket + .1, T.collect, 'Tap Stop. Get a *ticket*.'],
   [T.collect + .1, T.dress, 'Collect your *tickets*.'],
-  [T.dress + .1, T.show, '*Dress up* your bus.'],
+  [T.dress + .1, T.show, 'Earn coins and *dress up your bus*.'],
   [T.show + .1, T.rider, 'Show it to *other riders*.'],
   [T.rider + .1, T.end, 'Other riders *see your bus*.']
 ];
 // Where a buzz belongs in the story: waiting, and getting off.
 const BUZZ_SCENES = [[T.wait, T.share], [T.getoff - .6, T.ticket]];
+// The frame's own sounds: the board lighting up, the swipes between scenes
+// and the end card.
+const SCORE = [
+  { t:.35, kind:'board' }, { t:T.watch - .6, kind:'whoosh' }, { t:T.share - .3, kind:'whoosh' },
+  { t:T.trip - .1, kind:'whoosh' }, { t:T.getoff - .6, kind:'whoosh' }, { t:T.rider - .4, kind:'whoosh' },
+  { t:T.end, kind:'whoosh' }, { t:T.end + .35, kind:'outro' }
+];
+// What the page is showing that has a sound, read off the phone on screen
+// once a frame; changes() says which of them has just appeared.
+function LISTEN(){
+  const q = s => document.querySelector(s);
+  const shown = el => !!el && el.getClientRects().length > 0 && !el.closest('.hidden');
+  const flag = [].slice.call(document.querySelectorAll('#myStop .ride-flag, #tripStop .ride-flag')).filter(shown)[0];
+  const ty = q('#tyLine'), toast = q('#toast'), keep = q('#tktKeep');
+  return { flag: flag ? flag.textContent : '', live: typeof sharing !== 'undefined' && !!sharing,
+           ty: shown(ty) ? ty.textContent : '', tkt: shown(q('#tktModal .tkt')), kept: !!keep && keep.classList.contains('done'),
+           album: shown(q('#albumModal .modal-card')), stops: shown(q('#stopModal .modal-card')),
+           toast: shown(toast) ? toast.textContent : '', on: !!q('.alb-toggle.on'), popup: !!q('.buspop') };
+}
+function changes(a, b){
+  const out = [];
+  if (b.flag && b.flag !== a.flag) out.push(/Malapit/.test(b.flag) ? 'pop' : 'chime');
+  if (b.live && !a.live) out.push('start');
+  if (b.ty && b.ty !== a.ty) out.push('sparkle');
+  if (b.tkt && !a.tkt) out.push('ticket');
+  if (b.kept && !a.kept) out.push('stamp');
+  if ((b.album && !a.album) || (b.stops && !a.stops)) out.push('open');
+  if (b.toast && b.toast !== a.toast && /^Painted|is on your bus/.test(b.toast)) out.push('coins');
+  if (b.on && !a.on) out.push('switch');
+  if (b.popup && !a.popup) out.push('pop');
+  return out;
+}
 const gold = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\*([^*]+)\*/g, '<b>$1</b>');
 
 // ---- The scenes: what happens when ------------------------------------------
 // Each cue is [time, what]. A tap is shown by the stage as a ring where the
 // finger went.
-function cues(A, B, stage, world, browser){
+function cues(A, B, stage, world, browser, heard){
   const tap = async (phone, sel, at) => {
     const p = await phone.tap(sel);
     await stage.event({ type:'tap', at, x:p.x, y:p.y });
+    heard.push({ t:at, kind:'tap' });
   };
   const cam = async (phone, sel, at, o) => {
     const r = sel ? await phone.rect(sel) : null;
@@ -242,7 +277,7 @@ function cues(A, B, stage, world, browser){
       });
       return at;
     });
-    if (p){ await B.tap({ x:p.x, y:p.y, w:0, h:0 }); await stage.event({ type:'tap', at:v, x:p.x, y:p.y }); }
+    if (p){ await B.tap({ x:p.x, y:p.y, w:0, h:0 }); await stage.event({ type:'tap', at:v, x:p.x, y:p.y }); heard.push({ t:v, kind:'tap' }); }
   });
   at(T.rider - .4, v => cam(A, null, v, { dur:.3 }));
   at(T.rider + 1.05, centre(B, '.buspop .leaflet-popup-content-wrapper', .4));
@@ -268,7 +303,6 @@ function plan(P, worn, qr){
     // phone is off the screen) and handing over to the other phone.
     phoneX: [[T.share - .3, 0], [T.share - .05, -1180], [T.share - .0499, 1180], [T.share + .25, 0],
              [T.rider - .4, 0], [T.rider - .1, -1180], [T.rider - .0999, 1180], [T.rider + .25, 0]],
-    demo: [[T.watch - .6, T.trip + .5], [T.getoff - .6, T.end + .6]],
     ints: [
       { id:'title', out:[T.watch - .6, T.watch],
         html: '<div class="v-board" style="top:330px">' + R.board(P, ['MENDEZ / TAGAYTAY', '⇄ ONE AYALA'], 'tb', 8.6) + '</div>' +
@@ -286,7 +320,7 @@ function plan(P, worn, qr){
               '<div class="v-scene" id="endRide"></div>' +
               '<div class="qr">' + qr + '</div>' +
               '<div class="url">community-bus-tracker.netlify.app</div>' +
-              '<div class="fine">No app, no account.<br>Community-run. Not affiliated with the bus company.<br>Demo screens. Not real buses.</div>' }
+              '<div class="fine">No app, no account.<br>Community-run. Not affiliated with the bus company.</div>' }
     ]
   };
 }
@@ -317,10 +351,14 @@ async function main(){
   const qr = execFileSync(process.execPath, [path.join(__dirname, '..', 'make-qr.js'), 'https://community-bus-tracker.netlify.app'],
     { stdio:['ignore', 'pipe', 'ignore'] }).toString();
   await stage.init(plan(P, worn, qr));
-  const { list, scrolls } = cues(A, B, stage, world, browser);
+  // What is heard, and when: taps and buzzes as they happen, what the page
+  // does as it is seen to (LISTEN), and the frame's own moments (SCORE).
+  const heard = SCORE.slice();
+  const { list, scrolls } = cues(A, B, stage, world, browser, heard);
 
-  const file = path.join(R.OUT, R.NAME + (R.FROM > 0 || R.TO < T.total ? '-part' : '') + '.mp4');
-  const enc = R.encoder(file);
+  const name = R.NAME + (R.FROM > 0 || R.TO < T.total ? '-part' : '');
+  const file = path.join(R.OUT, name + '.mp4'), silent = path.join(R.OUT, name + '-picture.mp4');
+  const enc = R.encoder(silent);
   const frames = Math.round(T.total * R.FPS);
   let drawn = 0, endDrawn = false;
   for (let f = 0; f < frames; f++){
@@ -350,6 +388,7 @@ async function main(){
       if (process.env.VIDEO_DEBUG) console.log('  buzz at ' + v.toFixed(2) + 's: ' + JSON.stringify(p));
       if (!BUZZ_SCENES.some(w => v >= w[0] && v < w[1])) continue;
       await stage.event({ type:'buzz', at:v, pattern:p, ms, strong: ms > 100 });
+      heard.push({ t:v, kind:'buzz', pattern:p, gain: ms > 100 ? 1 : .6 });
     }
     if (v < R.FROM) continue;
     // The end card's bus is the one the sharer has just dressed.
@@ -362,19 +401,32 @@ async function main(){
     const which = v < T.rider - .1 ? A : B;
     const onScreen = (v >= T.watch - .8 && v < T.trip + .5) || (v >= T.getoff - .5 && v < T.end + .4);
     const shot = onScreen && which.page ? await which.shot() : null;
+    if (which.page){
+      const now = await which.run(LISTEN);
+      if (onScreen && which.was) heard.push(...changes(which.was, now).map(kind => ({ t:v, kind })));
+      which.was = now;
+    }
     const jpg = await stage.frame(v, shot);
     await enc.write(jpg);
     drawn++;
     if (drawn % 30 === 0) process.stdout.write('  ' + v.toFixed(1) + 's of ' + T.total.toFixed(1) + 's (' + Math.round((Date.now() - started) / 1000) + 's)\n');
   }
   await enc.end();
+  // The sounds, on a track of their own and under the picture.
+  const from = Math.max(0, R.FROM), to = Math.min(T.total, R.TO);
+  const track = path.join(R.OUT, name + '-ui-sounds.wav');
+  fs.writeFileSync(track, S.wav(S.mix(heard.filter(e => e.t >= from - 2 && e.t < to).map(e => Object.assign({}, e, { t:e.t - from })), to - from)));
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', silent, '-i', track, '-map', '0:v', '-map', '1:a', '-c:v', 'copy',
+    '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', file]);
+  fs.unlinkSync(silent);
   // The cover: a frame worth stopping on, for a post's thumbnail.
   try {
     const at = Math.max(R.FROM, Math.min(T.wait + 6.0, R.TO - .1)) - R.FROM;
     execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(at), '-i', file, '-frames:v', '1', '-q:v', '2', path.join(R.OUT, R.NAME + '-cover.jpg')]);
   } catch (e) {}
   console.log('Calls answered here, none sent to Supabase: ' + JSON.stringify(world.log));
-  console.log('Wrote ' + file + ' (' + drawn + ' frames in ' + Math.round((Date.now() - started) / 1000) + 's)');
+  console.log('Sounds: ' + heard.filter(e => e.t >= from && e.t < to).map(e => e.kind + '@' + e.t.toFixed(2)).join(' '));
+  console.log('Wrote ' + file + ' and ' + path.basename(track) + ' (' + drawn + ' frames in ' + Math.round((Date.now() - started) / 1000) + 's)');
   await browser.close();
 }
 module.exports = { main, T, DUR };

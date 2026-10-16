@@ -501,8 +501,10 @@ tracker's controls by their ids and classes and names this route's stops, so
 changing those screens means re-rendering it; a control renamed or moved
 off the screen makes that step fail with its name rather than tap something
 else. Every request the page makes is answered by the script, never by the
-database, and every screen in it carries "Demo · not real buses".
-`docs/ARCHITECTURE.md`, "The showcase video".
+database. It carries no "demo" label and one caption says coins, both the
+maintainer's decision (October 2026), and its only sounds are the
+interface's, made by `tools/video/sounds.js`. `docs/ARCHITECTURE.md`, "The
+showcase video".
 
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`
 each redraw the tracker's screen the same way, showing four buses live because

@@ -37,8 +37,8 @@ Reels, English captions kept simple, no sound. The maintainer asked
 specifically that the English be easy to read, so each caption is one short
 sentence of common words.
 
-It is filmed from the real `index.html` with made-up buses and labelled as a
-demo throughout; nothing it does reaches the route's database.
+It is filmed from the real `index.html` with made-up buses; nothing it does
+reaches the route's database.
 `tools/render-video.sh` makes it, and the video itself is not committed: it
 is about 16 MB, and every re-render would add another copy to the history
 for good. The parol was left out so that a video posted now still looks
@@ -47,6 +47,14 @@ right after Three Kings.
 Filming it showed one small fault in the app, noted rather than fixed in the
 same change: just after Stop the waiting card treats the bus the sharer has
 just left as one coming to their stop, and buzzes once, until the next poll.
+
+After watching the first cut the maintainer asked for four changes, all
+made: no "demo" label anywhere (the first cut carried "Demo · not real
+buses" on every screen, after the flyer's rule), "Help other commuters" in
+place of "Riders can say salamat", "Earn coins and dress up your bus" in
+place of "Dress up your bus", knowingly using the word the app gave up for
+spare parts, and the interface's sounds. Music and the bus's own sounds
+they will add themselves.
 
 ## 2026-10-16 — A bus waiting at the terminal, and a ticket for going nowhere
 

@@ -1491,8 +1491,8 @@ preview with no picture and nothing else changes.
 
 ## The showcase video
 
-`tools/render-video.sh` makes a one-minute vertical video (1080x1920, silent,
-English captions) for Facebook, TikTok and Reels, where the riders who have
+`tools/render-video.sh` makes a one-minute vertical video (1080x1920, English
+captions, the interface's own sounds) for Facebook, TikTok and Reels, where the riders who have
 never heard of the tracker are. The story is one sharer's morning: wait at a
 stop until the card says Sakay na!, get on and share the bus, riders say
 salamat, the card says Bababa na!, Stop gives a ticket, the ticket goes into
@@ -1510,9 +1510,10 @@ out of date until it is rendered again.
 **Nothing reaches the database.** Every request the page makes to Supabase
 is answered by the script (`World` in `tools/video/render.js`) with made-up
 buses, so no bus is put on anybody's real map, no watcher is counted and no
-salamat is sent. Because those buses could be mistaken for real ones, every
-screen carries "Demo · not real buses", the flyer's "example screen" rule,
-and the end card says so again.
+salamat is sent. The first renders carried "Demo · not real buses" on every
+screen, the flyer's "example screen" rule; the maintainer took it out
+(October 2026), so the video says nothing about the buses being made up.
+The flyer keeps its label.
 
 **Frame-exact.** Each phone's clock is Playwright's fake one, paused and moved
 on one frame at a time, and every CSS animation on the page is paused and
@@ -1537,16 +1538,28 @@ held still, so the page's next position (it sends one every five seconds at
 most) goes out the moment the bus reaches the last stretch.
 
 **What the captions may say.** One short plain sentence each, under the
-same rules as the app's own words: no minutes and no arrival time, nothing
-that makes spare parts sound like money, Bus Tracker and never the
-company's initials, and the end card's "Community-run. Not affiliated with
-the bus company." The stage draws a buzz only in the two alarm scenes. The
+same rules as the app's own words: no minutes and no arrival time, Bus
+Tracker and never the company's initials, and the end card's
+"Community-run. Not affiliated with the bus company." One caption is the
+maintainer's own and breaks the spare-parts rule on purpose: "Earn coins and
+dress up your bus." (October 2026). The app still says spare parts and draws
+a nut; the video's word is coins. The stage draws a buzz only in the two alarm scenes. The
 page also buzzes just after Stop, because the waiting card counts the bus
 just left as one coming until the next poll; that is the app's to fix, not
 the video's to show. The parol is switched off in the made-up settings, so the
 video still looks current after the season. The map needs `CARTO_API_KEY`;
 the script writes it only into the copy of `config.txt` it serves, and keeps
 the tiles in `video-out/.tiles` so a re-render asks CARTO for nothing.
+
+**Its sounds are the interface's only.** Taps, the buzz in the app's own
+on-off pattern, a pop for Malapit na!, a chime for Sakay na! and Bababa na!,
+a sparkle for salamat, the ticket printing, a stamp for Keep, coins for the
+paint, a click for the switch, and swipes between scenes. Each is made from
+sine waves and noise by `tools/video/sounds.js`, so there is nothing to
+license, and each is placed where the page was seen to do the thing on
+screen (`LISTEN` in `film.js`), not where the script expected it to. Music,
+the engine and the street are left for whoever edits the video: the track is
+also written on its own, `bus-tracker-ui-sounds.wav`, peaking at -3 dBFS.
 
 ## The look: one system, one typeface, one set of icons
 

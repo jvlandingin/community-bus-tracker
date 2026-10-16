@@ -25,6 +25,24 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-16 — The saved stop's card draws the bus coming
+
+Watching the video, the maintainer saw that the saved stop's card looked the
+same however close the bus was: a line of dots, the bus at one end and the
+stop at the other, one dot fewer per stop. They asked for a picture of the
+bus approaching instead, the customised bus where there is one, for both
+waiting and riding, and five ideas before anything was drawn. Of those they
+asked to see three drawn: the roadside seen side on, the road coming at you,
+and a mix of the two, each as an interactive page with a slider. They chose
+the road coming at you.
+
+Waiting, the bus grows down the road towards the shed you wait at, a post for
+each stop still between; on board, your stop's sign grows at the roadside
+seen through the windscreen, past whatever hangs from the mirror. It moves
+only when a position arrives, gliding to its new place, and never creeps on
+between them, so it promises no more about when the bus arrives than the
+words do. The words, the flags and the buzz are unchanged.
+
 ## 2026-10-16 — A video to show what the tracker does
 
 The maintainer asked for a short, high-level video of the main features:

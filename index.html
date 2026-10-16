@@ -579,10 +579,10 @@
     border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
     font-family:inherit; font-size:var(--fs-label); font-weight:700; cursor:pointer;
   }
-  /* With a bus coming, the card draws the stops between it and you as dots
-     on a line: the bus at one end, your stop at the other, one dot for every
-     stop it still has to pass. They drop off from the bus's end as it passes
-     them, which says "about 8 stops" without asking anyone to count. The
+  /* With a bus coming, the card draws it coming (stopViewSvg): down the road
+     to the shed you wait at, or, on board, your stop coming up to the
+     windscreen, with a post for every stop still between. It replaced a
+     line of dots that looked the same however near the bus was. The
      sentence the card used to print is still there, for screen readers, in
      a .vh span; everything drawn is aria-hidden beside it. */
   .ride{
@@ -604,43 +604,24 @@
     border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
     font-family:inherit; font-size:var(--fs-label); font-weight:700; cursor:pointer;
   }
-  .ride-line{display:flex; align-items:center; margin:12px 0 4px;}
-  .ride-bus{
-    flex:0 0 auto; width:30px; height:30px; border-radius:50%; z-index:1;
-    display:flex; align-items:center; justify-content:center;
-    background:var(--gold); box-shadow:0 0 0 3px var(--gold-line);
-  }
-  .ride.sb .ride-bus{background:var(--maroon); box-shadow:0 0 0 3px var(--maroon-line);}
-  .ride-bus svg{width:19px; height:19px; fill:#fff;}
-  /* Riding: the bus on the card is yours, so it wears the green ring yours
-     wears on the strip, where the legend already says what the ring means. */
-  .ride.aboard .ride-bus{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live);}
-  .ride-track{
-    flex:1; position:relative; height:30px; margin:0 -2px;
-    display:flex; align-items:center; justify-content:space-around;
-  }
-  .ride-track::before{
-    content:''; position:absolute; left:0; right:0; top:50%; height:3px; margin-top:-1.5px; border-radius:999px;
-    background:linear-gradient(90deg, var(--gold), var(--mine));
-  }
-  .ride.sb .ride-track::before{background:linear-gradient(90deg, var(--maroon), var(--mine));}
-  .ride-track i{
-    position:relative; width:9px; height:9px; border-radius:50%; box-sizing:border-box;
-    background:var(--surface); border:2px solid var(--gold);
-  }
-  .ride.sb .ride-track i{border-color:var(--maroon);}
-  .ride-track i.next{width:11px; height:11px; border-width:3px;}
-  .ride-track .gap{position:relative; padding:0 3px; background:var(--paper); color:var(--muted); font-size:var(--fs-small); letter-spacing:2px; line-height:1;}
-  .ride-me{
-    flex:0 0 auto; width:22px; height:22px; border-radius:50%; z-index:1; box-sizing:border-box;
-    background:var(--mine); border:4px solid var(--surface);
-    box-shadow:0 0 0 2px var(--mine), 0 0 0 7px var(--mine-soft);
-  }
-  .ride-cap{
-    display:flex; justify-content:space-between; gap:10px; font-size:var(--fs-cap); font-weight:800;
-    letter-spacing:.04em; text-transform:uppercase; color:var(--muted);
-  }
-  .ride-cap .me{color:var(--mine-ink);}
+  /* The picture, as wide as the card; on a wide screen it is cropped, from
+     the sky waiting and top and bottom on board, rather than growing past
+     200px. It moves only when a position arrives, gliding from where it was
+     (stopglide, STOP_GLIDE_MS in the PICTURES block), and on board the road
+     goes by and what hangs from the mirror sways, at one decorative pace,
+     stopped while the bus stands still. Under the reduced-motion blanket
+     below the glide lands at once, and the road and the swing stand still. */
+  .ride-art{position:relative; margin:10px 0 0; border-radius:var(--r-s); overflow:hidden; line-height:0; background:var(--line);}
+  .stopview{display:block; width:100%; height:auto; max-height:200px;}
+  .stopview .sv-glide{animation:stopglide 1s var(--ease-move) both;}
+  .stopview .sv-rock{animation:riderock .8s ease-in-out infinite;}
+  .stopview .sv-dash{transform-origin:150px 62px; animation:stoproad 4.2s linear infinite;}
+  .stopview .sv-swing{transform-origin:165px 26px; animation:stopswing 1.8s ease-in-out infinite alternate;}
+  .stopview.still .sv-rock, .stopview.still .sv-dash, .stopview.still .sv-swing{animation-play-state:paused;}
+  @keyframes stopglide{from{transform:var(--from);}}
+  @keyframes stoproad{0%{transform:scale(.111); opacity:0;} 8%{opacity:.7;} 50%{transform:scale(.209);} 75%{transform:scale(.376);}
+    87.5%{transform:scale(.621);} 95%{transform:scale(1.03);} 100%{transform:scale(1.82); opacity:.7;}}
+  @keyframes stopswing{from{transform:rotate(-3deg);} to{transform:rotate(3deg);}}
   .ride-big{display:flex; align-items:baseline; flex-wrap:wrap; gap:0 6px; margin-top:8px; line-height:1.2;}
   .ride-big .num{font-size:var(--fs-number); font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums;}
   .ride-big .unit, .ride-big .km{font-size:var(--fs-small); font-weight:700;}
@@ -659,6 +640,8 @@
   .ride.near{border-left-color:var(--gold); box-shadow:0 0 0 2px var(--gold-line);}
   .ride.here{box-shadow:0 0 0 3px var(--mine-soft);}
   .ride.here .ride-big .num{font-size:var(--fs-title);}
+  .ride-art > .ride-flag{position:absolute; left:8px; top:8px; margin:0; line-height:1.2; box-shadow:var(--sh-2);}
+  .ride.here .ride-art{box-shadow:0 0 0 2px var(--mine);}
   /* The optional buzz. A per-visit choice, kept in sessionStorage like the
      blue dot's switch, so it never becomes a seventh remembered thing. Only
      drawn where the browser can vibrate at all, which leaves out iPhones. */
@@ -859,8 +842,8 @@
   /* The signboard over the windscreen is lit: pale on the gold disc, amber
      on the maroon one, the way a route board reads at night. */
   .sign{fill:none;}
-  .busmk .sign, .buspill .sign, .ride-bus .sign{fill:#fff1c4;}
-  .busmk.sb .sign, .buspill.sb .sign, .ride.sb .ride-bus .sign{fill:#ffb22e;}
+  .busmk .sign, .buspill .sign{fill:#fff1c4;}
+  .busmk.sb .sign, .buspill.sb .sign{fill:#ffb22e;}
   .busmk.delayed .sign{fill:#9aa1ac;}
   /* A live badge breathes: a ring in its own colour that swells and fades,
      so "this one is reporting right now" is visible without reading an age.
@@ -3253,6 +3236,228 @@ function rideStand(was, b){
   }
   return { lat:b.lat, lng:b.lng, ts:ts, still:false };
 }
+// The saved stop's picture (October 2026), in place of the line of dots the
+// card drew before, which looked the same however near the bus was. Seen
+// down the road, the way a commuter looks for a bus. Waiting, you stand at
+// the shed and the coming bus grows as it nears; on board, you look out of
+// the windscreen past what hangs from the mirror, and your stop's sign
+// grows at the roadside. A post stands for each stop still between them,
+// the bus's next one in gold, and your stop is the round sign with the
+// app's pin on it. Up to STOP_VIEW_STOPS are drawn; further than that the
+// bus is at the horizon, or the sign is.
+//
+// p is where the bus is along those last stops, from stopProgress(): 0 at
+// the edge, 1 at your stop, one even step per stop, so every stop passed
+// shows. The picture moves when a position arrives and at no other time:
+// from (where it was drawn last) glides to p in STOP_GLIDE_MS, and ago
+// (how long since that glide began) carries a glide on through a redraw
+// rather than starting it again. Between positions it stands where the
+// bus was last seen, because a picture that crept on would be a guess at
+// when it arrives, which this card never makes. The road on board goes by
+// at a decorative pace, the popup's, and stops when the bus is still.
+//
+// Perspective by hand: k is how near a thing is, and everything on the road
+// is drawn once at k = 1 and placed by one transform, translate to the
+// vanishing point and scale by k, which is what lets CSS glide it. X is
+// across the road in road units, 0 under the vanishing point.
+// t: { aboard, p, from, ago, here, sky, worn, paint, still }. No ids.
+const STOP_VIEW_STOPS = 6, STOP_GLIDE_MS = 1000, STOP_ROAD_S = 4.2;
+const SV_WAIT = { vx:214, h:58, k:70 }, SV_ABOARD = { vx:150, h:62, k:70 };
+function svNum(n){ return Math.round(n * 1000) / 1000; }
+// A thing at depth k, gliding there from depth k0 if it was elsewhere.
+function svAt(P, k, k0, ago){
+  const tf = function(x){ return 'translate(' + P.vx + 'px,' + P.h + 'px) scale(' + svNum(x) + ')'; };
+  const glide = k0 !== null && k0 !== undefined && Math.abs(k0 - k) > .0005;
+  return '<g class="sv-k' + (glide ? ' sv-glide' : '') + '" style="transform:' + tf(k) +
+    (glide ? ';--from:' + tf(k0) + (ago >= 10 ? ';animation-delay:-' + (ago / 1000).toFixed(2) + 's' : '') : '') + '">';
+}
+// Someone at a stop, s times the size drawn, waving at the bus if wave.
+function svPerson(x, y, s, wave, col){
+  const n = svNum;
+  const arm = wave ? 'M' + n(x + 2.4 * s) + ' ' + n(y - 13.5 * s) + 'l' + n(3.6 * s) + ' ' + n(-8 * s)
+                   : 'M' + n(x + 2.6 * s) + ' ' + n(y - 13 * s) + 'l' + n(s) + ' ' + n(6 * s);
+  return '<circle cx="' + n(x) + '" cy="' + n(y - 19.5 * s) + '" r="' + n(3.1 * s) + '" fill="' + col + '"/>' +
+    '<rect x="' + n(x - 3 * s) + '" y="' + n(y - 16 * s) + '" width="' + n(6 * s) + '" height="' + n(10 * s) + '" rx="' + n(2.4 * s) + '" fill="' + col + '"/>' +
+    '<path d="M' + n(x - 1.5 * s) + ' ' + n(y - 7 * s) + 'V' + n(y) + 'M' + n(x + 1.5 * s) + ' ' + n(y - 7 * s) + 'V' + n(y) + arm +
+    '" stroke="' + col + '" stroke-width="' + n(2.1 * s) + '" stroke-linecap="round" fill="none"/>';
+}
+// Your stop: a pole and a round sign with the pin on it, h tall from ground.
+function svSign(x, ground, h, glow){
+  const n = svNum, r = h * .2, cy = ground - h + r;
+  return '<rect x="' + n(x - h * .02) + '" y="' + n(cy) + '" width="' + n(h * .04) + '" height="' + n(ground - cy) + '" fill="#6f655e"/>' +
+    (glow ? '<circle cx="' + n(x) + '" cy="' + n(cy) + '" r="' + n(r * 2) + '" fill="#4f46b8" opacity=".28"/>' : '') +
+    '<circle cx="' + n(x) + '" cy="' + n(cy) + '" r="' + n(r) + '" fill="#4f46b8" stroke="#fff" stroke-width="' + n(r * .16) + '"/>' +
+    '<path transform="translate(' + n(x) + ' ' + n(cy) + ') scale(' + n(r / 10) + ')" d="M0-6.2c-3.3 0-6 2.6-6 6 0 4.5 6 10.5 6 10.5s6-6 6-10.5c0-3.4-2.7-6-6-6zm0 8.4a2.4 2.4 0 1 1 0-4.8 2.4 2.4 0 0 1 0 4.8z" fill="#fff"/>';
+}
+// A stop on the way: a post with a plate, gold for the bus's next stop.
+function svPost(x, ground, h, next){
+  const n = svNum;
+  return '<rect x="' + n(x - h * .03) + '" y="' + n(ground - h) + '" width="' + n(h * .06) + '" height="' + n(h) + '" fill="#7d7168"/>' +
+    '<rect x="' + n(x - h * .2) + '" y="' + n(ground - h) + '" width="' + n(h * .4) + '" height="' + n(h * .28) + '" rx="' + n(h * .06) + '" fill="' + (next ? '#e39a1c' : '#efe7da') +
+    '" stroke="#7d7168" stroke-width="' + n(h * .03) + '"/>';
+}
+// The sky, the hills on the horizon and the land, in the ticket's colours.
+function svLand(c, sky, P, orb){
+  let s = '<rect width="330" height="160" fill="' + c.sky + '"/>';
+  if (sky === 'night') s += '<path d="M24 14h0M70 30h0M118 10h0M160 24h0M228 12h0M296 26h0M308 9h0" stroke="' + c.orb + '" stroke-width="2" stroke-linecap="round" opacity=".85"/>' +
+    '<path d="M' + orb[0] + ' ' + (orb[1] - 8) + 'a8 8 0 1 0 0 16a6.2 8 0 1 1 0-16z" fill="' + c.orb + '"/>';
+  else s += '<circle cx="' + orb[0] + '" cy="' + (sky === 'dawn' ? orb[1] + 12 : orb[1]) + '" r="' + (sky === 'dawn' ? 9 : 7) + '" fill="' + c.orb + '"/>';
+  s += '<path d="M0 ' + (P.h + 2) + 'C40 44 90 52 130 46C170 40 210 50 240 44C280 38 310 48 330 46V' + (P.h + 2) + 'Z" fill="' + c.far + '"/>' +
+    '<rect y="' + P.h + '" width="330" height="' + (160 - P.h) + '" fill="' + c.ground + '"/>' +
+    '<path d="M0 ' + (P.h + 1) + 'H330" stroke="' + c.hill + '" stroke-width="3"/>';
+  return s;
+}
+// The road from the horizon to your feet, between X0 and X1.
+function svRoad(P, c, X0, X1){
+  const x = function(k, X){ return svNum(P.vx + X * P.k * k); }, y = function(k){ return svNum(P.h + P.k * k); };
+  return '<path d="M' + x(.1, X0) + ' ' + y(.1) + 'L' + x(.1, X1) + ' ' + y(.1) + 'L' + x(1.9, X1) + ' ' + y(1.9) + 'L' + x(1.9, X0) + ' ' + y(1.9) + 'Z" fill="' + c.road + '"/>';
+}
+// The middle line, standing still: dashes that shrink with distance.
+function svLine(P, X){
+  let d = '';
+  for (let i = 0; i < 16; i++){
+    const a = 1 / (9 - i * .6), b = 1 / (8.72 - i * .6);
+    if (b > 1.82) break;
+    d += 'M' + svNum(P.vx + X * P.k * a) + ' ' + svNum(P.h + P.k * a) + 'L' + svNum(P.vx + X * P.k * b) + ' ' + svNum(P.h + P.k * b);
+  }
+  return '<path d="' + d + '" stroke="#fbf4e4" stroke-width="1.6" opacity=".7"/>';
+}
+// One dash of it, drawn at depth 1, for the road on board to move.
+function svDash(P, X){
+  return 'M' + svNum(P.vx + X * P.k) + ' ' + (P.h + P.k) + 'L' + svNum(P.vx + X * P.k * 1.12) + ' ' + svNum(P.h + P.k * 1.12);
+}
+const SV_LIT = ['#ff5d5d', '#ffd23f', '#5ad2ff', '#7be495'];
+// The coach head on, in its paint, wearing what can be seen from the front.
+// Drawn in 140 by 140, the body from 10 to 130; the side view (COACH_SIDE
+// and BUS_DECOR) is the one every other picture uses, and this is its twin.
+function svCoachFront(paint, worn, night){
+  const P = BUS_PAINTS[hasOwn(BUS_PAINTS, paint) ? paint : 'klasiko'];
+  const body = P[0], roof = P[1], skirt = P[2], band = P[3], trim = P[4];
+  const has = function(k){ return (worn || []).indexOf(k) >= 0; };
+  const glass = night ? '#1d2a36' : '#4f6b7e', lamp = night ? '#fff6d2' : '#e8dfc8', chrome = has('chrome');
+  let s = '';
+  if (has('underglow')) s += '<ellipse cx="70" cy="136" rx="64" ry="7" fill="#5ad2ff" opacity=".55"/><ellipse cx="70" cy="136" rx="40" ry="4" fill="#bff1ff" opacity=".7"/>';
+  s += '<ellipse cx="70" cy="137" rx="60" ry="3.5" fill="rgba(0,0,0,.25)"/><rect x="20" y="118" width="20" height="18" rx="4" fill="#211a17"/><rect x="100" y="118" width="20" height="18" rx="4" fill="#211a17"/>';
+  if (has('goldrims')) s += '<rect x="24" y="123" width="12" height="7" rx="3" fill="#e3b23c"/><rect x="104" y="123" width="12" height="7" rx="3" fill="#e3b23c"/>';
+  if (has('flaps')) s += '<g fill="#b8322a"><rect x="17" y="117" width="7" height="17" rx="1.2"/><rect x="116" y="117" width="7" height="17" rx="1.2"/></g><g fill="#fff"><rect x="17" y="128" width="7" height="2"/><rect x="116" y="128" width="7" height="2"/></g>';
+  if (has('luggage')) s += '<rect x="34" y="2" width="22" height="9" rx="2" fill="#9a5b45"/><rect x="60" y="0" width="18" height="11" rx="2" fill="#3b6ea5"/><rect x="82" y="3" width="24" height="8" rx="2" fill="#5e8c4a"/><path d="M30 11H110" stroke="#6f655e" stroke-width="2"/>';
+  if (has('horns')) s += '<path d="M44 12l-10-6v8zM96 12l10-6v8z" fill="#e3e7eb" stroke="#8a929a" stroke-width=".8"/>';
+  if (has('pennant')) s += '<path d="M18 13V0M122 13V0" stroke="#6f655e" stroke-width="1.2"/><path d="M18 0l13 3.5-13 3.5z" fill="#c4432e"/><path d="M122 0l-13 3.5 13 3.5z" fill="#1f5f9e"/>';
+  if (has('antenna')) s += '<path d="M116 14L124-10" stroke="#3a3539" stroke-width="1.4"/><path d="M124-10q8 4 14 1q-6 5-13 3z" fill="#e39a1c"/>';
+  if (has('ribbons')) s += '<path d="M14 26l-6 10M126 26l6 10" stroke="#d7262c" stroke-width="2.2" stroke-linecap="round"/>';
+  const mir = has('mirror') ? '#dfe5ea' : '#2b2320';
+  s += '<path d="M12 36H3V50M128 36H137V50" stroke="#2b2320" stroke-width="2.4" fill="none"/><rect x="-2" y="48" width="9" height="16" rx="3" fill="' + mir + '" stroke="#2b2320"/><rect x="133" y="48" width="9" height="16" rx="3" fill="' + mir + '" stroke="#2b2320"/>';
+  s += '<path d="M10 26Q10 12 24 12H116Q130 12 130 26V120Q130 126 124 126H16Q10 126 10 120Z" fill="' + body + '"/><path d="M10 26Q10 12 24 12H116Q130 12 130 26V28H10Z" fill="' + roof + '"/>';
+  if (has('lights')) for (let i = 0; i < 9; i++) s += '<circle cx="' + (26 + i * 11) + '" cy="15" r="2.2" fill="' + SV_LIT[i % 4] + '"/>';
+  s += '<rect x="38" y="16" width="64" height="9" rx="1.5" fill="#120d0b"/>';
+  for (let i = 0; i < 14; i++) s += '<circle cx="' + svNum(42 + i * 4.3) + '" cy="20.5" r="1" fill="#ffb22e" opacity="' + (i % 5 === 4 ? .25 : 1) + '"/>';
+  s += '<path d="M17 31H123L120 74H20Z" fill="' + glass + '"/>' + (night ? '' : '<path d="M28 33L46 33L34 72L22 72Z" fill="rgba(255,255,255,.14)"/>') +
+    '<path d="M70 31V74" stroke="' + body + '" stroke-width="2.5"/>';
+  if (has('visor')) s += '<path d="M15 29H125V35Q70 39 15 35Z" fill="#2b2320"/>';
+  if (has('fringe')) for (let i = 0; i < 15; i++) s += '<path d="M' + svNum(21 + i * 6.6) + ' 35l1.6 6 1.6-6z" fill="' + ['#d7262c', '#f2c230', '#2e8b57'][i % 3] + '"/>';
+  if (has('string')) for (let i = 0; i < 12; i++) s += '<circle cx="' + svNum(24 + i * 8.3) + '" cy="' + svNum(37 + Math.sin(i) * 1.2) + '" r="1.5" fill="' + SV_LIT[i % 4] + '"/>';
+  if (has('curtains')) s += '<path d="M18 31h12q-4 10-1 18q-7-6-11-5zM122 31h-12q4 10 1 18q7-6 11-5z" fill="#c4432e" opacity=".9"/>';
+  if (has('sampaguita')){
+    s += '<path d="M54 36Q70 52 86 36" stroke="#5f8f68" stroke-width=".8" fill="none"/>';
+    for (let i = 0; i <= 8; i++) s += '<circle cx="' + svNum(54 + i * 4) + '" cy="' + svNum(36 + Math.sin(i / 8 * Math.PI) * 8) + '" r="1.7" fill="#fff"/>';
+  }
+  if (has('dice')) s += '<path d="M64 33V44M76 33V46" stroke="#e8dfc8" stroke-width=".6"/><rect x="60.5" y="44" width="7" height="7" rx="1.2" fill="#fbfaf4"/><circle cx="64" cy="47.5" r=".9" fill="#c4432e"/><rect x="72.5" y="46" width="7" height="7" rx="1.2" fill="#c4432e"/><circle cx="74.5" cy="48" r=".8" fill="#fff"/><circle cx="77.5" cy="51" r=".8" fill="#fff"/>';
+  if (has('placard')) s += '<rect x="86" y="62" width="28" height="9" rx="1" fill="#fbf4e4" stroke="#6d1a25" stroke-width=".7"/><path d="M89 65.4h9M100 65.4h11M89 68.4h6M97 68.4h14" stroke="#6d1a25" stroke-width="1.1"/>';
+  if (has('flowers')) s += '<circle cx="30" cy="70" r="2.6" fill="#ff7aa8"/><circle cx="35" cy="68.5" r="2.4" fill="#ffd23f"/><circle cx="40" cy="70.5" r="2.4" fill="#fbfaf4"/>';
+  s += '<path d="M32 73L56 64M84 73L108 64" stroke="#2b2320" stroke-width="1.6" stroke-linecap="round"/>' +
+    '<rect x="10" y="80" width="120" height="3" fill="' + trim + '"/><rect x="10" y="83" width="120" height="13" fill="' + band + '"/>';
+  if (has('stripe')) s += '<rect x="10" y="96" width="120" height="2.5" fill="' + trim + '"/>';
+  if (has('goldstar')) s += '<path d="M70 84.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="#f2c230"/>';
+  s += '<rect x="10" y="98" width="120" height="22" fill="' + skirt + '"/>';
+  if (has('flames')) s += '<path d="M12 120c2-9 6-10 8-17c3 6 2 10 6 12c1-6 4-8 6-12c2 7 1 11 4 17zM128 120c-2-9-6-10-8-17c-3 6-2 10-6 12c-1-6-4-8-6-12c-2 7-1 11-4 17z" fill="#e85d1c"/>' +
+    '<path d="M15 120c2-6 4-6 5-10c2 4 2 6 4 7c1-3 2-4 3-6c1 4 1 6 2 9zM125 120c-2-6-4-6-5-10c-2 4-2 6-4 7c-1-3-2-4-3-6c-1 4-1 6-2 9z" fill="#ffd23f"/>';
+  if (night) s += '<circle cx="27" cy="103" r="13" fill="#fff6d2" opacity=".22"/><circle cx="113" cy="103" r="13" fill="#fff6d2" opacity=".22"/>';
+  s += '<rect x="17" y="99" width="20" height="9" rx="3" fill="' + lamp + '" stroke="#2b2320"/><rect x="103" y="99" width="20" height="9" rx="3" fill="' + lamp + '" stroke="#2b2320"/>' +
+    '<rect x="48" y="99" width="44" height="14" rx="2" fill="' + (chrome ? '#cfd6dc' : '#3a3539') + '"/>' +
+    '<path d="M51 102H89M51 105H89M51 108H89M51 111H89" stroke="' + (chrome ? '#8a949b' : '#211a17') + '"/>';
+  if (has('horse')) s += '<path d="M66 99c0-4 2-6 4-6l2-3 1 3c2 0 3 2 3 6z" fill="#dfe5ea" stroke="#8a949b" stroke-width=".6"/>';
+  if (has('foglamps')) s += '<circle cx="30" cy="116" r="3" fill="#ffd23f"/><circle cx="110" cy="116" r="3" fill="#ffd23f"/>';
+  if (has('bumpers')) s += '<rect x="6" y="118" width="128" height="3" rx="1.5" fill="#f2c230"/>';
+  s += '<rect x="8" y="120" width="124" height="7" rx="2" fill="' + (chrome ? '#dfe5ea' : '#2b2320') + '"/><rect x="58" y="121" width="24" height="5" rx="1" fill="#fbfaf4"/>';
+  return s;
+}
+// How near the coming bus is for a p: one even step per stop.
+function svNear(p){ return .13 + .95 * Math.pow(Math.max(0, Math.min(1, p)), 1.15); }
+// How near a thing u of the way along is, seen from a bus at p: as near as
+// it really is, so the sign grows faster the closer it gets.
+function svAhead(u, p){ return 1 / (.78 + 3.62 * Math.max(0, Math.min(1, u - p))); }
+function stopViewSvg(t){
+  t = t || {};
+  const sky = hasOwn(TICKET_SKIES, t.sky) ? t.sky : 'day', c = TICKET_SKIES[sky], night = sky === 'night';
+  const clamp = function(v){ v = +v; return isNaN(v) ? 0 : Math.max(0, Math.min(1, v)); };
+  const p = clamp(t.p), from = t.from === null || t.from === undefined || isNaN(+t.from) ? null : clamp(t.from);
+  const ago = Math.max(0, Math.min(STOP_GLIDE_MS, +t.ago || 0));
+  const N = STOP_VIEW_STOPS, worn = Array.isArray(t.worn) ? t.worn : [];
+  const ink = night ? '#120d0b' : '#3a2e2a';
+  let s = '';
+  if (!t.aboard){
+    const P = SV_WAIT, kb = svNear(p);
+    s += svLand(c, sky, P, [270, 30]) + svRoad(P, c, -1.55, 2.1) + svLine(P, .3);
+    // The bus, head on, in the near lane: its own side of the road.
+    const bw = 140 * P.k / 86;
+    s += svAt(P, kb, from === null ? null : svNear(from), ago) + '<g class="sv-rock"><svg x="' + svNum(-.62 * P.k - bw / 2) + '" y="' + svNum(P.k - bw * 136 / 140) +
+      '" width="' + svNum(bw) + '" height="' + svNum(bw) + '" viewBox="-10 -12 160 152" overflow="visible">' + svCoachFront(t.paint, worn, night) + '</svg></g></g>';
+    // The stops still between it and you, on the same side, nearer than it.
+    let first = true;
+    for (let i = N - 1; i >= 1; i--){
+      const u = (N - i) / N;
+      if (u <= p + .0001) continue;
+      s += svAt(P, svNear(u), null, 0) + svPost(-1.8 * P.k, P.k, 24, first) + '</g>';
+      first = false;
+    }
+    // The shed where you wait, in front of everything, and you at it.
+    s += '<path d="M0 96L60 90L63 95L0 102Z" fill="' + (night ? '#5c161f' : '#7a1f2b') + '"/><path d="M0 102L63 95V97L0 104Z" fill="#e39a1c"/>' +
+      '<rect x="5" y="102" width="3.5" height="58" fill="#6f655e"/><rect x="54" y="96" width="3.5" height="64" fill="#6f655e"/>' +
+      '<rect x="9" y="138" width="40" height="4.5" rx="1.5" fill="#8a7e74"/><rect x="12" y="142" width="3" height="16" fill="#6f655e"/><rect x="43" y="142" width="3" height="16" fill="#6f655e"/>' +
+      (night ? '<rect x="24" y="98" width="12" height="2.6" rx="1" fill="#ffe7a8"/><path d="M24 100.6L10 124H50L36 100.6Z" fill="#ffe7a8" opacity=".12"/>' : '') +
+      svPerson(34, 158, 2, !!t.here, ink) + svSign(72, 160, 52, !!t.here);
+    return '<svg class="stopview' + (t.still ? ' still' : '') + '" viewBox="0 0 330 160" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">' + s + '</svg>';
+  }
+  const P = SV_ABOARD, has = function(k){ return worn.indexOf(k) >= 0; };
+  const band = BUS_PAINTS[hasOwn(BUS_PAINTS, t.paint) ? t.paint : 'klasiko'][3];
+  s += svLand(c, sky, P, [256, 36]) + svRoad(P, c, -2.1, 1.05);
+  // The middle line going by: six dashes, each from the horizon to the
+  // glass in STOP_ROAD_S (the stoproad loop's length), a sixth of that
+  // apart, which is about the popup's 60 km/h to the eye.
+  for (let i = 0; i < 6; i++) s += '<path class="sv-dash" style="animation-delay:-' + (i * STOP_ROAD_S / 6).toFixed(2) + 's" d="' + svDash(P, -.45) + '" stroke="#fbf4e4" stroke-width="1.6"/>';
+  // Your stop, with two people waiting at it, and the stops before it, on
+  // the right shoulder, where the bus pulls in.
+  const ahead = [];
+  for (let i = N - 1; i >= 1; i--){ const u = (N - i) / N; if (u > p + .02) ahead.push(u); }
+  s += svAt(P, svAhead(1, p), from === null ? null : svAhead(1, from), ago) +
+    svPerson(1.62 * P.k, P.k, 1.9, false, night ? '#120d0b' : '#4a3b35') + svPerson(1.86 * P.k, P.k, 2, false, ink) + svSign(1.35 * P.k, P.k, 48, !!t.here) + '</g>';
+  ahead.reverse().forEach(function(u, i){
+    s += svAt(P, svAhead(u, p), from === null ? null : svAhead(u, from), ago) + svPost(1.3 * P.k, P.k, 24, i === ahead.length - 1) + '</g>';
+  });
+  if (night) s += '<path d="M96 160L142 72L160 72L250 160Z" fill="#fff6d2" opacity=".08"/>';
+  // The inside of the bus around the glass, and what its sharer hung there.
+  s += '<g fill="#1c1512"><path d="M0 0H330V20Q165 12 0 20Z"/><path d="M0 18L22 18L7 142H0Z"/><path d="M330 18L308 18L323 142H330Z"/></g>';
+  if (has('visor')) s += '<path d="M0 18Q165 10 330 18V26Q165 20 0 26Z" fill="#2b2320"/>';
+  if (has('curtains')) s += '<path d="M20 18h22q-8 14-3 30q-12-9-22-8zM310 18h-22q8 14 3 30q12-9 22-8z" fill="#c4432e"/>';
+  if (has('fringe')) for (let i = 0; i < 35; i++) s += '<path d="M' + svNum(24 + i * 8.2) + ' 22l2 7 2-7z" fill="' + ['#d7262c', '#f2c230', '#2e8b57'][i % 3] + '"/>';
+  if (has('string')) for (let i = 0; i < 27; i++) s += '<circle cx="' + svNum(28 + i * 10.4) + '" cy="' + svNum(33 + Math.sin(i * .9) * 1.5) + '" r="2" fill="' + SV_LIT[i % 4] + '"/>';
+  if (has('lights')) s += '<path d="M24 19H306" stroke="#ffd23f" stroke-width="1.2" opacity=".6"/>';
+  s += '<path d="M165 4V14" stroke="#2b2320" stroke-width="3"/><rect x="134" y="12" width="62" height="14" rx="5" fill="#2b2320" stroke="#5a504a" stroke-width="1.5"/>' +
+    '<rect x="138" y="15" width="54" height="8" rx="3" fill="' + (night ? '#2c3554' : '#a9c4d3') + '"/><g class="sv-swing">';
+  if (has('sampaguita')){
+    s += '<path d="M150 26Q165 62 180 26" stroke="#5f8f68" fill="none"/>';
+    for (let i = 0; i <= 12; i++) s += '<circle cx="' + svNum(150 + i * 2.5) + '" cy="' + svNum(26 + Math.sin(i / 12 * Math.PI) * 18) + '" r="2.4" fill="#fff" stroke="#d9cfbe" stroke-width=".5"/>';
+    s += '<path d="M165 44v10" stroke="#d7262c" stroke-width="2"/><circle cx="165" cy="55" r="2.5" fill="#d7262c"/>';
+  }
+  if (has('dice')) s += '<path d="M156 26V48M174 26V52" stroke="#d8cfc2" stroke-width=".8"/><rect x="150" y="48" width="12" height="12" rx="2" fill="#fbfaf4"/><circle cx="153.5" cy="51.5" r="1.2" fill="#c4432e"/><circle cx="158.5" cy="56.5" r="1.2" fill="#c4432e"/><rect x="168" y="52" width="12" height="12" rx="2" fill="#c4432e"/><circle cx="174" cy="58" r="1.3" fill="#fff"/>';
+  if (has('bell')) s += '<path d="M165 26v6" stroke="#a8761c"/><path d="M160 40q0-8 5-8t5 8z" fill="#e3b23c" stroke="#a8761c" stroke-width=".6"/>';
+  s += '</g><path d="M0 140Q165 124 330 140V160H0Z" fill="#2a2019"/><path d="M0 140Q165 124 330 140" stroke="' + band + '" stroke-width="3" fill="none"/>';
+  if (has('flowers')) s += '<rect x="56" y="126" width="10" height="10" rx="2" fill="#e8dfc8"/><circle cx="57" cy="122" r="4" fill="#ff7aa8"/><circle cx="64" cy="120" r="4" fill="#ffd23f"/><circle cx="61" cy="125" r="3.5" fill="#fbfaf4"/>';
+  if (has('horse')) s += '<path d="M90 134q0-9 6-11l3-6 2 6q5 1 5 11z" fill="#dfe5ea" stroke="#8a949b" stroke-width=".8"/>';
+  if (has('rooster')) s += '<path d="M240 132q0-12 8-14l2-5 3 4q6 1 6 8l6-6q2 8-4 13z" fill="#c4432e"/><path d="M244 118l-4-2 2 4z" fill="#e3b23c"/>';
+  if (has('placard')) s += '<rect x="268" y="116" width="44" height="15" rx="2" fill="#fbf4e4" stroke="#6d1a25"/><path d="M273 121.4h14M290 121.4h17M273 126.4h9M285 126.4h22" stroke="#6d1a25" stroke-width="1.8"/>';
+  return '<svg class="stopview' + (t.still ? ' still' : '') + '" viewBox="0 0 330 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' + s + '</svg>';
+}
 // ---- END PICTURES ---------------------------------------------------------
 
 // The header's board. Drawn once: the picture scales with its box, and the
@@ -4789,12 +4994,15 @@ function skyNow(){
 // The bus in its popup, on the road through the place it is nearest: as its
 // sharer dressed it if they chose to show it (lookRead of the row's look),
 // a sharer's own as they dressed it whatever they chose, and plain
-// otherwise. Stopped for a bus not heard from lately, and for one that has
+// otherwise (busLookOf, which the saved stop's picture uses too). Stopped for a bus not heard from lately, and for one that has
 // stood in one place for a couple of minutes (rideStand).
+function busLookOf(b){
+  if (!b) return null;
+  if (b.self && !WALK){ const own = loadBus(); return { paint:own.paint, worn:busWorn(own, CHECKPOINTS) }; }
+  return lookRead(b.look);
+}
 function popupRide(b, fresh){
-  let look = null;
-  if (b.self && !WALK){ const own = loadBus(); look = { paint:own.paint, worn:busWorn(own, CHECKPOINTS) }; }
-  else look = lookRead(b.look);
+  const look = busLookOf(b);
   const i = nearestCheckpoint(routeProgressKm({ lat:b.lat, lng:b.lng }, CHECKPOINTS, ROUTE_CHAIN));
   return '<div class="pride">' + rideSvg({ views:[(CHECKPOINTS[i] && CHECKPOINTS[i].mark) || ''], sky:skyNow(),
     worn: look ? look.worn : [], paint: look ? look.paint : 'klasiko', still: fresh === 'delayed' || !!b.standing, now: Date.now(), frame:'popup' }) + '</div>';
@@ -5323,6 +5531,30 @@ function aboardWords(info){
                                  : 'about ' + info.stops + (info.stops === 1 ? ' stop' : ' stops') + ' before yours';
   return dir + ' · on your bus · ' + dist + ' · ' + stops;
 }
+// Where the bus is along the last `most` stops before yours, for the card's
+// picture (stopViewSvg): 0 with that many or more still between them, 1 at
+// your stop, and an even step for every stop between, so passing one always
+// shows. Inside a step it goes by the road, so a bus halfway from one stop
+// to the next is half a step on, and every position that arrives moves it.
+// Counted from the same stops approachInfo() and aboardInfo() count, by the
+// same strict test, so the posts in the picture are the card's number.
+function stopProgress(info, myKm, stopKms, most){
+  if (!info || myKm === null || myKm === undefined || isNaN(myKm)) return 0;
+  if (info.busKm === null || info.busKm === undefined || isNaN(info.busKm) || !(most > 0)) return 0;
+  // Distances back along the chain from your stop, the way the bus comes.
+  const back = function(km){ return info.direction === 'south' ? km - myKm : myKm - km; };
+  const bus = back(info.busKm);
+  if (bus <= 0) return 1;
+  const d = [];
+  for (let i=0;i<stopKms.length;i++){ const x = back(stopKms[i]); if (x > 0) d.push(x); }
+  d.sort(function(a,b){ return a-b; });
+  let n = 0;
+  while (n < d.length && d[n] < bus) n++;
+  // The stop ahead of the bus and the one it last passed, or itself.
+  const ahead = n ? d[n-1] : 0, behind = n < d.length ? d[n] : bus;
+  const f = n + (bus - ahead) / (behind - ahead);
+  return Math.max(0, Math.min(1, (most - f) / most));
+}
 // ---- END MY STOP -------------------------------------------------------
 
 // ---- My stop: storage, the picker, and the marks on the map -----------
@@ -5472,7 +5704,7 @@ function myStopCardHtml(shown, all){
   if (riding){
     const mine = aboardBus(all, sharing ? null : ABOARD);
     const info = mine ? aboardInfo(placed(mine), MYSTOP_KM, STOP_KMS) : null;
-    if (info && !info.passed) return rideCardHtml(info, true);
+    if (info && !info.passed) return rideCardHtml(info, true, mine);
     RIDE_LAST = '';
     return quietStopCard(
       !mine ? (sharing ? 'Your bus shows here once it is on the map.' : 'Your bus isn’t on the map right now.')
@@ -5480,7 +5712,7 @@ function myStopCardHtml(shown, all){
       : 'This bus has passed your stop.', !sharing);
   }
   const info = approachInfo(shown.map(placed), MYSTOP_KM, STOP_KMS, 'all');
-  if (info) return rideCardHtml(info, false);
+  if (info) return rideCardHtml(info, false, shown.filter(function(b){ return b.id === info.id; })[0]);
   RIDE_LAST = '';
   return quietStopCard(shown.length
     ? 'No bus on the map is heading your way right now.'
@@ -5495,15 +5727,16 @@ function quietStopCard(text, offBtn){
     (offBtn ? '<button type="button" class="edit" onclick="leaveBus()">I got off</button>' : '') +
     '<button type="button" class="edit" onclick="openStopPicker()">Change</button></div>';
 }
-function rideCardHtml(info, riding){
-  // The stops still between the bus and you, as dots. Past eleven they no
-  // longer fit a phone's width, so the line keeps the next five and the last
-  // three and puts an ellipsis between them; the count beside it is exact.
+// Where the card's picture last put a bus, and when it began gliding
+// there, so a redraw between positions carries the glide on, and the next
+// position glides from where this one left it.
+let STOPVIEW = { id:'', from:0, to:0, at:0 };
+function rideCardHtml(info, riding, bus){
+  // The stops between the bus and you, drawn as posts down the road
+  // (stopViewSvg), the bus coming up it or, on board, your stop coming up
+  // to the glass. The first of them is the "next stop" the card names.
   const between = stopsBetween(info, MYSTOP_KM, NAMED_STOPS);
   const n = info.stops;
-  let dots = '';
-  if (n <= 11){ for (let i=0;i<n;i++) dots += '<i' + (i===0 ? ' class="next"' : '') + '></i>'; }
-  else { dots = '<i class="next"></i><i></i><i></i><i></i><i></i><span class="gap">···</span><i></i><i></i><i></i>'; }
   const state = rideState(info);
   // Riding and waiting are separate keys, so boarding the bus the card was
   // already watching still pops its flag and buzzes once for getting off.
@@ -5515,8 +5748,23 @@ function rideCardHtml(info, riding){
     BUZZED[id] = 1;
     try{ if (navigator.vibrate) navigator.vibrate([180, 90, 180]); }catch(e){}
   }
+  const p = stopProgress(info, MYSTOP_KM, STOP_KMS, STOP_VIEW_STOPS);
+  const now = Date.now();
+  if (STOPVIEW.id !== id) STOPVIEW = { id:id, from:p, to:p, at:0 };
+  else if (Math.abs(STOPVIEW.to - p) > .0005){
+    // From where the picture has the bus now, which mid-glide is part of
+    // the way there (smoothstep, near enough the glide's own curve).
+    const u = STOPVIEW.at ? Math.min(1, (now - STOPVIEW.at) / STOP_GLIDE_MS) : 1;
+    STOPVIEW = { id:id, from:STOPVIEW.from + (STOPVIEW.to - STOPVIEW.from) * u * u * (3 - 2 * u), to:p, at:now };
+  }
+  const gliding = STOPVIEW.at > 0 && now - STOPVIEW.at < STOP_GLIDE_MS;
+  const look = busLookOf(bus);
+  const art = stopViewSvg({ aboard:riding, p:p, from: gliding ? STOPVIEW.from : null, ago: gliding ? now - STOPVIEW.at : 0,
+    here: state === 'here', sky:skyNow(), worn: look ? look.worn : [], paint: look ? look.paint : 'klasiko',
+    still: freshness(info.ts) === 'delayed' || !!(bus && bus.standing) });
   const km = info.km < 0.5 ? 'under 500 m' : info.km < 10 ? info.km.toFixed(1) + ' km' : Math.round(info.km) + ' km';
   const dirWords = info.direction === 'south' ? '▼ Southbound' : '▲ Northbound';
+  const which = riding ? 'your bus' + (info.label ? ' ' + escapeHtml(info.label) : '') : info.label ? 'bus ' + escapeHtml(info.label) : '';
   const big = state === 'here'
     ? '<span class="num">Next stop is yours.</span><span class="unit">' +
       (riding ? 'Get ready to get off.' : 'Get ready to wave it down.') + '</span>'
@@ -5531,14 +5779,10 @@ function rideCardHtml(info, riding){
       '<div class="ride-top"><span class="ride-name">' + escapeHtml(MYSTOP.name) + '</span><span class="ride-acts">' +
         (riding && !sharing ? '<button type="button" class="edit" onclick="leaveBus()">I got off</button>' : '') +
         '<button type="button" class="edit" onclick="openStopPicker()">Change</button></span></div>' +
-      (state ? '<div class="ride-flag' + (fresh ? ' fresh' : '') + '">' + flag + '</div>' : '') +
-      '<div class="ride-line" aria-hidden="true"><span class="ride-bus">' + BUS_GLYPH + '</span>' +
-        '<span class="ride-track">' + dots + '</span><span class="ride-me"></span></div>' +
-      '<div class="ride-cap" aria-hidden="true"><span>' +
-        escapeHtml(riding ? (info.label ? 'Your bus · ' + info.label : 'Your bus') : (info.label ? 'Bus ' + info.label : 'Next bus')) + '</span>' +
-        '<span class="me">Your stop</span></div>' +
+      // The flag sits on the picture, so the card is the same height with it.
+      '<div class="ride-art">' + art + (state ? '<div class="ride-flag' + (fresh ? ' fresh' : '') + '">' + flag + '</div>' : '') + '</div>' +
       '<div class="ride-big" aria-hidden="true">' + big + '</div>' +
-      '<div class="ride-sub" aria-hidden="true">' + dirWords +
+      '<div class="ride-sub" aria-hidden="true">' + dirWords + (which ? ' · ' + which : '') +
         (between.length ? ' · next stop <b>' + escapeHtml(between[0].name) + '</b>' : '') +
         ' · updated ' + timeAgo(info.ts) + ' ago</div>' +
       // The sentence the card has always printed, now for screen readers: it

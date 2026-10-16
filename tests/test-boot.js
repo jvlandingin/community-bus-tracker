@@ -603,15 +603,31 @@ function run(page, include, label, configText, setup) {
 
     ok.w.setMyStop('Test Stop', myCp.lat, myCp.lng);
     ok.w.renderMyStop([near, mineBus]);
-    check(/Bus|Next bus/.test(stopBar.textContent) && !/on your bus/.test(stopBar.textContent),
-      'waiting, the card counts down on whichever bus is nearest');
+    check(/before yours|stop is yours/.test(stopBar.textContent) && !/your bus/i.test(stopBar.textContent) &&
+          !!stopBar.querySelector('.ride-art svg.stopview') && !stopBar.querySelector('.ride-art svg.stopview [class~="sv-swing"]'),
+      'waiting, the card counts down on whichever bus is nearest, drawn coming down the road');
+    // The picture moves when a position does: the bus glides from where it
+    // was drawn, and a redraw before it gets there carries the same glide on
+    // rather than starting it again or jumping to the end.
+    {
+      const toward = f => ({ ...near, lat: near.lat + (myCp.lat - near.lat) * f, lng: near.lng + (myCp.lng - near.lng) * f });
+      ok.w.renderMyStop([toward(.8), mineBus]);
+      ok.w.renderMyStop([toward(.9), mineBus]);
+      const g1 = stopBar.querySelector('.sv-glide');
+      ok.w.renderMyStop([toward(.9), mineBus]);
+      const g2 = stopBar.querySelector('.sv-glide');
+      const fromOf = g => ((g && g.getAttribute('style')) || '').split('--from:')[1] || '';
+      check(!!g1 && !!g2 && fromOf(g1) && fromOf(g1).split(';')[0] === fromOf(g2).split(';')[0],
+        'a new position glides the bus on from where it was, and a redraw on the way carries that glide on', fromOf(g2));
+      ok.w.renderMyStop([near, mineBus]);
+    }
     ok.w.boardBus('ccc333');
     check(ok.w.sessionStorage.getItem('wt-aboard') === 'ccc333',
       'tapping it keeps the bus\'s public id for this visit, in sessionStorage');
     ok.w.renderMyStop([near, mineBus]);
     const said = stopBar.textContent.replace(/\s+/g, ' ');
-    check(/on your bus · [\d.]+ km to go/.test(said) && /Your bus · 98018/.test(said),
-      'and the card now follows that bus, not the one nearer the stop', said.slice(0, 90));
+    check(/on your bus · [\d.]+ km to go/.test(said) && /· your bus 98018 ·/.test(said) && !!stopBar.querySelector('.ride-art svg.stopview .sv-swing'),
+      'and the card now follows that bus, not the one nearer the stop, seen from inside it', said.slice(0, 90));
     check(/I got off this bus/.test(pop(mineBus).textContent), 'its popup now offers "I got off this bus" instead');
     ok.w.renderMyStop([near]);
     check(/isn.t on the map right now/.test(stopBar.textContent) && /I got off/.test(stopBar.textContent),
@@ -1428,6 +1444,20 @@ function run(page, include, label, configText, setup) {
       check(!/class="rideart still"/.test(dressed) && /class="rideart still"/.test(w.busPopupHtml({ id: 'ef'.repeat(16), lat: +cpRide[2], lng: +cpRide[3],
               direction: 'north', label: '', ts: Date.now() - 10 * 60000, count: 1, self: false, look: '' })),
         'a bus heard from lately moves; one not heard from for minutes stands still');
+      // The saved stop's picture draws the coming bus by the same rule.
+      {
+        const had = w.eval('MYSTOP ? JSON.stringify(MYSTOP) : ""');
+        const cpStop = CONFIG.split(/\r?\n/).filter(l => l.trim().startsWith('CHECKPOINT ='))[4].split('=')[1].split('|').map(x => x.trim());
+        w.setMyStop('Test Stop', +cpStop[2], +cpStop[3]);
+        const cardOf = look => { w.renderMyStop([{ id: 'cd'.repeat(16), lat: +cpRide[2], lng: +cpRide[3], direction: 'north', label: '',
+                                                   ts: Date.now(), count: 1, self: false, look }]); return d.getElementById('myStop').innerHTML; };
+        const dice = 'x="60.5" y="44" width="7"';
+        const shown = cardOf('1Fc'), plainCard = cardOf('');
+        check(/<svg class="stopview/.test(shown) && shown.includes(dice) && shown.includes('fill="#1f5f9e"') &&
+              !plainCard.includes(dice) && plainCard.includes('fill="#7a1f2b"'),
+          'and the saved stop\'s card draws it coming the same way: as dressed if shown, plain if not');
+        if (had){ const m = JSON.parse(had); w.setMyStop(m.name, m.lat, m.lng); } else w.clearMyStop();
+      }
       // A bus waiting at the terminal, live all the while: reported again
       // and again from one place, it stands still once two minutes of its
       // own reports say so, and drives on at the first from further along.

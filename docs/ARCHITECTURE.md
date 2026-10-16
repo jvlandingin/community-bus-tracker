@@ -748,17 +748,68 @@ that needs travel-time history the system deliberately does not keep — so the
 card says how far, not how long, and the test suite fails if a sentence ever
 starts implying otherwise.
 
-**The card draws the stops** (October 2026). With a bus coming, it puts the
-bus at one end of a line and the stop at the other, with one dot for every
-stop still between them, so "about 8 stops" is seen without being counted.
-The dots are the counted stops — `namedStopKms()` projects them exactly as
-`stopChainKms()` does, and `test-mystop.js` checks that one is the other —
-and they run in the order the bus will meet them, so the first is the "next
-stop" the card names. Past eleven they no longer fit a phone, so the line
-keeps the next five and the last three with an ellipsis between; the number
-beside it stays exact. The sentence the card used to print is still there for
+**The card draws the stops** (October 2026). With a bus coming, it first
+put the bus at one end of a line and the stop at the other, with one dot for
+every stop still between them, so "about 8 stops" was seen without being
+counted. The stops it names are the counted stops — `namedStopKms()` projects
+them exactly as `stopChainKms()` does, and `test-mystop.js` checks that one is
+the other — in the order the bus will meet them, so the first is the "next
+stop" the card names. The sentence the card used to print is still there for
 screen readers, in a visually hidden span, with everything drawn
 `aria-hidden` beside it.
+
+**Then it drew the bus coming** (October 2026). The maintainer's verdict on
+the dots was that the card looked the same however near the bus was: eight
+dots and one were the same line, and nothing moved but a dot dropping off.
+Of the sketches tried, a side view of the road, a view down it and a mix of
+the two, they chose the view down the road (`stopViewSvg()`, in the tested
+PICTURES block). Waiting, you stand at a shed and the bus grows as it comes
+down the road towards you, on its own side, with a post at the roadside for
+every stop still between and the bus's next stop's in gold; at Sakay na your
+sign lights and you wave it down. On board, you look out of the windscreen
+past what hangs from the mirror, and your stop's sign grows up the road on
+the right, the side the bus pulls in on, with the posts before it. It is the
+one working screen with a picture, by that decision: the rule that pictures
+go only where the screen would be empty still holds everywhere else.
+
+- **Six stops, one step each.** The picture holds the last six stops
+  (`STOP_VIEW_STOPS`); further than that the bus is at the horizon, or the
+  sign is. `stopProgress()`, in the MY STOP block, says where: an even step
+  per stop, the step being the card's own count (`test-mystop.js` section
+  11), and inside a step by the road, so every position that arrives moves
+  it, which the dots never did. The posts are the counted stops, as the dots
+  were (`test-pictures.js` section 9).
+- **It moves when a position does, and only then.** The bus glides from
+  where it was drawn to its new place in a second (`STOP_GLIDE_MS`, the
+  `stopglide` animation) and stands there until the next position. It never
+  creeps between them: a picture that moved on its own would be a guess at
+  when the bus arrives, which the card has never made. The card is redrawn
+  every few seconds, so a redraw on the way carries the glide on with a
+  negative delay rather than restarting it, and a position that lands
+  mid-glide starts from where the bus is drawn at that moment. The
+  perspective is built so that CSS can glide it: everything on the road is
+  drawn once at depth 1 and placed by `translate(vanishing point) scale(k)`,
+  and a thing's place on the screen is linear in k, so interpolating the
+  transform is the right path in depth.
+- **The road on board goes by** at the popup's decorative pace (`STOP_ROAD_S`,
+  about 60 km/h to the eye) and what hangs from the mirror sways. Both stop
+  when the bus stands still or has gone quiet, by the signal the popup uses
+  (`rideStand()`, `freshness()`). Neither says how fast the bus is going.
+- **Dressed as the popup dresses it** (`busLookOf()`, shared with
+  `popupRide()`): a coming bus as its sharer dressed it only if they chose to
+  show it, a sharer's own bus as they dressed it, plain otherwise. Waiting it
+  is seen from the front, a second drawing of the coach (`svCoachFront()`)
+  wearing what a front shows; on board, from inside, what hangs there or sits
+  on the dashboard. What is only on a bus's side (the mural, the map, the
+  sunrise, the exhaust) shows from neither, as on a real one.
+- **The sky is the clock's** (`skyNow()`), as in the popup; **the flag sits on
+  the picture**, so the card is the same height with Malapit na and without;
+  and the bus's number moved from the caption under the dots to the line
+  under the count ("bus 98018", "your bus 98018").
+
+The cost is height: the card went from about 230 px to about 290 px on a
+phone. On a wide screen the picture is cut rather than grown past 200 px,
+from the sky down waiting and at both edges on board.
 
 It speaks up twice, and only twice: **Malapit na!** at two stops or fewer,
 and **Sakay na!** when yours is the next stop and the bus is inside 2 km
@@ -782,6 +833,13 @@ and the two captions under the line on paper, and the line map paid for the
 rest by being shorter than the old rails. The briefing's example screen was
 already taller than an A4 page and had always printed split across two; it
 now prints at phone width, whole, on one.
+The picture did it a third time. Drawn full width on paper it is about 125 px
+tall in the poster's mock and 160 px in the briefing's, which sent the poster
+to three sheets and split the briefing's example screen again, so on paper
+both draw it small beside the count, where the line of dots was; on screen
+they draw it full. In the guide's numbered screen the picture has a fixed
+height, so the figure is one height at the widths its callouts were measured
+at, and the callouts were measured again.
 
 **Riding to your stop, not only waiting for it** (October 2026). The card
 was built for the roadside: the nearest bus still coming. On board that is

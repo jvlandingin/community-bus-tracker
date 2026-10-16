@@ -265,9 +265,10 @@
   .demo-chip.sb{border-color:var(--maroon-line);}
   .demo-chip .ag{color:var(--muted); font-weight:600;}
   /* The reader's saved stop, as renderMyStop() in index.html draws it with a
-     bus coming: the bus at one end of a line, the stop at the other, one dot
-     for every stop still between them, then the count in words. Copied, not
-     imported, like everything else here, so it moves when the app's does.
+     bus coming: the picture of it coming (stopViewSvg, drawn into this page
+     by tools/make-pictures.js), a post for every stop still between, then
+     the count in words. Copied, not imported, like everything else here, so
+     it moves when the app's does.
      Worth a briefing's space because it is the part of the tool a bus
      company is most often asked about: it answers "how far is my bus from
      me" without the app knowing, or being able to say, where anybody
@@ -290,40 +291,10 @@
     border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
     font-family:inherit; font-size:var(--fs-label); font-weight:700; cursor:pointer;
   }
-  .ride-line{display:flex; align-items:center; margin:12px 0 4px;}
-  .ride-bus{
-    flex:0 0 auto; width:30px; height:30px; border-radius:50%; z-index:1;
-    display:flex; align-items:center; justify-content:center;
-    background:var(--gold); box-shadow:0 0 0 3px var(--gold-line);
-  }
-  .ride.sb .ride-bus{background:var(--maroon); box-shadow:0 0 0 3px var(--maroon-line);}
-  .ride-bus svg{width:19px; height:19px; fill:#fff;}
-  .ride-track{
-    flex:1; position:relative; height:30px; margin:0 -2px;
-    display:flex; align-items:center; justify-content:space-around;
-  }
-  .ride-track::before{
-    content:''; position:absolute; left:0; right:0; top:50%; height:3px; margin-top:-1.5px; border-radius:999px;
-    background:linear-gradient(90deg, var(--gold), var(--mine));
-  }
-  .ride.sb .ride-track::before{background:linear-gradient(90deg, var(--maroon), var(--mine));}
-  .ride-track i{
-    position:relative; width:9px; height:9px; border-radius:50%; box-sizing:border-box;
-    background:var(--surface); border:2px solid var(--gold);
-  }
-  .ride.sb .ride-track i{border-color:var(--maroon);}
-  .ride-track i.next{width:11px; height:11px; border-width:3px;}
-  .ride-track .gap{position:relative; padding:0 3px; background:var(--paper); color:var(--muted); font-size:var(--fs-small); letter-spacing:2px; line-height:1;}
-  .ride-me{
-    flex:0 0 auto; width:22px; height:22px; border-radius:50%; z-index:1; box-sizing:border-box;
-    background:var(--mine); border:4px solid var(--surface);
-    box-shadow:0 0 0 2px var(--mine), 0 0 0 7px var(--mine-soft);
-  }
-  .ride-cap{
-    display:flex; justify-content:space-between; gap:10px; font-size:var(--fs-cap); font-weight:800;
-    letter-spacing:.04em; text-transform:uppercase; color:var(--muted);
-  }
-  .ride-cap .me{color:var(--mine-ink);}
+  .ride-art{position:relative; margin:10px 0 0; border-radius:var(--r-s); overflow:hidden; line-height:0; background:var(--line);}
+  .stopview{display:block; width:100%; height:auto; max-height:200px;}
+  .ride-art > .ride-flag{position:absolute; left:8px; top:8px; margin:0; line-height:1.2; box-shadow:var(--sh-2);}
+  .ride.here .ride-art{box-shadow:0 0 0 2px var(--mine);}
   .ride-big{display:flex; align-items:baseline; flex-wrap:wrap; gap:0 6px; margin-top:8px; line-height:1.2;}
   .ride-big .num{font-size:var(--fs-number); font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums;}
   .ride-big .unit, .ride-big .km{font-size:var(--fs-small); font-weight:700;}
@@ -456,8 +427,8 @@
      windscreen and lamps cut through to the disc, and its signboard lit,
      pale on gold and amber on maroon. */
   .sign{fill:none;}
-  .buspill .sign, .demo-badge .sign, .ride-bus .sign{fill:#fff1c4;}
-  .buspill.sb .sign, .demo-badge.sb .sign, .ride.sb .ride-bus .sign{fill:#ffb22e;}
+  .buspill .sign, .demo-badge .sign{fill:#fff1c4;}
+  .buspill.sb .sign, .demo-badge.sb .sign{fill:#ffb22e;}
   /* The checkpoint names between the two lines. A tick is only its name now:
      the stations on the lines are the marks. */
   .ticks{position:relative; height:22px;}
@@ -505,6 +476,13 @@
        picture of a phone screen anyway, and at it the whole screen fits on
        one page with every row at the size the app draws it. */
     .demo{max-width:390px; margin-left:auto; margin-right:auto;}
+    /* The one row that is not: the saved stop's picture, which drawn at that
+       width is 160px tall and split the screen across two sheets again. On
+       paper it goes small, beside the count, as on the poster. */
+    .ride{display:grid; grid-template-columns:auto 1fr; column-gap:10px; align-items:center;}
+    .ride-top{grid-column:1 / -1;}
+    .ride-art{grid-row:2 / span 2; width:104px;}
+    .ride-big, .ride-sub{grid-column:2;}
   }
 </style>
 <script>
@@ -623,13 +601,13 @@
          northbound bus above is 3 km short of it. It is worked out on the
          reader's own phone from positions already on the page — the stop is
          never sent anywhere and no part of the system can see it, which is
-         the distinction this document exists to make. -->
+         the distinction this document exists to make. Its picture is the
+         flyer's, from the same numbers. -->
     <div class="ride nb">
       <div class="ride-top"><span class="ride-name">S&amp;R Kawit</span><span class="edit">Change</span></div>
-      <div class="ride-line"><span class="ride-bus"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></span><span class="ride-track"><i class="next"></i><i></i><i></i><i></i><i></i></span><span class="ride-me"></span></div>
-      <div class="ride-cap"><span>Bus 98018</span><span class="me">Your stop</span></div>
+      <div class="ride-art"><!-- stopview p=0.034 sky=day --><svg class="stopview" viewBox="0 0 330 160" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false"><rect width="330" height="160" fill="#e3f2f7"/><circle cx="270" cy="30" r="7" fill="#e39a1c"/><path d="M0 60C40 44 90 52 130 46C170 40 210 50 240 44C280 38 310 48 330 46V60Z" fill="#b9d2c4"/><rect y="58" width="330" height="102" fill="#d3e0bf"/><path d="M0 59H330" stroke="#c9dfd0" stroke-width="3"/><path d="M203.15 65L228.7 65L493.3 191L7.85 191Z" fill="#8f8579"/><path d="M216.333 65.778L216.408 66.028M216.5 66.333L216.586 66.621M216.692 66.974L216.793 67.309M216.917 67.722L217.035 68.116M217.182 68.606L217.323 69.076M217.5 69.667L217.671 70.238M217.889 70.963L218.102 71.672M218.375 72.583L218.646 73.487M219 74.667L219.357 75.857M219.833 77.444L220.325 79.084M221 81.333L221.721 83.735M222.75 87.167L223.906 91.019M225.667 96.889L227.816 104.053M231.5 116.333L236.826 134.087" stroke="#fbf4e4" stroke-width="1.6" opacity=".7"/><g class="sv-k" style="transform:translate(214px,58px) scale(0.149)"><g class="sv-rock"><svg x="-100.377" y="-40.698" width="113.953" height="113.953" viewBox="-10 -12 160 152" overflow="visible"><ellipse cx="70" cy="137" rx="60" ry="3.5" fill="rgba(0,0,0,.25)"/><rect x="20" y="118" width="20" height="18" rx="4" fill="#211a17"/><rect x="100" y="118" width="20" height="18" rx="4" fill="#211a17"/><path d="M12 36H3V50M128 36H137V50" stroke="#2b2320" stroke-width="2.4" fill="none"/><rect x="-2" y="48" width="9" height="16" rx="3" fill="#2b2320" stroke="#2b2320"/><rect x="133" y="48" width="9" height="16" rx="3" fill="#2b2320" stroke="#2b2320"/><path d="M10 26Q10 12 24 12H116Q130 12 130 26V120Q130 126 124 126H16Q10 126 10 120Z" fill="#f3ecdf"/><path d="M10 26Q10 12 24 12H116Q130 12 130 26V28H10Z" fill="#e6dccb"/><rect x="38" y="16" width="64" height="9" rx="1.5" fill="#120d0b"/><circle cx="42" cy="20.5" r="1" fill="#ffb22e" opacity="1"/><circle cx="46.3" cy="20.5" r="1" fill="#ffb22e" opacity="1"/><circle cx="50.6" cy="20.5" r="1" fill="#ffb22e" opacity="1"/><circle cx="54.9" cy="20.5" r="1" fill="#ffb22e" opacity="1"/><circle cx="59.2" cy="20.5" r="1" fill="#ffb22e" opacity="0.25"/><circle cx="63.5" cy="20.5" r="1" fill="#ffb22e" opacity="1"/><circle cx="67.8" cy="20.5" r="1" fill="#ffb22e" opacity="1"/><circle cx="72.1" cy="20.5" r="1" fill="#ffb22e" opacity="1"/><circle cx="76.4" cy="20.5" r="1" fill="#ffb22e" opacity="1"/><circle cx="80.7" cy="20.5" r="1" fill="#ffb22e" opacity="0.25"/><circle cx="85" cy="20.5" r="1" fill="#ffb22e" opacity="1"/><circle cx="89.3" cy="20.5" r="1" fill="#ffb22e" opacity="1"/><circle cx="93.6" cy="20.5" r="1" fill="#ffb22e" opacity="1"/><circle cx="97.9" cy="20.5" r="1" fill="#ffb22e" opacity="1"/><path d="M17 31H123L120 74H20Z" fill="#4f6b7e"/><path d="M28 33L46 33L34 72L22 72Z" fill="rgba(255,255,255,.14)"/><path d="M70 31V74" stroke="#f3ecdf" stroke-width="2.5"/><path d="M32 73L56 64M84 73L108 64" stroke="#2b2320" stroke-width="1.6" stroke-linecap="round"/><rect x="10" y="80" width="120" height="3" fill="#e39a1c"/><rect x="10" y="83" width="120" height="13" fill="#7a1f2b"/><rect x="10" y="98" width="120" height="22" fill="#d9cfbe"/><rect x="17" y="99" width="20" height="9" rx="3" fill="#e8dfc8" stroke="#2b2320"/><rect x="103" y="99" width="20" height="9" rx="3" fill="#e8dfc8" stroke="#2b2320"/><rect x="48" y="99" width="44" height="14" rx="2" fill="#3a3539"/><path d="M51 102H89M51 105H89M51 108H89M51 111H89" stroke="#211a17"/><rect x="8" y="120" width="124" height="7" rx="2" fill="#2b2320"/><rect x="58" y="121" width="24" height="5" rx="1" fill="#fbfaf4"/></svg></g></g><g class="sv-k" style="transform:translate(214px,58px) scale(0.251)"><rect x="-126.72" y="46" width="1.44" height="24" fill="#7d7168"/><rect x="-130.8" y="46" width="9.6" height="6.72" rx="1.44" fill="#e39a1c" stroke="#7d7168" stroke-width="0.72"/></g><g class="sv-k" style="transform:translate(214px,58px) scale(0.399)"><rect x="-126.72" y="46" width="1.44" height="24" fill="#7d7168"/><rect x="-130.8" y="46" width="9.6" height="6.72" rx="1.44" fill="#efe7da" stroke="#7d7168" stroke-width="0.72"/></g><g class="sv-k" style="transform:translate(214px,58px) scale(0.558)"><rect x="-126.72" y="46" width="1.44" height="24" fill="#7d7168"/><rect x="-130.8" y="46" width="9.6" height="6.72" rx="1.44" fill="#efe7da" stroke="#7d7168" stroke-width="0.72"/></g><g class="sv-k" style="transform:translate(214px,58px) scale(0.726)"><rect x="-126.72" y="46" width="1.44" height="24" fill="#7d7168"/><rect x="-130.8" y="46" width="9.6" height="6.72" rx="1.44" fill="#efe7da" stroke="#7d7168" stroke-width="0.72"/></g><g class="sv-k" style="transform:translate(214px,58px) scale(0.9)"><rect x="-126.72" y="46" width="1.44" height="24" fill="#7d7168"/><rect x="-130.8" y="46" width="9.6" height="6.72" rx="1.44" fill="#efe7da" stroke="#7d7168" stroke-width="0.72"/></g><path d="M0 96L60 90L63 95L0 102Z" fill="#7a1f2b"/><path d="M0 102L63 95V97L0 104Z" fill="#e39a1c"/><rect x="5" y="102" width="3.5" height="58" fill="#6f655e"/><rect x="54" y="96" width="3.5" height="64" fill="#6f655e"/><rect x="9" y="138" width="40" height="4.5" rx="1.5" fill="#8a7e74"/><rect x="12" y="142" width="3" height="16" fill="#6f655e"/><rect x="43" y="142" width="3" height="16" fill="#6f655e"/><circle cx="34" cy="119" r="6.2" fill="#3a2e2a"/><rect x="28" y="126" width="12" height="20" rx="4.8" fill="#3a2e2a"/><path d="M31 144V158M37 144V158M39.2 132l2 12" stroke="#3a2e2a" stroke-width="4.2" stroke-linecap="round" fill="none"/><rect x="70.96" y="118.4" width="2.08" height="41.6" fill="#6f655e"/><circle cx="72" cy="118.4" r="10.4" fill="#4f46b8" stroke="#fff" stroke-width="1.664"/><path transform="translate(72 118.4) scale(1.04)" d="M0-6.2c-3.3 0-6 2.6-6 6 0 4.5 6 10.5 6 10.5s6-6 6-10.5c0-3.4-2.7-6-6-6zm0 8.4a2.4 2.4 0 1 1 0-4.8 2.4 2.4 0 0 1 0 4.8z" fill="#fff"/></svg><!-- /stopview --></div>
       <div class="ride-big"><span class="unit">about</span><span class="num">5</span><span class="unit">stops before yours</span><span class="km">· 3.0 km</span></div>
-      <div class="ride-sub">▲ Northbound · next stop <b>Battle of Alapan Monument</b> · updated 8s ago</div>
+      <div class="ride-sub">▲ Northbound · bus 98018 · next stop <b>Battle of Alapan Monument</b> · updated 8s ago</div>
     </div>
 
     <div class="demo-title">4 buses live</div>

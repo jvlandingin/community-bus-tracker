@@ -292,6 +292,18 @@ check(ride.length === 1 && ride[0].views.length === 1 && popupMark === S.markSvg
   ride[0].keys.length === 0 && ride[0].paint === 'klasiko' && ride[0].wanted.startsWith('<svg class="rideart" viewBox="' + S.RIDE_FRAMES.popup + '"'),
   'and it passes the place its town line is about, as a plain bus, framed as the popup frames it',
   ride.length ? ride[0].views.join(',') + ', ' + ride[0].paint : '');
+// The saved stop's picture, in the guide (waiting, and on board in the
+// sharing tab) and in the poster's and the briefing's example screen, which
+// are the same screen with the same numbers.
+const views = {};
+for (const f of ['how-to.html', 'flyer.html', 'for-operators.html']) views[f] = tool.stopviews(read(f), S);
+const viewStale = Object.keys(views).filter(f => views[f].some(v => v.current !== v.wanted));
+check(views['how-to.html'].length === 2 && views['flyer.html'].length === 1 && views['for-operators.html'].length === 1 && !viewStale.length,
+  'the saved stop\'s picture in the guide, the poster and the briefing is drawn by the tracker\'s own code, as it is now',
+  viewStale.length ? 'stale in ' + viewStale.join(', ') + ' (run node tools/make-pictures.js)' : Object.keys(views).map(f => f + ' ' + views[f].length).join(', '));
+check(views['how-to.html'].map(v => v.aboard).join(',') === 'false,true' && views['flyer.html'][0].p === views['for-operators.html'][0].p &&
+      !views['flyer.html'][0].aboard && !views['for-operators.html'][0].aboard,
+  'the guide draws it waiting and on board, and the poster and the briefing the same moment');
 
 console.log('\n=== 8. the ride ===');
 // The ride's moving parts, as the stylesheet runs them. The page works out
@@ -382,8 +394,84 @@ check(/rideStand\(STANDS\[b\.pub_id\], b\)/.test(pollFn) && /const stands = Obje
 // Standing is for the picture alone. Printed anywhere, "standing for 12
 // minutes" would be a driver's breaks timed on every rider's screen.
 const readers = html.split(/\n(?=(?:async )?function )/).filter(f => /\.standing\b/.test(f)).map(f => (/function (\w+)/.exec(f) || [])[1]).sort();
-check(readers.join(',') === 'clusterBuses,pollPositions,popupRide',
-  'and it goes from the poll through the clustering to the popup\'s picture, and nowhere else, so it is never put into words', readers.join(','));
+const cardFn = (/function rideCardHtml\([^]*?\n\}/.exec(html) || [''])[0];
+check(readers.join(',') === 'clusterBuses,pollPositions,popupRide,rideCardHtml' && (cardFn.match(/\.standing\b/g) || []).length === 1 &&
+      /still: freshness\(info\.ts\) === 'delayed' \|\| !!\(bus && bus\.standing\)/.test(cardFn),
+  'and it goes from the poll through the clustering to the two pictures, the popup\'s and the saved stop\'s, and nowhere else, so it is never put into words', readers.join(','));
+
+console.log('\n=== 9. the saved stop\'s picture ===');
+// stopViewSvg: the bus coming down the road to the shed, or on board your
+// stop coming up to the windscreen, with a post for each stop between. p
+// is stopProgress()'s; test-mystop.js holds that n stops between is the
+// n-th step from your stop, (5 - n) / 6 to (6 - n) / 6, so the middle of a
+// step stands for n here.
+{
+  const N = S.STOP_VIEW_STOPS, mid = n => (N - .5 - n) / N;
+  const plates = svg => (svg.match(/height="6\.72" rx="1\.44" fill="#(?:e39a1c|efe7da)"/g) || []).length;
+  const golds = svg => (svg.match(/height="6\.72" rx="1\.44" fill="#e39a1c"/g) || []).length;
+  const scales = svg => [...svg.matchAll(/class="sv-k[^"]*" style="transform:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\)/g)].map(m => +m[1]);
+  check(N === 6, 'the last six stops before yours are drawn', String(N));
+  for (const aboard of [false, true]) {
+    const who = aboard ? 'on board' : 'waiting';
+    const ns = [0, 1, 2, 3, 4, 5].map(n => plates(S.stopViewSvg({ aboard, p: mid(n) })));
+    check(ns.join(',') === '0,1,2,3,4,5' && plates(S.stopViewSvg({ aboard, p: 0 })) === 5,
+      `${who}: a post for every stop still between, as many as the card counts, and five at the edge`, ns.join(','));
+    check([1, 2, 3, 4, 5].every(n => golds(S.stopViewSvg({ aboard, p: mid(n) })) === 1) && golds(S.stopViewSvg({ aboard, p: mid(0) })) === 0,
+      `${who}: one of them gold, the bus's next stop, and none when the next is yours`);
+    // What comes nearer: the bus waiting, your sign on board, the first
+    // thing in the picture placed by depth either way.
+    const near = [0, .1, .25, .5, .75, .9, 1].map(p => scales(S.stopViewSvg({ aboard, p }))[0]);
+    check(near.every((k, i) => i === 0 || k > near[i - 1]), `${who}: ${aboard ? 'your stop' : 'the bus'} grows at every step nearer`, near.map(k => k.toFixed(2)).join(' '));
+    const a = S.stopViewSvg({ aboard, p: .4, sky: 'night', worn: ['dice'], paint: 'dagat', here: true });
+    check(a === S.stopViewSvg({ aboard, p: .4, sky: 'night', worn: ['dice'], paint: 'dagat', here: true }) &&
+          a.startsWith('<svg class="stopview" viewBox="0 0 330 160" preserveAspectRatio="xMid' + (aboard ? 'YMid' : 'YMax') + ' slice" aria-hidden="true" focusable="false">') &&
+          !/\sid="|<text|https?:|url\(/.test(a),
+      `${who}: the same drawing for the same state, hidden from screen readers, with no ids, no words and nothing loaded`);
+    // The glide: from where it was drawn last, only when that is elsewhere,
+    // and carried on through a redraw by a delay never longer than itself.
+    const g = S.stopViewSvg({ aboard, p: .5, from: .3, ago: 400 }), same = S.stopViewSvg({ aboard, p: .5, from: .5 });
+    check(/class="sv-k sv-glide" style="transform:[^;]+;--from:translate\([^;]+\);animation-delay:-0\.40s"/.test(g) &&
+          !/sv-glide/.test(same) && !/sv-glide/.test(S.stopViewSvg({ aboard, p: .5 })) &&
+          /animation-delay:-1\.00s/.test(S.stopViewSvg({ aboard, p: .5, from: .3, ago: 99999 })),
+      `${who}: it glides from where it was, only when it was elsewhere, and a redraw carries the glide on`);
+    check(/^<svg class="stopview still"/.test(S.stopViewSvg({ aboard, p: .5, still: true })), `${who}: and stands still when the bus does`);
+  }
+  // Sakay na, Bababa na: your sign lit; waiting, you wave the bus down.
+  const lit = svg => /r="20\.8" fill="#4f46b8" opacity="\.28"/.test(svg) || /r="19\.2" fill="#4f46b8" opacity="\.28"/.test(svg);
+  check(lit(S.stopViewSvg({ p: .95, here: true })) && !lit(S.stopViewSvg({ p: .95 })) && lit(S.stopViewSvg({ aboard: true, p: .95, here: true })),
+    'at the next stop your sign is lit', 'never before rideState() says so');
+  const arm = svg => (/M[\d.]+ [\d.]+V[\d.]+M[\d.]+ [\d.]+V[\d.]+(M[^"]+)" stroke="#3a2e2a" stroke-width="4\.2"/.exec(svg) || [])[1] || '';
+  check(arm(S.stopViewSvg({ p: .95, here: true })) !== arm(S.stopViewSvg({ p: .95 })) && arm(S.stopViewSvg({ p: .95 })) !== '',
+    'and waiting, you wave it down');
+  // Dressed only as its sharer chose, which the card decides (busLookOf):
+  // this draws what it is given and nothing when given nothing.
+  const dice = { wait: 'x="60.5" y="44" width="7"', aboard: 'x="150" y="48" width="12"' };
+  check(S.stopViewSvg({ p: .5, worn: ['dice'] }).includes(dice.wait) && !S.stopViewSvg({ p: .5 }).includes(dice.wait) &&
+        S.stopViewSvg({ aboard: true, p: .5, worn: ['dice'] }).includes(dice.aboard) && !S.stopViewSvg({ aboard: true, p: .5 }).includes(dice.aboard),
+    'the bus wears what it is given, from the front waiting and inside on board, and nothing when plain');
+  check(S.stopViewSvg({ p: .5, paint: 'dagat' }).includes('fill="' + S.BUS_PAINTS.dagat[3] + '"') &&
+        S.stopViewSvg({ aboard: true, p: .5, paint: 'dagat' }).includes('stroke="' + S.BUS_PAINTS.dagat[3] + '"') &&
+        S.stopViewSvg({ p: .5, paint: 'nonsense' }) === S.stopViewSvg({ p: .5 }),
+    'in its paint, outside waiting and on the dashboard on board, and an unknown paint is the plain one');
+  // The stylesheet runs the moving parts, so it must agree with the code.
+  const rule = cls => (new RegExp('\\.stopview \\.' + cls + '\\{([^}]*)\\}').exec(html) || [])[1] || '';
+  const glideS = +((/animation:stopglide ([\d.]+)s/.exec(rule('sv-glide')) || [])[1]);
+  const roadS = +((/animation:stoproad ([\d.]+)s linear infinite/.exec(rule('sv-dash')) || [])[1]);
+  check(glideS * 1000 === S.STOP_GLIDE_MS && roadS === S.STOP_ROAD_S,
+    'the glide and the road run for the times the code counts with', `glide ${glideS}s, road ${roadS}s`);
+  // The road comes on at an even speed: depth 1/z with z falling evenly, so
+  // each keyframe's scale is 1 / (9 - 8.45 t), from the horizon to the glass.
+  const kf = (/@keyframes stoproad\{([^@]*?)\}\}/.exec(html) || [])[1] || '';
+  const frames = [...kf.matchAll(/([\d.]+)%\{transform:scale\(([\d.]+)\)/g)].map(m => [+m[1] / 100, +m[2]]);
+  check(frames.length >= 5 && frames[0][0] === 0 && frames[frames.length - 1][0] === 1 &&
+        frames.every(([t, k]) => Math.abs(k * (9 - 8.45 * t) - 1) < .02),
+    'the road comes on at an even pace, as a road does in depth', frames.map(f => f.join(':')).join(' '));
+  check(/transform-origin:150px 62px/.test(rule('sv-dash')) && /transform-origin:165px 26px/.test(rule('sv-swing')) &&
+        /SV_ABOARD = \{ vx:150, h:62, k:70 \}/.test(html),
+    'the road grows from the vanishing point on board, and what hangs swings from the mirror');
+  check(/still \.sv-rock, \.stopview\.still \.sv-dash, \.stopview\.still \.sv-swing\{animation-play-state:paused;\}/.test(html),
+    'and all of it stops for a bus standing still');
+}
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);

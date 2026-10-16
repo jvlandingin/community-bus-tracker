@@ -20,7 +20,7 @@ new Function('S', hav + prog + mine +
   'S.buildRouteChain=buildRouteChain;S.routeProgressKm=routeProgressKm;' +
   'S.stopChainKms=stopChainKms;S.approachInfo=approachInfo;S.myStopWords=myStopWords;' +
   'S.haversineKm=haversineKm;S.namedStopKms=namedStopKms;S.stopsBetween=stopsBetween;S.rideState=rideState;' +
-  'S.aboardBus=aboardBus;S.aboardInfo=aboardInfo;S.aboardWords=aboardWords;')(S);
+  'S.aboardBus=aboardBus;S.aboardInfo=aboardInfo;S.aboardWords=aboardWords;S.stopProgress=stopProgress;')(S);
 
 const txt = fs.readFileSync(path.join(ROOT, 'config-template.txt'), 'utf8').split(/\r?\n/);
 const CP = txt.filter(l => l.trim().startsWith('CHECKPOINT =')).map(l => {
@@ -228,7 +228,7 @@ console.log('\n=== 9. Malapit na, Sakay na: louder, never sooner than true ===')
   const bad = literals.filter(l => /\bmin|\bETA|arriv|\bsoon\b|on time/i.test(l));
   // And the strings it is known to print are among those read, so a quote
   // matcher that has lost its place cannot pass by reading nothing.
-  const seen = ['Sakay na!', 'Malapit na!', 'Your stop', 'two stops away'].every(w => literals.some(l => l.includes(w)));
+  const seen = ['Sakay na!', 'Malapit na!', 'stop is yours', 'two stops away'].every(w => literals.some(l => l.includes(w)));
   check(seen && bad.length === 0, 'no string the card can print promises a time',
     bad.length ? bad.join(' ') : literals.length + ' strings read');
   // The buzz is one more thing a page could quietly start remembering.
@@ -262,7 +262,7 @@ console.log('\n=== 10. on the bus already: your own bus, to where you get off ==
   check(!on.passed && on.id === 'mine' && on.stops === 9,
     'riding, the card counts down on your own bus, not the one ahead of it', `${on.stops} stops, ${on.km.toFixed(1)} km`);
   check(S.stopsBetween(on, me, S.namedStopKms(STOPS, CP, CHAIN)).length === on.stops,
-    'and draws the same stops as dots, through the same stopsBetween()');
+    'and names the same stops, through the same stopsBetween()');
   check(S.aboardWords(on) === '▲ Northbound · on your bus · 13 km to go · about 9 stops before yours',
     'its sentence says it is your bus and how far is left', `"${S.aboardWords(on)}"`);
 
@@ -297,6 +297,48 @@ console.log('\n=== 10. on the bus already: your own bus, to where you get off ==
     'the bus you said you are on lasts the visit only, so it is not a fifth thing kept between visits');
   check(!/rpc\([^)]*ABOARD/.test(html) && !/fetch\([^)]*ABOARD/.test(html),
     'and it is never put in a request');
+}
+
+console.log('\n=== 11. where the picture puts the bus ===');
+// The card's picture (stopViewSvg) draws the last six stops before yours,
+// with the bus somewhere along them: stopProgress() says where, 0 at the
+// edge and 1 at your stop. One even step a stop, so the step it is on is
+// the card's own count, and inside a step it goes by the road, so every
+// position that arrives moves it on.
+{
+  const me = kmOf('New Imus City Hall');
+  const at = (dir, km, mk) => S.approachInfo([{ id: 'b', direction: dir, ts: 1, km }], mk === undefined ? me : mk, KMS, 'all');
+  // Northbound towards Imus, from far up the road to the stop, 100 m at a time.
+  const from = kmOf('Javalera'), seq = [];
+  for (let km = from; km <= me + 1e-9; km += 0.1) seq.push(at('north', km));
+  const ps = seq.map(i => S.stopProgress(i, me, KMS, 6));
+  check(ps[0] === 0 && seq[0].stops >= 6, 'six or more stops away, the bus waits at the edge', `${seq[0].stops} stops`);
+  check(ps.every((p, i) => i === 0 || p >= ps[i - 1] - 1e-9), 'and from there it only ever comes nearer, never back');
+  const steps = seq.map((i, k) => ({ n: i.stops, p: ps[k] })).filter(x => x.n < 6);
+  check(steps.length > 20 && steps.every(x => x.p >= (5 - x.n) / 6 - 1e-9 && x.p <= (6 - x.n) / 6 + 1e-9),
+    'with n stops still between, it is on the n-th step from your stop: the card\'s own count',
+    steps.filter(x => !(x.p >= (5 - x.n) / 6 - 1e-9 && x.p <= (6 - x.n) / 6 + 1e-9)).slice(0, 3).map(x => x.n + ':' + x.p.toFixed(3)).join(' '));
+  const moved = ps.filter((p, i) => i && p > ps[i - 1] + 1e-9).length, inside = ps.filter((p, i) => i && seq[i].stops < 6).length;
+  check(moved === inside, 'inside the last six, every 100 m of road moves it', `${moved} of ${inside}`);
+  check(S.stopProgress(at('north', me - 0.001), me, KMS, 6) > 0.99 && S.stopProgress(at('north', me), me, KMS, 6) === 1,
+    'and at your stop it is there');
+  // Southbound runs the chain the other way, and is measured the other way.
+  const sbMe = kmOf('Biclatan');
+  const sb = S.approachInfo([{ id: 's', direction: 'south', ts: 1, km: kmOf('Monterey') }], sbMe, KMS, 'all');
+  const sbP = S.stopProgress(sb, sbMe, KMS, 6);
+  check(sb.stops < 6 && sbP >= (5 - sb.stops) / 6 && sbP <= (6 - sb.stops) / 6, 'southbound is measured down the chain, to the same steps',
+    `${sb.stops} stops, ${sbP.toFixed(3)}`);
+  // On board it reads aboardInfo()'s shape, and a fix just past the sign is at it.
+  const on = S.aboardInfo({ id: 'm', direction: 'north', ts: 1, km: kmOf('Malagasang 1-G') }, me, KMS);
+  const onP = S.stopProgress(on, me, KMS, 6);
+  check(onP >= (5 - on.stops) / 6 && onP <= (6 - on.stops) / 6, 'riding, the same steps for your own bus', `${on.stops} stops, ${onP.toFixed(3)}`);
+  check(S.stopProgress(S.aboardInfo({ id: 'm', direction: 'north', ts: 1, km: me + 0.2 }, me, KMS), me, KMS, 6) === 1,
+    'and pulled in a little past the sign, it is at your stop');
+  check(S.stopProgress(null, me, KMS, 6) === 0 && S.stopProgress(at('north', from), null, KMS, 6) === 0 &&
+        S.stopProgress({ direction: 'north', busKm: NaN }, me, KMS, 6) === 0,
+    'no bus, no stop or a bus off the chain: the edge, never a throw');
+  // A place and nothing else: no clock is read, so it cannot become a time.
+  check(!/Date|\bnow\b|\.ts\b|speed|minute/.test(S.stopProgress.toString()), 'it reads places along the road and nothing about time');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

@@ -29,8 +29,9 @@ company's name or initials, for the same reason.
   anytime. In a browser the screen has to stay on; the Android app in
   `mobile/` keeps sharing with it locked.
 - **Your own stop:** save the stop you wait at and the card under the map
-  draws the next bus coming, your stop, and a dot for every stop still between
-  them — *about 5 stops before yours · 3.0 km* — measured along the road
+  draws the next bus coming down the road to your stop, with a post for every
+  stop still between them, or on board your stop coming up to the windscreen —
+  *about 5 stops before yours · 3.0 km* — measured along the road
   rather than as the crow flies. Two stops out it says **Malapit na!**, and
   **Sakay na!** when yours is next; phones that can vibrate can buzz once.
   Pick from the route's own stop list, or drop a pin. There is also an opt-in ➤

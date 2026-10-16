@@ -24,7 +24,7 @@ node tests/test-prompts.js    # idle, end-of-trip and direction prompts
 node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
 node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its luck, your bus; spare parts, the shop, the look, backups
 node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the mark
-node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride
+node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride, the saved stop's picture
 node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
 node tests/test-tour.js       # the tour: steps and words, the practice scene, the bubble's place, what a run may never do
 ```
@@ -79,8 +79,9 @@ the words beside each board, the scenes that cover the three pages, and the
 picture on the guide's ticket, with `index.html`'s own code; run it after
 changing those words or the drawings. It also draws the guide's pictures of
 your bus, from the decorations and paint named in each `<!-- mybus keys=…
-paint=… -->` marker, and the bus on the road in its popup, from `<!-- ride
-views=… sky=… -->`.
+paint=… -->` marker, the bus on the road in its popup, from `<!-- ride
+views=… sky=… -->`, and the saved stop's picture in the guide, the flyer and
+the briefing, from `<!-- stopview p=… sky=… -->`.
 `test-tokens.js`, `test-signboard.js` and `test-pictures.js` fail until you do.
 
 One more makes the showcase video: a minute of the real tracker on a phone,
@@ -161,10 +162,17 @@ Entirely client-side — no request, table or column was added — and measured
 along the checkpoint chain, never straight-line, because across the Tagaytay
 ridge hook a bus 1.2 km away as the crow flies is 3.5 km by road. Stops in
 between are counted by projecting them onto the chain, never by `config.txt`
-order, which is merged from two posters and is not route order. It reports
-distance and stop counts only, never minutes: an ETA needs travel-time history
-this system does not keep, and `test-mystop.js` fails if the wording drifts
-towards implying one. **On board, the card follows your own bus** to the stop
+order, which is merged from two posters and is not route order. **The card
+draws the bus coming** (October 2026, the maintainer's choice over a line of
+dots that looked the same however near the bus was): down the road to the
+shed you wait at, or on board your stop's sign coming up to the windscreen,
+a post for each stop between (`stopViewSvg()`), placed one even step a stop
+by `stopProgress()` and dressed by `busLookOf()`, the popup's rule. It glides
+only when a position arrives and never creeps between them, because a
+picture that moved on its own would be a guess at an arrival. It is the one
+working screen with a picture. It reports distance and stop counts only,
+never minutes: an ETA needs travel-time history this system does not keep,
+and `test-mystop.js` fails if the wording drifts towards implying one. **On board, the card follows your own bus** to the stop
 you get off at instead of the nearest one coming: a sharer's is the row the
 server flags `is_self`, anyone else's is picked with "I'm on this bus" in the
 popup and kept in `sessionStorage` only. While sharing, the card shows on the
@@ -353,7 +361,9 @@ September to 6 January unless the admin page switches it off (`parol_enabled`
 in settings, absent means on). It hangs between the two tabs, which part for it.
 
 **Pictures only where the screen would be empty.** The working screens stay
-quiet; illustration is for when there is nothing else to show. Closed, the
+quiet; illustration is for when there is nothing else to show. The saved
+stop's card is the one exception, by the maintainer's decision (October
+2026, above). Closed, the
 empty map's card is a scene — a generic provincial coach (no operator's livery
 or lettering) parked above Taal Lake at night, dawn or midday — from
 `sceneSvg()` in the tested PICTURES block, chosen by `mapNoteKind()`. The same
@@ -487,9 +497,12 @@ section 8 defends the two halves of this that a machine can check — that the
 page still loads nothing, and that its copied `:root` tokens still match
 `index.html`'s.
 
-The guide also redraws the sharing tab in trip mode, the salamat ticket and a
-bus's popup (`busPopupHtml()`), so changing any of them means changing
-`how-to.html` in the same commit. The tour points at the real page instead of
+The guide also redraws the sharing tab in trip mode, the salamat ticket, a
+bus's popup (`busPopupHtml()`) and the saved stop's card, so changing any of
+them means changing `how-to.html` in the same commit. The card's picture is
+drawn into the guide, the flyer and the briefing by `tools/make-pictures.js`;
+on paper the flyer and the briefing draw it small, beside the count, because
+full width it pushed both onto another sheet. The tour points at the real page instead of
 a copy, so it cannot go stale that way, but a step whose element is renamed or
 removed rings nothing: `test-tour.js` fails if a step's selector stops matching
 the page.

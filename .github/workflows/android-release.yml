@@ -12,8 +12,8 @@
 # Signing, which a new app starts on) and re-signs what it delivers, so the
 # key here only proves an upload came from this project. Lose it and Play
 # Console resets it in a day or two, with every installed app unaffected.
-# Back it up anyway. mobile/README.md has the keytool command; a phone with
-# Termux is enough to run it. Four repository secrets carry it:
+# Back it up anyway. mobile/README.md has the commands that make it; a phone
+# with Termux is enough to run them. Four repository secrets carry it:
 #
 #   BUS_KEYSTORE_BASE64     the .jks file, base64-encoded on one line
 #   BUS_KEYSTORE_PASSWORD   its password

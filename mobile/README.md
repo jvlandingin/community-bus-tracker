@@ -75,22 +75,32 @@ Google Play keeps the app's signing key and re-signs everything it delivers
 Play Console resets it in a day or two, with every installed app unaffected,
 so it is a key to back up rather than one to fear for.
 
-A phone is enough to make it. In Termux:
+A phone is enough to make it. In Termux it is made with OpenSSL rather than
+Java's keytool, which crashes in Termux from Google Play ("Native
+registration unable to find class ...", October 2026). OpenSSL writes the
+same kind of file, a PKCS12 keystore, and Java and the build read it as they
+read keytool's: tried here with a signed bundle.
 
 ```
-pkg install openjdk-21 termux-api   # termux-api needs the Termux:API app too
-keytool -genkeypair -v -keystore bus-tracker-upload.jks -alias bus \
-        -keyalg RSA -keysize 2048 -validity 10000
+pkg install openssl-tool termux-api   # termux-api needs the Termux:API app too
+openssl req -x509 -newkey rsa:2048 -noenc -keyout bus-key.pem -out bus-cert.pem \
+        -days 10000 -subj "/CN=Bus Tracker/C=PH"
+openssl pkcs12 -export -inkey bus-key.pem -in bus-cert.pem -name bus \
+        -out bus-tracker-upload.jks    # asks for the password twice
+rm bus-key.pem bus-cert.pem
 base64 -w0 bus-tracker-upload.jks | wc -c               # how long the secret must be
 base64 -w0 bus-tracker-upload.jks | termux-clipboard-set
 ```
 
-The last line puts the whole key on the clipboard for the
+Anywhere with a working JDK, keytool makes the same file in one line:
+`keytool -genkeypair -keystore bus-tracker-upload.jks -alias bus -keyalg RSA -keysize 2048 -validity 10000`.
+
+The last Termux line puts the whole key on the clipboard for the
 `BUS_KEYSTORE_BASE64` secret: it is one very long line, and selecting it by
 hand drops the end. Then add `BUS_KEYSTORE_PASSWORD`, `BUS_KEY_ALIAS` (`bus`)
-and `BUS_KEY_PASSWORD` as repository secrets. A current JDK makes a PKCS12
-keystore, which has one password: keytool asks for it once, and
-`BUS_KEY_PASSWORD` is that same password. **Never commit the `.jks`**
+and `BUS_KEY_PASSWORD` as repository secrets. A PKCS12 keystore has one
+password, the one asked for when it was made, and `BUS_KEY_PASSWORD` is that
+same password. **Never commit the `.jks`**
 (`.gitignore` refuses it). Termux's home folder goes if Termux is
 uninstalled, so keep a copy and the password somewhere else as well.
 

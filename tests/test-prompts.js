@@ -19,7 +19,7 @@ function build(dirHit) {
                                   remove: c => { if (id === 'askModal' && c === 'hidden') { log.modalHidden = false; } },
                                   toggle: () => {} } }) };
   const prelude = `
-    let sharing=true, lastCoords=null, shareDir='north', lastWrite=0;
+    let sharing=true, lastCoords=null, shareDir='north', lastWrite=0, hiddenSinceFix=false;
     const accessKey='key';
     const CFG={ ROUTE_SLUG:'test-route' };
     const CHECKPOINTS=__CP__, ROUTE_CHAIN=__CHAIN__;
@@ -57,6 +57,7 @@ function build(dirHit) {
     __out__.askYes=askYes; __out__.askNo=askNo;
     __out__.setDir=function(d){ shareDir=d; };
     __out__.setCoords=function(c){ lastCoords=c; };
+    __out__.setHidden=function(h){ hiddenSinceFix=h; };
     __out__.armGuard=function(){ dirGuard=makeDirGuard(); };
     __out__.state=function(){ return {sharing:sharing, shareDir:shareDir, guardPaused:guardPaused,
                                       askOpen:askOpen, idleMin:idleRef?( __clock__()-idleRef.t)/60000:null }; };
@@ -187,6 +188,18 @@ const nearby = (c, dlat) => ({ latitude: c.latitude + dlat, longitude: c.longitu
   check(u.log.notes.length === 1, 'notify: end of trip question handed to the app');
   u.tick(5 * MIN);
   check(u.log.stopped === 1 && u.log.unnotes === 1, 'notify: the automatic stop withdraws it too');
+}
+
+// 10. answered after the screen was off: the page got no GPS while it was
+// hidden, so the fix from before is not sent again as if it were current
+{
+  const t = build({ km: 4.2 }); t.setDir('north'); t.armGuard(); t.setCoords(midRoute);
+  t.check(midRoute);
+  t.setHidden(true);
+  const before = t.log.writes.length;
+  t.askNo();
+  check(t.state().guardPaused === false, 'answered after the screen was off: sharing resumes');
+  check(t.log.writes.length === before, 'answered after the screen was off: the fix from before it is not sent');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

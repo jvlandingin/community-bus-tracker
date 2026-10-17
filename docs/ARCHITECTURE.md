@@ -748,17 +748,68 @@ that needs travel-time history the system deliberately does not keep — so the
 card says how far, not how long, and the test suite fails if a sentence ever
 starts implying otherwise.
 
-**The card draws the stops** (October 2026). With a bus coming, it puts the
-bus at one end of a line and the stop at the other, with one dot for every
-stop still between them, so "about 8 stops" is seen without being counted.
-The dots are the counted stops — `namedStopKms()` projects them exactly as
-`stopChainKms()` does, and `test-mystop.js` checks that one is the other —
-and they run in the order the bus will meet them, so the first is the "next
-stop" the card names. Past eleven they no longer fit a phone, so the line
-keeps the next five and the last three with an ellipsis between; the number
-beside it stays exact. The sentence the card used to print is still there for
+**The card draws the stops** (October 2026). With a bus coming, it first
+put the bus at one end of a line and the stop at the other, with one dot for
+every stop still between them, so "about 8 stops" was seen without being
+counted. The stops it names are the counted stops — `namedStopKms()` projects
+them exactly as `stopChainKms()` does, and `test-mystop.js` checks that one is
+the other — in the order the bus will meet them, so the first is the "next
+stop" the card names. The sentence the card used to print is still there for
 screen readers, in a visually hidden span, with everything drawn
 `aria-hidden` beside it.
+
+**Then it drew the bus coming** (October 2026). The maintainer's verdict on
+the dots was that the card looked the same however near the bus was: eight
+dots and one were the same line, and nothing moved but a dot dropping off.
+Of the sketches tried, a side view of the road, a view down it and a mix of
+the two, they chose the view down the road (`stopViewSvg()`, in the tested
+PICTURES block). Waiting, you stand at a shed and the bus grows as it comes
+down the road towards you, on its own side, with a post at the roadside for
+every stop still between and the bus's next stop's in gold; at Sakay na your
+sign lights and you wave it down. On board, you look out of the windscreen
+past what hangs from the mirror, and your stop's sign grows up the road on
+the right, the side the bus pulls in on, with the posts before it. It is the
+one working screen with a picture, by that decision: the rule that pictures
+go only where the screen would be empty still holds everywhere else.
+
+- **Six stops, one step each.** The picture holds the last six stops
+  (`STOP_VIEW_STOPS`); further than that the bus is at the horizon, or the
+  sign is. `stopProgress()`, in the MY STOP block, says where: an even step
+  per stop, the step being the card's own count (`test-mystop.js` section
+  11), and inside a step by the road, so every position that arrives moves
+  it, which the dots never did. The posts are the counted stops, as the dots
+  were (`test-pictures.js` section 9).
+- **It moves when a position does, and only then.** The bus glides from
+  where it was drawn to its new place in a second (`STOP_GLIDE_MS`, the
+  `stopglide` animation) and stands there until the next position. It never
+  creeps between them: a picture that moved on its own would be a guess at
+  when the bus arrives, which the card has never made. The card is redrawn
+  every few seconds, so a redraw on the way carries the glide on with a
+  negative delay rather than restarting it, and a position that lands
+  mid-glide starts from where the bus is drawn at that moment. The
+  perspective is built so that CSS can glide it: everything on the road is
+  drawn once at depth 1 and placed by `translate(vanishing point) scale(k)`,
+  and a thing's place on the screen is linear in k, so interpolating the
+  transform is the right path in depth.
+- **The road on board goes by** at the popup's decorative pace (`STOP_ROAD_S`,
+  about 60 km/h to the eye) and what hangs from the mirror sways. Both stop
+  when the bus stands still or has gone quiet, by the signal the popup uses
+  (`rideStand()`, `freshness()`). Neither says how fast the bus is going.
+- **Dressed as the popup dresses it** (`busLookOf()`, shared with
+  `popupRide()`): a coming bus as its sharer dressed it only if they chose to
+  show it, a sharer's own bus as they dressed it, plain otherwise. Waiting it
+  is seen from the front, a second drawing of the coach (`svCoachFront()`)
+  wearing what a front shows; on board, from inside, what hangs there or sits
+  on the dashboard. What is only on a bus's side (the mural, the map, the
+  sunrise, the exhaust) shows from neither, as on a real one.
+- **The sky is the clock's** (`skyNow()`), as in the popup; **the flag sits on
+  the picture**, so the card is the same height with Malapit na and without;
+  and the bus's number moved from the caption under the dots to the line
+  under the count ("bus 98018", "your bus 98018").
+
+The cost is height: the card went from about 230 px to about 290 px on a
+phone. On a wide screen the picture is cut rather than grown past 200 px,
+from the sky down waiting and at both edges on board.
 
 It speaks up twice, and only twice: **Malapit na!** at two stops or fewer,
 and **Sakay na!** when yours is the next stop and the bus is inside 2 km
@@ -782,6 +833,13 @@ and the two captions under the line on paper, and the line map paid for the
 rest by being shorter than the old rails. The briefing's example screen was
 already taller than an A4 page and had always printed split across two; it
 now prints at phone width, whole, on one.
+The picture did it a third time. Drawn full width on paper it is about 125 px
+tall in the poster's mock and 160 px in the briefing's, which sent the poster
+to three sheets and split the briefing's example screen again, so on paper
+both draw it small beside the count, where the line of dots was; on screen
+they draw it full. In the guide's numbered screen the picture has a fixed
+height, so the figure is one height at the widths its callouts were measured
+at, and the callouts were measured again.
 
 **Riding to your stop, not only waiting for it** (October 2026). The card
 was built for the roadside: the nearest bus still coming. On board that is
@@ -823,6 +881,16 @@ The buzz still needs the page on screen: `navigator.vibrate` does nothing in
 a pocket with the screen locked. That is the honest limit of the website; a
 lock-screen alert would belong to the Android app's notification code, and
 has not been built.
+
+**Stop takes the bus off its sharer's own map at once** (October 2026). Until
+then it stayed in `BUSES` until the next poll, so the card, back to waiting
+the moment sharing ended, counted the bus just left as one coming to the
+stop its sharer had just got off at: Sakay na!, and a buzz. `stopSharing()`
+now drops this phone's own row before anything is redrawn, and keeps its
+public id in `GONE`, in memory only, so a poll answered before
+`clear_bus_position` lands cannot bring it back as somebody else's bus. Each
+trip has a public id of its own, so one gone is gone for good. Found while
+filming the showcase video; `test-boot.js` section 14 holds it.
 
 ## Following one bus, and the town lines
 
@@ -1488,6 +1556,101 @@ know its own address. So the committed `og:image` is relative, and
 Netlify gives every build — the second line of the published site that is not
 the committed one, after the CARTO key. A host that does not set it gets a
 preview with no picture and nothing else changes.
+
+## The showcase video
+
+`tools/render-video.sh` makes a one-minute vertical video (1080x1920, English
+captions, the interface's own sounds) for Facebook, TikTok and Reels, where the riders who have
+never heard of the tracker are. The story is one sharer's morning: wait at a
+stop until the card says Sakay na!, get on and share the bus, riders say
+salamat, the card says Bababa na!, Stop gives a ticket, the ticket goes into
+My tickets, the bus gets a new paint, tries on five other paints and sets of
+accessories for half a second each (the maintainer's ask: show how much can
+be changed, without the taps), and "Show customized bus to riders" goes
+on; the next morning another rider taps that bus and sees it dressed.
+
+**Real screens, not a drawing of them.** The guide, the flyer and the
+briefing redraw the tracker by hand and go stale when it changes. The video
+films the real `index.html` instead, in headless Chromium at a phone's size,
+so it cannot show a screen the app does not have; between scenes it shows
+drawings made by the app's own SIGNBOARD and PICTURES blocks, run the way
+`tools/make-pictures.js` runs them. When the screens change, the video is
+out of date until it is rendered again.
+
+**Nothing reaches the database.** Every request the page makes to Supabase
+is answered by the script (`World` in `tools/video/render.js`) with made-up
+buses, so no bus is put on anybody's real map, no watcher is counted and no
+salamat is sent. The first renders carried "Demo · not real buses" on every
+screen, the flyer's "example screen" rule; the maintainer took it out
+(October 2026), so the video says nothing about the buses being made up.
+The flyer keeps its label.
+
+**Frame-exact.** Each phone's clock is Playwright's fake one, paused and moved
+on one frame at a time, and every CSS animation on the page is paused and
+set to the same time before the screenshot. So it never stutters, and two
+renders look the same, though not to the bit: drawing leaves noise too faint
+to see (52 dB or better between two renders, measured), and a tap still
+reaches the page by the wall clock, so what it opens can show a frame
+earlier or later. The buses move in
+time-lapse, from positions
+worked out from the video's time; the half hour of the trip passes inside
+an interlude, in six-second steps so the page's own timers fire as they
+would.
+
+**The page's pace is the film's own.** The page polls twice a second in
+the film rather than every six, so the buses move in small steps. Two
+things in the page are paced for the slower feed. The saved stop's picture
+glides to each new position in a second, easing in and out, so it started
+and stopped twice a second. The sharing phone sends its position at most
+every five seconds, so on board the card stood still and then jumped to
+Bababa na!. The maintainer asked for both to move smoothly, for
+presentation. So the copy of `index.html` the film is served (`filmPage()`
+in `render.js`) glides for one poll at an even pace, and lets the phone
+send a little oftener than the film polls. Nothing else in the page
+differs from the commit, and the render stops if those lines change in
+`index.html`, rather than quietly filming the stutter again.
+
+**Saving the stop takes four seconds** (the maintainer's ask, October 2026).
+The camera closes on the picker while the whole name is typed. After the
+pick, it goes to the pin as it lands on the map, with rings going out from
+it and the stop's name beside them, and stays there a second before the
+card. It goes no closer than 1.35 times (`SHARP` in `film.js`). The phone
+is filmed at three pixels a point and the stage draws it at 2.2, so a
+closer camera enlarges the capture, and at 2.4 times the map blurred. The other scenes were each made a little shorter, so the video is
+still about a minute.
+
+**Choices the app forced.** The story waits at Javalera and gets off at SM
+City General Trias because the card counts down to both one stop at a time;
+at Dagatan it reads "8 stops" and then "2", which is right (the Tagaytay
+hook) but looks like a fault. The sharer starts 700 m past the stop they
+waited at: within 300 m (`AT_STOP_KM`) the card would say Bababa na! at
+once and spend the trip's one buzz there. The stop to get off at is set while
+the phone is swiped off the screen as they board. Near the end the GPS is
+held still, so the page's next position (it sends one every five seconds at
+most) goes out the moment the bus reaches the last stretch.
+
+**What the captions may say.** One short plain sentence each, under the
+same rules as the app's own words: no minutes and no arrival time, Bus
+Tracker and never the company's initials, and the end card's
+"Community-run. Not affiliated with the bus company." One caption is the
+maintainer's own and breaks the spare-parts rule on purpose: "Earn coins and
+dress up your bus." (October 2026). The app still says spare parts and draws
+a nut; the video's word is coins. The stage draws a buzz only in the two
+alarm scenes. Filming it found the page buzzing just after Stop too, for the
+bus just left; that is fixed in the app ("The reader's own stop"). The parol is switched off in the made-up settings, so the
+video still looks current after the season. The map needs `CARTO_API_KEY`;
+the script writes it only into the copy of `config.txt` it serves, and keeps
+the tiles in `video-out/.tiles` so a re-render asks CARTO for nothing.
+
+**Its sounds are the interface's only.** Taps, the buzz in the app's own
+on-off pattern, a pop for Malapit na!, a chime for Sakay na! and Bababa na!,
+a sparkle for salamat, the ticket printing, a stamp for Keep, coins for the
+paint, a click for the switch, and swipes between scenes. Each is made from
+sine waves and noise by `tools/video/sounds.js`, so there is nothing to
+license, and each is placed where the page was seen to do the thing on
+screen (`LISTEN` in `film.js`), not where the script expected it to. Music,
+the engine and the street are left for whoever edits the video: the track is
+also written on its own, `bus-tracker-ui-sounds.wav`, peaking at -3 dBFS.
 
 ## The look: one system, one typeface, one set of icons
 

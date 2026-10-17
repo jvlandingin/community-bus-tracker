@@ -25,6 +25,60 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-16 — The saved stop's card draws the bus coming
+
+Watching the video, the maintainer saw that the saved stop's card looked the
+same however close the bus was: a line of dots, the bus at one end and the
+stop at the other, one dot fewer per stop. They asked for a picture of the
+bus approaching instead, the customised bus where there is one, for both
+waiting and riding, and five ideas before anything was drawn. Of those they
+asked to see three drawn: the roadside seen side on, the road coming at you,
+and a mix of the two, each as an interactive page with a slider. They chose
+the road coming at you.
+
+Waiting, the bus grows down the road towards the shed you wait at, a post for
+each stop still between; on board, your stop's sign grows at the roadside
+seen through the windscreen, past whatever hangs from the mirror. It moves
+only when a position arrives, gliding to its new place, and never creeps on
+between them, so it promises no more about when the bus arrives than the
+words do. The words, the flags and the buzz are unchanged.
+
+## 2026-10-16 — A video to show what the tracker does
+
+The maintainer asked for a short, high-level video of the main features:
+watching the buses, the alarms for waiting and for getting off, sharing,
+dressing the bus and collecting tickets, and showing the bus to other
+riders. The plan was settled before anything was made: one rider's trip
+rather than a list of features, real screens with short drawn interludes
+rather than a drawing of the whole app, vertical for Facebook, TikTok and
+Reels, English captions kept simple, no sound. The maintainer asked
+specifically that the English be easy to read, so each caption is one short
+sentence of common words.
+
+It is filmed from the real `index.html` with made-up buses; nothing it does
+reaches the route's database.
+`tools/render-video.sh` makes it, and the video itself is not committed: it
+is about 16 MB, and every re-render would add another copy to the history
+for good. The parol was left out so that a video posted now still looks
+right after Three Kings.
+
+Filming it showed one small fault in the app: just after Stop the waiting
+card treated the bus the sharer had just left as one coming to their stop,
+said Sakay na! and buzzed once, until the next poll. The maintainer asked for
+it to be fixed; Stop now takes that bus off the sharer's own map at once.
+
+After watching the first cut the maintainer asked for four changes, all
+made: no "demo" label anywhere (the first cut carried "Demo · not real
+buses" on every screen, after the flyer's rule), "Help other commuters" in
+place of "Riders can say salamat", "Earn coins and dress up your bus" in
+place of "Dress up your bus", knowingly using the word the app gave up for
+spare parts, and the interface's sounds. Music and the bus's own sounds
+they will add themselves.
+
+Then a few seconds more in My tickets: after the new paint, the same bus in
+five other paints and sets of accessories, half a second each, close up and
+without showing the taps, so a viewer sees how much a bus can be dressed.
+
 ## 2026-10-16 — A bus waiting at the terminal, and a ticket for going nowhere
 
 The maintainer asked two things. Could the bus in a popup move with the bus's

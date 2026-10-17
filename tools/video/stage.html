@@ -1,0 +1,352 @@
+<!doctype html>
+<!--
+  The stage for the showcase video: one 1080x1920 frame, drawn once per
+  frame by tools/video/render.js. Not a page anyone visits.
+
+  The phone's screen is a screenshot of the real index.html, taken a moment
+  before by the same script, and everything else here is the frame around
+  it: the caption, the camera, the tap rings, the buzz,
+  and the drawn interludes, which are index.html's own pictures (its
+  SIGNBOARD and PICTURES blocks, run by render.js the way
+  tools/make-pictures.js runs them).
+
+  index.html's own stylesheet is put in where the marker below is, so the
+  pictures carry their real colours and animations and the type is the
+  app's. The rules after it are this page's, and are all under #v.
+
+  Nothing here keeps time of its own. render.js calls V.render(t) with the
+  video's time in seconds, and every position below is worked out from t,
+  so a frame is the same however long it took to draw.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bus Tracker video stage</title>
+<!--APP-STYLES-->
+<style>
+  html, body{margin:0; padding:0; width:1080px; height:1920px; overflow:hidden; background:#4a1119;}
+  body{max-width:none; min-height:0;}
+  #v{position:relative; width:1080px; height:1920px; overflow:hidden; font-family:var(--font-ui);
+     background:radial-gradient(120% 70% at 50% 34%, #84222f 0%, #6a1a25 46%, #3f0e15 100%); color:#fff;}
+  #v *{box-sizing:border-box;}
+
+  /* The phone. Its screen is 860 pixels across for the page's 390, so one
+     CSS pixel of the page is 860/390 here. render.js maps the page's
+     rectangles through the same numbers (SCREEN in render.js). */
+  #v-world{position:absolute; left:0; top:0; width:1080px; height:1920px; transform-origin:0 0; will-change:transform;}
+  #v-phone{position:absolute; left:92px; top:347px; width:896px; height:1547px; border-radius:72px;
+           background:linear-gradient(160deg, #2a201c, #120c0a 60%); padding:18px;
+           box-shadow:0 40px 90px rgba(0,0,0,.45), 0 0 0 2px rgba(255,255,255,.07) inset, 0 0 0 1px #000;}
+  #v-glass{position:relative; width:860px; height:1511px; border-radius:56px; overflow:hidden; background:#7a1f2b;}
+  /* The browser's bar, tinted by the page's theme-color (#7a1f2b) as
+     Chrome on Android tints it: this is a web page, not an app. */
+  #v-bar{height:56px; display:flex; align-items:center; justify-content:center; gap:10px;
+         background:#7a1f2b; color:#f6e7d8; font:500 27px/1 var(--font-ui); letter-spacing:.2px;}
+  #v-bar svg{width:20px; height:20px; fill:none; stroke:#f6e7d8; stroke-width:2.4; stroke-linecap:round;}
+  #v-screen{display:block; width:860px; height:1455px; background:#f4eee3;}
+
+  /* The caption: one short sentence, big, at the top, over a band of the
+     background so the phone can be zoomed under it without the words
+     losing their ground. */
+  #v-band{position:absolute; left:0; top:0; width:1080px; height:420px; pointer-events:none;
+          background:linear-gradient(#5a141e 0%, #5a141e 81%, rgba(90,20,30,0) 100%); opacity:0;}
+  #v-cap{position:absolute; left:50px; right:50px; top:64px; height:240px; display:flex; align-items:center; justify-content:center;}
+  #v-cap .c{position:absolute; left:0; right:0; text-align:center; font:700 92px/1.04 var(--font-ui); text-wrap:balance;
+            letter-spacing:-.5px; color:#fff; text-shadow:0 3px 14px rgba(40,6,12,.45); opacity:0;}
+  #v-cap .c b{color:#ffc24a; font-weight:700;}
+  #v-cap.on-sky .c{color:#5a1520; text-shadow:none;}
+  #v-cap.on-sky .c b{color:#b35a00;}
+
+  /* Taps and the buzz, drawn over everything at stage positions. */
+  #v-fx{position:absolute; inset:0; pointer-events:none;}
+  .v-tap{position:absolute; width:120px; height:120px; margin:-60px 0 0 -60px; border-radius:50%;
+         border:7px solid rgba(255,255,255,.95); background:rgba(255,255,255,.28); box-shadow:0 0 0 3px rgba(0,0,0,.18);}
+  .v-wave{position:absolute; width:40px; height:150px; border:7px solid #ffc24a; border-left:0; border-top-color:transparent; border-bottom-color:transparent; border-radius:50%;}
+  .v-wave.l{transform:scaleX(-1);}
+  /* A place on the page pointed out (the saved stop's pin as it lands):
+     rings in the app's own colour for the reader's stop, going out from it. */
+  .v-mark{position:absolute; width:190px; height:190px; margin:-95px 0 0 -95px; border-radius:50%;
+          border:9px solid #4f46b8; box-shadow:0 0 0 4px rgba(255,255,255,.95), inset 0 0 0 4px rgba(255,255,255,.95);}
+  .v-mark-name{position:absolute; transform:translateY(-50%); padding:10px 26px; border-radius:999px; white-space:nowrap;
+               background:#4f46b8; border:4px solid #fff; color:#fff; font-weight:700; font-size:46px; letter-spacing:.3px;
+               box-shadow:0 8px 24px rgba(0,0,0,.25);}
+
+  /* The interludes: full-frame pictures over everything else. */
+  .v-int{position:absolute; inset:0; opacity:0; overflow:hidden; will-change:transform;}
+  .v-board{position:absolute; left:50%; transform:translateX(-50%); width:max-content; background:#120d0b; border-radius:26px; padding:26px 30px;
+           box-shadow:0 20px 50px rgba(0,0,0,.35), 0 0 0 3px #2b211d inset;}
+  .v-board .dm{position:relative; display:block;}
+  .v-board .dm svg{display:block;}
+  .v-board .dm .lit{position:absolute; left:0; top:0;}
+  .v-board .dm .off use{display:none;}
+  .v-scene{position:absolute; left:0; width:1080px;}
+  /* The outer picture only: a coach is a nested <svg> of its own. */
+  .v-scene > svg{display:block; width:100%; height:100%;}
+
+  /* The title: dawn over the ridge. */
+  #i-title{background:linear-gradient(#f2a96a 0%, #f7c48f 38%, #fbe1c0 70%);}
+  /* The view is 640 wide with the coach left of middle and Taal right of
+     it; this keeps both in a tall frame. */
+  #i-title .v-scene{bottom:0; height:446px;}
+  #i-title .v-scene > svg{position:absolute; left:-150px; bottom:0; width:1500px; height:auto;}
+  #i-title .hook{position:absolute; left:0; right:0; top:820px; text-align:center; font:700 110px/1 var(--font-ui); color:#5a1520; letter-spacing:-1px;}
+
+  /* The trip: the bus on the road through the places it passes. */
+  /* The road picture is cut 200 by 80 and drawn the frame's width, low down
+     like the title's, with its own sky above it and its own ground below,
+     so it has no edges. */
+  #i-trip .v-sky{position:absolute; left:0; right:0; top:0; height:1300px;}
+  #i-trip .v-scene{top:1240px; height:432px;}
+  #i-trip .v-ground{position:absolute; left:0; right:0; top:1668px; bottom:0;}
+  #i-trip .v-board{top:600px;}
+
+  /* The end: where to find it, and what it is not. */
+  #i-end{background:radial-gradient(120% 70% at 50% 30%, #84222f 0%, #6a1a25 46%, #3f0e15 100%); text-align:center;}
+  #i-end .v-board{top:110px; padding:20px 24px;}
+  #i-end .name{position:absolute; left:0; right:0; top:340px; font:700 132px/1 var(--font-ui); color:#fff; letter-spacing:-1px;}
+  #i-end .lede{position:absolute; left:0; right:0; top:500px; font:600 50px/1.15 var(--font-ui); color:#ffd27a;}
+  #i-end .v-scene{top:600px; height:520px; border-top:6px solid #e39a1c; border-bottom:6px solid #e39a1c;}
+  #i-end .qr{position:absolute; left:50%; top:1180px; width:330px; height:330px; transform:translateX(-50%);
+             background:#fbf6ee; border-radius:30px; padding:22px;}
+  #i-end .qr svg{display:block; width:100%; height:100%;}
+  #i-end .url{position:absolute; left:0; right:0; top:1548px; font:700 60px/1 var(--font-ui); color:#fff;}
+  #i-end .fine{position:absolute; left:50px; right:50px; top:1650px; font:500 38px/1.4 var(--font-text); color:#f2dccb;}
+</style>
+</head>
+<body>
+<div id="v">
+  <div id="v-world">
+    <div id="v-phone"><div id="v-glass">
+      <div id="v-bar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>community-bus-tracker.netlify.app</div>
+      <img id="v-screen" alt="">
+    </div></div>
+  </div>
+  <div id="v-band"></div>
+  <div id="v-cap"></div>
+  <div id="v-fx"></div>
+  <div id="v-ints"></div>
+</div>
+<script>
+'use strict';
+// ---- Seeking the animations ------------------------------------------------
+// Every animation on the stage, the pictures' included, is paused and put
+// at the frame's time: born is when this script first saw it.
+(function(){
+  const born = new WeakMap();
+  window.__vseek = function(ms){
+    document.getAnimations().forEach(function(a){
+      if (!born.has(a)) born.set(a, ms);
+      a.pause();
+      a.currentTime = Math.max(0, ms - born.get(a));
+    });
+  };
+})();
+
+const V = (function(){
+  // Where the screen sits on the stage, and how many stage pixels make one
+  // of the page's: kept the same as SCREEN in render.js.
+  const SX = 110, SY = 421, K = 860 / 390;
+  const clamp = function(x, a, b){ return x < a ? a : x > b ? b : x; };
+  const ease = function(p){ p = clamp(p, 0, 1); return p < .5 ? 4*p*p*p : 1 - Math.pow(-2*p + 2, 3) / 2; };
+  const easeOut = function(p){ p = clamp(p, 0, 1); return 1 - Math.pow(1 - p, 3); };
+  const $ = function(id){ return document.getElementById(id); };
+
+  let plan = { captions:[], phone:[], ints:[] };
+  const cams = [], taps = [], buzzes = [], marks = [];
+
+  function init(p){
+    plan = p;
+    const cap = $('v-cap');
+    cap.innerHTML = plan.captions.map(function(c, i){
+      return '<div class="c" data-i="' + i + '">' + c.html + '</div>';
+    }).join('');
+    $('v-ints').innerHTML = plan.ints.map(function(x){ return '<div class="v-int" id="i-' + x.id + '">' + x.html + '</div>'; }).join('');
+  }
+  // Something that happened in the page: a tap, a buzz, or a camera move
+  // asked for by the script, each with the time it starts.
+  function event(e){
+    if (e.type === 'camera') cams.push(e);
+    else if (e.type === 'tap') taps.push(e);
+    else if (e.type === 'mark') marks.push(e);
+    else if (e.type === 'buzz') buzzes.push(e);
+  }
+  function screen(url){
+    const im = $('v-screen');
+    return new Promise(function(res){
+      im.onload = function(){ res(true); };
+      im.onerror = function(){ res(false); };
+      im.src = url;
+    });
+  }
+
+  // The camera: a scale and a shift of the whole phone, from where the last
+  // move ended to where the next one goes. A move names a rectangle of the
+  // page (in the page's pixels) to fill a width of the stage, or null to go
+  // back to the whole phone.
+  function camAt(t){
+    let from = { z:1, x:0, y:0 }, cur = from;
+    cams.forEach(function(c){
+      if (c.at > t) return;
+      const to = c.rect ? frameFor(c.rect, c.width || 1000, c.cy || 1080, c.topAt, c.maxZ) : { z:1, x:0, y:0 };
+      const p = ease((t - c.at) / (c.dur || .6));
+      cur = { z: from.z + (to.z - from.z) * p, x: from.x + (to.x - from.x) * p, y: from.y + (to.y - from.y) * p };
+      from = p >= 1 ? to : cur;
+    });
+    return cur;
+  }
+  function frameFor(r, width, cy, topAt, maxZ){
+    const w = r.w * K, cx = SX + (r.x + r.w / 2) * K, y = SY + (r.y + r.h / 2) * K;
+    const z = clamp(width / w, 1, maxZ || 1.75);
+    if (topAt) cy = topAt + r.h * K * z / 2;
+    return { z:z, x: 540 - cx * z, y: cy - y * z };
+  }
+  // A page point on the stage, through the camera.
+  function toStage(x, y, cam){
+    return { x: (SX + x * K) * cam.z + cam.x, y: (SY + y * K) * cam.z + cam.y };
+  }
+
+  // The phone's way in and out: keyframes of a vertical offset in stage
+  // pixels, eased between.
+  function track(keys, t, dflt){
+    if (!keys || !keys.length) return dflt;
+    if (t <= keys[0][0]) return keys[0][1];
+    for (let i = 1; i < keys.length; i++){
+      if (t <= keys[i][0]){
+        const a = keys[i-1], b = keys[i];
+        return a[1] + (b[1] - a[1]) * ease((t - a[0]) / (b[0] - a[0]));
+      }
+    }
+    return keys[keys.length - 1][1];
+  }
+
+  function render(t){
+    // The phone: in, out, and the camera on it.
+    const cam = camAt(t);
+    const dy = track(plan.phone, t, 0), dx = track(plan.phoneX, t, 0);
+    let shake = '';
+    buzzes.forEach(function(b){
+      const total = b.ms / 1000;
+      const u = t - b.at;
+      if (u < 0 || u > total) return;
+      // Strong in the pattern's "on" parts, still in its gaps.
+      let on = false, acc = 0;
+      for (let i = 0; i < b.pattern.length; i++){ const s = b.pattern[i] / 1000; if (u >= acc && u < acc + s){ on = i % 2 === 0; break; } acc += s; }
+      if (on){
+        const a = b.strong ? 1 : .45;
+        const w = Math.sin(u * 2 * Math.PI * 24);
+        shake = ' translate(' + (w * 9 * a).toFixed(1) + 'px,' + (Math.cos(u * 2 * Math.PI * 19) * 3 * a).toFixed(1) + 'px) rotate(' + (w * 1.1 * a).toFixed(2) + 'deg)';
+      }
+    });
+    $('v-world').style.transform = 'translate(' + (cam.x + dx).toFixed(2) + 'px,' + (cam.y + dy).toFixed(2) + 'px) scale(' + cam.z.toFixed(4) + ')';
+    $('v-phone').style.transform = shake ? shake.trim() : '';
+    // The band behind the caption, as soon as the phone comes up under it.
+    $('v-band').style.opacity = clamp((cam.z - 1) * 8, 0, 1).toFixed(3);
+
+    // The caption: in from below, out by fading.
+    const cap = $('v-cap');
+    cap.classList.toggle('on-sky', !!plan.captions.some(function(c){ return c.sky && t >= c.from && t < c.to; }));
+    [].forEach.call(cap.children, function(el){
+      const c = plan.captions[+el.getAttribute('data-i')];
+      const pin = easeOut((t - c.from) / .32), pout = clamp((c.to - t) / .22, 0, 1);
+      const o = t < c.from || t >= c.to ? 0 : Math.min(pin, pout);
+      el.style.opacity = o.toFixed(3);
+      el.style.transform = 'translateY(' + ((1 - pin) * 34).toFixed(1) + 'px)';
+    });
+
+    // Taps: a ring that grows a little and goes.
+    const fx = $('v-fx');
+    let html = '';
+    taps.forEach(function(e){
+      const u = (t - e.at) / .5;
+      if (u < 0 || u > 1) return;
+      const p = toStage(e.x, e.y, camAt(e.at));
+      const s = .55 + .55 * easeOut(u), o = u < .15 ? u / .15 : 1 - easeOut((u - .15) / .85);
+      html += '<div class="v-tap" style="left:' + (p.x + dx).toFixed(1) + 'px;top:' + (p.y + dy).toFixed(1) + 'px;transform:scale(' + s.toFixed(3) + ');opacity:' + o.toFixed(3) + '"></div>';
+    });
+    // A place pointed out: three rings out from it, a third of a second
+    // apart, for as long as it lasts. They follow the camera, so they stay
+    // on the place while it zooms in.
+    marks.forEach(function(e){
+      const u = t - e.at;
+      if (u < 0 || u > e.dur) return;
+      const p = toStage(e.x, e.y, cam);
+      for (let i = 0; i < 3; i++){
+        const k = ((u + i * .33) % 1);
+        const fade = Math.min(1, (e.dur - u) / .3);
+        html += '<div class="v-mark" style="left:' + (p.x + dx).toFixed(1) + 'px;top:' + (p.y + dy).toFixed(1) + 'px;transform:scale(' +
+          (.25 + 1.05 * easeOut(k)).toFixed(3) + ');opacity:' + (Math.min(1, (1 - k) * 1.6) * fade).toFixed(3) + '"></div>';
+      }
+      if (e.label){
+        const pin = easeOut(u / .3), o = Math.min(pin, Math.min(1, (e.dur - u) / .3));
+        html += '<div class="v-mark-name" style="left:' + (p.x + dx + 110 - (1 - pin) * 30).toFixed(1) + 'px;top:' + (p.y + dy).toFixed(1) +
+          'px;opacity:' + o.toFixed(3) + '">' + String(e.label).replace(/[&<>]/g, '') + '</div>';
+      }
+    });
+    // The buzz: arcs either side of the phone while it shakes.
+    buzzes.forEach(function(b){
+      const u = t - b.at;
+      if (u < 0 || u > b.ms / 1000 + .25 || !b.strong) return;
+      const o = clamp(1 - u / (b.ms / 1000 + .25), 0, 1);
+      for (let i = 0; i < 2; i++){
+        const k = ((u * 3 + i * .5) % 1);
+        const off = 20 + k * 40;
+        const y = 1110 - 75;
+        html += '<div class="v-wave" style="left:' + (988 + off).toFixed(0) + 'px;top:' + y + 'px;opacity:' + (o * (1 - k)).toFixed(3) + '"></div>' +
+                '<div class="v-wave l" style="left:' + (52 - off).toFixed(0) + 'px;top:' + y + 'px;opacity:' + (o * (1 - k)).toFixed(3) + '"></div>';
+      }
+    });
+    fx.innerHTML = html;
+
+    // The interludes, each a page of its own: up from below as the phone
+    // goes up and out of the top, and away up the same way.
+    plan.ints.forEach(function(x){
+      const el = $('i-' + x.id);
+      const a = x.in ? x.in[0] : -1, d = x.out ? x.out[1] : 1e9;
+      const on = t >= a && t < d;
+      let y = 0;
+      if (x.in && t < x.in[1]) y = 1920 * (1 - ease((t - x.in[0]) / (x.in[1] - x.in[0])));
+      if (x.out && t >= x.out[0]) y = -1920 * ease((t - x.out[0]) / (x.out[1] - x.out[0]));
+      el.style.opacity = on ? '1' : '0';
+      el.style.visibility = on ? 'visible' : 'hidden';
+      el.style.transform = 'translateY(' + y.toFixed(1) + 'px)';
+      if (on && INT[x.id]) INT[x.id](el, t - (x.in ? x.in[1] : 0), x);
+    });
+    window.__vseek(t * 1000);
+  }
+
+  // Each interlude's own movement, as a function of its local time u.
+  const sweep = function(el, p){
+    el.querySelectorAll('.lit').forEach(function(l){
+      l.style.clipPath = 'inset(0 ' + ((1 - clamp(p, 0, 1)) * 100).toFixed(2) + '% 0 0)';
+    });
+  };
+  const INT = {
+    title: function(el, u){
+      sweep(el.querySelector('.v-board'), (u - .35) / .9);
+      const hook = el.querySelector('.hook');
+      const p = easeOut((u - 1.1) / .4);
+      hook.style.opacity = p.toFixed(3);
+      hook.style.transform = 'translateY(' + ((1 - p) * 40).toFixed(1) + 'px)';
+      const sc = el.querySelector('.v-scene');
+      sc.style.transform = 'translateY(' + (-(u * 10)).toFixed(1) + 'px)';
+    },
+    trip: function(el, u){
+      sweep(el.querySelector('.v-board'), (u - .15) / .5);
+    },
+    end: function(el, u){
+      sweep(el.querySelector('.v-board'), (u - .1) / .8);
+      ['name', 'lede', 'qr', 'url', 'fine'].forEach(function(k, j){
+        const n = el.querySelector('.' + k);
+        if (!n) return;
+        const p = easeOut((u - .25 - j * .16) / .45);
+        n.style.opacity = p.toFixed(3);
+        n.style.marginTop = ((1 - p) * 30).toFixed(1) + 'px';
+      });
+    }
+  };
+
+  return { init:init, event:event, screen:screen, render:render };
+})();
+</script>
+</body>
+</html>

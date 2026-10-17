@@ -24,3 +24,5 @@ node_modules/
 npm-debug.log*
 .netlify/
 pgdata/
+# tools/render-video.sh: the video, its cover and the map tiles it keeps
+video-out/

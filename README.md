@@ -29,8 +29,9 @@ company's name or initials, for the same reason.
   anytime. In a browser the screen has to stay on; the Android app in
   `mobile/` keeps sharing with it locked.
 - **Your own stop:** save the stop you wait at and the card under the map
-  draws the next bus coming, your stop, and a dot for every stop still between
-  them — *about 5 stops before yours · 3.0 km* — measured along the road
+  draws the next bus coming down the road to your stop, with a post for every
+  stop still between them, or on board your stop coming up to the windscreen —
+  *about 5 stops before yours · 3.0 km* — measured along the road
   rather than as the crow flies. Two stops out it says **Malapit na!**, and
   **Sakay na!** when yours is next; phones that can vibrate can buzz once.
   Pick from the route's own stop list, or drop a pin. There is also an opt-in ➤
@@ -102,6 +103,13 @@ company's name or initials, for the same reason.
   "are you watching our drivers?" is the first question, then asks — in order —
   to be told if it should stop, for permission to post the flyer, and for
   whatever cooperation suits them, up to handing the whole thing over.
+- **Showcase video:** `sh tools/render-video.sh` makes a one-minute vertical
+  video for Facebook, TikTok and Reels: the real tracker on a phone, with
+  made-up buses, waiting for a bus, sharing it, getting off, the ticket, My
+  tickets and a dressed bus, between drawings made by the app's own picture
+  code, with the interface's sounds (taps, the buzz, the chimes) and room
+  left for music. Nothing it does reaches the database. It needs ffmpeg,
+  Playwright and the CARTO key, and the video is not committed.
 
 ## What it deliberately does not do
 

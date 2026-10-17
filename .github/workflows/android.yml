@@ -1,23 +1,17 @@
-# Builds the Android app in mobile/ and attaches the APK to the run.
+# Builds the Android app in mobile/ as a debug APK and attaches it to the run,
+# to prove a change to the shell still compiles.
 #
 # The app is a Capacitor shell around the live site, so a change to
-# index.html reaches it on the next launch without a new APK. Only a change
+# index.html reaches it on the next launch without a new build. Only a change
 # to mobile/ itself (plugins, permissions, the shell) needs one, which is
 # why this runs on that path and on demand rather than on every commit.
 #
-# Signing. Android only installs an update over an existing app when both
-# carry the same signature, so every APK given to sharers has to come from
-# one key. Set four repository secrets and this builds a signed release:
-#
-#   BUS_KEYSTORE_BASE64     the .jks file, base64-encoded
-#   BUS_KEYSTORE_PASSWORD
-#   BUS_KEY_ALIAS
-#   BUS_KEY_PASSWORD
-#
-# Without them it builds a debug APK, which installs and runs but is signed
-# with a key that is thrown away with the runner, so the next build will not
-# install over it. Fine for trying it out; not for handing to volunteers.
-# mobile/README.md has the one-time keytool command.
+# The debug APK installs and runs, but it is signed with a key thrown away
+# with the runner, so the next build will not install over it, and Play
+# refuses it. The build that goes to Play is android-release.yml's: signed
+# with the upload key from the repository's secrets, and run only on demand.
+# A phone gets the app from Play, or from Play's internal testing while it is
+# being tried (mobile/README.md, "Google Play").
 name: android
 
 on:
@@ -47,29 +41,14 @@ jobs:
       - run: npm ci
       - run: npx cap sync android
       - name: Build
-        env:
-          KEYSTORE_B64: ${{ secrets.BUS_KEYSTORE_BASE64 }}
-          BUS_KEYSTORE_PASSWORD: ${{ secrets.BUS_KEYSTORE_PASSWORD }}
-          BUS_KEY_ALIAS: ${{ secrets.BUS_KEY_ALIAS }}
-          BUS_KEY_PASSWORD: ${{ secrets.BUS_KEY_PASSWORD }}
-          # Android refuses an update whose version code is not higher, so
-          # each run counts up by itself.
-          BUS_VERSION_CODE: ${{ github.run_number }}
         run: |
           set -euo pipefail
           cd android
-          if [ -n "$KEYSTORE_B64" ]; then
-            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/bus.jks"
-            export BUS_KEYSTORE="$RUNNER_TEMP/bus.jks"
-            ./gradlew --no-daemon assembleRelease
-            mkdir -p ../out && cp app/build/outputs/apk/release/app-release.apk ../out/bus-tracker.apk
-          else
-            echo "::warning::No signing key in secrets, building a debug APK. It will not install over a previous build."
-            ./gradlew --no-daemon assembleDebug
-            mkdir -p ../out && cp app/build/outputs/apk/debug/app-debug.apk ../out/bus-tracker-debug.apk
-          fi
+          ./gradlew --no-daemon assembleDebug
+          mkdir -p ../out && cp app/build/outputs/apk/debug/app-debug.apk ../out/bus-tracker-debug.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: bus-tracker-apk
+          name: bus-tracker-debug-apk
           path: mobile/out/*.apk
           if-no-files-found: error
+          retention-days: 14

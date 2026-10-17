@@ -8,7 +8,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode Integer.parseInt(System.getenv("BUS_VERSION_CODE") ?: "1")
-        versionName "1.0"
+        versionName System.getenv("BUS_VERSION_NAME") ?: "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,11 +16,12 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
-    // Release builds are signed with the project's own key when CI provides
-    // it (see .github/workflows/android.yml). Every APK handed to sharers
-    // must carry the same signature, or Android refuses to install the next
-    // one over it and the sharer has to uninstall first. Without the key a
-    // release build comes out unsigned, which is the honest failure.
+    // Release builds are signed with the upload key when CI provides it
+    // (.github/workflows/android-release.yml). Google Play keeps the app's
+    // signing key and re-signs what it delivers, so this key only proves an
+    // upload came from this project. Without it a release build comes out
+    // unsigned, which Play refuses with an error saying exactly that: the
+    // honest failure, rather than a debug-signed bundle that looks uploadable.
     signingConfigs {
         release {
             if (System.getenv('BUS_KEYSTORE')) {

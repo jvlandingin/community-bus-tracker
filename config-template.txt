@@ -42,6 +42,14 @@ CONTACT_EMAIL = you@example.com
 # replace it if the map goes quiet.
 CARTO_API_KEY =
 
+# --- The Android app for sharers (optional) ---
+# mobile/ builds an app that keeps sharing with the screen locked. Once
+# it is published, put its address here: its Google Play page, or any
+# https link to the APK. The sharing tab then offers it to sharers on an
+# Android phone in a browser, and the guide links to it too. Blank
+# offers nothing, which is right for a deployment with no app.
+ANDROID_APP_URL =
+
 # ============================================================
 #  Operating hours, headway, and expiry times are NOT here
 #  any more. They live in the database and are edited in

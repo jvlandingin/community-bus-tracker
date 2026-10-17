@@ -7,6 +7,9 @@
 # If you ever put a secret in a file, put that file here FIRST.
 *.key
 *.pem
+# The Android app's signing key (mobile/README.md), in any of its forms.
+*.jks
+*.keystore
 .env
 .env.*
 secrets*

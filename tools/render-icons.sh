@@ -15,11 +15,17 @@
 #   preview.png                  1200x630, the picture in a link preview;
 #                                tools/write-preview-url.js points og:image at
 #                                it with the site's full address at build time
+#
+# And one for the Google Play listing, into mobile/store (or the same
+# directory as the rest, when one is given):
+#   feature-graphic.png          1024x500, Play's feature graphic. The
+#                                listing's icon is icon-512.png above.
 
 set -eu
 
 OUT="${1:-$(cd "$(dirname "$0")/.." && pwd)/assets/icons}"
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
+STORE="${1:-$ROOT/mobile/store}"
 
 # chrome-headless-shell first. Full Chrome's headless mode (the only one it
 # has since version 132) lays the page out in a viewport about 87px shorter
@@ -46,21 +52,23 @@ if [ -z "$CHROME" ] || [ ! -x "$CHROME" ]; then
   exit 1
 fi
 
-mkdir -p "$OUT"
+mkdir -p "$OUT" "$STORE"
 # --allow-file-access-from-files lets app-icons.html load the site's own font
 # files from ../assets/fonts; without it Chromium refuses a font from another
 # file, and the picture comes out in a fallback face.
 FLAGS="--headless --disable-gpu --no-sandbox --hide-scrollbars --force-color-profile=srgb --force-device-scale-factor=1 --allow-file-access-from-files"
 echo "Chromium: $CHROME"
 
-shot(){ # name width height fragment
+shot(){ # name width height fragment [directory]
+  dir="${5:-$OUT}"
   # shellcheck disable=SC2086
-  "$CHROME" $FLAGS --window-size="$2,$3" --screenshot="$OUT/$1" "file://$ROOT/tools/app-icons.html#$4" 2>/dev/null
-  echo "  wrote $OUT/$1 ($2x$3)"
+  "$CHROME" $FLAGS --window-size="$2,$3" --screenshot="$dir/$1" "file://$ROOT/tools/app-icons.html#$4" 2>/dev/null
+  echo "  wrote $dir/$1 ($2x$3)"
 }
 shot icon-192.png 192 192 icon
 shot icon-512.png 512 512 icon
 shot icon-maskable-512.png 512 512 maskable
 shot apple-touch-icon.png 180 180 icon
 shot preview.png 1200 630 preview
+shot feature-graphic.png 1024 500 feature "$STORE"
 echo "Done."

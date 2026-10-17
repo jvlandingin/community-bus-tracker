@@ -62,13 +62,18 @@ cd mobile && npm ci && npx cap sync android
 cd android && ./gradlew assembleDebug
 ```
 
+The bundle for Google Play is built by `.github/workflows/android-release.yml`
+("Android release bundle" in the Actions tab), only when run by hand: it
+checks the upload key's four secrets, builds and verifies the signed `.aab`,
+and publishes it to a prerelease of its own for the Play Console upload.
+
 Two scripts regenerate committed images from HTML sources. Neither runs at
 deploy time and both need only a Chromium; they prefer `chrome-headless-shell`,
 because full Chrome's headless screenshots leave the bottom 87 px unpainted:
 
 ```
 sh tools/render-flyer.sh     # assets/flyer: poster PDF, briefing PDF, chat image
-sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview picture
+sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview picture; mobile/store: Play's feature graphic
 ```
 
 Two more rewrite committed text. `node tools/embed-fonts.js` copies the font
@@ -100,8 +105,8 @@ CARTO_API_KEY=... sh tools/render-video.sh
 `admin.html` the operator page, `how-to.html` a static guide, `flyer.html` the
 adoption flyer handed to riders, and `for-operators.html` a briefing written for
 the bus company. `config.txt` holds the Supabase URL, anon key, route slug,
-source URL, checkpoints and stops — no secrets, which is why it is committed and
-why a fork deploys straight from git.
+source URL, the Android app's address, checkpoints and stops — no secrets, which
+is why it is committed and why a fork deploys straight from git.
 
 The last two exist because the tracker's real problem is that nobody knows it is
 there. Both are self-contained, load nothing, and print: `flyer.html` prints as a
@@ -386,6 +391,15 @@ and fall back to `navigator.geolocation` everywhere else. All trip logic stays
 in the page, under the existing tests. Keep it that way: logic added to the
 native side has no tests and no browser twin. `test-boot.js` section 11 boots
 the page with a stand-in bridge. `mobile/README.md` has the signing rules.
+**It goes out through Google Play** (October 2026). Play keeps the app's
+signing key and the repository's secrets hold only the upload key, which
+`android-release.yml`, run by hand, checks before it builds the bundle; no
+copy is handed out as an APK. The site offers it in one line only, `renderAppLine()` on the sharing
+tab: in an Android browser, before a trip, once `ANDROID_APP_URL` in
+`config.txt` names it, and never inside the app, on an iPhone or on the
+tracking tab. `#privacy` opens the privacy panel, which is Play's privacy
+policy for the site and the app alike. `test-boot.js` section 15 holds both;
+`docs/ARCHITECTURE.md`, "The Android app", has why Play and not an APK link.
 
 **Colours come in fill/ink pairs.** `--maroon`/`--brand-ink`,
 `--gold`/`--gold-deep`, `--lost`/`--lost-ink`, `--mine`/`--mine-ink`. The first of each pair is a
@@ -460,7 +474,11 @@ call to action, and a filter list that hides it leaves a poster-shaped page
 with no way to reach the tracker. The second half of the list arrived with the
 salamat button, which is the most Like-shaped control this app will ever ship
 and sits on the reader's side, where losing it to a filter would never be
-reported. `star` is deliberately absent — it is inside `start`.
+reported. `star` is deliberately absent — it is inside `start`. Nor anything
+named like a "get our app" banner, which a list behind Brave's "open in app"
+blocking hides by name: no `app` beside `banner`, `install`, `download`,
+`get`, `open` or `promo` (section 8 again). The line that offers the Android
+app is `#gpsAppLine` for that reason.
 
 **Reads do not write.** Cleanup happens in `_sweep()`, called only from writes.
 An earlier version ran a DELETE on every read and was documented as fixed long

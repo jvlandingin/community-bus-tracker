@@ -1567,6 +1567,14 @@ neighbouring file when Chromium is told to allow it, so the script passes
 board, so a fork edits the words there, runs `make-pictures.js`, and re-runs
 the script.
 
+**Google Play's pictures come from the same page.** The store's icon is
+`icon-512.png`, already the full-bleed square Play wants. Its feature graphic,
+1024 by 500, is the page's `#feature` picture, which the script writes to
+`mobile/store/`: the preview's pieces laid out again, with words for the
+sharer on board. The preview's own words say "no app", which is true of the
+site and wrong on a store page. It has a board of its own, which
+`make-pictures.js` draws like the rest.
+
 **The link preview's picture needs a full address**, because the crawlers that
 build preview cards will not resolve a relative one, and `index.html` cannot
 know its own address. So the committed `og:image` is relative, and
@@ -1812,6 +1820,18 @@ Riding to your stop added `boardBus`/`leaveBus`, `aboard*`, `.ride-acts`,
 `#tripStop` and the tab's `.tablive` dot. None of them is the kind of thing a filter list
 hunts for, and the scan agrees.
 
+A fourth list arrived with the line that offers the Android app. Fanboy's
+Mobile Notifications List, the one behind Brave's blocking of "open in app"
+prompts and part of Fanboy's Annoyance List, hides "get our app" banners by
+name: `.mobile-app-banner`, `.open-app-banner`, `#bannerInstallApp`,
+`.headerGetApp` and about forty more, each an exact name. So the line is
+`#gpsAppLine`, named for the hint it sits in, and its link has no name at all.
+The scan in `test-boot.js` section 8 asks for something broader than any one
+rule: no name that puts "app" next to banner, install, download, get, open or
+promo. In October 2026 that caught 38 of the list's 41 such names, and nothing
+on the five pages. None of these lists hides a link by where it points, so a
+link to Google Play is safe as long as it is not named like a banner.
+
 ## Known limitations
 
 **Screen must stay on while sharing in a browser.** A browser gives a page no
@@ -1916,8 +1936,57 @@ Nothing about the data model changes. No new request, no new table, no
 location kept on the phone, and no `ACCESS_BACKGROUND_LOCATION`: the service
 only starts from a tap on Start with the app on screen, and its notification
 cannot be dismissed while it runs. `mobile/README.md` has the build, the
-signing key that every APK handed out must share, and the real-trip checks
-that have not been done yet.
+signing key that every APK handed out must share, publishing on Google Play,
+and the real-trip checks that have not been done yet.
+
+**Getting it** (October 2026). The app goes out through Google Play, and the
+website offers it in one place: on the sharing tab, "Keep the screen on"
+becomes "Keep the screen on, or get the app and lock it" (`renderAppLine()`).
+Only in an Android browser, because an iPhone has no app and inside the app
+the line would be offering itself. Only before a trip (`.trip-on` hides it),
+because an app started mid-trip is a second bus beside the page's own until
+that one goes stale. Never on the tracking tab: watching never needs the app,
+and the flyer's promise is that there is nothing to download. The address is
+`ANDROID_APP_URL` in `config.txt`, blank in the template, so a fork with no
+app offers nothing; the guide's notes on sharing read the same line, and say
+to ask the organizer without it.
+
+Play, rather than an APK linked from the site, for three reasons. An APK from
+a link in a chat is the shape of the scam apps riders here are rightly warned
+about, and on the budget phones common on this route it means a warning, a
+detour into settings and a scan before it installs; from Play it is one tap.
+Play updates the shell by itself, where an APK stays whatever version it was.
+And Google is closing the other way in: since 30 September 2026 the major
+stores in Brazil, Indonesia, Singapore and Thailand install only apps from
+developers who have verified their identity with Google, and Google's stated
+plan takes that worldwide from 2027 and later to direct downloads. A developer
+verified through Play Console can register an APK handed out directly as
+well, so that stays possible as a fallback.
+
+Play keeps the app's signing key (Play App Signing), and this project holds
+only the upload key that proves a bundle came from here: a lost upload key is
+reset in Play Console, where a lost signing key would strand every installed
+copy. So every copy of the app comes from Play and carries Play's signature,
+testers' included, through the internal and closed testing tracks. Nothing is
+handed out as an APK signed any other way, because moving between the two
+would mean an uninstall, which deletes everything the app's WebView keeps, My
+tickets and the sharer's bus included. The upload key is checked before every
+release build (`android-release.yml`, run only on demand), because Gradle only
+reads it at the end of one and then says only that it could not.
+
+**The privacy policy is the privacy panel.** Play asks every app for a
+privacy policy at a public address and inside the app. `#privacy` opens the
+panel (`privacyFromLink()`), and the panel says what Play asks a policy to
+say: that it is the privacy policy, which app it covers, what is collected,
+who sees it, how it travels and when it is deleted. One text for the site
+and the app, so the two cannot disagree. Its line on the app says that Google
+knows who installed it from Play, and that Play shows the organizer only
+totals, never who.
+
+The background-geolocation plugin takes its fixes from Google Play services'
+fused location provider, so a phone without Play services, like most Huawei
+phones launched since 2019, cannot run the app from any source. That is not a
+reason to keep an APK route: the APK would install and then get no GPS.
 
 ## Testing
 

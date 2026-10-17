@@ -1284,6 +1284,59 @@ function run(page, include, label, configText, setup) {
     check(!w.eval('sharing') && watchesOpen() === 0 && /Location is off/.test(status()),
       'location switched off ends the trip straight away, and says why', status());
 
+    // A hidden page gets no GPS, and no error either: browsers hold every fix
+    // back until the page is on screen again and pause the watch's timeout.
+    // The heartbeat used to fill that silence with the last fix, so a bus that
+    // had driven on looked live, standing where the screen went off.
+    {
+      await startTrip();
+      const setHidden = hidden => {
+        Object.defineProperty(d, 'hidden', { value: hidden, configurable: true });
+        Object.defineProperty(d, 'visibilityState', { value: hidden ? 'hidden' : 'visible', configurable: true });
+        d.dispatchEvent(new w.Event('visibilitychange'));
+      };
+      const writes = () => of('set_keyed_position').length;
+      // The heartbeat, asked now rather than in 21 seconds: how many writes it sent.
+      const beat = async () => {
+        const before = writes();
+        w.eval('lastWrite = 0');
+        w.tripHeartbeat();
+        await waitFor(() => writes() > before, 500);
+        return writes() - before;
+      };
+      check(await beat() === 1, 'on screen, the heartbeat re-sends the last fix of a bus standing still');
+      setHidden(true);
+      check(await beat() === 0 && w.eval('sharing') === true,
+        'hidden, it sends nothing, and the trip carries on: the last fix is no longer known to be true');
+      setHidden(false);
+      check(await beat() === 0, 'back on screen, it waits for a fresh fix');
+      await writeNow();
+      check(await beat() === 1, 'and carries on once one arrives');
+
+      // Answering a trip question puts the bus back with the last fix, but
+      // not with one from before the page was hidden.
+      w.onWrongDirection({});
+      setHidden(true);
+      setHidden(false);
+      const before = writes();
+      w.askNo();
+      await pause(150);
+      check(writes() === before && w.eval('guardPaused') === false,
+        'a question answered after the screen was off sends no old fix', `${writes() - before} writes`);
+      await writeNow();
+      check(writes() > before, 'the next fix puts the bus back');
+
+      // The app's GPS keeps going with the screen locked, so there the last
+      // fix stays good.
+      w.Capacitor = { isNativePlatform: () => true, Plugins: { BackgroundGeolocation: {} } };
+      setHidden(true);
+      check(await beat() === 1, 'in the Android app, whose GPS runs with the screen locked, a hidden page changes nothing');
+      setHidden(false);
+      delete w.Capacitor;
+      delete d.hidden; delete d.visibilityState;
+      await w.stopSharing();
+    }
+
     // Half an hour on the map without going anywhere, the bus waiting at the
     // terminal with sharing on, then Stop where it started: no ticket.
     await startTrip();

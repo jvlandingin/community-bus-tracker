@@ -25,6 +25,45 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-17 — Could the website share with the screen locked?
+
+The maintainer asked whether sharing could go on with the page minimised or the
+phone locked, or whether an app is the only way. Checked against the standard,
+the three browser engines' source and the platforms' current rules.
+
+- **The website cannot, and nothing coming would let it.** The Geolocation
+  standard (March 2026) delivers positions only to "fully-active visible
+  documents", Chrome, Safari and Firefox enforce it in code, and the spec's
+  editor closed background location as out of scope in 2021. Keep-alive tricks
+  such as silent audio keep a page running, not visible; service workers have
+  no geolocation; an installed web app, a WebAPK and a Trusted Web Activity are
+  all still Chrome. Safari 26 and 27 added nothing for iPhones.
+- **It turned up a bug instead**: a hidden page's heartbeat kept re-sending the
+  last fix, so a bus looked live where the screen went off. Fixed the same day;
+  `docs/ARCHITECTURE.md`, "When a trip is interrupted".
+- **Split screen may keep a browser sharer going on Android.** Chrome hides a
+  tab only when Android stops its window, which split screen and pop-up windows
+  do not. Read in Chrome's source, not tried on a phone: try it before the guide
+  says so.
+- **The app will need registering in 2027.** Since 30 September 2026 Google's
+  developer verification covers only installs from app stores in Brazil,
+  Indonesia, Singapore and Thailand, and says sideloads are not covered "yet";
+  it goes worldwide in 2027, no month given. After that an unregistered APK
+  installs only through a one-time "advanced flow" with a day's wait, or adb.
+  Registering costs $25 and an ID and ties the package to the signing key.
+  Google Play is the other route (a closed test of 12 testers for 14 days, and a
+  video of the location service for its declaration). F-Droid is out while the
+  GPS plugin needs Google Play Services.
+- **Not known before:** that plugin takes its fixes from Google's fused location
+  with no fallback, so it probably fails on Huawei phones sold without Google
+  services. Worth knowing before the APK goes to one.
+- **iPhone:** a native build of the same plugin could keep sharing with "While
+  Using" permission, at $99 a year, a Mac to build on, and an App Review that
+  rejects repackaged websites; TestFlight would be the way in. Off-the-shelf
+  trackers (OwnTracks, Traccar Client and others) were looked at and set aside:
+  they skip the trip's guards and Stop, keep reporting until someone remembers
+  to switch them off, and several keep a log on the phone.
+
 ## 2026-10-16 — The saved stop's card draws the bus coming
 
 Watching the video, the maintainer saw that the saved stop's card looked the

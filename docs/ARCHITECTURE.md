@@ -1983,6 +1983,20 @@ and the app, so the two cannot disagree. Its line on the app says that Google
 knows who installed it from Play, and that Play shows the organizer only
 totals, never who.
 
+**The closed test signs itself up.** A new personal account goes public only
+after 12 testers have stayed in a closed test for 14 days in a row, and Google
+refuses production when they installed and never used the app. `testers.html`
+takes a rider through three taps on their own phone: join a Google Group that
+anyone can join, which is the test's tester list in Play Console; tap Become a
+tester on Play's page for the package; install. Nobody sends an email address
+and the organizer adds nobody by hand. The group's posts are for members only,
+so Google tells everyone else they have no permission, and Play says "App not
+available" to an account not in the group yet: the page says both are normal
+where they happen, because each is where a tester decides it is broken and
+stops. It asks for riding, not installing. Like the guide it loads nothing;
+unlike it, it runs no script, so a blocker or an old phone cannot leave three
+buttons that do nothing. Nothing links to it until the test opens.
+
 The background-geolocation plugin takes its fixes from Google Play services'
 fused location provider, so a phone without Play services, like most Huawei
 phones launched since 2019, cannot run the app from any source. That is not a

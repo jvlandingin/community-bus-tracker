@@ -174,6 +174,14 @@ so a release's notes name the web changes it brings to testers too. Internal
 testing, open to every account, is how the first builds reach volunteers; it
 does not count towards the 12.
 
+**Testers sign themselves up** at `testers.html` on the site: they join the
+Google Group `fibi-testers@googlegroups.com`, tap Become a tester on Play's
+page for the app, and install. The group is the closed test's tester list
+(the track's Testers tab, Google Groups), so nobody's email is collected and
+nobody is added by hand. Set the group so anyone can join, only members see
+its posts and only managers see who is in it. Nothing links to the page until
+the closed test opens; then the flyer and the riders' chat can.
+
 The app takes its location from Google Play services, so a phone without
 them, like most Huawei phones launched since 2019, cannot run it from any
 source.

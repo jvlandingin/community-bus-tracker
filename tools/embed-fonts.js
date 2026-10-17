@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// Copies the app's typeface into the three pages that load nothing.
+// Copies the app's typeface into the four pages that load nothing.
 //
-// The guide, the flyer and the operator briefing are built to stand on their
-// own: opened from a saved file, printed to PDF, or served from a deploy that
-// lost assets/, each still has to look like the app it describes. They load
-// no file of any kind (test-boot.js fails if a src comes back), so the
-// tracker's font files cannot simply be linked from them. Instead each page
-// carries the same five files inline, as data URIs, between two marker
-// comments in its <style> block, and this writes them there.
+// The guide, the flyer, the operator briefing and the tester page are built
+// to stand on their own: opened from a saved file, printed to PDF, or served
+// from a deploy that lost assets/, each still has to look like the app it
+// describes. They load no file of any kind (test-boot.js fails if a src comes
+// back), so the tracker's font files cannot simply be linked from them.
+// Instead each page carries the same five files inline, as data URIs, between
+// two marker comments in its <style> block, and this writes them there.
 //
 // The bytes are the ones in assets/fonts, unchanged, so the static pages and
 // the tracker draw exactly the same letters. tests/test-tokens.js decodes
@@ -18,13 +18,13 @@
 //   node tools/embed-fonts.js
 //
 // About 62 KB per page. That is the price of "loads nothing", paid on the
-// three pages that are read once rather than opened every morning.
+// four pages that are read once rather than opened every morning.
 'use strict';
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const PAGES = ['how-to.html', 'flyer.html', 'for-operators.html'];
+const PAGES = ['how-to.html', 'flyer.html', 'for-operators.html', 'testers.html'];
 const FACES = [
   ['Barlow Semi Condensed', 500, 'barlow-semi-condensed-500.v1.woff2'],
   ['Barlow Semi Condensed', 600, 'barlow-semi-condensed-600.v1.woff2'],

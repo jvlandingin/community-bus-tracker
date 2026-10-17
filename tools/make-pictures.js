@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Draws the tracker's pictures into the pages that cannot draw their own: the
 // dot-matrix route board, the view from the ridge that covers the guide, the
-// flyer and the briefing, the picture on the guide's salamat ticket, the
-// guide's pictures of your bus, standing and on the road, and the saved
-// stop's picture in the guide, the flyer and the briefing.
+// flyer, the briefing and the tester page, the picture on the guide's salamat
+// ticket, the guide's pictures of your bus, standing and on the road, and the
+// saved stop's picture in the guide, the flyer and the briefing.
 //
 // The tracker draws its board at load (drawSignboard in index.html) and its
 // scenes on the empty map (renderMapNote). The guide, the flyer and the
@@ -59,7 +59,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const FILES = ['how-to.html', 'flyer.html', 'for-operators.html', 'tools/app-icons.html'];
+const FILES = ['how-to.html', 'flyer.html', 'for-operators.html', 'testers.html', 'tools/app-icons.html'];
 
 function block(html, start, end) {
   const a = html.indexOf(start), b = html.indexOf(end);

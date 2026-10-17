@@ -214,7 +214,7 @@ function run(page, include, label, configText, setup) {
   // whole purpose is one call to action, and a filter list that hides it
   // leaves a poster-shaped page with no way to reach the tracker. Same silent
   // failure as the start button, with nobody on the page to report it.
-  for (const page of ['index.html', 'admin.html', 'flyer.html', 'for-operators.html']) {
+  for (const page of ['index.html', 'admin.html', 'flyer.html', 'for-operators.html', 'testers.html']) {
     const found = (fs.readFileSync(path.join(APP, page), 'utf8')
       .match(/(?:id|class)="[^"]*share[^"]*"/gi) || []);
     check(found.length === 0, `${page}: none in the source either, including markup built in JS`,
@@ -311,7 +311,9 @@ function run(page, include, label, configText, setup) {
   // own copy of the token block so it survives being opened on its own or
   // printed. Everything the guide is held to above, they are held to too:
   // load nothing, link back to the map, and stay in step with the app.
-  for (const page of ['flyer.html', 'for-operators.html']) {
+  // The closed test's tester page draws no screen, but it is built the same
+  // way for the same reasons, so it is held to the same three.
+  for (const page of ['flyer.html', 'for-operators.html', 'testers.html']) {
     const p = path.join(APP, page);
     check(fs.existsSync(p), `${page} is in the repository`);
     if (!fs.existsSync(p)) continue;
@@ -342,6 +344,23 @@ function run(page, include, label, configText, setup) {
     if (page === 'flyer.html') {
       check(/aria-label="QR code[^"]*"/.test(src) && /<path fill="#000" d="M[\d ]/.test(src),
         `${page}: the QR code is still an inline path, not a loaded image`);
+    }
+
+    // The tester page is three buttons a rider taps in order. It runs no
+    // script, so nothing a blocker or an old phone does to one can leave a
+    // page of buttons that do nothing. And Play opens the test only for the
+    // package it knows, which is the one the Android app is built with: a
+    // link naming any other leads a tester to "App not available" for good.
+    if (page === 'testers.html') {
+      check(!/<script/i.test(src), `${page}: runs no script at all`);
+      const appId = JSON.parse(fs.readFileSync(path.join(APP, 'mobile', 'capacitor.config.json'), 'utf8')).appId;
+      const play = src.match(/href="https:\/\/play\.google\.com\/[^"]+"/g) || [];
+      check(play.length >= 2 && play.every(h => h.includes('=' + appId + '"') || h.endsWith('/' + appId + '"')),
+        `${page}: every Play link names the app's package`, play.length + ' links, ' + appId);
+      check(/href="https:\/\/groups\.google\.com\/g\/[\w-]+"/.test(src) &&
+            /href="https:\/\/play\.google\.com\/apps\/testing\//.test(src) &&
+            /href="https:\/\/play\.google\.com\/store\/apps\/details\?id=/.test(src),
+        `${page}: all three steps are there: the group, becoming a tester, the listing`);
     }
   }
 
@@ -379,7 +398,7 @@ function run(page, include, label, configText, setup) {
   check(!/<script[^>]+src=/i.test(guideSrc),
     'and it asks about the setting with fetch, not by loading a library');
 
-  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html']) {
+  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html']) {
     const copies = darkCopies(fs.readFileSync(path.join(APP, page), 'utf8'));
     check(copies.length === 2 && copies[0] === copies[1] && copies[0].length > 0,
       `${page}: both statements of the dark palette are identical`,
@@ -389,7 +408,7 @@ function run(page, include, label, configText, setup) {
 
   // Section 7's lesson, a different filter list: blockers hide live-chat and
   // help widgets by name too, so the link must not be named like one.
-  for (const page of ['index.html', 'how-to.html', 'flyer.html', 'for-operators.html']) {
+  for (const page of ['index.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html']) {
     const found = (fs.readFileSync(path.join(APP, page), 'utf8')
       .match(/(?:id|class)="[^"]*(?:help|support|chat|widget)[^"]*"/gi) || []);
     check(found.length === 0, `${page}: nothing reads as a help or chat widget`,
@@ -406,7 +425,7 @@ function run(page, include, label, configText, setup) {
   // page is full of, and a scan that cries wolf on onbusStartBtn is a scan
   // somebody eventually deletes. Filter rules for it are written against
   // star-rating widgets, which nothing here will ever be.
-  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html']) {
+  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html']) {
     const found = (fs.readFileSync(path.join(APP, page), 'utf8')
       .match(/(?:id|class|onclick)="[^"]*(?:like|fav|thumb|heart|vote|social|clap)[^"]*"/gi) || []);
     check(found.length === 0, `${page}: nothing reads as a like or social widget`,
@@ -421,7 +440,7 @@ function run(page, include, label, configText, setup) {
   // 38 of the 41 such names on the list, and nothing on these pages. The line
   // itself is #gpsAppLine, named for the hint it sits in, and its link has no
   // name at all.
-  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html']) {
+  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html']) {
     const found = (fs.readFileSync(path.join(APP, page), 'utf8')
       .match(/(?:id|class|onclick)="[^"]*(?:app[\w-]*(?:banner|bnr|install|instl|download|down|open|promo|cta)|(?:banner|bnr|install|instl|download|promo|get|open|link|webto)[\w-]{0,4}app|smart[-_]?(?:banner|bnr))[^"]*"/gi) || []);
     check(found.length === 0, `${page}: nothing reads as a "get our app" banner`,
@@ -1550,6 +1569,11 @@ function run(page, include, label, configText, setup) {
       check(!/class="rideart still"/.test(waitPop()), 'and the first report from 300 m on puts it back on the road');
       await pollWith({ data: [] });
       check(w.eval('BUSES').length === 0 && w.eval('Object.keys(STANDS).length') === 0, 'a bus gone from the map leaves nothing behind');
+      // The maintainer's call (October 2026): an empty map no longer opens
+      // the sightings board; it stays folded until the reader taps it.
+      const sightFold = w.document.getElementById('sightFold');
+      check(w.eval('sightingsOn()') && sightFold && !sightFold.open,
+        'and an empty map leaves the sightings board folded until tapped');
       sim.reply.get_positions = () => ({ data: [] });
 
       // Another tab still sharing it: left alone.

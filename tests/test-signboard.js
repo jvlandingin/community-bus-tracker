@@ -84,7 +84,7 @@ console.log('\n=== 5. the boards drawn into other pages are current ===');
 // beside a board change, or the renderer does, the picture is out of date
 // until the tool is run again.
 // The icon page's two are the link preview's and Google Play's feature graphic's.
-const expect = { 'how-to.html': 1, 'flyer.html': 2, 'for-operators.html': 1, 'tools/app-icons.html': 2 };
+const expect = { 'how-to.html': 1, 'flyer.html': 2, 'for-operators.html': 1, 'testers.html': 1, 'tools/app-icons.html': 2 };
 for (const f of tool.FILES) {
   const src = read(f);
   const bs = tool.boards(src, S);
@@ -106,7 +106,7 @@ const bodyPath = (coachBody.match(/fill-rule="evenodd" d="([^"]+)"/) || [])[1] |
 check(bodyPath && fav.includes(bodyPath), 'the favicon is the coach the map draws', fav.length + ' bytes');
 check(fav.includes('fill=\'%237a1f2b\'') && fav.includes('fill=\'%23e39a1c\'') && fav.includes('fill=\'%23ffb22e\''),
   'on maroon, with the gold trim and the signboard lit');
-for (const p of ['how-to.html', 'flyer.html', 'for-operators.html']) check(icon(p) === fav, `${p}: carries the same favicon`);
+for (const p of ['how-to.html', 'flyer.html', 'for-operators.html', 'testers.html']) check(icon(p) === fav, `${p}: carries the same favicon`);
 const adm = icon('admin.html');
 check(adm !== fav && adm.replace('%232b2320', '%237a1f2b') === fav, 'admin.html: the same coach on ink, so its tab is told apart');
 const src = read('tools/app-icons.html');

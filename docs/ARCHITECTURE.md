@@ -162,9 +162,12 @@ revisit with a realtime channel plus a matching security model.
 under the map. `<details>` rather than a scripted accordion because it is
 focusable, keyboard-operable and announced for free, and still opens if the
 script never runs. The rule for what may fold: only a second question. The
-answer itself never folds, which is why the sightings board opens itself when
-no buses are live (see `revealSightings` in `index.html`) — with nobody sharing
-GPS it stops being a footnote and becomes the only answer available.
+answer itself never folds. The sightings board used to open itself when no
+buses were live, as the only answer available; since October 2026 it stays
+folded until tapped, because the strip draws every sighting as a glowing
+stretch and the headline names the newest in words, so the answer is on screen
+without the form, and the maintainer found the home screen overwhelming with
+it open. Its summary line still says how many sightings are posted.
 
 **Colours come in fill/ink pairs.** `--maroon`, `--gold`, `--lost` and
 `--mine` are fills, with white or near-black text sitting on them.
@@ -1982,6 +1985,20 @@ who sees it, how it travels and when it is deleted. One text for the site
 and the app, so the two cannot disagree. Its line on the app says that Google
 knows who installed it from Play, and that Play shows the organizer only
 totals, never who.
+
+**The closed test signs itself up.** A new personal account goes public only
+after 12 testers have stayed in a closed test for 14 days in a row, and Google
+refuses production when they installed and never used the app. `testers.html`
+takes a rider through three taps on their own phone: join a Google Group that
+anyone can join, which is the test's tester list in Play Console; tap Become a
+tester on Play's page for the package; install. Nobody sends an email address
+and the organizer adds nobody by hand. The group's posts are for members only,
+so Google tells everyone else they have no permission, and Play says "App not
+available" to an account not in the group yet: the page says both are normal
+where they happen, because each is where a tester decides it is broken and
+stops. It asks for riding, not installing. Like the guide it loads nothing;
+unlike it, it runs no script, so a blocker or an old phone cannot leave three
+buttons that do nothing. Nothing links to it until the test opens.
 
 The background-geolocation plugin takes its fixes from Google Play services'
 fused location provider, so a phone without Play services, like most Huawei

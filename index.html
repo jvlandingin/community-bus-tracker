@@ -2187,9 +2187,12 @@
       </div>
     </details>
 
-    <!-- Folded while buses are live, opened by renderBuses() when none are:
-         when nobody is sharing GPS this board is the only thing on the page
-         that answers the question, so it must not be a tap away then. -->
+    <!-- Folded until the reader opens it, live buses or not. It used to open
+         itself when none were, as the only answer on the page; the strip now
+         draws every sighting as a glowing stretch and the headline says the
+         newest in words, so the answer is on screen without the form, and
+         the open form made the home screen too much (October 2026). The
+         summary line still says how many are posted. -->
     <details class="card fold" id="sightFold">
       <summary>
         <span class="lbl">
@@ -6305,7 +6308,6 @@ function renderBuses() {
       ? 'Nobody is sharing right now.'
       : 'Nobody is sharing right now. Seen one? Post it below.';
   }
-  revealSightings(shown.length === 0);
 }
 
 // "A bus reported leaving Mendez Crossing at 3:40 PM is probably between
@@ -6320,35 +6322,10 @@ function departedSentence(s){
     ' is probably ' + spanWords(s.span, CHECKPOINTS) + ', going by past trips.';
 }
 
-// The sightings board is folded away while buses are live and opens itself
-// when none are, because that is exactly when it stops being a footnote and
-// becomes the only answer on the page. Once the reader has opened or closed
-// it by hand, their choice wins for the rest of the visit — an accordion
-// that fights the person using it is worse than one that never moves.
-let sightTouched = false;
-// Opens, never closes. Auto-closing was symmetrical and wrong: a bus coming
-// live while someone is part-way through reading the board would have shut it
-// in their face, and the same thing happened the moment they posted a sighting
-// of their own. Taking something away is never as harmless as offering it.
+// Whether the first positions fetch has landed. Until it has, "No buses live"
+// is the placeholder the page starts on rather than a fact, so nothing that
+// speaks about an empty map may act on it.
 let positionsLoaded = false;
-function revealSightings(shouldOpen){
-  const d = document.getElementById('sightFold');
-  if (!d || !sightingsOn() || sightTouched || !shouldOpen) return;
-  // "No buses live" is the placeholder the page starts on, not a fact, until
-  // the first fetch has actually landed. Opening the board on it meant that
-  // every load flashed the board open a moment before the buses arrived --
-  // and since this only ever opens, it then stayed open all session.
-  if (!positionsLoaded) return;
-  d.open = true;
-}
-// Listening for a click on the summary rather than for the element's own
-// toggle event: toggle also fires for the automatic open above, and it is
-// dispatched asynchronously, so telling the two apart afterwards is a race.
-// A click here is always a person. Keyboard activation fires one too.
-(function(){
-  const s = document.querySelector('#sightFold > summary');
-  if (s) s.addEventListener('click', function(){ sightTouched = true; });
-})();
 
 // Leaflet animates pans and zooms itself, so CSS cannot reach them.
 function reducedMotion(){

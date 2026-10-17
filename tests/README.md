@@ -32,9 +32,9 @@ attribute, a string a script builds markup from), and fails if `index.html`
 or `admin.html` uses a text size, corner, shadow, speed or typeface that is
 not one of the tokens at the top of `index.html`. A literal that is allowed
 on purpose goes in its `EXCEPTIONS` list with the reason, and an entry that
-stops matching anything fails too. It also checks that the other four pages
+stops matching anything fails too. It also checks that the other five pages
 carry every token with the app's values, that the fonts inlined into the
-three static pages are byte for byte the files in `assets/fonts` (if not, run
+four static pages are byte for byte the files in `assets/fonts` (if not, run
 `node tools/embed-fonts.js`), and that every icon a page copies from the
 tracker's sprite is unchanged. `tools/styleguide.html` draws everything it
 holds the pages to.

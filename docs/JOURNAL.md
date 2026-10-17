@@ -25,6 +25,36 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-17: The sightings board stays folded
+
+The maintainer found the home screen overwhelming, and asked for "post a
+sighting" to start minimized. It used to open itself whenever no bus was
+live, on the reasoning that it was then the only answer on the page. That
+reasoning is older than the strip's glowing stretches: every sighting is now
+drawn on the strip and the newest is named in the headline, so the answer is
+already on screen and only the form was being opened. Its summary line still
+says how many sightings are posted. `test-boot.js` checks an empty map leaves
+it folded.
+
+---
+
+## 2026-10-17: Testers sign themselves up
+
+The closed test needs 12 testers who stay in for 14 days in a row and really
+use the app. Collecting their email addresses and adding them by hand was the
+first plan, and the maintainer asked instead for the way a sister project
+runs its test: a Google Group anyone can join is the tester list, and a page
+walks a rider through it. So `testers.html` is three taps on the rider's own
+phone (join the group, become a tester, install), with a line at each of the
+two screens that look broken and are not. Its ask is riding, not installing:
+the sister project was refused production because its testers installed and
+then rarely opened the app.
+
+Play Console offered Google Groups for the closed test but showed only email
+lists for internal testing, so the first internal build goes to a short email
+list and the group waits for the closed test. The page is not linked from the
+tracker, the flyer or the briefing until that test opens.
+
 ## 2026-10-17 — The app goes through Google Play
 
 Asked next: offer the Android app from the website, or publish it on Google

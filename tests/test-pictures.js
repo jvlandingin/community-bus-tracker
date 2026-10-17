@@ -243,7 +243,7 @@ console.log('\n=== 6b. a ticket\'s luck, drawn ===');
 }
 
 console.log('\n=== 7. the copies in other pages are current ===');
-const expect = { 'how-to.html': 1, 'flyer.html': 1, 'for-operators.html': 1, 'tools/app-icons.html': 0 };
+const expect = { 'how-to.html': 1, 'flyer.html': 1, 'for-operators.html': 1, 'testers.html': 1, 'tools/app-icons.html': 0 };
 for (const f of tool.FILES) {
   const src = read(f);
   const sc = tool.scenes(src, S);

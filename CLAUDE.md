@@ -77,17 +77,17 @@ sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview pic
 ```
 
 Two more rewrite committed text. `node tools/embed-fonts.js` copies the font
-files in `assets/fonts/` into the three static pages as data URIs; run it after
+files in `assets/fonts/` into the four static pages as data URIs; run it after
 replacing a font file. `node tools/make-pictures.js` draws the dot-matrix route
-board into the guide, the flyer, the briefing and `tools/app-icons.html`, from
-the words beside each board, the scenes that cover the three pages, and the
-picture on the guide's ticket, with `index.html`'s own code; run it after
-changing those words or the drawings. It also draws the guide's pictures of
-your bus, from the decorations and paint named in each `<!-- mybus keys=…
-paint=… -->` marker, the bus on the road in its popup, from `<!-- ride
-views=… sky=… -->`, and the saved stop's picture in the guide, the flyer and
-the briefing, from `<!-- stopview p=… sky=… -->`.
-`test-tokens.js`, `test-signboard.js` and `test-pictures.js` fail until you do.
+board into the guide, the flyer, the briefing, the tester page and
+`tools/app-icons.html`, from the words beside each board, the scenes that cover
+those four pages, and the picture on the guide's ticket, with `index.html`'s
+own code; run it after changing those words or the drawings. It also draws the
+guide's pictures of your bus, from the decorations and paint named in each
+`<!-- mybus keys=… paint=… -->` marker, the bus on the road in its popup, from
+`<!-- ride views=… sky=… -->`, and the saved stop's picture in the guide, the
+flyer and the briefing, from `<!-- stopview p=… sky=… -->`. `test-tokens.js`,
+`test-signboard.js` and `test-pictures.js` fail until you do.
 
 One more makes the showcase video: a minute of the real tracker on a phone,
 with made-up buses, for posting where riders are. It needs ffmpeg, the map
@@ -101,20 +101,31 @@ CARTO_API_KEY=... sh tools/render-video.sh
 
 ## Architecture
 
-**Five pages, one config file.** `index.html` is the tracker (watch + share),
+**Six pages, one config file.** `index.html` is the tracker (watch + share),
 `admin.html` the operator page, `how-to.html` a static guide, `flyer.html` the
-adoption flyer handed to riders, and `for-operators.html` a briefing written for
-the bus company. `config.txt` holds the Supabase URL, anon key, route slug,
-source URL, the Android app's address, checkpoints and stops — no secrets, which
-is why it is committed and why a fork deploys straight from git.
+adoption flyer handed to riders, `for-operators.html` a briefing written for
+the bus company, and `testers.html` the Android app's closed test.
+`config.txt` holds the Supabase URL, anon key, route slug, source URL, the
+Android app's address, checkpoints and stops — no secrets, which is why it is
+committed and why a fork deploys straight from git.
 
-The last two exist because the tracker's real problem is that nobody knows it is
-there. Both are self-contained, load nothing, and print: `flyer.html` prints as a
-one-page A4 poster for a terminal wall, `for-operators.html` as a document to
-attach to an email. `tools/render-flyer.sh` drives headless Chromium to produce
-both plus a chat-sized PNG, and `tools/make-qr.js` regenerates the flyer's QR
-code as an inline path when the deployment URL changes. Neither tool runs at
-deploy time and neither needs anything installed.
+The flyer and the briefing exist because the tracker's real problem is that
+nobody knows it is there. Both are self-contained, load nothing, and print:
+`flyer.html` prints as a one-page A4 poster for a terminal wall,
+`for-operators.html` as a document to attach to an email.
+`tools/render-flyer.sh` drives headless Chromium to produce both plus a
+chat-sized PNG, and `tools/make-qr.js` regenerates the flyer's QR code as an
+inline path when the deployment URL changes. Neither tool runs at deploy time
+and neither needs anything installed.
+
+**`testers.html` signs riders up for the closed test** (October 2026), in
+three taps on their own phone: join the Google Group that is the test's tester
+list, become a tester on Play, install. Nobody sends anybody an email address.
+Its ask is riding, not installing, because Google refuses production when
+testers installed and never used the app. It loads nothing and runs no script
+at all, and nothing links to it until the closed test opens; the group's name
+and the package in its links are this deployment's, so a fork edits them.
+`test-boot.js` section 8 checks its Play links name the app's package.
 
 **It is called Bus Tracker**, never by the bus company's initials: a link
 preview is read before the disclaimers are. `manifest.webmanifest` and
@@ -406,7 +417,7 @@ policy for the site and the app alike. `test-boot.js` section 15 holds both;
 background with white or near-black text on it; the second is the same colour
 used as text. They are nearly identical in the light theme and completely
 different in dark, so pick by what the colour is doing — painting a shape, or
-spelling a word. All five pages carry their own copy of the token block and
+spelling a word. All six pages carry their own copy of the token block and
 `test-boot.js` fails if they drift.
 
 **Everything else is a token too** (October 2026): seven text sizes, three
@@ -416,7 +427,7 @@ uses a literal size, corner, shadow, speed or typeface anywhere, including in
 strings a script builds markup from; a deliberate exception goes in its list
 with the reason. The type is Barlow Semi Condensed for labels, buttons, names
 and numbers and Barlow for sentences, self-hosted in `assets/fonts/` and
-inlined into the three static pages. The icons are one drawn family in a sprite
+inlined into the four static pages. The icons are one drawn family in a sprite
 at the top of `index.html`'s body; no emoji is drawn by the interface, and a
 page that needs an icon copies its `<symbol>` (the test fails if a copy
 differs). `tools/styleguide.html` draws all of it from `index.html`'s own

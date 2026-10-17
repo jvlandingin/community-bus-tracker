@@ -103,6 +103,10 @@ company's name or initials, for the same reason.
   "are you watching our drivers?" is the first question, then asks — in order —
   to be told if it should stop, for permission to post the flyer, and for
   whatever cooperation suits them, up to handing the whole thing over.
+- **Tester page:** `testers.html`, for the Android app's closed test on Google
+  Play. Three taps on the rider's own phone: join the tester group, become a
+  tester, install. It names this deployment's Google Group and the app's
+  package, so a fork running its own test edits both.
 - **Showcase video:** `sh tools/render-video.sh` makes a one-minute vertical
   video for Facebook, TikTok and Reels: the real tracker on a phone, with
   made-up buses, waiting for a bus, sharing it, getting off, the ticket, My
@@ -177,7 +181,7 @@ migration.
    it publishes on every push to `main`. However you host it, the site must
    contain `index.html`, `admin.html`, `how-to.html`, `flyer.html`,
    `for-operators.html`, `config.txt`, `manifest.webmanifest` and
-   `assets/`.
+   `assets/` (and `testers.html` while the Android app is in a closed test).
 6. **Open `/admin.html`**, sign in with your admin key, and set your operating
    hours. Use the Generate button to make a share key, and post the link it
    gives you in your group chat. That link is the tracker with the key in the

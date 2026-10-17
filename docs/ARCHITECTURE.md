@@ -1940,11 +1940,16 @@ plan takes that worldwide from 2027 and later to direct downloads. A developer
 verified through Play Console can register an APK handed out directly as
 well, so that stays possible as a fallback.
 
-Play is given this project's own key as the app's signing key, not one Google
-makes, so the app it delivers and an APK built by CI are interchangeable: an
-APK installed before the listing existed updates from Play in place. With a
-different key that sharer would have to uninstall, which deletes everything
-the app's WebView keeps, My tickets and their bus included.
+Play keeps the app's signing key (Play App Signing), and this project holds
+only the upload key that proves a bundle came from here: a lost upload key is
+reset in Play Console, where a lost signing key would strand every installed
+copy. So every copy of the app comes from Play and carries Play's signature,
+testers' included, through the internal and closed testing tracks. Nothing is
+handed out as an APK signed any other way, because moving between the two
+would mean an uninstall, which deletes everything the app's WebView keeps, My
+tickets and the sharer's bus included. The upload key is checked before every
+release build (`android-release.yml`, run only on demand), because Gradle only
+reads it at the end of one and then says only that it could not.
 
 **The privacy policy is the privacy panel.** Play asks every app for a
 privacy policy at a public address and inside the app. `#privacy` opens the

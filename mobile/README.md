@@ -62,32 +62,44 @@ cd android && ./gradlew assembleDebug   # needs JDK 21 and the Android SDK
 The APK is at `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 CI does the same in `.github/workflows/android.yml` whenever `mobile/`
-changes, or on demand from the Actions tab, and attaches the result to the
-run as `bus-tracker-android`: a debug APK, or with the signing key below,
-`bus-tracker.aab` for Google Play and `bus-tracker.apk` beside it.
+changes, or on demand from the Actions tab, and attaches the debug APK to
+the run. That APK is signed with a key thrown away with the runner, so the
+next one will not install over it, and Play refuses it: it proves the shell
+compiles. The build that goes to Play is the next section's.
 
-## Signing: do this once, before the first APK goes to anyone
+## Signing: the upload key, made once
 
-Android only installs an update over an existing app when both are signed
-with the same key. A debug build is signed with a throwaway key, so the next
-build will not install over it. Make one key, keep it safe, and give it to
-CI. Make it outside the repository folder:
+Google Play keeps the app's signing key and re-signs everything it delivers
+(Play App Signing, which a new app starts on). What this project holds is the
+**upload key**, which only proves that an upload came from here. Lose it and
+Play Console resets it in a day or two, with every installed app unaffected,
+so it is a key to back up rather than one to fear for.
+
+A phone is enough to make it. In Termux:
 
 ```
-keytool -genkeypair -v -keystore bus-tracker.jks -alias bus \
+pkg install openjdk-21 termux-api   # termux-api needs the Termux:API app too
+keytool -genkeypair -v -keystore bus-tracker-upload.jks -alias bus \
         -keyalg RSA -keysize 2048 -validity 10000
-base64 -w0 bus-tracker.jks     # paste into the BUS_KEYSTORE_BASE64 secret
+base64 -w0 bus-tracker-upload.jks | wc -c               # how long the secret must be
+base64 -w0 bus-tracker-upload.jks | termux-clipboard-set
 ```
 
-Then add `BUS_KEYSTORE_PASSWORD`, `BUS_KEY_ALIAS` (`bus` above) and
-`BUS_KEY_PASSWORD` as repository secrets. A current JDK makes a PKCS12
+The last line puts the whole key on the clipboard for the
+`BUS_KEYSTORE_BASE64` secret: it is one very long line, and selecting it by
+hand drops the end. Then add `BUS_KEYSTORE_PASSWORD`, `BUS_KEY_ALIAS` (`bus`)
+and `BUS_KEY_PASSWORD` as repository secrets. A current JDK makes a PKCS12
 keystore, which has one password: keytool asks for it once, and
-`BUS_KEY_PASSWORD` is that same password. A different one fails the build
-with "Get Key failed: Given final block not properly padded". With all four
-set, CI builds a signed release instead of a debug APK, and the version code
-counts up with each run. **Never commit the `.jks`** (`.gitignore` refuses
-it). Losing it means every sharer has to uninstall and reinstall, which
-deletes My tickets and their bus.
+`BUS_KEY_PASSWORD` is that same password. **Never commit the `.jks`**
+(`.gitignore` refuses it). Termux's home folder goes if Termux is
+uninstalled, so keep a copy and the password somewhere else as well.
+
+`.github/workflows/android-release.yml` ("Android release bundle" in the
+Actions tab) builds with it, only when run. It checks the four secrets before
+the build and names the one that is wrong, a paste cut short included, then
+builds the bundle, proves it is signed, and publishes it as
+`bus-tracker-<code>.aab` to a prerelease of its own, `android-release-<code>`,
+which a phone can download in one tap for the Play Console upload.
 
 ## Google Play
 
@@ -97,27 +109,19 @@ an Android browser, before a trip, and in the guide's notes on sharing.
 `docs/ARCHITECTURE.md`, "The Android app", has why Play rather than an APK
 link, and why the offer is that narrow.
 
-**What goes up.** A signed CI run's `bus-tracker.aab`. Its version code is
-the run number, which Play needs to rise with every upload, and its version
-name is `1.<run number>`, so a release in Play Console says which run made it.
+**What goes up.** The `.aab` from an "Android release bundle" run. Its version
+code is the run number, which Play needs to rise with every upload, and its
+version name is `1.<run number>`, so a release in Play Console says which run
+made it. Accept Play's own app signing key when it offers it; the bundle is
+already signed with the upload key above. The package name,
+`org.communitybustracker.app`, is fixed by the first upload.
 
-**One key, given to Play.** A new app starts on a signing key Google makes.
-Change it to this project's key (Play Console: the app's Play app signing
-page, "Change the app signing key", then the option to upload a key from a
-Java keystore, which walks through Google's PEPK tool) before anyone installs
-a test build, and before any release reaches open testing or production, after
-which it cannot be changed. Then the app Play delivers carries the signature
-of everything CI builds: a `bus-tracker.apk` handed out directly updates from
-Play, and Play's copy installs over it, with no uninstall and nothing lost. The
-same key signs the bundles CI uploads. Google suggests a separate upload key
-for safety; one key for both is allowed, and if Play asks for an upload
-certificate, it is this key's:
-
-```
-keytool -export -rfc -keystore bus-tracker.jks -alias bus -file upload_certificate.pem
-```
-
-The package name, `org.communitybustracker.app`, is fixed by the first upload.
+**Nothing is handed out as an APK.** Testers install from Play's internal or
+closed testing track, and everyone else from the listing, so every copy of the
+app carries Play's signature and updates from Play. An APK signed any other
+way would not, and switching would mean an uninstall, which deletes My tickets
+and the sharer's bus. Should a phone ever need a file, Play Console's App
+bundle explorer offers a signed universal APK carrying Play's own signature.
 
 **What the forms need to know**, all checked against a signed build:
 
@@ -148,10 +152,17 @@ The package name, `org.communitybustracker.app`, is fixed by the first upload.
   affiliated with or endorsed by any bus company.
 
 **New personal accounts** (created after 13 November 2023) must run a closed
-test with 12 testers opted in for 14 days in a row before production. The
-app's Dashboard in Play Console says whether that applies. Internal testing,
-open to every account, is how the first builds reach volunteers; it does not
-count towards the 12.
+test with 12 testers opted in for 14 days in a row before production, and
+the maintainer's account is one. The 14 days are not the whole test: Google
+has refused production access to an app whose testers installed it and
+rarely opened it, and whose feedback was not answered with updates. So the
+testers should be people who ride this route and use the app on it, their
+feedback should be written down, and a release or two should go up during
+the test with notes saying what changed. Most changes here reach the app
+through the live site with no release at all, which Google does not count,
+so a release's notes name the web changes it brings to testers too. Internal
+testing, open to every account, is how the first builds reach volunteers; it
+does not count towards the 12.
 
 The app takes its location from Google Play services, so a phone without
 them, like most Huawei phones launched since 2019, cannot run it from any

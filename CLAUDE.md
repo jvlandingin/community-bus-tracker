@@ -62,6 +62,11 @@ cd mobile && npm ci && npx cap sync android
 cd android && ./gradlew assembleDebug
 ```
 
+The bundle for Google Play is built by `.github/workflows/android-release.yml`
+("Android release bundle" in the Actions tab), only when run by hand: it
+checks the upload key's four secrets, builds and verifies the signed `.aab`,
+and publishes it to a prerelease of its own for the Play Console upload.
+
 Two scripts regenerate committed images from HTML sources. Neither runs at
 deploy time and both need only a Chromium; they prefer `chrome-headless-shell`,
 because full Chrome's headless screenshots leave the bottom 87 px unpainted:
@@ -386,9 +391,10 @@ and fall back to `navigator.geolocation` everywhere else. All trip logic stays
 in the page, under the existing tests. Keep it that way: logic added to the
 native side has no tests and no browser twin. `test-boot.js` section 11 boots
 the page with a stand-in bridge. `mobile/README.md` has the signing rules.
-**It goes out through Google Play** (October 2026), signed with the project's
-own key, which Play is given, so a CI-built APK and Play's copy update each
-other. The site offers it in one line only, `renderAppLine()` on the sharing
+**It goes out through Google Play** (October 2026). Play keeps the app's
+signing key and the repository's secrets hold only the upload key, which
+`android-release.yml`, run by hand, checks before it builds the bundle; no
+copy is handed out as an APK. The site offers it in one line only, `renderAppLine()` on the sharing
 tab: in an Android browser, before a trip, once `ANDROID_APP_URL` in
 `config.txt` names it, and never inside the app, on an iPhone or on the
 tracking tab. `#privacy` opens the privacy panel, which is Play's privacy

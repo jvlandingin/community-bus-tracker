@@ -25,6 +25,19 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-17: The sightings board stays folded
+
+The maintainer found the home screen overwhelming, and asked for "post a
+sighting" to start minimized. It used to open itself whenever no bus was
+live, on the reasoning that it was then the only answer on the page. That
+reasoning is older than the strip's glowing stretches: every sighting is now
+drawn on the strip and the newest is named in the headline, so the answer is
+already on screen and only the form was being opened. Its summary line still
+says how many sightings are posted. `test-boot.js` checks an empty map leaves
+it folded.
+
+---
+
 ## 2026-10-17: Testers sign themselves up
 
 The closed test needs 12 testers who stay in for 14 days in a row and really

@@ -1569,6 +1569,11 @@ function run(page, include, label, configText, setup) {
       check(!/class="rideart still"/.test(waitPop()), 'and the first report from 300 m on puts it back on the road');
       await pollWith({ data: [] });
       check(w.eval('BUSES').length === 0 && w.eval('Object.keys(STANDS).length') === 0, 'a bus gone from the map leaves nothing behind');
+      // The maintainer's call (October 2026): an empty map no longer opens
+      // the sightings board; it stays folded until the reader taps it.
+      const sightFold = w.document.getElementById('sightFold');
+      check(w.eval('sightingsOn()') && sightFold && !sightFold.open,
+        'and an empty map leaves the sightings board folded until tapped');
       sim.reply.get_positions = () => ({ data: [] });
 
       // Another tab still sharing it: left alone.

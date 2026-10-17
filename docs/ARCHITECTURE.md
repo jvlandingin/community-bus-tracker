@@ -162,9 +162,12 @@ revisit with a realtime channel plus a matching security model.
 under the map. `<details>` rather than a scripted accordion because it is
 focusable, keyboard-operable and announced for free, and still opens if the
 script never runs. The rule for what may fold: only a second question. The
-answer itself never folds, which is why the sightings board opens itself when
-no buses are live (see `revealSightings` in `index.html`) — with nobody sharing
-GPS it stops being a footnote and becomes the only answer available.
+answer itself never folds. The sightings board used to open itself when no
+buses were live, as the only answer available; since October 2026 it stays
+folded until tapped, because the strip draws every sighting as a glowing
+stretch and the headline names the newest in words, so the answer is on screen
+without the form, and the maintainer found the home screen overwhelming with
+it open. Its summary line still says how many sightings are posted.
 
 **Colours come in fill/ink pairs.** `--maroon`, `--gold`, `--lost` and
 `--mine` are fills, with white or near-black text sitting on them.

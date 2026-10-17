@@ -238,7 +238,8 @@ function alongLeg(i, km) {
   const blk = html.slice(html.indexOf('// ---- A departure report'), html.indexOf('// ---- END ROUTE PROGRESS'));
   check(!/\b(eta|arriv\w+ in|minutes? (to|until|away)|mins? (to|until|away))\b/i.test(blk.replace(/\/\/.*$/gm, '')),
      'the span code never speaks of minutes to come');
-  check(!/\d+ ?min/.test(html.slice(html.indexOf('function departedSentence('), html.indexOf('// The sightings board is folded'))),
+  const dsAt = html.indexOf('function departedSentence(');
+  check(dsAt > 0 && !/\d+ ?min/.test(html.slice(dsAt, html.indexOf('\n}\n', dsAt))),
      'nor does the sentence built from it');
   // The glow is a bell that widens and fades with uncertainty, and the guide says so.
   const strip = html.slice(html.indexOf('function renderStrip('), html.indexOf('function syncMineStation('));

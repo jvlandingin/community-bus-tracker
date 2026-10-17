@@ -304,14 +304,21 @@ Without a row it stays where it was seen for one interval. It is a range drawn
 under the pills, named in places and never in minutes; `test-strip.js` fails if
 that code speaks of a time to come. Rows exist northbound only until southbound
 has data. Live pills breathe. `docs/ARCHITECTURE.md` has why a stretch and not
-a ghost bus.
+a ghost bus. **Sightings are picked, never typed** (October 2026): direction,
+place and time come from lists, and the board draws each post from those parts
+with `sightingWords()`, never from the text that was sent. Free text anyone can
+type and everyone can read is user-generated content on Google Play, which
+then wants posting rules, a Report button and someone answering reports;
+`test-strip.js` fails if a typing box or the sent text comes back.
 
-**The app keeps exactly six things between visits**, all on the device and
-all named in the privacy panel: whether this phone has been shown around (the
+**The app keeps exactly six things between visits**, and the Android app a
+seventh (the share key, so a sharer is not asked for the PIN every trip after
+Android closes the app; never in a browser, which may be shared), all on the
+device and all named in the privacy panel: whether this phone has been shown around (the
 guide or the tour), the light/dark/system theme choice, the reader's saved stop, the tickets a
 sharer chose to keep, your bus (its counts, its parts and what it wears), and
 the trip in progress while it runs. A backup is those tickets and that bus in
-a file the sharer holds, never a seventh key. Adding one means editing that panel in the same
+a file the sharer holds, never another stored key. Adding one means editing that panel in the same
 commit — the panel is the promise, not the code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
 `localStorage` keys the app writes stops matching the set the panel names.
 Per-visit switches go in `sessionStorage` for exactly this reason — the
@@ -402,6 +409,13 @@ and fall back to `navigator.geolocation` everywhere else. All trip logic stays
 in the page, under the existing tests. Keep it that way: logic added to the
 native side has no tests and no browser twin. `test-boot.js` section 11 boots
 the page with a stand-in bridge. `mobile/README.md` has the signing rules.
+The other plugins only carry calls across too: the back button goes to
+`appBack()`, which closes what is open and otherwise puts the app in the
+background, never closing it, so a trip goes on; a backup and a bus link go to
+the phone's share sheet through `appSendFile()` and the Share plugin, because
+a WebView has no `navigator.share` and drops downloads silently. A browser API
+that works in Chrome may do nothing in the app, so a feature that saves a
+file, shares, vibrates or opens a link is tried in the app before it ships.
 **It goes out through Google Play** (October 2026). Play keeps the app's
 signing key and the repository's secrets hold only the upload key, which
 `android-release.yml`, run by hand, checks before it builds the bundle; no
@@ -409,8 +423,14 @@ copy is handed out as an APK. The site offers it in one line only, `renderAppLin
 tab: in an Android browser, before a trip, once `ANDROID_APP_URL` in
 `config.txt` names it, and never inside the app, on an iPhone or on the
 tracking tab. `#privacy` opens the privacy panel, which is Play's privacy
-policy for the site and the app alike. `test-boot.js` section 15 holds both;
-`docs/ARCHITECTURE.md`, "The Android app", has why Play and not an APK link.
+policy for the site and the app alike, naming the app as Play lists it
+("Fibi: Bus Tracker PH"; "Fibi" under the icon). `test-boot.js` section 15
+holds both; `docs/ARCHITECTURE.md`, "The Android app", has why Play and not an
+APK link. **The website is the app**: a merge to `main` reaches the app's
+users with no review by Play, so the Play answers in `mobile/README.md` (data
+safety, permissions, the location declaration) change in the same commit as
+anything that changes what leaves a phone, exactly as the privacy panel
+does.
 
 **Colours come in fill/ink pairs.** `--maroon`/`--brand-ink`,
 `--gold`/`--gold-deep`, `--lost`/`--lost-ink`, `--mine`/`--mine-ink`. The first of each pair is a
@@ -471,7 +491,7 @@ nothing the website loads may come from it.
 
 **No third-party code or fonts on the website.** Leaflet and supabase-js are vendored in
 `assets/vendor/`; Barlow is served from `assets/fonts/` and carried inline by the
-static pages, never linked from a font service. (The Android app compiles Capacitor and its two plugins
+static pages, never linked from a font service. (The Android app compiles Capacitor and its five plugins
 into the APK; the site itself loads none of it.) CARTO map tiles are the only remaining third party and are
 disclosed to users in the app. Do not reintroduce CDN links.
 

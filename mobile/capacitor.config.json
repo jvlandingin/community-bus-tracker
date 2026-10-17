@@ -1,6 +1,6 @@
 {
   "appId": "org.communitybustracker.app",
-  "appName": "Bus Tracker",
+  "appName": "Fibi",
   "webDir": "www",
   "server": {
     "url": "https://community-bus-tracker.netlify.app",

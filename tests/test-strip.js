@@ -13,8 +13,9 @@ new Function('S', hav + shipped +
   'S.storyFor=storyFor;S.parseTravel=parseTravel;S.travelRowFor=travelRowFor;S.departedSpan=departedSpan;S.spanWords=spanWords;')(S);
 // parseSighting lives with the board, not in the block; it reads CHECKPOINTS.
 const sightSrc = html.slice(html.indexOf('const SIGHT_RE ='), html.indexOf('let SIGHTINGS = ['));
+const hmSrc = html.slice(html.indexOf('function parseHM('), html.indexOf('\n}\n', html.indexOf('function fmtHM(')) + 3);
 const P = {};
-new Function('P', 'CHECKPOINTS', sightSrc + 'P.parseSighting=parseSighting;P.originName=originName;P.sightingTime=sightingTime;')(P, (function(){
+new Function('P', 'CHECKPOINTS', hmSrc + sightSrc + 'P.parseSighting=parseSighting;P.originName=originName;P.sightingTime=sightingTime;P.sightingWords=sightingWords;')(P, (function(){
   const t = fs.readFileSync(path.join(ROOT, 'config-template.txt'), 'utf8').split(/\r?\n/);
   return t.filter(l => l.trim().startsWith('CHECKPOINT =')).map(l => { const p = l.split('=')[1].split('|').map(x => x.trim()); return { name: p[0], short: p[1] }; });
 })());
@@ -273,6 +274,22 @@ function alongLeg(i, km) {
   const noon = P.parseSighting('▼ Southbound at PITX, 12:00 PM');
   check(noon && noon.at === 12 * 60, 'noon is 12:00 PM');
   check(P.parseSighting('▲ Northbound at Amadeo, 25:00 PM') === null || P.parseSighting('▲ Northbound at Amadeo, 25:00 PM').at === null, 'a time that is not a time is ignored, not a crash');
+
+  // Nothing typed is ever shown (October 2026): the board rebuilds each post
+  // from its picked parts, so a note an older page added after " · " is
+  // dropped, and so is anything that does not read as a sighting at all.
+  check(P.sightingWords(at) === '▲ Northbound at Amadeo', 'the board drops the note after the place', P.sightingWords(at));
+  check(P.sightingWords(timed) === '▲ Northbound at Amadeo, 3:05 PM', 'and keeps the stated time', P.sightingWords(timed));
+  check(P.sightingWords(leftS) === '▼ Southbound left One Ayala', 'a departure names its terminal, never the note', P.sightingWords(leftS));
+  check(P.sightingWords(notOrigin) === '▲ Northbound at Amadeo', '"left" a place on the way reads as at it, as the strip reads it');
+  const sneaky = P.parseSighting('▲ Northbound at Amadeo, 3:05 PM · anything at all, typed by anyone');
+  check(sneaky && !/anything|typed/.test(P.sightingWords(sneaky)), 'whatever was typed after the place never reaches the board');
+  const board = html.slice(html.indexOf('async function pollSightings('), html.indexOf('async function addSighting('));
+  check(/sightingWords\(/.test(board) && !/escapeHtml\(s\.body\)/.test(board) && !/\.body\)\s*\+/.test(board),
+     'the board draws posts with sightingWords(), never from the text that was sent');
+  const sightForm = html.slice(html.indexOf('onsubmit="event.preventDefault(); addSighting();"'), html.indexOf('id="sightErr"'));
+  check(sightForm.length > 0 && !/<input[^>]*type="text"/.test(sightForm) && !/<textarea/.test(sightForm) && !/id="sightingInput"/.test(html),
+     'and there is no box to type one into');
 }
 
 // 11. When a sighting happened: the stated time against the post's time.

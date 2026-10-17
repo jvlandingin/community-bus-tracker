@@ -25,6 +25,27 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-17: Ready for Play, not just for a browser
+
+A review before the closed test asked what the page had been assuming
+because it was only ever a website. The maintainer's calls: the sightings
+"Anything else?" box goes, since Play treats anything a stranger can type and
+everyone can read as user-generated content needing rules, reports and
+moderation; and the app remembers the share key, since inside it the group
+chat's link opens the browser and Android forgets the session whenever it
+closes the app. Fixed with them: the back button (on older Androids it closed
+the app and stopped a trip), a backup that claimed to save and did not,
+vibration with no permission, the privacy panel naming the app as Play lists
+it ("Fibi: Bus Tracker PH") and speaking of apps as well as browsers, a line
+under Start saying the bus shows on the public map until Stop, and the
+launcher name, Fibi. The Play form answers now live in `mobile/README.md` and
+change with the code, because the website is the app.
+
+One question was left with the maintainer: whether the bus company's name
+belongs in the header now that the page is also an app on Play.
+
+---
+
 ## 2026-10-17: The sightings board stays folded
 
 The maintainer found the home screen overwhelming, and asked for "post a

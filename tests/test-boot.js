@@ -715,8 +715,8 @@ function run(page, include, label, configText, setup) {
   const appSrc = fs.readFileSync(path.join(APP, 'index.html'), 'utf8');
   const keys = [...new Set([...appSrc.matchAll(/localStorage\.(?:setItem|removeItem)\(\s*'([^']+)'/g)]
     .map(m => m[1]))].sort();
-  check(keys.join(',') === 'wt-bus,wt-guide-seen,wt-mystop,wt-theme,wt-tickets,wt-trip',
-    'the app keeps exactly the six things the privacy panel names', keys.join(',') || 'none');
+  check(keys.join(',') === 'wt-bus,wt-guide-seen,wt-key,wt-mystop,wt-theme,wt-tickets,wt-trip',
+    'the app keeps exactly the six things the privacy panel names, and the Android app\'s seventh', keys.join(',') || 'none');
   // supabase-js sends a request only when something asks for its answer, so
   // an rpc() nobody awaits or .then()s never leaves the phone. The wrong-way
   // pause's clear_bus_position was one, and had never gone out.
@@ -725,6 +725,13 @@ function run(page, include, label, configText, setup) {
   const panel = ok.d.getElementById('privModal').textContent.replace(/\s+/g, ' ');
   check(/Six small things are remembered on your own device/.test(panel),
     'and the panel counts them out loud, so a seventh cannot slip in quietly');
+  check(/The Android app keeps a seventh: the key or PIN you entered to share/.test(panel) &&
+        /deleted when it stops working/.test(panel),
+    'the seventh, the app\'s remembered key, is named too, with when it goes');
+  // Only the app writes it there: a browser may be a shared one.
+  const keyWrites = [...appSrc.matchAll(/localStorage\.setItem\(\s*'wt-key'[^\n]*/g)].map(m => m[0]);
+  check(keyWrites.length === 1 && /if \(inApp\(\)\)\{ try\{ localStorage\.setItem\('wt-key'/.test(appSrc),
+    'and only the app writes it, never a browser', keyWrites.join(' | '));
   check(/your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it/.test(panel) &&
         /Totals, never a list: no clock times and no bus numbers/.test(panel) && /deleted the moment the trip ends/.test(panel),
     'naming your bus as totals only, never a list of times, and the trip in progress as gone when it ends');
@@ -995,7 +1002,8 @@ function run(page, include, label, configText, setup) {
   const browserHint = ok.d.getElementById('gpsSetupHint').textContent;
   check(/Keep the screen on/.test(browserHint), 'in a browser, the sharer is still told to keep the screen on', browserHint);
 
-  const native = { watchers: [], removed: [], notePerms: 0, browserWatch: 0, wakeLocks: 0 };
+  const native = { watchers: [], removed: [], notePerms: 0, browserWatch: 0, wakeLocks: 0,
+                   listeners: {}, minimized: 0, files: [], sheets: [] };
   const inApp = await run('/index.html#k=TESTKEY', () => true, 'app', null, window => {
     window.Capacitor = {
       isNativePlatform: () => true,
@@ -1008,6 +1016,17 @@ function run(page, include, label, configText, setup) {
           requestPermissions(){ native.notePerms++; return Promise.resolve({ display: 'granted' }); },
           schedule(){ return Promise.resolve(); },
           cancel(){ return Promise.resolve(); }
+        },
+        App: {
+          addListener(ev, fn){ native.listeners[ev] = fn; return Promise.resolve({ remove(){} }); },
+          minimizeApp(){ native.minimized++; return Promise.resolve(); },
+          exitApp(){ native.exited = true; return Promise.resolve(); }
+        },
+        Filesystem: {
+          writeFile(o){ native.files.push(o); return Promise.resolve({ uri: 'file:///cache/' + o.path }); }
+        },
+        Share: {
+          share(o){ native.sheets.push(o); return Promise.resolve({}); }
         }
       }
     };
@@ -1023,6 +1042,15 @@ function run(page, include, label, configText, setup) {
   });
   check(/Keeps sharing with the screen locked/.test(inApp.d.getElementById('gpsSetupHint').textContent),
     'the setup hint says the screen can lock');
+  // Android empties sessionStorage whenever it closes the app, and in the
+  // app the group chat's link opens the browser, so the app keeps the key.
+  check(inApp.w.localStorage.getItem('wt-key') === 'TESTKEY' && ok.w.localStorage.getItem('wt-key') === null,
+    'the app keeps the share key on the phone; a browser does not');
+  inApp.w.sessionStorage.removeItem('wt-key');
+  inApp.w.history.replaceState(null, '', '/index.html');
+  inApp.w.eval('accessKey = null');
+  check(inApp.w.resolveKey() === true && inApp.w.eval('accessKey') === 'TESTKEY',
+    'so after Android closes the app, the key is still there without a link or a PIN');
   inApp.w.pickDir('north');
   inApp.w.startSharing();
   const until = Date.now() + 10000;
@@ -1031,13 +1059,89 @@ function run(page, include, label, configText, setup) {
   check(native.browserWatch === 0, 'and does not also start the browser\'s watchPosition');
   check(native.wakeLocks === 0, 'no screen wake lock is taken: keeping the screen on is what the app saves');
   check(native.notePerms === 1, 'notification permission is asked for, or Android 13 hides the sharing notification');
+  check(inApp.w.sessionStorage.getItem('wt-gps') === 'w1', 'the watcher is noted for the visit, in case the page goes mid-trip');
   const w0 = native.watchers[0] && native.watchers[0].opts;
   check(!!w0 && typeof w0.backgroundMessage === 'string' && w0.backgroundMessage.length > 0,
     'the watcher carries a notification message, which is what makes it a foreground service');
   await inApp.w.stopSharing();
   check(native.removed.length === 1 && native.removed[0] === 'w1', 'Stop sharing removes that watcher',
     native.removed.join(',') || 'none removed');
+  check(inApp.w.sessionStorage.getItem('wt-gps') === null, 'and stops noting it');
+  inApp.w.forgetKey();
+  check(inApp.w.localStorage.getItem('wt-key') === null, 'and a key the server refuses is forgotten on the phone too');
+
+  // The back button (October 2026). Without a handler the App plugin only
+  // steps back through pages, and with no plugin Android 11 and older closed
+  // the app on back, which stopped a trip.
+  const back = native.listeners.backButton;
+  const shown = id => !inApp.d.getElementById(id).classList.contains('hidden');
+  check(typeof back === 'function', 'the page answers the back button itself');
+  inApp.w.openModal('privModal');
+  back();
+  check(!shown('privModal') && native.minimized === 0, 'back closes what is open, and only that');
+  // Layers stack in page order, so the album draws over the privacy panel.
+  inApp.w.openModal('privModal');
+  inApp.w.openModal('albumModal');
+  back();
+  check(!shown('albumModal') && shown('privModal'), 'one layer at a time, the top one first');
+  back();
+  check(!shown('privModal'), 'then the one under it');
+  inApp.w.startWalk('watch');
+  back();
+  check(inApp.w.eval('WALK') === null, 'back ends a tour, putting everything back');
+  back();
+  check(native.minimized === 1 && !native.exited, 'with nothing open it puts the app in the background, never closes it, so a trip goes on');
+  inApp.w.openModal('askModal');
+  back();
+  check(shown('askModal') && native.minimized === 2, 'a trip question is never backed out of: it waits for its answer');
+  inApp.w.closeModal('askModal');
+
+  // A backup, and a link to a bus, go through the phone's share sheet: a
+  // WebView drops a download without a word and has no navigator.share.
+  await inApp.w.saveBackup();
+  const saved = native.files[0], sheet = native.sheets[0];
+  check(native.files.length === 1 && /^bus-tracker-backup-\d{4}-\d{2}-\d{2}\.json$/.test(saved.path) && saved.directory === 'CACHE' &&
+        /"kind"\s*:\s*"bus-tracker-backup"|bus-tracker-backup|tickets/.test(saved.data),
+    'the app writes the backup file to its own cache', saved && saved.path);
+  check(!!sheet && sheet.files && sheet.files[0] === 'file:///cache/' + saved.path &&
+        /Backup saved/.test(inApp.d.getElementById('bkMsg').textContent),
+    'and hands that file to the share sheet');
+  const fsPlugin = inApp.w.Capacitor.Plugins.Filesystem;
+  delete inApp.w.Capacitor.Plugins.Filesystem;
+  await inApp.w.saveBackup();
+  check(native.files.length === 1 && native.sheets.length === 1 &&
+        /cannot save a file\. Use Copy as text/.test(inApp.d.getElementById('bkMsg').textContent),
+    'an older app with no way to save a file says so, instead of a "Saved" that never happened');
+  inApp.w.Capacitor.Plugins.Filesystem = fsPlugin;
+  const shareOk = inApp.w.Capacitor.Plugins.Share.share;
+  inApp.w.Capacitor.Plugins.Share.share = () => Promise.reject(new Error('Share canceled'));
+  inApp.w.bkSay('');
+  await inApp.w.saveBackup();
+  check(inApp.d.getElementById('bkMsg').textContent === '', 'closing the share sheet says nothing, as a choice not an error');
+  inApp.w.Capacitor.Plugins.Share.share = () => Promise.reject(new Error('No app can take it'));
+  await inApp.w.saveBackup();
+  check(/Could not save the file\. Use Copy as text/.test(inApp.d.getElementById('bkMsg').textContent),
+    'and a sheet that fails says the file was not saved');
+  inApp.w.Capacitor.Plugins.Share.share = shareOk;
+  await inApp.w.sendBusLink('ab'.repeat(16));
+  const linkSheet = native.sheets[native.sheets.length - 1];
+  check(native.sheets.length === 2 && /#b=(ab){16}$/.test(linkSheet.url) && !linkSheet.files,
+    'a link to a bus opens the share sheet too');
   inApp.w.close();
+
+  // A page left mid-trip inside the app (the guide is a tap away) leaves the
+  // plugin's watcher running, notification and all, for a page that has
+  // gone. The next page to open lets it go.
+  const orphan = { removed: [] };
+  const back2 = await run('/index.html', () => true, 'app-again', null, window => {
+    window.Capacitor = { isNativePlatform: () => true, Plugins: {
+      BackgroundGeolocation: { addWatcher(){ return 'w1'; }, removeWatcher(o){ orphan.removed.push(o.id); return Promise.resolve(); } }
+    } };
+    window.sessionStorage.setItem('wt-gps', 'w7');
+  });
+  check(orphan.removed.join(',') === 'w7' && back2.w.sessionStorage.getItem('wt-gps') === null,
+    'a watcher left running by a page that went mid-trip is let go when the next one opens', orphan.removed.join(',') || 'none');
+  back2.w.close();
 
   console.log('\n=== 14. a trip: what it sends, what it shows, and every way it ends ===');
   // The real sharing code, driven with a stand-in for the GPS and for
@@ -1759,8 +1863,13 @@ function run(page, include, label, configText, setup) {
       '#privacy opens the privacy panel');
     check(pol.w.location.hash === '', 'and leaves the address, so a reload is the map again', pol.w.location.hash || 'no hash');
     const said = pol.d.getElementById('privModal').textContent.replace(/\s+/g, ' ');
-    check(/Privacy policy for Bus Tracker: this website and its Android app\./.test(said),
-      'the panel says it is the privacy policy, and names the app and the site');
+    // Play asks that the policy names the app as its listing does, or the
+    // developer. The launcher's own name starts the listing's title.
+    const launcher = (fs.readFileSync(path.join(APP, 'mobile/android/app/src/main/res/values/strings.xml'), 'utf8')
+      .match(/<string name="app_name">([^<]+)<\/string>/) || [])[1];
+    check(/Privacy policy for Bus Tracker, this website, and for its Android app on Google Play, Fibi: Bus Tracker PH\./.test(said) &&
+          !!launcher && said.indexOf(launcher + ': Bus Tracker PH') >= 0,
+      'the panel says it is the privacy policy, and names the site and the app as Google Play lists it', launcher);
     check(/What is sent travels encrypted, over HTTPS\./.test(said) && /Google knows your account installed it/.test(said),
       'and says how what is sent travels, and what Google learns from an install');
     pol.w.close();

@@ -1881,25 +1881,25 @@
       <button class="modal-x" onclick="closeModal('privModal')" aria-label="Close"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>
     </h3>
     <div class="modal-scroll privacy-detail">
-      <p class="privfor"><b>Privacy policy</b> for Bus Tracker: this website and its Android app.</p>
+      <p class="privfor"><b>Privacy policy</b> for Bus Tracker, this website, and for its Android app on Google Play, <b>Fibi: Bus Tracker PH</b>.</p>
       <h4 class="ok">If you're just watching the map</h4>
       <p>The app never asks for your location on its own, and you can use the whole map without ever giving it. No account, no name, no phone number. We can't see who is watching.</p>
-      <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the location button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the tab.</p>
-      <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the tab, and is never sent either.</p>
+      <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the location button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the page or the app.</p>
+      <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the page or the app, and is never sent either.</p>
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
       <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number. On our side it never adds up across trips: <b>no running total is kept for any driver or any bus on the server.</b> The sharer's own phone adds theirs up for their bus in My tickets, and that never leaves it.</p>
       <p>“Send a link to this bus”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do.</p>
 
       <h4 class="ok">If you share from the bus</h4>
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip, plus, only if you switched on “Show customized bus to riders”, a short code for how your bus is painted and dressed. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
-      <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop. If you get it from Google Play, Google knows your account installed it, as with any app there. Play shows us only totals, never who.</p>
+      <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop. Swiping the app away stops sharing. Its GPS comes through Google Play services, as in most Android apps. If you get it from Google Play, Google knows your account installed it, as with any app there. Play shows us only totals, never who.</p>
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and on our side it goes when the trip does. Your phone adds it to your bus in My tickets, a total only you can see.</p>
       <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>it is not sent anywhere</b>. Close it and it is gone.</p>
       <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Start from scratch” in My tickets deletes every copy.</p>
 
       <div id="privSightings">
         <h4 class="ok">Sightings</h4>
-        <p>Posted with no name attached and deleted automatically after a couple of hours.</p>
+        <p>Picked from lists, never typed. Posted with no name attached and deleted automatically after a couple of hours.</p>
       </div>
 
       <h4 class="hon">To be fully honest</h4>
@@ -1920,11 +1920,11 @@
 
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing. What is sent travels encrypted, over HTTPS.</p>
-      <p>Six small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it. All six stay in your browser, are never sent anywhere, and are not linked to anything.</p>
+      <p>Six small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it. All six stay in your browser or the app, are never sent anywhere, and are not linked to anything. The Android app keeps a seventh: the key or PIN you entered to share, so you need not type it every trip. It goes to our server only to check it when you share, as it does in a browser, and it is deleted when it stops working.</p>
       <p>Your bus is the coach your trips decorate in My tickets, and it is <b>totals and choices, never a diary</b>: how many trips you shared, how many of them were first on the map, end to end, before 5 AM or after dark, which directions, which places on the route, whether you finished each tour, your time on the map and the salamat you received in all, and how many weeks in a row you have shared, with the week of your last trip to count it from; and the spare parts it has (the app's own points, drawn as a nut: never bought with money, never sent), what they got, which paint and accessories it wears, whether you show it to riders, and, for the cap of three earning trips a day, the day of your last one. Totals, never a list: no clock times and no bus numbers, so it can say how much you have shared and the last day you did, but never a timetable of when you worked. The trip you are sharing is kept so that a page that reloads or closes mid-trip can carry on with the same bus, or still give you its ticket: when it started, roughly where it began and last was on the route, and the trip's random ID. It is deleted the moment the trip ends, or, if the page closed mid-trip, the next time the page opens.</p>
       <p><b>Showing your bus to riders</b> is off unless you switch it on, in My tickets or when the app first asks, once there is something on your bus to show. While it is on and you share, riders who tap your bus see it as you dressed it. The honest cost: they will be able to tell it is yours from one trip to the next. The code that carries it is letters from the app's own lists, never words or colours of anyone's choosing, and it is deleted with the trip, like the position.</p>
       <p><b>A backup</b>, from Your progress in My tickets, is a small file of your kept tickets and your bus, made on this phone and handed to you to keep wherever you like. The app never sends it anywhere. Restore reads one back.</p>
-      <p>Clearing your browser data removes them all, “Remove my stop” in the stop picker deletes the third on its own, and “Start from scratch” in My tickets the fourth and fifth.</p>
+      <p>Clearing your browser data, or uninstalling the app, removes them all, “Remove my stop” in the stop picker deletes the third on its own, and “Start from scratch” in My tickets the fourth and fifth.</p>
     </div>
     <div class="modal-foot">
       <button class="big btn-ghost" onclick="closeModal('privModal')">Close</button>
@@ -2208,7 +2208,13 @@
              Amadeo, 6:42am" instead of "Bus coming", which is a lot to ask of
              someone typing one-handed at a stop. Picked instead of typed, a
              sighting is always specific, and it comes back in a shape the
-             progress strip can place. -->
+             progress strip can place. Nothing here is typed at all since
+             October 2026: the "Anything else?" box went because anything a
+             stranger can type and everyone can read is user-generated content
+             on Google Play, which then wants posting rules, a Report button on
+             every post and someone answering reports. The board draws each
+             post from its picked parts (sightingWords()), never from the
+             text that was sent. -->
         <form onsubmit="event.preventDefault(); addSighting();">
           <div class="seg" id="sightSeg" style="margin:0 0 8px;">
             <button type="button" id="sightNorth" onclick="pickSightDir('north')">▲ Northbound</button>
@@ -2224,8 +2230,6 @@
                minute on a post made a while after the card was opened. -->
           <div class="hint" style="margin:0 0 4px;">Time you saw it. Leave it for just now.</div>
           <input type="time" id="sightWhen" aria-label="Time you saw the bus" onchange="this.setAttribute('data-set','1')">
-          <div style="height:8px"></div>
-          <input type="text" id="sightingInput" maxlength="80" placeholder="Anything else? (optional)">
           <div style="height:8px"></div>
           <button class="big btn-ghost" type="submit">Post sighting</button>
           <div class="fielderr hidden" id="sightErr"></div>
@@ -2277,6 +2281,9 @@
         <input type="text" id="busLabel" maxlength="12" placeholder="e.g. 98018">
         <div style="height:10px"></div>
         <button class="big btn-primary" id="onbusStartBtn" type="submit">Start sharing my location</button>
+        <!-- Said before the location prompt, where Google Play wants it said:
+             what is shared, with whom, and until when. -->
+        <div class="hint" id="publicNote" style="margin-top:8px;">Your bus shows on the public map until you tap Stop.</div>
       </form>
       <div id="onbusActive" class="hidden">
         <button class="big btn-stop" onclick="stopSharing()">Stop sharing</button>
@@ -3814,10 +3821,23 @@ function syncGateInput(){
   el.placeholder = SHARE_PIN ? 'PIN' : 'Access key or PIN';
 }
 let accessKey = null;
+// A browser keeps the key for the visit only: it may be a shared one, and the
+// group chat's link brings the key back with a tap. The Android app also
+// keeps it on the phone (the seventh remembered thing, app only, named in the
+// privacy panel), because Android closes a backgrounded app whenever it
+// likes, which empties sessionStorage, and in the app that link opens the
+// browser instead, so a sharer would type the PIN again on nearly every trip.
+function keepKey(key){
+  try{ sessionStorage.setItem('wt-key', key); }catch(e){}
+  if (inApp()){ try{ localStorage.setItem('wt-key', key); }catch(e){} }
+}
 function resolveKey() {
   const m = location.hash.match(/k=([A-Za-z0-9_-]+)/);
-  if (m) { accessKey = m[1]; try{sessionStorage.setItem('wt-key', accessKey);}catch(e){} return true; }
+  if (m) { accessKey = m[1]; keepKey(accessKey); return true; }
   try { const s = sessionStorage.getItem('wt-key'); if (s){ accessKey = s; return true; } } catch(e){}
+  if (inApp()){
+    try { const s = localStorage.getItem('wt-key'); if (s){ accessKey = s; return true; } } catch(e){}
+  }
   return false;
 }
 // A key the server has refused will never work again, so it goes from every
@@ -3826,6 +3846,7 @@ function resolveKey() {
 function forgetKey() {
   accessKey = null;
   try{ sessionStorage.removeItem('wt-key'); }catch(e){}
+  try{ localStorage.removeItem('wt-key'); }catch(e){}
   try{
     const h = location.hash.replace(/(^#|&)k=[A-Za-z0-9_-]*/, '$1').replace(/^#&/, '#').replace(/&$/, '');
     if (h !== location.hash) history.replaceState(null, '', location.pathname + location.search + (h === '#' ? '' : h));
@@ -6452,6 +6473,12 @@ function busLinkFor(id){
 async function sendBusLink(id){
   if (WALK) return;   // a link to the practice bus would lead nowhere
   const url = busLinkFor(id);
+  // The app's own share sheet: a WebView has no navigator.share.
+  const sheet = appPlugin('Share');
+  if (sheet){
+    try{ await sheet.share({ title:'Follow my bus', text:'Nasa bus na ako. Sundan mo dito:', url:url, dialogTitle:'Follow my bus' }); return; }
+    catch(e){ if (/cancel/i.test(String(e && e.message))) return; }
+  }
   if (navigator.share){
     try{ await navigator.share({ title:'Follow my bus', text:'Nasa bus na ako. Sundan mo dito:', url:url }); return; }
     catch(e){ if (e && e.name === 'AbortError') return; }
@@ -6627,6 +6654,18 @@ function parseSighting(body){
   }
   return { direction: direction, idx: idx, kind: (m[2].toLowerCase() === 'left' && idx === origin) ? 'left' : 'at', at: at };
 }
+// A post as the board shows it, rebuilt from what parseSighting() read and
+// nothing else: the direction, the place by its name in config.txt (or the
+// terminal it left), and the stated time if there was one.
+function sightingWords(p){
+  let when = '';
+  if (p.at !== null && p.at !== undefined){
+    const hh = Math.floor(p.at / 60), mm = p.at % 60;
+    when = ', ' + fmtHM((hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm);
+  }
+  return (p.direction === 'north' ? '▲ Northbound' : '▼ Southbound') +
+    (p.kind === 'left' ? ' left ' + originName(p.direction) : ' at ' + ((CHECKPOINTS[p.idx] || {}).name || 'a stop')) + when;
+}
 // When the sighting happened, in ms: the stated clock time on the day it was
 // posted, read against the post's own time. The post time stands when there
 // is no stated time, when the stated time is after the post (nobody saw a
@@ -6689,15 +6728,19 @@ async function pollSightings() {
   lastSightingsAt = Date.now();
   const res = await rpc('get_sightings', { p_slug: CFG.ROUTE_SLUG });
   if (res.error) return;
-  const data=res.data;
-  const n = (data && data.length) || 0;
-  SIGHTINGS = (data||[]).map(function(s){
-    const p = parseSighting(s.body);
-    return p ? { direction:p.direction, idx:p.idx, kind:p.kind, ts:sightingTime(Date.parse(s.created_at), p.at) } : null;
-  }).filter(Boolean);
+  // Only what parses is kept, and the board below is drawn from the parsed
+  // parts, so text somebody sent is never shown: not the note an older page
+  // could still add after a " · ", and not a post made outside this page.
+  const posts = (res.data||[]).map(function(s){
+    return { p:parseSighting(s.body), created:Date.parse(s.created_at) };
+  }).filter(function(x){ return x.p; });
+  const n = posts.length;
+  SIGHTINGS = posts.map(function(x){
+    return { direction:x.p.direction, idx:x.p.idx, kind:x.p.kind, ts:sightingTime(x.created, x.p.at) };
+  });
   renderBuses();                             // the strip owns the ghost markers
   document.getElementById('sightingsList').innerHTML = n
-    ? data.map(function(s){return '<div class="sighting"><span>'+escapeHtml(s.body)+'</span><span class="time">'+timeAgo(Date.parse(s.created_at))+' ago</span></div>';}).join('')
+    ? posts.map(function(x){return '<div class="sighting"><span>'+escapeHtml(sightingWords(x.p))+'</span><span class="time">'+timeAgo(x.created)+' ago</span></div>';}).join('')
     : '<div class="hint">No sightings yet today.</div>';
   // The folded card has to say whether opening it is worth the tap.
   document.getElementById('sightSummary').textContent = n
@@ -6706,12 +6749,10 @@ async function pollSightings() {
 }
 async function addSighting() {
   if (WALK) return;   // nothing is posted from a practice run
-  const input=document.getElementById('sightingInput');
   const where=document.getElementById('sightWhere').value;
   if (!sightDir){ sightError('Pick a direction first.'); return; }
   if (!where){ sightError('Pick where you saw it.'); return; }
   sightError('');
-  const note = input.value.trim();
   // A time only when the field was changed from the "now" it opened with.
   // Ahead of now is refused: nobody saw a bus that has not left. Behind it
   // is written as stated however far back; the strip stops drawing a
@@ -6724,8 +6765,7 @@ async function addSighting() {
     if (stated !== nowM) when = ', ' + fmtHM(whenEl.value);
   }
   const val = (sightDir==='north' ? '▲ Northbound' : '▼ Southbound') +
-              (where === '__left' ? ' left ' + originName(sightDir) : ' at ' + where) + when +
-              (note ? ' · ' + note : '');
+              (where === '__left' ? ' left ' + originName(sightDir) : ' at ' + where) + when;
   const res = await rpc('add_sighting', { p_slug:CFG.ROUTE_SLUG, p_body:val.slice(0,140) });
   if (res.error){
     const m = ((res.error.message||'')+'').toLowerCase();
@@ -6734,9 +6774,8 @@ async function addSighting() {
       : 'Could not post. Check your connection and try again.');
     return;
   }
-  // Clear the whole composer, not just the note: leaving a direction and a
-  // place selected invites posting the same sighting twice.
-  input.value='';
+  // Clear the whole composer: leaving a direction and a place selected
+  // invites posting the same sighting twice.
   document.getElementById('sightWhere').value='';
   resetSightWhen();
   pickSightDir(null);
@@ -6906,7 +6945,9 @@ function watchTripGps(onPos, onErr){
   let stopped=false;
   const id=bg.addWatcher({
     backgroundTitle:'Sharing your bus live',
-    backgroundMessage:'Your bus is on the map. Open the app and tap Stop sharing when you get off.',
+    // Swiping the app away from recent apps ends the activity, and the GPS
+    // plugin stops its service with it, so that is said where a sharer looks.
+    backgroundMessage:'Swiping the app away stops sharing. Tap Stop sharing when you get off.',
     requestPermissions:true, stale:false, distanceFilter:0
   }, function(loc, err){
     if (stopped) return;
@@ -6915,7 +6956,37 @@ function watchTripGps(onPos, onErr){
     onPos({ coords:{ latitude:loc.latitude, longitude:loc.longitude, accuracy:loc.accuracy,
                      speed: typeof loc.speed==='number' ? loc.speed : null } });
   });
-  return function(){ stopped=true; appQuiet(function(){ return bg.removeWatcher({ id:id }); }); };
+  try{ sessionStorage.setItem('wt-gps', String(id)); }catch(e){}
+  return function(){
+    stopped=true;
+    try{ sessionStorage.removeItem('wt-gps'); }catch(e){}
+    appQuiet(function(){ return bg.removeWatcher({ id:id }); });
+  };
+}
+// Leaving this page mid-trip inside the app (the guide is a tap away) ends
+// the page's half of the trip but not the plugin's: its service keeps the
+// sharing notification up and the GPS on for a page that has gone, and a
+// later Stop never reaches it, since Stop only knows its own watcher. Play
+// wants that notification gone when the sharing is. So the watcher's id is
+// kept for the visit (a per-visit switch, never a remembered thing), and the
+// page that opens next lets that watcher go before anything can start one.
+(function(){
+  const bg = appPlugin('BackgroundGeolocation');
+  let old = null;
+  try{ old = sessionStorage.getItem('wt-gps'); sessionStorage.removeItem('wt-gps'); }catch(e){}
+  if (bg && old) appQuiet(function(){ return bg.removeWatcher({ id:old }); });
+})();
+
+// A file handed to the phone's share sheet from the app (Drive, Files, a
+// message to yourself): written to the app's own cache first, because the
+// sheet takes files, not text that big. Null where the app has no plugins
+// for it, which is version 1 of the app and every browser.
+async function appSendFile(name, text, title){
+  const files = appPlugin('Filesystem'), sheet = appPlugin('Share');
+  if (!files || !sheet) return null;
+  const f = await files.writeFile({ path:name, data:text, directory:'CACHE', encoding:'utf8' });
+  await sheet.share({ title:title, files:[f.uri], dialogTitle:title });
+  return true;
 }
 
 // The trip guards ask on screen, and with the screen off nobody sees the
@@ -6948,6 +7019,36 @@ document.addEventListener('visibilitychange', function(){
                                  document.getElementById('askBody').textContent);
   else askUnnotify();
 });
+// The Android back button, through Capacitor's App plugin. With the plugin
+// and no listener, back only steps back through pages and otherwise does
+// nothing; with no plugin at all, Android 11 and older closed the app on
+// back, which stopped a trip. So back undoes what is open, one layer at a
+// time, and with nothing open puts the app in the background, as Home does.
+// It never closes the app, so a trip goes on. A trip question has no
+// back-out (it waits for its answer, and its notification), and neither do
+// the tabs: they are two views, not pages.
+const BACK_CLOSES = {
+  tktModal: function(){ closeTicket(); },
+  privModal: function(){ closeModal('privModal'); },
+  albumModal: function(){ closeModal('albumModal'); },
+  busNewModal: function(){ closeModal('busNewModal'); },
+  stopModal: function(){ closeModal('stopModal'); },
+  dupModal: function(){ dupCancel(); },
+  gate: function(){ closeModal('gate'); switchTab('track'); }
+};
+function appBack(){
+  if (WALK){ endWalk(); return 'tour'; }
+  const m = topLayer();
+  if (m && BACK_CLOSES[m.id]){ BACK_CLOSES[m.id](); return m.id; }
+  if (pinModeOn){ cancelPinMode(); return 'pin'; }
+  const app = appPlugin('App');
+  if (app) appQuiet(function(){ return app.minimizeApp(); });
+  return 'background';
+}
+(function(){
+  const app = appPlugin('App');
+  if (app) appQuiet(function(){ return app.addListener('backButton', function(){ appBack(); }); });
+})();
 function showAppHints(){
   if (!inApp()) return;
   const a=document.getElementById('gpsSetupHint'), b=document.getElementById('gpsLiveHint');
@@ -7980,6 +8081,19 @@ function backupName(){ return 'bus-tracker-backup-' + ymd(new Date()) + '.json';
 async function saveBackup(){
   if (WALK) return;
   const text = backupMake(loadAlbum(), loadBus(), new Date()), name = backupName();
+  // The Android app has neither a download nor the browser's share sheet: a
+  // WebView drops a download without a word, and "Saved" would be a lie. So
+  // the app writes the file to its own cache and hands it to the phone's
+  // share sheet. Version 1 of the app has no plugins for that, and says so.
+  if (inApp()){
+    let done = null;
+    try{ done = await appSendFile(name, text, 'Bus Tracker backup'); }
+    catch(e){ if (/cancel/i.test(String(e && e.message))) return; done = false; }
+    bkSay(done ? 'Backup saved.'
+      : done === null ? 'This version of the app cannot save a file. Use Copy as text.'
+      : 'Could not save the file. Use Copy as text.');
+    return;
+  }
   // The phone's own sheet where it can take a file (save to Files, Drive, a
   // message to yourself), and a download where it cannot.
   try{
@@ -8205,7 +8319,8 @@ const WALKS = {
     { id:'number', tab:'share', dir:'north', at:'#busLabel',
       words:'Type the bus number if you see it.' },
     { id:'start', tab:'share', dir:'north', at:'#onbusStartBtn',
-      words:'Tap Start. <b>Keep the screen on.</b>' },
+      words:'Tap Start. <b>Keep the screen on.</b>',
+      appWords:'Tap Start. Then you can <b>lock the phone.</b>' },
     { id:'ticket', tab:'share', dir:'north', at:'#tktCard', ticket:true,
       words:'When you get off, tap Stop. You get a ticket.' },
     { id:'bye', tab:'share', alt:'watch',
@@ -8396,7 +8511,9 @@ function walkShow(i){
   const title = document.getElementById('walkTitle');
   title.textContent = st.title || '';
   title.classList.toggle('hidden', !st.title);
-  document.getElementById('walkWords').innerHTML = walkWords(st.words, WALK.names, escapeHtml);
+  // The app keeps sharing with the screen locked, so a step that says
+  // otherwise in a browser has words of its own there.
+  document.getElementById('walkWords').innerHTML = walkWords((inApp() && st.appWords) || st.words, WALK.names, escapeHtml);
   const hint = document.getElementById('walkHint');
   hint.innerHTML = st.tap ? '<svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>' + escapeHtml(st.tap) : '';
   hint.classList.toggle('hidden', !st.tap);
@@ -8694,7 +8811,8 @@ async function tryKey(key){
   if (res.data === 'too many tries'){ showGateError(writeErrorMessage({ message:'too many tries' })); return false; }
   if (res.data !== 'ok'){ showGateError('That key or PIN is not recognized. Check the one shared in the group.'); return false; }
   accessKey=key;
-  try{ sessionStorage.setItem('wt-key',key); location.hash='k='+key; }catch(e){}
+  keepKey(key);
+  try{ location.hash='k='+key; }catch(e){}
   return true;
 }
 function renderSourceLink(){

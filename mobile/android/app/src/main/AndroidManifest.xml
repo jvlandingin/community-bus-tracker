@@ -25,6 +25,14 @@
 
         </activity>
 
+        <!-- The GPS plugin declares its service exported, which lets any
+             other app on the phone bind to it. Nothing outside this app has
+             any business there, so it is closed here. -->
+        <service
+            android:name="com.equimaps.capacitor_background_geolocation.BackgroundGeolocationService"
+            android:exported="false"
+            tools:replace="android:exported" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -39,6 +47,11 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- The saved stop's "buzz once" and the tap on Start call
+         navigator.vibrate, which the WebView quietly ignores without this.
+         A normal permission: nothing is asked of the user. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- Location, the foreground service and notifications arrive merged in
          from the background-geolocation plugin's own manifest. There is

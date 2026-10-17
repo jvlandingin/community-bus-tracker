@@ -28,12 +28,22 @@ use the website with the screen on.
   dismissed while sharing, so the app can never share without the person
   knowing.
 
-## The two plugins
+## The five plugins
+
+Each one only carries a call across to Android. What to do with it is decided
+in `index.html`, under the suites, like everything else.
 
 | Plugin | Why |
 | --- | --- |
 | `@capacitor-community/background-geolocation` | The foreground service that keeps GPS alive with the screen off. |
 | `@capacitor/local-notifications` | Two jobs. It asks for Android 13's notification permission, without which the sharing notification is hidden. And it turns a trip question asked while the app is in the background (wrong direction, still on the bus, trip finished) into a notification, because the wrong-direction one takes the bus off the map until it is answered. |
+| `@capacitor/app` | The back button. Without it, Android 11 and older closed the app on back, which stopped a trip, and back never closed a pop-up. `appBack()` in the page closes what is open, one layer at a time, and otherwise puts the app in the background. |
+| `@capacitor/filesystem` and `@capacitor/share` | A backup, and a link to a bus, go to the phone's share sheet. A WebView has no `navigator.share`, and it drops a download without a word, so a backup "saved to your downloads" was never saved. `appSendFile()` writes the backup to the app's cache and shares the file. |
+
+The manifest adds two things the plugins leave out. `VIBRATE`, or the WebView
+ignores `navigator.vibrate` and the saved stop's "buzz once" never buzzes.
+And the GPS plugin's service is set not exported, because the plugin leaves
+it open to every other app on the phone.
 
 Two settings in `capacitor.config.json` are there because the
 background-geolocation plugin's README says so, and both are about Android
@@ -135,9 +145,13 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
 
 **What the forms need to know**, all checked against a signed build:
 
+- **Name:** "Fibi: Bus Tracker PH" on the listing, "Fibi" under the icon
+  (`strings.xml`). The privacy panel names the app the same way, because Play
+  asks a privacy policy to name the app or the developer as the listing does.
 - **Permissions:** fine and coarse location, a foreground service of type
-  location, notifications, internet and wake lock. No background location:
-  the service starts only from a tap on Start with the app on screen.
+  location, notifications, vibrate, internet and wake lock. No background
+  location: the service starts only from a tap on Start with the app on
+  screen, under a line saying the bus shows on the public map until Stop.
 - **Foreground service declaration:** type `location`, for "the user shares
   the bus they are riding on a public live map until they tap Stop". Play
   wants a short video of it: Start, the notification, the screen locked, the
@@ -145,12 +159,30 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
 - **Privacy policy:** `https://community-bus-tracker.netlify.app/#privacy`,
   which opens the privacy panel. The panel is the policy, for the site and the
   app alike.
-- **Data safety:** the privacy panel lists everything that leaves a phone.
-  In Play's terms: precise location, collected only while sharing and shown
-  on the public map, which is the app's purpose and the sharer's own choice,
-  then deleted when the trip ends; with it the trip's direction, the bus
-  number if typed, and a random ID made fresh for each trip. No accounts, no
-  advertising ID, nothing sold, and all of it over HTTPS.
+- **Data safety:** the privacy panel lists everything that leaves a phone,
+  and these answers have to say the same. Collected, in Play's terms, none of
+  it shared with a third party and all of it over HTTPS:
+  - *Location, precise*: only while sharing, for the app's function, shown on
+    the public map by the sharer's own choice, deleted when the trip ends.
+    The trip's direction and the bus number, if typed, go with it.
+  - *App activity, other user-generated content*: a sighting, picked from
+    lists (direction, place, time) and never typed, with no name, deleted
+    after a couple of hours.
+  - *App activity, app interactions*: a salamat tap, stored scrambled so it
+    counts once per bus, deleted when that trip ends.
+  - *Device or other IDs*: a random ID made fresh for each trip, and one made
+    fresh by each open page for the live count of watchers, deleted three
+    minutes after the page closes.
+
+  Not collected: names, accounts, contacts, the advertising ID, a watcher's
+  location, the saved stop, tickets or your bus. The share key is the route's,
+  not the person's: the app keeps it on the phone and sends it only to be
+  checked, as a browser does. Users can delete their data: Stop removes the
+  position, and everything else goes by itself.
+- **Content rating:** no violence, no gambling, no ads. Users share their
+  location with everyone (while sharing) and can post sightings, which are
+  picked from lists, so there is no free text to moderate.
+- **Target audience:** 13 and over. Nothing here is made for children.
 - **App access:** sharing needs the route's share key, and the server refuses
   positions outside Cavite (`sql/08-position-checks.sql`), so a reviewer
   elsewhere sees "You seem to be off the route" and can never put a bus on the
@@ -173,6 +205,11 @@ through the live site with no release at all, which Google does not count,
 so a release's notes name the web changes it brings to testers too. Internal
 testing, open to every account, is how the first builds reach volunteers; it
 does not count towards the 12.
+
+**The website is the app.** Every merge to `main` reaches the app's users on
+their next launch, with no review by Play. So these answers change in the same
+commit as anything that changes what leaves a phone, as the privacy panel
+does, and Play Console is updated when that commit ships.
 
 **Testers sign themselves up** at `testers.html` on the site: they join the
 Google Group `fibi-testers@googlegroups.com`, tap Become a tester on Play's
@@ -198,6 +235,14 @@ goes to volunteers, do one real trip and check:
    "Still on the bus?" notification arrives.
 4. Tap Stop sharing and check the notification goes and the bus leaves the
    map.
+5. Press back mid-trip, on an Android 11 or older phone if one is to hand:
+   the app goes to the background and the bus keeps moving.
+6. Swipe the app away mid-trip: sharing stops, as the notification says,
+   and opening the app again asks "Still on the bus?".
+7. Note the battery used over the whole trip. The GPS plugin asks for a fix
+   every second, at full accuracy.
+8. Save a backup from My tickets, and send a link to a bus: both open the
+   phone's share sheet.
 
 Some phone makers (Xiaomi, Oppo, Vivo, Huawei, common on this route) kill
 foreground services more aggressively than stock Android. If a bus drops off

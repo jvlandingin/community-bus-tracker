@@ -7089,7 +7089,8 @@ function resumeAfterCheck(){
   guardPaused=false;
   resetIdleRef();
   setShareUI('on', shareLabel());
-  if (lastCoords){ lastWrite=Date.now(); writePosition(lastCoords); }
+  // Not a fix from before the page was hidden: the next one puts the bus back.
+  if (lastCoords && !hiddenSinceFix){ lastWrite=Date.now(); writePosition(lastCoords); }
 }
 function terminalStop(dir){
   if (CHECKPOINTS.length<2) return null;
@@ -7309,13 +7310,35 @@ function gpsGaveUp(msg){
   gpsFound();
   stopSharing().then(function(){ setShareUI('error', msg); });
 }
+// A hidden page gets no GPS at all: browsers hold every fix back until it is
+// on screen again, and pause the watch's timeout too, so a locked screen never
+// shows up as GPS lost. The page's timers can run on, for seconds on an iPhone
+// and up to minutes on Android, and the heartbeat used to spend them
+// re-sending the last fix: a bus that had driven on looked live, standing
+// where the screen went off. Now that fix stops counting the moment the page
+// is hidden, the bus fades as it does when the GPS is lost, and the first fix
+// back on screen puts it right. The app's GPS keeps going with the screen
+// off, so there nothing changes.
+let hiddenSinceFix=false;
+document.addEventListener('visibilitychange', function(){
+  if (document.hidden && sharing && !inApp()) hiddenSinceFix=true;
+});
+// A bus idling at a stop doesn't fire watchPosition, so the last fix goes
+// again every 21 seconds. Not while the GPS is lost, though, nor once the page
+// has been hidden: that fix is no longer confirmed, and re-sending it would
+// keep a guess looking live on everyone's map.
+function tripHeartbeat(){
+  if (sharing && !guardPaused && !gpsLostAt && !hiddenSinceFix && lastCoords && Date.now()-lastWrite>20000){
+    lastWrite=Date.now(); writePosition(lastCoords);
+  }
+}
 function beginWatch(firstCoords){
   // One trip, one watch: whatever led here, nothing from before may still be
   // running beside it, because Stop only ends the one it can see.
   if (stopWatch){ stopWatch(); stopWatch=null; }
   if (hbTimer){ clearInterval(hbTimer); hbTimer=null; }
   gpsFound();
-  sharing=true; writeFailing=false;
+  sharing=true; writeFailing=false; hiddenSinceFix=false;
   guardPaused=false; endAsked=false; dirGuard=makeDirGuard();
   // A trip carried over from a page that closed goes on as itself, without
   // the welcome a new trip gets.
@@ -7332,6 +7355,7 @@ function beginWatch(firstCoords){
   stopWatch=watchTripGps(function(pos){
     if (!sharing) return;
     if (gpsLostAt) gpsFound();
+    hiddenSinceFix=false;
     lastCoords=pos.coords;
     checkTripGuards(pos.coords);
     if (!sharing || guardPaused) return;
@@ -7348,14 +7372,7 @@ function beginWatch(firstCoords){
     if (err && err.code===1){ gpsGaveUp(msg); return; }
     gpsLost(msg);
   });
-  // heartbeat: a bus idling at a stop doesn't fire watchPosition; re-send last
-  // fix. Not while the GPS is lost, though: that fix is no longer confirmed,
-  // and re-sending it would keep a guess looking live on everyone's map.
-  hbTimer=setInterval(function(){
-    if (sharing && !guardPaused && !gpsLostAt && lastCoords && Date.now()-lastWrite>20000){
-      lastWrite=Date.now(); writePosition(lastCoords);
-    }
-  }, 21000);
+  hbTimer=setInterval(tripHeartbeat, 21000);
 }
 
 // Best-effort: remove this bus the moment the sharer closes/hides the tab.
@@ -7472,8 +7489,9 @@ function recoverTrip(){
   let mine = false;
   try{ mine = sessionStorage.getItem('wt-session') === r.session; }catch(e){}
   // Another tab of this browser may still be sharing it, saving at least
-  // every 21 seconds with the heartbeat. Looked at again in a minute, by
-  // which time a page that is really gone has stopped saving.
+  // every 21 seconds with the heartbeat while it is on screen. Looked at
+  // again in a minute, by which time a page that is really gone, or hidden
+  // and so getting no GPS, has stopped saving.
   if (!mine && age < 45000){
     if (!recoverTrip.again){ recoverTrip.again = true; setTimeout(recoverTrip, 60000); }
     return;

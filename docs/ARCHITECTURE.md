@@ -1135,6 +1135,24 @@ everyone's map. Held back, the bus fades as "delayed" and then expires, which
 is the truth. The first fix puts everything back; none ends the trip the way
 Stop does, ticket included.
 
+**A hidden page is waited out too.** A browser gives a hidden page no GPS at
+all: the Geolocation standard holds every fix back until the page is on
+screen again, Chrome, Safari and Firefox all do it in code, and the watch's
+timeout pauses with it, so a locked screen or another app in front never
+shows up as GPS lost. The page's timers can run on, for seconds on an iPhone
+and up to minutes on Android, and the heartbeat used to spend them re-sending
+the last fix: a bus that had driven on stayed live on everyone's map, standing
+where the screen went off. Reproduced on this page in Chromium, hidden for 70
+seconds while the bus moved 780 m: two writes went out, both from where it
+was hidden. Now `hiddenSinceFix` is set when the page is hidden mid-trip and
+cleared by the next fix, and neither the heartbeat nor an answered trip
+question sends a fix from before it, so the bus fades and expires as it does
+when the GPS is lost. Unlike lost GPS it never ends the trip: the GPS is back
+the moment the sharer looks. The app's GPS runs with the screen off, so in the
+app nothing changes. One side effect, already true on an iPhone: a second tab
+finds a hidden tab's trip quiet after 45 seconds and offers to carry it on.
+`test-boot.js` section 14 and `test-prompts.js` case 10 hold it.
+
 **The trip outlives its page.** A reload, a browser that discarded the tab
 behind another app, an app the phone closed: each lost the trip and its ticket
 together, and left the bus on the map until it expired. `TRIP` is now also
@@ -1796,13 +1814,18 @@ hunts for, and the scan agrees.
 
 ## Known limitations
 
-**Screen must stay on while sharing in a browser.** Mobile browsers suspend
-JavaScript and GPS when the screen locks or the user switches apps. This is a
-platform restriction, not a bug. The page requests a screen wake lock and
-re-acquires it when the page becomes visible again, but it cannot survive
-backgrounding. On Android the answer is now the app in `mobile/` (see "The
-Android app" above). On an iPhone it is still a mounted phone on a charger,
-and long term a dedicated GPS tracker device.
+**Screen must stay on while sharing in a browser.** A browser gives a page no
+GPS while the screen is locked or another app is in front: the Geolocation
+standard keeps position updates "exclusively for fully-active visible
+documents", every engine does the same, and nothing planned changes it, an
+installed web app or a Trusted Web Activity included. This is a platform
+restriction, not a bug. The page's JavaScript may keep running meanwhile,
+which is how the heartbeat came to re-send stale fixes ("When a trip is
+interrupted"). The page requests a screen wake lock and re-acquires it when
+the page becomes visible again, but it cannot survive backgrounding. On
+Android the answer is now the app in `mobile/` (see "The Android app" above).
+On an iPhone it is still a mounted phone on a charger, and long term a
+dedicated GPS tracker device.
 
 **Nothing detects a wrong vehicle going the right way.** A car, a jeepney, or
 another company's bus on the same corridor is indistinguishable from a Wonderful

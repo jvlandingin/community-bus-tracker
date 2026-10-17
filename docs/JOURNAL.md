@@ -25,6 +25,31 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-17 — The app goes through Google Play
+
+Asked next: offer the Android app from the website, or publish it on Google
+Play? Both, it turned out: the website offers it, and what it offers is the
+Play listing.
+
+- **Play, not an APK linked from the site.** An APK from a link in a chat is
+  the shape of the scam apps riders here are warned about; Play updates the
+  shell by itself; and the verification in the entry below closes the other
+  way in. The site's offer is one line on the sharing tab, shown once the
+  Play address is in `config.txt`.
+- **The maintainer's Play account is a personal one**, so the app needs a
+  closed test of 12 testers for 14 days before it can be public. Google has
+  refused production to apps whose testers installed them and hardly opened
+  them, so the testers should be people who ride this route, their feedback
+  written down, and a release or two put up during the test.
+- **Play keeps the signing key; the repository holds an upload key**, which
+  Play Console can reset if it is lost. It was made on a phone, in Termux,
+  with OpenSSL: Java's keytool crashes in Termux from Google Play ("Native
+  registration unable to find class ..."), the same failure reported there
+  for javac. `mobile/README.md` has the commands.
+- **Next:** the first release build, the app made in Play Console, internal
+  testing on two or three phones for the four real-trip checks the app still
+  owes, then the closed test.
+
 ## 2026-10-17 — Could the website share with the screen locked?
 
 The maintainer asked whether sharing could go on with the page minimised or the

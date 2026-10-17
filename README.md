@@ -236,7 +236,8 @@ the repository.
 - `docs/DATABASE.md` covers the tables, the RPC surface, and which calls need
   which key.
 - `mobile/README.md` covers the Android app for sharers: what it adds, how to
-  build and sign it, and what still needs a real trip to prove.
+  build and sign it, publishing it on Google Play, and what still needs a real
+  trip to prove.
 
 Both are written to be read before changing anything, and both record decisions
 that look arbitrary until you know why.

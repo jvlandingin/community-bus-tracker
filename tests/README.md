@@ -58,6 +58,10 @@ against the page as it was before the October 2026 fixes, most of them fail,
 and the page throws on the row with no position; the rest pin down what was
 already right.
 
+Its section 15 boots the page as an Android phone, an iPhone, a computer and
+the Android app, to hold the line that offers the app to where it belongs,
+and opens `#privacy`, the address Google Play is given for the privacy policy.
+
 ## Database
 
 Needs a local PostgreSQL. These never touch your live database.

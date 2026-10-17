@@ -29,6 +29,7 @@ const files = {
   // Netlify serves admin.html at the extensionless path too, and that is
   // where the sharer link used to come out wrong.
   '/admin': [fs.readFileSync(path.join(APP, 'admin.html')), 'text/html'],
+  '/how-to.html': [fs.readFileSync(path.join(APP, 'how-to.html')), 'text/html'],
   '/config.txt': [Buffer.from(CONFIG), 'text/plain'],
   '/assets/vendor/leaflet.js': [fs.readFileSync(path.join(VENDOR, 'assets/vendor/leaflet.js')), 'text/javascript'],
   '/assets/vendor/leaflet.css': [fs.readFileSync(path.join(VENDOR, 'assets/vendor/leaflet.css')), 'text/css'],
@@ -90,11 +91,17 @@ function run(page, include, label, configText, setup) {
       // gate or the panels being up. The app's own globals are no use here,
       // because `let` at the top level of a classic script does not become a
       // property of window.
+      // For the guide it is the app's link being filled in from config.txt,
+      // the one thing its script does that a test can see happen.
       const settled = s => {
         if (s.errText !== '') return true;
-        if (page === '/index.html') {
+        if (page === '/index.html' || page === '/index.html#privacy') {
           const ticks = s.d.getElementById('ticks');
           return !!(ticks && ticks.innerHTML.trim() !== '');
+        }
+        if (page === '/how-to.html') {
+          const where = s.d.getElementById('appWhere');
+          return !!where && !where.hidden;
         }
         const main = s.d.getElementById('main');
         return s.gateVisible || !!(main && !main.className.includes('hidden'));
@@ -403,6 +410,21 @@ function run(page, include, label, configText, setup) {
     const found = (fs.readFileSync(path.join(APP, page), 'utf8')
       .match(/(?:id|class|onclick)="[^"]*(?:like|fav|thumb|heart|vote|social|clap)[^"]*"/gi) || []);
     check(found.length === 0, `${page}: nothing reads as a like or social widget`,
+      found.join(' ') || 'clean');
+  }
+  // And the fourth, added with the line that offers the Android app. Fanboy's
+  // Mobile Notifications List, the one behind Brave's "open in app" blocking,
+  // hides "get our app" banners by name: .mobile-app-banner, #bannerInstallApp,
+  // .headerGetApp and dozens more. Its rules are exact names, so this asks for
+  // something broader than any one of them: no name that puts "app" next to
+  // banner, install, download, get, open or promo. In October 2026 that caught
+  // 38 of the 41 such names on the list, and nothing on these pages. The line
+  // itself is #gpsAppLine, named for the hint it sits in, and its link has no
+  // name at all.
+  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html']) {
+    const found = (fs.readFileSync(path.join(APP, page), 'utf8')
+      .match(/(?:id|class|onclick)="[^"]*(?:app[\w-]*(?:banner|bnr|install|instl|download|down|open|promo|cta)|(?:banner|bnr|install|instl|download|promo|get|open|link|webto)[\w-]{0,4}app|smart[-_]?(?:banner|bnr))[^"]*"/gi) || []);
+    check(found.length === 0, `${page}: nothing reads as a "get our app" banner`,
       found.join(' ') || 'clean');
   }
 
@@ -1584,6 +1606,92 @@ function run(page, include, label, configText, setup) {
         && adm.d.querySelector('#keyState button'),
       'a pause shows above the live sharers, with a way to resume', adm.d.getElementById('keyAlert').textContent);
     adm.w.close();
+  }
+
+  console.log('\n=== 15. the app on Google Play: the line that offers it, and the privacy policy ===');
+  // The sharing tab offers the Android app in the line that says keep the
+  // screen on, and only where it helps: an Android phone, in a browser, once
+  // config.txt says where the app is. Each run below takes one of those away.
+  {
+    const PLAY = 'https://play.google.com/store/apps/details?id=org.communitybustracker.app';
+    const ANDROID = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36';
+    const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1';
+    const withApp = url => CONFIG + '\nANDROID_APP_URL = ' + url + '\n';
+    const as = ua => window => { Object.defineProperty(window.navigator, 'userAgent', { value: ua }); };
+    const lineOf = r => r.d.getElementById('gpsAppLine');
+    const offered = r => !!lineOf(r) && !lineOf(r).classList.contains('hidden');
+
+    const droid = await run('/index.html', () => true, 'android', withApp(PLAY), as(ANDROID));
+    const a = lineOf(droid) && lineOf(droid).querySelector('a');
+    check(offered(droid) && !!a && a.getAttribute('href') === PLAY,
+      'on an Android phone, in a browser, the sharing tab offers the app config.txt names', a && a.getAttribute('href'));
+    check(/^Keep the screen on, or get the app and lock it\.$/.test(droid.d.getElementById('gpsSetupHint').textContent.trim()),
+      'in the line that says keep the screen on', droid.d.getElementById('gpsSetupHint').textContent.trim());
+    check(!!a && a.target === '_blank' && /noopener/.test(a.rel),
+      'opening in a new tab, so the tracker stays open behind it');
+    check(droid.d.getElementById('onbusView').contains(lineOf(droid)),
+      'on the sharing tab only: watching never needs the app');
+    droid.w.switchTab('share');
+    droid.w.eval('sharing = true');
+    droid.w.syncTripMode();
+    check(droid.w.getComputedStyle(lineOf(droid)).display === 'none',
+      'and never during a trip, when the app would be a second bus beside this one');
+    droid.w.eval('sharing = false');
+    droid.w.syncTripMode();
+    check(droid.w.getComputedStyle(lineOf(droid)).display !== 'none', 'back once the trip is over');
+    droid.w.close();
+
+    const none = await run('/index.html', () => true, 'android, no app', null, as(ANDROID));
+    check(!offered(none), 'with ANDROID_APP_URL blank, as the template ships it, nothing is offered');
+    none.w.close();
+    const iphone = await run('/index.html', () => true, 'iphone', withApp(PLAY), as(IPHONE));
+    check(!offered(iphone), 'nor on an iPhone, which has no app');
+    iphone.w.close();
+    const desk = await run('/index.html', () => true, 'desktop', withApp(PLAY));
+    check(!offered(desk), 'nor on a computer');
+    desk.w.close();
+    const odd = await run('/index.html', () => true, 'not https', withApp('javascript:alert(1)'), as(ANDROID));
+    check(!offered(odd), 'and an address that is not https never becomes a link');
+    odd.w.close();
+    const inside = await run('/index.html', () => true, 'in the app', withApp(PLAY), window => {
+      as(ANDROID)(window);
+      window.Capacitor = { isNativePlatform: () => true, Plugins: { BackgroundGeolocation: {
+        addWatcher(){ return 'w1'; }, removeWatcher(){ return Promise.resolve(); } } } };
+    });
+    check(!offered(inside) && /^Keeps sharing with the screen locked\.$/.test(inside.d.getElementById('gpsSetupHint').textContent.trim()),
+      'inside the app itself nothing is offered, and the hint says the screen can lock',
+      inside.d.getElementById('gpsSetupHint').textContent.trim());
+    inside.w.close();
+
+    // The guide reads the same line, so it can never send anyone elsewhere.
+    // Without it (or without its script) it says to ask the organizer.
+    const guideSrc = fs.readFileSync(path.join(APP, 'how-to.html'), 'utf8');
+    check(/<span id="appAsk">Ask the organizer for it\.<\/span><span id="appWhere" hidden>/.test(guideSrc),
+      'the guide says to ask the organizer until config.txt names the app');
+    const guide = await run('/how-to.html', () => true, 'guide', withApp(PLAY));
+    const where = guide.d.getElementById('appWhere'), ask = guide.d.getElementById('appAsk');
+    check(!!where && !where.hidden && where.querySelector('a').getAttribute('href') === PLAY && !!ask && ask.hidden,
+      'and links to the app config.txt names once it does', where && where.textContent.trim());
+    guide.w.close();
+
+    // #privacy is the address Google Play is given for the privacy policy. Play
+    // asks that the policy says it is one, names the app, says how data is
+    // kept safe and who it goes to; the panel is that policy for both.
+    const pol = await run('/index.html#privacy', () => true, 'privacy');
+    check(!pol.d.getElementById('privModal').classList.contains('hidden'),
+      '#privacy opens the privacy panel');
+    check(pol.w.location.hash === '', 'and leaves the address, so a reload is the map again', pol.w.location.hash || 'no hash');
+    const said = pol.d.getElementById('privModal').textContent.replace(/\s+/g, ' ');
+    check(/Privacy policy for Bus Tracker: this website and its Android app\./.test(said),
+      'the panel says it is the privacy policy, and names the app and the site');
+    check(/What is sent travels encrypted, over HTTPS\./.test(said) && /Google knows your account installed it/.test(said),
+      'and says how what is sent travels, and what Google learns from an install');
+    pol.w.close();
+    ok.w.location.hash = '#privacy';
+    await new Promise(r => setTimeout(r, 100));
+    check(!ok.d.getElementById('privModal').classList.contains('hidden'),
+      'following a #privacy link on a page already open opens it too');
+    ok.w.closeModal('privModal');
   }
 
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

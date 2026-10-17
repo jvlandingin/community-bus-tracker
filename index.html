@@ -1032,6 +1032,7 @@
   .fielderr{font-size:var(--fs-label); color:var(--lost-ink); font-weight:700; margin-top:8px;}
   .hint{font-size:var(--fs-label); color:var(--muted); margin-top:10px; line-height:1.55;}
   .hint:empty{display:none;}
+  #gpsAppLine a{color:var(--brand-ink); font-weight:700;}
   .badge{
     display:inline-block; font-size:var(--fs-cap); padding:3px 9px; border-radius:999px;
     background:var(--maroon-soft); color:var(--brand-ink); font-weight:800; letter-spacing:.06em;
@@ -1090,7 +1091,8 @@
   .privacybar b{color:var(--ink);}
   .privacybar .more{color:var(--brand-ink); font-weight:800; text-decoration:underline;}
   .privacy-detail h4{font-size:var(--fs-small); margin:14px 0 4px;}
-  .privacy-detail h4:first-child{margin-top:0;}
+  .privacy-detail h4:first-child, .privacy-detail .privfor{margin-top:0;}
+  .privacy-detail .privfor b{color:var(--ink);}
   .privacy-detail p{font-size:var(--fs-small); color:var(--muted); line-height:1.55; margin-bottom:0;}
   .privacy-detail .ok{color:var(--ok-ink);}
   .privacy-detail .hon{color:var(--warn-ink);}
@@ -1152,6 +1154,9 @@
   .trip-on #onbusStrip .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), 0 0 18px 4px rgba(61,220,151,.45);}
   .trip-on #onbusStrip .tick.near span{color:#ffd27a;}
   .trip-on .tyline{color:#ffd27a;}
+  /* Offered before a trip, never during one: an app started mid-trip is a
+     second bus beside this page's, which goes on until it goes stale. */
+  .trip-on #gpsAppLine{display:none;}
 
   /* ---- The salamat ticket ---------------------------------------------
      What a sharer gets for tapping Stop: a thank-you shaped like the punched
@@ -1876,6 +1881,7 @@
       <button class="modal-x" onclick="closeModal('privModal')" aria-label="Close"><svg class="gi" aria-hidden="true"><use href="#i-close"/></svg></button>
     </h3>
     <div class="modal-scroll privacy-detail">
+      <p class="privfor"><b>Privacy policy</b> for Bus Tracker: this website and its Android app.</p>
       <h4 class="ok">If you're just watching the map</h4>
       <p>The app never asks for your location on its own, and you can use the whole map without ever giving it. No account, no name, no phone number. We can't see who is watching.</p>
       <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the location button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the tab.</p>
@@ -1886,7 +1892,7 @@
 
       <h4 class="ok">If you share from the bus</h4>
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip, plus, only if you switched on “Show customized bus to riders”, a short code for how your bus is painted and dressed. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map.</p>
-      <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop.</p>
+      <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop. If you get it from Google Play, Google knows your account installed it, as with any app there. Play shows us only totals, never who.</p>
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and on our side it goes when the trip does. Your phone adds it to your bus in My tickets, a total only you can see.</p>
       <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>it is not sent anywhere</b>. Close it and it is gone.</p>
       <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Start from scratch” in My tickets deletes every copy.</p>
@@ -1913,7 +1919,7 @@
       <p class="hidden" id="contactBody"></p>
 
       <h4>Why you can trust this</h4>
-      <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing.</p>
+      <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing. What is sent travels encrypted, over HTTPS.</p>
       <p>Six small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it. All six stay in your browser, are never sent anywhere, and are not linked to anything.</p>
       <p>Your bus is the coach your trips decorate in My tickets, and it is <b>totals and choices, never a diary</b>: how many trips you shared, how many of them were first on the map, end to end, before 5 AM or after dark, which directions, which places on the route, whether you finished each tour, your time on the map and the salamat you received in all, and how many weeks in a row you have shared, with the week of your last trip to count it from; and the spare parts it has (the app's own points, drawn as a nut: never bought with money, never sent), what they got, which paint and accessories it wears, whether you show it to riders, and, for the cap of three earning trips a day, the day of your last one. Totals, never a list: no clock times and no bus numbers, so it can say how much you have shared and the last day you did, but never a timetable of when you worked. The trip you are sharing is kept so that a page that reloads or closes mid-trip can carry on with the same bus, or still give you its ticket: when it started, roughly where it began and last was on the route, and the trip's random ID. It is deleted the moment the trip ends, or, if the page closed mid-trip, the next time the page opens.</p>
       <p><b>Showing your bus to riders</b> is off unless you switch it on, in My tickets or when the app first asks, once there is something on your bus to show. While it is on and you share, riders who tap your bus see it as you dressed it. The honest cost: they will be able to tell it is yours from one trip to the next. The code that carries it is letters from the app's own lists, never words or colours of anyone's choosing, and it is deleted with the trip, like the position.</p>
@@ -2278,7 +2284,11 @@
         <div style="margin-top:2px;">A blocker is hiding Start. Allow this site (Brave: tap the lion, Shields down), then reload.</div>
       </div>
 
-      <div class="hint">Anyone on the bus can share. <span id="gpsSetupHint">Keep the screen on.</span></div>
+      <!-- The middle of the second sentence is the Android app, offered by
+           renderAppLine(). Its names are the hint's own, never anything like
+           "app banner": filter lists hide "get our app" banners by name
+           (test-boot.js section 8), and the anchor has no name at all. -->
+      <div class="hint">Anyone on the bus can share. <span id="gpsSetupHint">Keep the screen on<span id="gpsAppLine" class="hidden">, or <a target="_blank" rel="noopener">get the app</a> and lock it</span>.</span></div>
       <button type="button" class="walklink" onclick="startWalk('share')"><svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>First time? Try a practice run. Nothing is shared</button>
     </div>
 
@@ -3484,7 +3494,7 @@ drawSignboard();
 // Settings load from config.txt. Edit that file, not this one.
 // ============================================================
 let CFG = { SUPABASE_URL:'', SUPABASE_ANON_KEY:'', ROUTE_SLUG:'', SOURCE_URL:'', CONTACT_EMAIL:'',
-            CARTO_API_KEY:'' };
+            CARTO_API_KEY:'', ANDROID_APP_URL:'' };
 // Live settings, fetched from the database (edited in the admin page).
 // Hours are lists of [start, end] windows in 24h HH:MM, per direction.
 let SET = { hours:{ north:[], south:[] }, headway_min:30,
@@ -4135,7 +4145,7 @@ function initMap() {
   // themselves, the way every map app does it: the bus is still drawn.
   map.on('dragstart', function(){ if (FOLLOW) stopFollowing(); });
 }
-window.addEventListener('hashchange', function(){ readFollowLink(); if (running) renderBuses(); });
+window.addEventListener('hashchange', function(){ readFollowLink(); privacyFromLink(); if (running) renderBuses(); });
 
 function resetView(){
   if (!map) return;
@@ -6967,6 +6977,27 @@ function showAppHints(){
   if (a) a.textContent='Keeps sharing with the screen locked.';
   if (b) b.textContent='';
 }
+// The browser's side of the same thing: the line that says keep the screen
+// on offers the app as the other way. Only on an Android phone, only in a
+// browser, and only once config.txt says where the app is (ANDROID_APP_URL),
+// so a fork with no app offers nothing. Never inside the app, never on an
+// iPhone, which has none, and never on the tracking tab, because watching
+// never needs it: the flyer's promise is that there is nothing to download.
+function renderAppLine(){
+  const url = (CFG.ANDROID_APP_URL||'').trim();
+  if (!/^https:\/\//i.test(url) || inApp() || !onAndroid()) return;
+  const line = document.getElementById('gpsAppLine');
+  if (!line) return;
+  line.querySelector('a').href = url;
+  line.classList.remove('hidden');
+}
+function onAndroid(){
+  try{
+    const d = navigator.userAgentData;
+    if (d && d.platform) return /android/i.test(d.platform);
+  }catch(e){}
+  return /Android/i.test(navigator.userAgent || '');
+}
 
 // Set by a write that failed and cleared by the next one to land. While it is
 // set, a GPS fix does not put "Sharing live" back over the error: the fix is
@@ -8695,6 +8726,16 @@ function renderContactLine(){
   p.innerHTML = 'Questions or concerns about this tool: '+parts.join(' · ')+'.';
   p.classList.remove('hidden');
 }
+// #privacy opens the privacy panel. It is the privacy policy's address, which
+// Google Play asks every app for, and the panel is the policy: one text for
+// the site and the app, so the two cannot disagree. Taken off the address
+// once used, like #tour, so a reload is the map again.
+function privacyFromLink(){
+  if (location.hash !== '#privacy') return false;
+  try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+  openModal('privModal');
+  return true;
+}
 // The folded hours card answers before it is opened: what the service is
 // doing now, in words, then the day drawn as a bar per direction. The exact
 // windows are still spelled out for screen readers, and in the boxes inside.
@@ -8781,8 +8822,8 @@ function start(){
   readFollowLink();
   if (!mapReady){
     initMap(); buildTicks(); buildSightingPlaces(); renderHours();
-    renderSourceLink(); renderContactLine(); showAppHints(); mapReady=true;
-    walkFromLink();
+    renderSourceLink(); renderContactLine(); renderAppLine(); showAppHints(); mapReady=true;
+    if (!privacyFromLink()) walkFromLink();
     // After a tour asked for in the link has had its chance to start.
     setTimeout(recoverTrip, 600);
   }

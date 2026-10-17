@@ -1,4 +1,4 @@
-# Builds the Android app in mobile/ and attaches the APK to the run.
+# Builds the Android app in mobile/ and attaches it to the run.
 #
 # The app is a Capacitor shell around the live site, so a change to
 # index.html reaches it on the next launch without a new APK. Only a change
@@ -14,10 +14,15 @@
 #   BUS_KEY_ALIAS
 #   BUS_KEY_PASSWORD
 #
-# Without them it builds a debug APK, which installs and runs but is signed
-# with a key that is thrown away with the runner, so the next build will not
-# install over it. Fine for trying it out; not for handing to volunteers.
-# mobile/README.md has the one-time keytool command.
+# A signed run makes two files from that one key: bus-tracker.aab, the bundle
+# Google Play takes, and bus-tracker.apk, for a phone to install directly.
+# Play is given the same key as its app signing key (mobile/README.md, "Google
+# Play"), so the two are interchangeable: an APK install updates from Play.
+#
+# Without the secrets it builds a debug APK, which installs and runs but is
+# signed with a key that is thrown away with the runner, so the next build
+# will not install over it. Fine for trying it out; not for handing to
+# volunteers, and Play refuses it. mobile/README.md has the keytool command.
 name: android
 
 on:
@@ -52,24 +57,30 @@ jobs:
           BUS_KEYSTORE_PASSWORD: ${{ secrets.BUS_KEYSTORE_PASSWORD }}
           BUS_KEY_ALIAS: ${{ secrets.BUS_KEY_ALIAS }}
           BUS_KEY_PASSWORD: ${{ secrets.BUS_KEY_PASSWORD }}
-          # Android refuses an update whose version code is not higher, so
-          # each run counts up by itself.
+          # Android and Play both refuse an update whose version code is not
+          # higher, so each run counts up by itself. The name carries the
+          # same number, so a release in Play Console says which run made it.
           BUS_VERSION_CODE: ${{ github.run_number }}
+          BUS_VERSION_NAME: 1.${{ github.run_number }}
         run: |
           set -euo pipefail
           cd android
+          mkdir -p ../out
           if [ -n "$KEYSTORE_B64" ]; then
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/bus.jks"
             export BUS_KEYSTORE="$RUNNER_TEMP/bus.jks"
-            ./gradlew --no-daemon assembleRelease
-            mkdir -p ../out && cp app/build/outputs/apk/release/app-release.apk ../out/bus-tracker.apk
+            ./gradlew --no-daemon assembleRelease bundleRelease
+            cp app/build/outputs/apk/release/app-release.apk ../out/bus-tracker.apk
+            cp app/build/outputs/bundle/release/app-release.aab ../out/bus-tracker.aab
           else
-            echo "::warning::No signing key in secrets, building a debug APK. It will not install over a previous build."
+            echo "::warning::No signing key in secrets, building a debug APK. It will not install over a previous build, and Play will not take it."
             ./gradlew --no-daemon assembleDebug
-            mkdir -p ../out && cp app/build/outputs/apk/debug/app-debug.apk ../out/bus-tracker-debug.apk
+            cp app/build/outputs/apk/debug/app-debug.apk ../out/bus-tracker-debug.apk
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: bus-tracker-apk
-          path: mobile/out/*.apk
+          name: bus-tracker-android
+          path: |
+            mobile/out/*.apk
+            mobile/out/*.aab
           if-no-files-found: error

@@ -46,8 +46,14 @@ One row per sharing session, upserted in place. **No history table exists, by
 design.** Unique on `(route_slug, session_id)`.
 
 `route_key`, `route_slug`, `session_id`, `lat`, `lng`, `speed`, `direction`,
-`bus_label`, `keyless`, `updated_at`, `look`. `lat`, `lng` and `direction`
-refuse NULL.
+`bus_label`, `keyless`, `updated_at`, `look`, `off_route`. `lat`, `lng` and
+`direction` refuse NULL.
+
+`off_route` (since `14-off-route-private.sql`, default false) is true while the
+row's position is outside the route area. Such a row is returned by
+`get_positions` to its own phone and to nobody else, and left out of
+`admin_list_sharers`. Every write overwrites it with the position it describes.
+See "Outside the route area".
 
 `look` (since `13-bus-look.sql`) is NULL unless the sharer has switched on
 "Show customized bus to riders" in the app. Then it is a code for their decorated bus:
@@ -183,13 +189,13 @@ deletes every `keyless` bus in the same transaction: see "Open sharing" below.
 | function | notes |
 |---|---|
 | `get_settings(p_slug)` | returns `{settings, notice}`. Notice is null when unset or expired. |
-| `get_positions(p_slug, p_self)` | filters stale rows, deletes nothing. Returns `pub_id`, **not** the session id, see below, and no speed. `p_self` is optional: pass your own session id and your own row comes back with `is_self` set, which is how the duplicate-sharer warning skips itself. It also carries `thanks` on that row and `null` on every other, see "Saying salamat". |
+| `get_positions(p_slug, p_self)` | filters stale rows, deletes nothing. Returns `pub_id`, **not** the session id, see below, and no speed. `p_self` is optional: pass your own session id and your own row comes back with `is_self` set, which is how the duplicate-sharer warning skips itself. It also carries `thanks` on that row and `null` on every other, see "Saying salamat". An `off_route` row comes back only as the caller's own, see "Outside the route area". |
 | `get_sightings(p_slug)` | newest 8 within the expiry window |
 | `add_sighting(p_slug, p_body)` | 1 to 140 chars; refuses a 6th post inside 60 seconds route-wide |
 | `clear_bus_position(p_slug, p_session)` | takes the real session id, which only the sharer's own phone holds; keeps working across a rotation and from sendBeacon |
 | `mark_watching(p_slug, p_watcher)` | the watching heartbeat, see below. Returns nothing and tells the caller nothing. |
 | `say_thanks(p_slug, p_pub, p_watcher)` | one rider thanking one live bus, see "Saying salamat". Returns nothing and tells the caller nothing. |
-| `set_open_position(p_slug, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | a bus with no share key, **only while `open_sharing` is on**; refused with `open sharing is off` otherwise, checked on every write so switching it off stops a trip already under way. Every check `set_bus_position` makes, by the same code. See "Open sharing". |
+| `set_open_position(p_slug, p_session, p_lat, p_lng, p_speed, p_direction, p_label, p_look)` | a bus with no share key, **only while `open_sharing` is on**; refused with `open sharing is off` otherwise, checked on every write so switching it off stops a trip already under way. Every check `set_bus_position` makes, by the same code. Returns null when the bus is on the map and `private` when it was kept for its own phone, outside the route area. See "Open sharing". |
 | `ping()` | keep-alive target for the uptime monitor |
 
 ### Why `get_positions` does not return the session id
@@ -224,9 +230,9 @@ did was invalidate a sentence in this file about a different function.
 | function | notes |
 |---|---|
 | `check_share_key(p_slug, p_key)` | the gate. Returns `ok`, `invalid key` or `too many tries`; counts a wrong PIN. |
-| `set_keyed_position(p_slug, p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | the trip, as the page sends it. Returns null when the position went in, or `invalid key` / `too many tries`; every other refusal raises, as below. |
+| `set_keyed_position(p_slug, p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label, p_look)` | the trip, as the page sends it. Returns null when the position went in, `private` when it went in for its own phone only (outside the route area), or `invalid key` / `too many tries`; every other refusal raises, as below. |
 | `route_exists(p_key)` | true only for the **current** key, and never for a PIN. Kept for pages already on phones. |
-| `set_bus_position(p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | the same checks, by the key alone; refuses any PIN-shaped key. Kept for pages already on phones. |
+| `set_bus_position(p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | the same checks, by the key alone; refuses any PIN-shaped key, and still refuses a position outside the route area, since it has no way to say `private`. Kept for pages already on phones. |
 
 Both new calls take the slug because a wrong PIN has to be counted against a
 route, and the old two find the route by the key, so they could not. They
@@ -237,10 +243,11 @@ transaction back, and the count with it.
 plain words: `invalid key`, `invalid session` (must match
 `^[A-Za-z0-9\-]{8,64}$`), `invalid direction` (anything but `north` or `south`,
 missing included), `label too long` (over 12), `position off route` (missing,
-or outside lat 13.90 to 14.75, lng 120.70 to 121.15), `implausible speed`
+or not a place on Earth; and, from `set_bus_position` only, outside lat 13.90
+to 14.75, lng 120.70 to 121.15), `implausible speed`
 (outside 0 to 60 m/s; checked, never stored), `rate limited` (under 2 seconds
 since that session's last write), `too many active sessions` (`max_sessions`
-buses already on the map).
+buses already on the map, or ten already outside the route area).
 
 Two of those were holes until `08-position-checks.sql`. The checks did not name
 NULL, a comparison with NULL is NULL, and plpgsql's IF reads that as false, so
@@ -325,6 +332,35 @@ keyless and never removed by the switch.
 public map would invite riders to distrust the riders the switch was turned on
 for, and the honest statement is the one the privacy panel makes, that while it
 is on a bus is somebody's report and anyone could have made it.
+
+## Outside the route area
+
+Since October 2026 (`sql/14-off-route-private.sql`) a position outside the box
+around the route (lat 13.90 to 14.75, lng 120.70 to 121.15) is kept instead of
+refused, marked `off_route`, and shown to its own phone only: `get_positions`
+returns it when `p_self` is that row's session id and never otherwise, and
+`admin_list_sharers` leaves it out. The writers answer `private` so the page can
+say "Only you can see this bus." The next write inside the box puts the same
+bus on everyone's map; one outside it again takes it off at once.
+
+Why: Google Play reviews the Android app from wherever its reviewers are and
+wants every part of an app reachable regardless of location. Refused outside the
+box, sharing could not be reviewed at all. A reviewer key that skipped the check
+was considered and refused, because whoever held it could have put a made-up bus
+on the real map from anywhere. A bus only its own phone can see is harmless
+whoever starts it, so there is nothing to hand out and nothing to leak.
+
+What holds: a made-up bus still never reaches the riders' map from outside the
+box; it is the same one row per trip, overwritten and swept as before; a missing
+or impossible position, a wrong key, an impossible speed and the 2 second limit
+are refused exactly as before. The caps: buses outside the box do not count
+towards `max_sessions`, which is about the riders' map, and have ten places of
+their own per route, so nobody can fill the table from abroad. A bus driving
+into the box is counted against `max_sessions` as it arrives, as if it had just
+started there.
+
+The page counts only writes that reached the riders' map towards a trip, so a
+trip spent entirely outside the box draws no ticket and earns nothing.
 
 ## A PIN for the share key
 

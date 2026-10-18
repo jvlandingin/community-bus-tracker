@@ -78,9 +78,8 @@ begin
   perform assert_err(
     $q$ select public.set_open_position('wonderful-mendez-ayala','session-open-0002',null,null,null,'north',null) $q$,
     'position off route', 'no position');
-  perform assert_err(
-    $q$ select public.set_open_position('wonderful-mendez-ayala','session-open-0002',10.0,120.9,null,'north',null) $q$,
-    'position off route', 'a position off the route');
+  -- A position outside the route area is kept for its own phone only
+  -- since 14-off-route-private.sql: tests/db/12-off-route-tests.sql.
   perform assert_err(
     $q$ select public.set_open_position('wonderful-mendez-ayala','session-open-0002',14.4,120.9,null,'east',null) $q$,
     'invalid direction', 'a made-up direction');
@@ -174,7 +173,8 @@ do $$
 begin
   perform assert(
     not has_function_privilege('anon',
-      'public._write_position(public.routes,boolean,boolean,text,double precision,double precision,double precision,text,text)',
+      -- with the switch 14-off-route-private.sql added
+      'public._write_position(public.routes,boolean,boolean,text,double precision,double precision,double precision,text,text,boolean)',
       'execute'),
     'anon cannot call _write_position directly');
   perform assert(

@@ -1257,6 +1257,35 @@ function run(page, include, label, configText, setup) {
       'so the next trip is a different session, and a different bus on the map');
     await w.stopSharing();
 
+    // Outside the route area the server keeps the bus for this phone alone
+    // and answers 'private' (sql/14-off-route-private.sql). That is not a
+    // failure: the trip goes on and the status line says who can see the
+    // bus. It is how sharing works, and is reviewed, from anywhere. Nor is
+    // it a bus on the map, so it is not counted towards a ticket.
+    {
+      sim.reply.set_keyed_position = () => ({ data: 'private' });
+      await startTrip();
+      check(w.eval('sharing') === true && /Only you can see this bus/.test(status()),
+        'a bus kept for this phone alone is a trip, and says who can see it', status());
+      check(d.getElementById('onbusDot').className.indexOf('err') < 0, 'not as an error');
+      check(w.eval('TRIP.writes') === 0, 'and is not counted as a write that reached the map',
+        String(w.eval('TRIP.writes')));
+      sim.watches[sim.watches.length - 1].onPos(here);
+      check(/Only you can see this bus/.test(status()), 'the next GPS fix does not say "Sharing live" over it', status());
+      sim.reply.set_keyed_position = () => ({ data: null });
+      await writeNow();
+      check(/^Sharing live: ▲ northbound$/.test(status()) && w.eval('TRIP.writes') === 1,
+        'inside the area the same trip is live, and counted', status());
+      sim.reply.set_keyed_position = () => ({ data: 'private' });
+      await writeNow();
+      check(/Only you can see this bus/.test(status()), 'and outside it again, private again', status());
+      await w.stopSharing();
+      delete sim.reply.set_keyed_position;
+      await startTrip();
+      check(/^Sharing live/.test(status()), 'the next trip starts as any other', status());
+      await w.stopSharing();
+    }
+
     // Stop near the stop you get off at, with the buzz on. Found filming the
     // showcase video: the bus just left stayed in BUSES until the next poll,
     // so the card, back to waiting, counted it as one coming to that very

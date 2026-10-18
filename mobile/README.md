@@ -182,6 +182,17 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
   not the person's: the app keeps it on the phone and sends it only to be
   checked, as a browser does. Users can delete their data: Stop removes the
   position, and everything else goes by itself.
+
+  These answers are in `mobile/store/data-safety.csv`, Play's own export with
+  the answers filled in, for "Import from CSV" on the Data safety page. None
+  of it is shared, none is processed ephemerally (each is stored, briefly),
+  and every type is collected for app functionality. App interactions are for
+  fraud prevention too (the reports), and the IDs for analytics too (the
+  watching count). Location, interactions and sightings are the user's
+  choice; the IDs are not, because every open page sends one. Deletion is
+  "No, but user data is automatically deleted within 90 days": there is no
+  account to ask about, and everything is gone within hours. Change the CSV in
+  the same commit as these answers.
 - **Content rating:** no violence, no gambling, no ads. Users share their
   location with everyone (while sharing) and can post sightings, which are
   picked from lists, so there is no free text to moderate. The questionnaire's

@@ -2005,6 +2005,55 @@ fused location provider, so a phone without Play services, like most Huawei
 phones launched since 2019, cannot run the app from any source. That is not a
 reason to keep an APK route: the APK would install and then get no GPS.
 
+**What a website could assume and an app cannot** (October 2026). A review
+before the closed test went through the page asking which of its habits only
+hold in a browser, and found these, each now handled in the page with a
+plugin carrying the call across:
+
+- *Back.* A browser's back button leaves the site; an app's has to undo what
+  is open. With no handler, Android 11 and older closed the app on back,
+  which stopped a trip, and newer ones left it without closing a pop-up.
+  `appBack()` closes the top layer, ends a tour, cancels picking a stop on the
+  map, and otherwise puts the app in the background, never closing it. A trip
+  question has no back-out: it waits for its answer.
+- *Files and the share sheet.* A WebView has no `navigator.share` and drops a
+  download without a word, so "Save a backup" said "Saved" and saved nothing,
+  and the bus link fell back to the clipboard. Both go to the phone's share
+  sheet now. The app has no Android backup either (`allowBackup` is off, so
+  "on this phone only" stays true), which makes the backup file the only way a
+  sharer's tickets and bus reach a new phone.
+- *Vibration* needs a permission a browser never asks about; without it the
+  WebView ignores `navigator.vibrate`.
+- *The key in the link.* On the web the group chat's link carries the share
+  key back with a tap. In the app that link opens the browser, and Android
+  empties `sessionStorage` whenever it closes a backgrounded app, so the app
+  keeps the key on the phone: the seventh remembered thing, app only, gone
+  when the key stops working.
+- *Closing.* Swiping the app away ends its screen, and the GPS plugin stops
+  its service with it. That cannot be helped from the page, so the sharing
+  notification says it.
+- *Leaving the page.* In a browser, opening the guide mid-trip ends the trip
+  and that is all. In the app the page's half ends but the plugin's does not:
+  its notification and GPS stayed on for a page that had gone, and a later
+  Stop never reached them. The watcher's id is now kept for the visit in
+  `sessionStorage`, and the next page to open lets it go.
+- *Words.* "Keep the screen on", "close the tab", "clear your browser data"
+  are browser words. The tour's Start step and the privacy panel say what is
+  true in the app as well.
+
+And two that Google Play asks for. Sightings lost their typing box, because
+text anyone can post and everyone can read is user-generated content, which
+Play requires posting rules, reporting and moderation for; the board now
+draws each post from its picked parts and never shows what was sent. And a
+line under Start says the bus shows on the public map until Stop, where Play
+wants an app to say what it does with a location before it asks for one.
+
+**The website is the app**, which is the habit with the widest reach: a merge
+to `main` reaches every installed copy with no review by Play. The answers
+Play Console holds (data safety, permissions, the location declaration) are
+kept in `mobile/README.md` and change in the same commit as anything that
+changes what leaves a phone, as the privacy panel does.
+
 ## Testing
 
 Nothing here is claimed without being checked. The suites live outside the

@@ -1,7 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Bus Tracker</string>
-    <string name="title_activity_main">Bus Tracker</string>
+    <!-- The name under the icon. Google Play lists the app as "Fibi: Bus
+         Tracker PH"; the launcher has room for the first word only. The
+         website keeps calling itself Bus Tracker. -->
+    <string name="app_name">Fibi</string>
+    <string name="title_activity_main">Fibi</string>
     <string name="package_name">org.communitybustracker.app</string>
     <string name="custom_url_scheme">org.communitybustracker.app</string>
     <!-- The persistent notification while a bus is being shared. Android will

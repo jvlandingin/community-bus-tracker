@@ -84,8 +84,16 @@ for (const n of names) {
     // Only <b> is written into the bubble as markup.
     check(!/<(?!\/?b>)/.test(s.words), `${n}/${s.id}: no markup but <b>`);
     if (s.tap) check(s.tap.split(/\s+/).length <= 5 && /^Tap /.test(s.tap), `${n}/${s.id}: its ask is a short "Tap ..."`, s.tap);
+    // The words the Android app shows instead, held to the same rules.
+    if (s.appWords){
+      const aw = plain(s.appWords).split(/\s+/).filter(Boolean).length;
+      check(aw <= 22 && !/<(?!\/?b>)/.test(s.appWords), `${n}/${s.id}: its words in the app are as short, and as plain`, plain(s.appWords));
+      check(!/screen on/i.test(s.appWords), `${n}/${s.id}: and never tell an app user to keep the screen on`);
+    }
   }
 }
+check(S.WALKS.share.some(s => /Keep the screen on/.test(s.words) && /lock the phone/.test(s.appWords || '')),
+  'the sharing tour says "keep the screen on" in a browser and "lock the phone" in the app');
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const filled = S.walkWords('The top line goes to {north}, the bottom line to {south}.', { north: 'One Ayala', south: 'Mendez <x>' }, esc);
 check(filled === 'The top line goes to One Ayala, the bottom line to Mendez &lt;x&gt;.',

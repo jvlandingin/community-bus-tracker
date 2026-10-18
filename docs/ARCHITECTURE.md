@@ -1588,7 +1588,7 @@ preview with no picture and nothing else changes.
 
 ## The showcase video
 
-`tools/render-video.sh` makes a one-minute vertical video (1080x1920, English
+`tools/render-video.sh` makes a vertical video of about 75 seconds (1080x1920, English
 captions, the interface's own sounds) for Facebook, TikTok and Reels, where the riders who have
 never heard of the tracker are. The story is one sharer's morning: wait at a
 stop until the card says Sakay na!, get on and share the bus, riders say
@@ -1639,14 +1639,34 @@ send a little oftener than the film polls. Nothing else in the page
 differs from the commit, and the render stops if those lines change in
 `index.html`, rather than quietly filming the stutter again.
 
-**Saving the stop takes four seconds** (the maintainer's ask, October 2026).
+**Saving the stop takes its time** (the maintainer's ask, October 2026).
 The camera closes on the picker while the whole name is typed. After the
 pick, it goes to the pin as it lands on the map, with rings going out from
 it and the stop's name beside them, and stays there a second before the
 card. It goes no closer than 1.35 times (`SHARP` in `film.js`). The phone
 is filmed at three pixels a point and the stage draws it at 2.2, so a
-closer camera enlarges the capture, and at 2.4 times the map blurred. The other scenes were each made a little shorter, so the video is
-still about a minute.
+closer camera enlarges the capture, and at 2.4 times the map blurred.
+
+**A caption is read before anything happens under it** (October 2026). A
+viewer of the first cut found it too fast: they were still reading a caption
+when the screen had already changed. Measured, ten of its thirteen captions
+had a tap or a camera move within a second of appearing, most about half a
+second in, and a viewer reads the words first and looks at the phone after.
+Slowing the whole film would have kept the caption and the tap starting
+together and made the calm scenes drag; the fault was the order. So every
+beat now goes: the camera settles on what is about to be used, the caption
+lands on a still screen, nothing is tapped or moved for its reading time
+(`READ` in `film.js`: 0.4 seconds to notice it and a quarter of a second a
+word), a ring closes in on the button for a third of a second so the eye is
+there first, the tap, and a moment on what it did before the next caption. Taps are timed
+from the caption above them (`read()`), and `rehearse()` plays the cues on
+stand-ins before anything is launched: a tap, a camera move, a scroll, a
+letter typed, a salamat or the phone moving inside a caption's reading time,
+a caption gone before it can be read, or a tap while the camera is still
+moving, stops the render and names both. It cost 13 seconds, 62 to 75; the
+maintainer chose that over cutting a caption. The end card got longer too,
+6.5 seconds, because a feed loops the video back to the title the moment it
+ends.
 
 **Choices the app forced.** The story waits at Javalera and gets off at SM
 City General Trias because the card counts down to both one stop at a time;
@@ -1661,7 +1681,11 @@ most) goes out the moment the bus reaches the last stretch.
 **What the captions may say.** One short plain sentence each, under the
 same rules as the app's own words: no minutes and no arrival time, Bus
 Tracker and never the company's initials, and the end card's
-"Community-run. Not affiliated with the bus company." One caption is the
+"Community-run. Not affiliated with the bus company." The end card said "No
+app, no account." until there was an Android app; it says "Nothing to
+install. No account.", which the website still is, and the video names no app
+until Fibi is public on Google Play, since a post naming an app nobody can
+install yet only frustrates (the maintainer's call, October 2026). One caption is the
 maintainer's own and breaks the spare-parts rule on purpose: "Earn coins and
 dress up your bus." (October 2026). The app still says spare parts and draws
 a nut; the video's word is coins. The stage draws a buzz only in the two

@@ -89,7 +89,7 @@ guide's pictures of your bus, from the decorations and paint named in each
 flyer and the briefing, from `<!-- stopview p=… sky=… -->`. `test-tokens.js`,
 `test-signboard.js` and `test-pictures.js` fail until you do.
 
-One more makes the showcase video: a minute of the real tracker on a phone,
+One more makes the showcase video: 75 seconds of the real tracker on a phone,
 with made-up buses, for posting where riders are. It needs ffmpeg, the map
 key and Playwright, which never goes in a package.json: a global install, or
 `npm install --no-save playwright-core@1.56` as CI does with jsdom. It writes
@@ -568,7 +568,11 @@ picture glides for one of the film's half-second polls, at an even pace,
 and the sharing phone sends its position that often, so the buses come on
 smoothly (`filmPage()`). It carries no "demo" label and one caption says coins, both the
 maintainer's decision (October 2026), and its only sounds are the
-interface's, made by `tools/video/sounds.js`. `docs/ARCHITECTURE.md`, "The
+interface's, made by `tools/video/sounds.js`. **A caption is read before
+anything happens under it**: each tap is timed from the caption above it
+(`read()`), and `rehearse()` stops the render if a tap, a camera move or a
+scroll lands inside a caption's reading time, because a viewer of the first
+cut was still reading when the screen changed. `docs/ARCHITECTURE.md`, "The
 showcase video".
 
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`

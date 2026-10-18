@@ -5,10 +5,10 @@
 
   The phone's screen is a screenshot of the real index.html, taken a moment
   before by the same script, and everything else here is the frame around
-  it: the caption, the camera, the tap rings, the buzz,
-  and the drawn interludes, which are index.html's own pictures (its
-  SIGNBOARD and PICTURES blocks, run by render.js the way
-  tools/make-pictures.js runs them).
+  it: the caption, the camera, the tap rings and the ring that closes in on
+  a button just before each, the buzz, and the drawn interludes, which are
+  index.html's own pictures (its SIGNBOARD and PICTURES blocks, run by
+  render.js the way tools/make-pictures.js runs them).
 
   index.html's own stylesheet is put in where the marker below is, so the
   pictures carry their real colours and animations and the type is the
@@ -61,6 +61,11 @@
   #v-fx{position:absolute; inset:0; pointer-events:none;}
   .v-tap{position:absolute; width:120px; height:120px; margin:-60px 0 0 -60px; border-radius:50%;
          border:7px solid rgba(255,255,255,.95); background:rgba(255,255,255,.28); box-shadow:0 0 0 3px rgba(0,0,0,.18);}
+  /* The finger on its way: an empty ring closing in on the button, so the
+     eye is there before the tap lands. White edged with dark, because the
+     page under it is cream by day and nearly black on a trip. */
+  .v-point{position:absolute; width:120px; height:120px; margin:-60px 0 0 -60px; border-radius:50%;
+           border:7px solid #fff; box-shadow:0 0 0 4px rgba(58,12,20,.7), inset 0 0 0 4px rgba(58,12,20,.7);}
   .v-wave{position:absolute; width:40px; height:150px; border:7px solid #ffc24a; border-left:0; border-top-color:transparent; border-bottom-color:transparent; border-radius:50%;}
   .v-wave.l{transform:scaleX(-1);}
   /* A place on the page pointed out (the saved stop's pin as it lands):
@@ -152,7 +157,7 @@ const V = (function(){
   const $ = function(id){ return document.getElementById(id); };
 
   let plan = { captions:[], phone:[], ints:[] };
-  const cams = [], taps = [], buzzes = [], marks = [];
+  const cams = [], taps = [], points = [], buzzes = [], marks = [];
 
   function init(p){
     plan = p;
@@ -167,6 +172,7 @@ const V = (function(){
   function event(e){
     if (e.type === 'camera') cams.push(e);
     else if (e.type === 'tap') taps.push(e);
+    else if (e.type === 'point') points.push(e);
     else if (e.type === 'mark') marks.push(e);
     else if (e.type === 'buzz') buzzes.push(e);
   }
@@ -253,9 +259,17 @@ const V = (function(){
       el.style.transform = 'translateY(' + ((1 - pin) * 34).toFixed(1) + 'px)';
     });
 
-    // Taps: a ring that grows a little and goes.
+    // Taps: a ring that grows a little and goes. Before each, an empty ring
+    // closes in on the place, and hands over to it as the tap lands.
     const fx = $('v-fx');
     let html = '';
+    points.forEach(function(e){
+      const u = (t - e.at) / e.dur;
+      if (u < 0 || u > 1.25) return;
+      const p = toStage(e.x, e.y, cam), k = easeOut(Math.min(u, 1));
+      const s = 1.7 - 1.15 * k, o = u <= 1 ? k : 1 - (u - 1) / .25;
+      html += '<div class="v-point" style="left:' + (p.x + dx).toFixed(1) + 'px;top:' + (p.y + dy).toFixed(1) + 'px;transform:scale(' + s.toFixed(3) + ');opacity:' + o.toFixed(3) + '"></div>';
+    });
     taps.forEach(function(e){
       const u = (t - e.at) / .5;
       if (u < 0 || u > 1) return;

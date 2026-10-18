@@ -25,6 +25,22 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-18: The video waits for its captions
+
+Someone the maintainer showed the showcase video to found it too fast: they
+were still reading a caption when something was already happening on the
+phone. Measured, ten of its thirteen captions had a tap or a camera move
+within a second of appearing, most about half a second in. The maintainer
+chose a longer video over a shorter story: every caption stays, and the
+video goes from 62 to about 75 seconds so that each caption is read before
+anything happens under it, with a ring pointing at each button just before
+it is tapped. The render now refuses a cut that breaks that. The end card's
+"No app, no account." became "Nothing to install. No account.", true of the
+website now that there is an Android app, which the video does not name
+until it is public on Google Play.
+
+---
+
 ## 2026-10-17: Ready for Play, not just for a browser
 
 A review before the closed test asked what the page had been assuming

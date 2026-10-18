@@ -144,6 +144,28 @@ which is why it exists only for a PIN and the admin page shows it; and
 a read, and the reads still write nothing.
 `docs/DATABASE.md`, "A PIN for the share key", has the numbers.
 
+**Outside the route area, a bus is its own phone's** (October 2026,
+`sql/14-off-route-private.sql`). The server has always refused a position
+outside a box around the route, so nothing from elsewhere reaches the riders'
+map. Google Play then could not review sharing at all: its reviewers are
+elsewhere, and it wants sign-in details that work regardless of location. A
+reviewer key that skipped the check would have answered that and was refused,
+because whoever held it, or found it, could put a made-up bus on the real map
+from anywhere. Instead the position is kept, marked `off_route`, and
+`get_positions` returns it only to the phone whose session it is. The sharer
+sees their bus and the line "Outside the route area. Only you can see this
+bus."; riders and the admin page's list never see it; the next write inside the
+box puts the same bus on everyone's map. There is nothing to hand out and
+nothing to leak, and the Play answer becomes that no part of the app is
+restricted. Applying the rule above: the riders' map is still only what is
+inside the box, so the open-sharing and cap reasoning stands; off-route buses
+have ten places of their own per route and take none of the riders'; a hidden
+bus's public id is never published, so nobody can thank it; and the page counts
+only writes that reached the riders' map towards a trip, so a trip spent
+outside the box draws no ticket and earns no parts (rule 17's reason, a bus on
+everyone's map that isn't one, applied to a bus on nobody's). Nothing new is
+kept: the same one row per trip, with one more yes or no on it.
+
 **Key rotation has a grace period.** Rotating moves the old key to `prev_key`
 with a 4 hour expiry. A session that was already sharing keeps working on the
 old key until then; a new session cannot start on it. This was a deliberate

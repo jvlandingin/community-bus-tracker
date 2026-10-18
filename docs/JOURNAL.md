@@ -63,6 +63,23 @@ the listing's icon and feature graphic are uploaded by hand in Play Console.
 
 ---
 
+## 2026-10-18: Sharing works from anywhere, and riders still see only the route
+
+Filling in Play's "Sign in details" form, the maintainer met its guidance for
+a location-dependent lock: give details that work regardless of where the
+reviewer is. The box around the route was exactly that, so a reviewer outside
+Cavite could never get past "You seem to be off the route". The maintainer had
+already switched on open sharing, so there was no key to give; the box was
+the last lock. A reviewer key that skipped the box was considered and refused:
+anyone holding it could put a made-up bus on the real map from anywhere.
+Instead, outside the box a bus is kept for its own phone and shown to nobody
+else (`sql/14-off-route-private.sql`), with "Outside the route area. Only you
+can see this bus." on the sharing tab. The Play answer becomes "No part of the
+app is restricted". The migration has to be run in Supabase before the release
+goes to review.
+
+---
+
 ## 2026-10-17: Ready for Play, not just for a browser
 
 A review before the closed test asked what the page had been assuming

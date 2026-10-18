@@ -163,7 +163,8 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
   and these answers have to say the same. Collected, in Play's terms, none of
   it shared with a third party and all of it over HTTPS:
   - *Location, precise*: only while sharing, for the app's function, shown on
-    the public map by the sharer's own choice, deleted when the trip ends.
+    the public map by the sharer's own choice (outside the route area, on the
+    sharer's own phone only), deleted when the trip ends.
     The trip's direction and the bus number, if typed, go with it.
   - *App activity, other user-generated content*: a sighting, picked from
     lists (direction, place, time) and never typed, with no name, deleted
@@ -183,10 +184,17 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
   location with everyone (while sharing) and can post sightings, which are
   picked from lists, so there is no free text to moderate.
 - **Target audience:** 13 and over. Nothing here is made for children.
-- **App access:** sharing needs the route's share key, and the server refuses
-  positions outside Cavite (`sql/08-position-checks.sql`), so a reviewer
-  elsewhere sees "You seem to be off the route" and can never put a bus on the
-  real map. Give the key, and say so.
+- **App access ("Sign in details"):** nothing about the app depends on where
+  the reviewer is. Outside the route area a bus is kept for its own phone and
+  shown to nobody else (`sql/14-off-route-private.sql`), so a reviewer anywhere
+  can start a trip, see their bus and stop it, and can never put one on the
+  riders' map. Play asks for sign-in details that work regardless of location
+  because a geo-gate used to mean a locked part; the box around the route was
+  one until that file. With open sharing on there is no key either, so the
+  answer is "No, no part of the app is restricted". With it off, answer "Yes",
+  leave the username blank, give the share key as the password, and say in the
+  notes that Start asks for it and that outside Cavite the bus shows on the
+  reviewer's phone only. Change the key and this answer goes stale.
 - **Store listing:** the icon is `mobile/store/play-icon-512.png`, the
   app's own with FIBI on it (the website's, in `assets/icons/`, has none), and
   the feature graphic `mobile/store/feature-graphic.png`, both rendered by

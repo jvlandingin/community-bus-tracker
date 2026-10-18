@@ -46,7 +46,7 @@ each moves the seeded rows the next would expect. From `tests/`:
 ```
 createdb bustest
 psql -d bustest -f db/00-legacy-baseline.sql
-psql -d bustest -f ../sql/01-base.sql          # then 02 through 13 in order
+psql -d bustest -f ../sql/01-base.sql          # then 02 through 14 in order
 psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 ```
 
@@ -169,6 +169,16 @@ check carries the slug (`check_share_key`, `set_keyed_position`) and the old
 hash and unlocks `admin.html`. All reads and writes go through `SECURITY DEFINER`
 Postgres functions; tables have RLS enabled with no policies, so the anon key
 cannot touch them directly.
+
+**Outside the route area a bus is its own phone's** (October 2026,
+`sql/14-off-route-private.sql`). A position outside the box around the route
+used to be refused; it is now kept, marked `off_route`, and `get_positions`
+returns it to its own phone only. So sharing works, and Google Play can review
+it, from anywhere, while a made-up bus still never reaches the riders' map. A
+reviewer key that skipped the check was refused: whoever held it could put a
+bus on the real map from anywhere. The writers answer `private`, the sharing tab
+says "Only you can see this bus.", and such writes never count towards a
+ticket. `docs/DATABASE.md`, "Outside the route area".
 
 **Watching is open to everyone** (changed July 2026). When an access rule
 changes, re-read every rationale that depended on the old one — opening reads

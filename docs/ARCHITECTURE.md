@@ -1588,7 +1588,7 @@ preview with no picture and nothing else changes.
 
 ## The showcase video
 
-`tools/render-video.sh` makes a vertical video of about 75 seconds (1080x1920, English
+`tools/render-video.sh` makes a vertical video of about 80 seconds (1080x1920, English
 captions, the interface's own sounds) for Facebook, TikTok and Reels, where the riders who have
 never heard of the tracker are. The story is one sharer's morning: wait at a
 stop until the card says Sakay na!, get on and share the bus, riders say
@@ -1667,6 +1667,21 @@ moving, stops the render and names both. It cost 13 seconds, 62 to 75; the
 maintainer chose that over cutting a caption. The end card got longer too,
 6.5 seconds, because a feed loops the video back to the title the moment it
 ends.
+
+**And it is read on its own first** (the maintainer's ask, the same week).
+Even on a still screen, a busy phone under the words competes with them. So
+a caption lands big in the middle of the frame with the phone dimmed and
+softened under it, and once its reading time is up it goes up to its place
+at the top in 0.4 seconds (`REL`) as the phone comes back, the ring closing
+in on the button meanwhile. The caption says what is about to happen and the
+phone then shows it: "Time to get on!" goes up just as the card says Sakay
+na!. "Shared by riders on the bus." follows the first caption over the same
+map, so it comes in at the top and leaves the map lit; "Know when to get
+off." is read over the trip's interlude, in the sky's ink at the top, and
+turns white as the phone comes up, so the stop's sign is far up the road
+when the screen is seen. The rehearsal lets the ring and the phone move
+once a caption has started up, and ignores what happens while the phone is
+off the screen. Four more seconds, 80 in all.
 
 **Choices the app forced.** The story waits at Javalera and gets off at SM
 City General Trias because the card counts down to both one stop at a time;

@@ -25,6 +25,44 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-18: An icon for Play
+
+The maintainer found the icon, the front-on coach on maroon, too generic for
+a listing on Play, and asked to plan a new one before anything was built:
+options first, each explained, then a choice. It took thirteen rounds, all
+drawn and set beside each other on a design canvas.
+
+The first drafts were set aside quickly. A red ground with the coach coming
+straight at the viewer read like a game about getting out of a bus's way, and
+Taal reflected in the lake was liked but carried the same feeling. The
+maintainer asked for the coach side on, with Taal or the flag behind, and left
+room for other ideas. Of the second round, the ticket won: it is the one
+feature only this app has, the souvenir a sharer is given at Stop. Of six ways
+of drawing it, a fan of three tickets ("Koleksyon"), because it survives being
+cut to a square or a circle. Then the morning colours ("Umaga") with the
+SALAMAT stamp pressed across two tickets; the coach made bigger, since at a
+launcher's size it was not obviously a bus; and finally the coach driving out
+through the frame of the front ticket's picture, so that it reads as a bus app
+at a glance.
+
+The icon's small version came last. A reduced copy of the icon was not
+wanted; the maintainer asked for something new that put a bus and a ticket
+together and belonged with the icon, and chose "Butas": a ticket punched
+through in the coach's shape. It is the favicon, the status bar's icon while
+sharing, and the one-colour icon Android 13 tints. The link preview and Play's
+feature graphic moved to the icon's coral too, over keeping them maroon,
+because the group chat is where most riders first see the tracker.
+
+Settled along the way: the app's ticket says FIBI and the website's says
+nothing, since the site is Bus Tracker; the status bar's mark stands upright,
+because a tilt blurs at 24 dp; and the map's badges stay the front-on coach,
+because they say where a bus is, not which app this is. The website's icons
+change with the next deploy. The launcher icon, the splash and the status
+bar's icon are inside the app, so they wait for the next bundle on Play, and
+the listing's icon and feature graphic are uploaded by hand in Play Console.
+
+---
+
 ## 2026-10-18: Sharing works from anywhere, and riders still see only the route
 
 Filling in Play's "Sign in details" form, the maintainer met its guidance for

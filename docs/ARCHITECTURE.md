@@ -1566,20 +1566,53 @@ whose header has no height to spare. `tests/test-signboard.js` fails if a
 board stops matching its words, if the words stop being text, or if the
 renderer starts drawing anything for a character it has no dots for.
 
-**The mark** is the coach every bus on the map is drawn as, front on, white on
-the livery's maroon with the gold trim along the foot and its signboard lit.
-It is the favicon on every public page and the home-screen icon; the admin
-page's favicon is the same coach on ink, so an organizer can tell its tab from
-the tracker's. The test fails if a copy of it stops matching the drawing.
+**The icon is the sharer's ticket** (October 2026, the maintainer's choice
+after twelve rounds of drafts; `docs/JOURNAL.md` has them). Three tickets
+fanned on a morning coral, the ticket a sharer is given at the end of a trip:
+the coach drives out through the front one's picture of Taal at dawn, the two
+behind it are other trips, the lake and the city, and SALAMAT is stamped
+across two. It replaced the front-on coach on maroon, which was generic at a
+launcher's size and, coming straight at whoever looked at it, read as
+something to get out of the way of. A ticket is the thing only this app has.
+The app's front ticket is printed FIBI, the name under it on a phone; the
+website's carries a line of print there instead, because the site is Bus
+Tracker and its home-screen icon and link preview call it nothing else.
+
+**The small mark is the same ticket punched through in the coach's shape**,
+for where the icon is too small to read: the favicon on every public page, on
+the icon's coral; the admin page's, on ink, so an organizer can tell its tab
+from the tracker's; and in the Android app, the status bar's icon while a bus
+is shared and the one-colour layer Android 13 tints for themed icons. It is
+one path whose holes the even-odd rule cuts, so anything that can fill a path
+draws it in one colour, and it leans as the tickets do everywhere but the
+status bar, where a lean blurs at 24 dp. The map's badges stay the front-on
+coach: a badge says where a bus is, and the mark says which app this is.
+
+**Both are drawn, never copied by hand.** `tools/make-pictures.js` draws
+every copy of the icon into `tools/app-icons.html`, between `appicon`
+comments, with `index.html`'s own COACH_SIDE in the dawn scene's colours, and
+writes the mark into the six pages' favicons and the app's two drawables.
+`tests/test-signboard.js` section 6 fails if any of them stops matching, if
+the app's icons stop saying FIBI or the website's start to, or if the stock
+Material bus comes back to the app.
 
 **Home screen.** `manifest.webmanifest` and the icons in `assets/icons/` make
-"Add to Home screen" give the coach on maroon rather than a screenshot or a
-letter. There is deliberately no service worker: an offline copy of a live map
-would be a map of where the buses were, which is worse than no map.
+"Add to Home screen" give the tickets on coral rather than a screenshot or a
+letter. The maskable one draws the tickets smaller, inside the web's safe
+circle of 80%, because Android may crop it to a circle. There is deliberately
+no service worker: an offline copy of a live map would be a map of where the
+buses were, which is worse than no map.
 
 **The icons are rendered, not drawn by hand.** `tools/app-icons.html` is the
 source, and `tools/render-icons.sh` screenshots it with headless Chromium at
-each size, like `render-flyer.sh` does for the flyer. Both scripts prefer
+each size, like `render-flyer.sh` does for the flyer: the website's into
+`assets/icons/`, Play's into `mobile/store/`, and the app's launcher layers,
+Android 7's own icons and the splash screen's picture into its `res/`
+folders, at every density. The pictures with transparency in them are shot
+on a page with no background, with Chromium told to paint none behind it.
+Their pixels need a browser to check, but their sizes do not, and the wrong
+size is how a render goes wrong, so section 7 of the test checks every one.
+Both scripts prefer
 `chrome-headless-shell`: full Chrome's headless mode lays the page out in a
 viewport about 87 px shorter than the window and still returns a picture the
 full size, so the bottom of every screenshot comes out unpainted. On the
@@ -1593,12 +1626,22 @@ board, so a fork edits the words there, runs `make-pictures.js`, and re-runs
 the script.
 
 **Google Play's pictures come from the same page.** The store's icon is
-`icon-512.png`, already the full-bleed square Play wants. Its feature graphic,
-1024 by 500, is the page's `#feature` picture, which the script writes to
-`mobile/store/`: the preview's pieces laid out again, with words for the
-sharer on board. The preview's own words say "no app", which is true of the
-site and wrong on a store page. It has a board of its own, which
-`make-pictures.js` draws like the rest.
+`mobile/store/play-icon-512.png`, the app's icon with FIBI on it, full-bleed
+because Play rounds its corners. Play lists it as a 32-bit PNG and Chromium
+writes a picture with no transparent pixel as 24-bit, so its top-left pixel is
+drawn a step short of opaque, under the corner Play rounds off. Its feature
+graphic, 1024 by 500, is the page's `#feature` picture, which the script
+writes to `mobile/store/`: the preview's pieces laid out again, with FIBI by
+the icon and words for the sharer on board. The preview's own words say "no
+app", which is true of the site and wrong on a store page. It has a board of
+its own, which `make-pictures.js` draws like the rest.
+
+**Both are in the icon's morning colours** (October 2026), where they had
+been the livery's maroon: the link preview is most riders' first sight of the
+tracker, in a group chat, and it should look like the icon they will have on
+their phone afterwards. On coral the print is the deep maroon, because white
+on it is too faint, and the icon's tile has a cream edge, so it does not melt
+into the coral behind it.
 
 **The link preview's picture needs a full address**, because the crawlers that
 build preview cards will not resolve a relative one, and `index.html` cannot
@@ -1963,6 +2006,19 @@ only starts from a tap on Start with the app on screen, and its notification
 cannot be dismissed while it runs. `mobile/README.md` has the build, the
 signing key that every APK handed out must share, publishing on Google Play,
 and the real-trip checks that have not been done yet.
+
+**Its icons** (October 2026) are the site's, in Android's shapes: the
+launcher icon is an adaptive icon of three layers, the coral behind and the
+tickets in front, both pictures at every density, and the small mark for
+themed icons; Android 7, which has no adaptive icons, gets its own square and
+round pictures. The splash screen is the tickets on the icon's coral. Android
+shows a splash icon at 288 dp, more than twice a launcher's 108, so it has a
+picture of its own at the largest density rather than the launcher's layer,
+which would come out enlarged and soft. The status bar's icon while a bus is
+shared is the small mark, upright and white. All of it comes from
+`tools/app-icons.html` and `tools/make-pictures.js` ("The name, the icons and
+the link preview", above), and none of it reaches a phone until a new bundle
+goes through Play, unlike everything the site draws.
 
 **Getting it** (October 2026). The app goes out through Google Play, and the
 website offers it in one place: on the sharing tab, "Keep the screen on"

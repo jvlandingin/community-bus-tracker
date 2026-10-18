@@ -187,11 +187,14 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
   positions outside Cavite (`sql/08-position-checks.sql`), so a reviewer
   elsewhere sees "You seem to be off the route" and can never put a bus on the
   real map. Give the key, and say so.
-- **Store listing:** the icon is `assets/icons/icon-512.png` and the feature
-  graphic `mobile/store/feature-graphic.png`, both rendered by
-  `tools/render-icons.sh`. Screenshots are best taken on a phone during a real
-  trip. The description says, as every page does, that the app is not
-  affiliated with or endorsed by any bus company.
+- **Store listing:** the icon is `mobile/store/play-icon-512.png`, the
+  app's own with FIBI on it (the website's, in `assets/icons/`, has none), and
+  the feature graphic `mobile/store/feature-graphic.png`, both rendered by
+  `tools/render-icons.sh` and uploaded by hand in Play Console. The launcher
+  icon, the splash screen and the status bar's icon are in the app itself, so
+  they change on phones only with a new bundle. Screenshots are best taken on
+  a phone during a real trip. The description says, as every page does, that
+  the app is not affiliated with or endorsed by any bus company.
 
 **New personal accounts** (created after 13 November 2023) must run a closed
 test with 12 testers opted in for 14 days in a row before production, and

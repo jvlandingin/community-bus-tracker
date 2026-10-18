@@ -23,7 +23,7 @@ node tests/test-strip.js      # progress strip position and wording, the town li
 node tests/test-prompts.js    # idle, end-of-trip and direction prompts
 node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
 node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its luck, your bus; spare parts, the shop, the look, backups
-node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the mark
+node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the icon and the mark
 node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride, the saved stop's picture
 node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
 node tests/test-tour.js       # the tour: steps and words, the practice scene, the bubble's place, what a run may never do
@@ -73,7 +73,7 @@ because full Chrome's headless screenshots leave the bottom 87 px unpainted:
 
 ```
 sh tools/render-flyer.sh     # assets/flyer: poster PDF, briefing PDF, chat image
-sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview picture; mobile/store: Play's feature graphic
+sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview picture; mobile/store: Play's icon and feature graphic; the Android app's launcher icons and splash
 ```
 
 Two more rewrite committed text. `node tools/embed-fonts.js` copies the font
@@ -86,8 +86,11 @@ own code; run it after changing those words or the drawings. It also draws the
 guide's pictures of your bus, from the decorations and paint named in each
 `<!-- mybus keys=… paint=… -->` marker, the bus on the road in its popup, from
 `<!-- ride views=… sky=… -->`, and the saved stop's picture in the guide, the
-flyer and the briefing, from `<!-- stopview p=… sky=… -->`. `test-tokens.js`,
-`test-signboard.js` and `test-pictures.js` fail until you do.
+flyer and the briefing, from `<!-- stopview p=… sky=… -->`. And it draws the
+icon into `tools/app-icons.html`, from `<!-- appicon id=… -->`, and the small
+mark into every page's favicon and the Android app's status-bar and themed
+icons. `test-tokens.js`, `test-signboard.js` and `test-pictures.js` fail until
+you do.
 
 One more makes the showcase video: a minute of the real tracker on a phone,
 with made-up buses, for posting where riders are. It needs ffmpeg, the map
@@ -134,9 +137,17 @@ worker: an offline map of where the buses were is worse than none). The icons
 and the preview picture are rendered from `tools/app-icons.html`, and
 `tools/write-preview-url.js` rewrites `og:image` to a full address at build
 time — the second line of the published site that differs from the commit,
-after the CARTO key. The mark is the coach every bus on the map is drawn as,
-white on maroon with the gold trim and its signboard lit; every public page's
-favicon is that mark, and the admin page's is the same coach on ink.
+after the CARTO key. **The icon is the sharer's ticket** (October 2026, the
+maintainer's choice after twelve rounds): three tickets fanned on a morning
+coral, the coach driving out of the front one's picture, SALAMAT stamped
+across two. The app's front ticket says FIBI; the website's has a line of
+print there instead, because the site is Bus Tracker. Where that is too small
+to read, the small mark stands in, the ticket punched through in the coach's
+shape: every public page's favicon on the coral, the admin page's on ink, and
+the Android app's status-bar and themed icons. The link preview and Play's
+feature graphic are in the same coral. `tools/make-pictures.js` draws all of
+it, the icon with `index.html`'s own coach; the map's badges stay the
+front-on coach. `test-signboard.js` sections 6 and 7.
 
 **The header's route board is a real dot matrix** (October 2026), drawn at load
 by the SIGNBOARD block in `index.html` from the words in `header .route .ln`.
@@ -529,7 +540,7 @@ the words in each page's `header .route` (and in `tools/app-icons.html`, for
 the link-preview picture), so a fork edits those, runs `tools/make-pictures.js`
 and re-runs `tools/render-icons.sh`. The empty map's scene is this route's own
 view, Taal from the Tagaytay ridge, in `sceneSvg()`: a fork redraws its ground
-or keeps the volcano. The ticket's views are by kind of place, so they follow
+or keeps the volcano. So is the icon's front ticket, in `make-pictures.js`. The ticket's views are by kind of place, so they follow
 `config.txt` like the marks, but the volcano one is Taal too: a fork whose
 volcano has no lake redraws that one. `how-to.html` used to be the exception —
 its screenshots and screen recordings showed this deployment, so a fork had to

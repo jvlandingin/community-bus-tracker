@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The launcher icon's one-colour layer, which Android 13 and later tint to
+     the wallpaper when themed icons are on: the small mark, tilted as the
+     browser tab's is, inside the 66dp the launcher never crops.
+     Drawn by tools/make-pictures.js: change the mark there and re-run it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:translateX="30.24"
+        android:translateY="30.24"
+        android:scaleX="0.99"
+        android:scaleY="0.99">
+        <group
+            android:pivotX="24"
+            android:pivotY="24"
+            android:rotation="-7">
+            <path
+                android:fillColor="#FFFFFFFF"
+                android:fillType="evenOdd"
+                android:pathData="M8 5L9.067 5A1.6 1.6 0 0 0 12.267 5L14.4 5A1.6 1.6 0 0 0 17.6 5L19.733 5A1.6 1.6 0 0 0 22.933 5L25.067 5A1.6 1.6 0 0 0 28.267 5L30.4 5A1.6 1.6 0 0 0 33.6 5L35.733 5A1.6 1.6 0 0 0 38.933 5L40 5L40 43L38.933 43A1.6 1.6 0 0 0 35.733 43L33.6 43A1.6 1.6 0 0 0 30.4 43L28.267 43A1.6 1.6 0 0 0 25.067 43L22.933 43A1.6 1.6 0 0 0 19.733 43L17.6 43A1.6 1.6 0 0 0 14.4 43L12.267 43A1.6 1.6 0 0 0 9.067 43L8 43ZM12.26 19.4H33.14Q36.02 19.4 36.74 22.28L37.82 27.32V30.2Q37.82 31.64 36.38 31.64H34.364A3.024 3.024 0 0 1 28.316 31.64H18.884A3.024 3.024 0 0 1 12.836 31.64H11.54Q10.1 31.64 10.1 30.2V21.56Q10.1 19.4 12.26 19.4ZM12.62 21.92H16.94V26.24H12.62ZM18.38 21.92H22.7V26.24H18.38ZM24.14 21.92H28.46V26.24H24.14ZM29.9 21.92H33.86Q34.796 21.92 35.084 23L36.02 26.24H29.9ZM14.78 31.64A1.08 1.08 0 1 0 16.94 31.64A1.08 1.08 0 1 0 14.78 31.64ZM30.26 31.64A1.08 1.08 0 1 0 32.42 31.64A1.08 1.08 0 1 0 30.26 31.64ZM30.9 12.6A2.6 2.6 0 1 0 36.1 12.6A2.6 2.6 0 1 0 30.9 12.6Z" />
+        </group>
+    </group>
+</vector>

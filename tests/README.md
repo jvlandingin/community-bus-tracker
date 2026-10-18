@@ -92,6 +92,7 @@ psql -d bustest -f ../sql/11-open-sharing.sql
 psql -d bustest -f ../sql/12-share-pin.sql
 psql -d bustest -f ../sql/13-bus-look.sql
 psql -d bustest -f ../sql/14-off-route-private.sql
+psql -d bustest -f ../sql/15-say-wrong.sql
 ```
 
 Then run one suite against it:
@@ -109,6 +110,7 @@ psql -d bustest -f db/09-open-sharing-tests.sql # 34 checks, sharing without the
 psql -d bustest -f db/10-share-pin-tests.sql   # 78 checks, a PIN and the limit on guessing it
 psql -d bustest -f db/11-bus-look-tests.sql    # 20 checks, a bus shown to riders, and only the app's own codes
 psql -d bustest -f db/12-off-route-tests.sql   # 39 checks, a bus outside the route area, seen by its own phone only
+psql -d bustest -f db/13-say-wrong-tests.sql   # 38 checks, a rider saying a bus or a sighting is wrong
 ```
 
 `dropdb bustest` and build it again between suites. Apply **all** the migration

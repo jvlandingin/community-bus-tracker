@@ -20,6 +20,7 @@ retry.
 | `12-share-pin.sql` | lets the share key be a PIN of 4 to 8 digits, and pauses new trips after 20 wrong tries |
 | `13-bus-look.sql` | lets a sharer who chooses to show their decorated bus to riders, as a short code that dies with the trip |
 | `14-off-route-private.sql` | keeps a bus outside the route area for its own phone only, instead of refusing it, so sharing works (and can be reviewed) from anywhere |
+| `15-say-wrong.sql` | lets a rider tap "Not a real bus?" on a bus or "Wrong?" on a sighting, counted for organizers only and gone with the trip or the sighting |
 
 If you are setting up fresh, run all of them. They are separate files because
 they were written in that order against a live deployment, and keeping the
@@ -38,6 +39,13 @@ which is what it saw for an off-route position anyway. Re-running `11`, `12` or
 `13` after it puts back writers that call the old `_write_position`, which it
 removes, so every write then fails: re-run `14` after any of them. Safe to
 re-run.
+
+`15` should be run **before** the pages from the same commit are deployed,
+and after `14`, whose `off_route` column it reads. Until it is applied the
+buttons are still drawn, the call behind them fails, the page gives the button
+back instead of saying "Sent" and writes one line to the browser console
+naming this file, and the admin page shows no counts. Nothing else is
+affected. Safe to re-run.
 
 `06` is the one that can be run in either order relative to the pages: until it
 is applied the heartbeat call fails and is swallowed, and the admin page says it

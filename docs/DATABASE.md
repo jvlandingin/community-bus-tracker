@@ -92,6 +92,15 @@ It is a child of `bus_positions (route_slug, session_id)` with **ON DELETE
 CASCADE** and ON UPDATE CASCADE, and that is the whole design rather than a
 detail — see "Saying salamat" below.
 
+### wrong_bus_now, wrong_sighting_now
+One row per rider who tapped "Not a real bus?" on a bus, or "Wrong?" on a
+sighting, that is live **right now** (since `15-say-wrong.sql`).
+`wrong_bus_now` is `route_slug`, `session_id`, `mark`, `created_at`, a child of
+`bus_positions (route_slug, session_id)` exactly as `thanks_now` is;
+`wrong_sighting_now` is `sid`, `mark`, `created_at`, a child of
+`sightings (sid)`. Both **ON DELETE CASCADE**. See "Saying something is
+wrong" below.
+
 ### watching_now
 One row per tab with the tracker page open, upserted in place. `route_slug`,
 `watcher_id`, `last_seen`, and nothing else. Rows are deleted three minutes
@@ -195,6 +204,7 @@ deletes every `keyless` bus in the same transaction: see "Open sharing" below.
 | `clear_bus_position(p_slug, p_session)` | takes the real session id, which only the sharer's own phone holds; keeps working across a rotation and from sendBeacon |
 | `mark_watching(p_slug, p_watcher)` | the watching heartbeat, see below. Returns nothing and tells the caller nothing. |
 | `say_thanks(p_slug, p_pub, p_watcher)` | one rider thanking one live bus, see "Saying salamat". Returns nothing and tells the caller nothing. |
+| `say_wrong(p_slug, p_kind, p_target, p_watcher)` | one rider saying a live bus (`bus`, by `pub_id`) or a sighting on the board (`sighting`, by `sid`) is wrong, see "Saying something is wrong". Returns nothing and tells the caller nothing. |
 | `set_open_position(p_slug, p_session, p_lat, p_lng, p_speed, p_direction, p_label, p_look)` | a bus with no share key, **only while `open_sharing` is on**; refused with `open sharing is off` otherwise, checked on every write so switching it off stops a trip already under way. Every check `set_bus_position` makes, by the same code. Returns null when the bus is on the map and `private` when it was kept for its own phone, outside the route area. See "Open sharing". |
 | `ping()` | keep-alive target for the uptime monitor |
 
@@ -274,7 +284,7 @@ on the old key gets `invalid key`.
 `admin_key_status`, `admin_resume_key`, `admin_check`, `admin_set_settings`, `admin_set_notice(p_text, p_minutes)`,
 `admin_rotate_share_key`, `admin_kick`, `admin_delete_sighting`,
 `admin_change_key`, `admin_list_sharers`, `admin_list_blocked`,
-`admin_unblock`, `admin_watching_count`. All take `(p_slug, p_admin, ...)` and
+`admin_unblock`, `admin_watching_count`, `admin_list_wrong`. All take `(p_slug, p_admin, ...)` and
 raise `invalid admin key` on failure.
 
 `admin_list_sharers` is the only way to get real session ids back out of the
@@ -294,7 +304,7 @@ works **only while none is set**, so it cannot be used to take over a route.
 ### SQL editor only (execute revoked from anon)
 `rename_route_slug(p_old, p_new)`, and the internal helpers `_hash_admin`,
 `_pub_id`, `_require_admin`, `_check_settings`, `_sweep`, `_sweep_watching`,
-`_watching_window`, `_watching_cap`, `_thanks_mark`, `_thanks_cap`,
+`_watching_window`, `_watching_cap`, `_thanks_mark`, `_thanks_cap`, `_wrong_cap`,
 `_write_position`, `_key_failed`, `_key_paused`. `_write_position` matters most: it trusts its caller to have decided
 the write may happen, so callable from outside it would be a way round both
 the key and the switch.
@@ -515,6 +525,43 @@ open, so a sharer who is asked which way they are going comes back with the
 count reset to zero. That is the cascade being honest — the row really was
 deleted — and the alternative is a count that outlives its row, which is the
 one thing this table must not do.
+
+## Saying something is wrong
+
+`sql/15-say-wrong.sql`, October 2026. A made-up bus, or a sighting of one that
+never was, can leave a rider waiting at the roadside for nothing, and until
+this only an organizer watching the admin page could notice. Google Play also
+expects an app whose content comes from its users to let them report it.
+"Not a real bus?" in a bus's popup and "Wrong?" on each sighting call
+`say_wrong`; `admin_list_wrong` gives the admin page a count per bus (by real
+session id, which Stop takes) and per sighting (by `sid`, which Delete takes).
+
+It is built the way salamat is, and for the same reasons:
+
+- **A report cannot outlive what it is about.** Both tables are children by
+  foreign key with `ON DELETE CASCADE`, so Stop, an organizer's Stop, the stale
+  sweep, Delete and a sighting's expiry all take the reports with them, and
+  none of them mentions these tables. There is nowhere to keep a list of
+  reported sharers across trips.
+- **Nothing stored says who tapped.** `mark` is `_thanks_mark` over the
+  thing reported, prefixed so it never equals the same tab's salamat mark,
+  and the watcher id. No function returns it, admin included.
+- **Only an organizer sees a count.** Not other riders, who would read a
+  number beside a bus as a verdict on it, and not the sharer, who would be
+  told nothing they could act on. `get_positions` and `get_sightings` are
+  unchanged.
+- **It does nothing by itself.** No number of reports hides a bus or a
+  sighting: `say_wrong` takes no key, so one person with a few invented
+  watcher ids could otherwise take a real bus off the map. An organizer reads
+  the count and decides. `_wrong_cap()` (50 per bus and per sighting) bounds
+  the tables, as `_thanks_cap()` does.
+- **Only what a rider can see.** A bus outside the route area, a bus not
+  heard from inside `bus_expiry_min`, a sighting past `sighting_expiry_min` or
+  one on another route: quietly nothing, so this cannot test what is live.
+- **Named `say_wrong`**, not `report_*` or `flag_*`, for the reason
+  `mark_watching` and `say_thanks` are named as they are.
+
+`13-say-wrong-tests.sql` holds all of it.
 
 ## Setting up a fresh route
 

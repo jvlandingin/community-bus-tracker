@@ -46,7 +46,7 @@ each moves the seeded rows the next would expect. From `tests/`:
 ```
 createdb bustest
 psql -d bustest -f db/00-legacy-baseline.sql
-psql -d bustest -f ../sql/01-base.sql          # then 02 through 14 in order
+psql -d bustest -f ../sql/01-base.sql          # then 02 through 15 in order
 psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 ```
 
@@ -304,6 +304,17 @@ does (`RIDE_FRAMES`). A backup is a file the
 sharer saves or copies from My tickets and restores by file or paste, cleaned
 like storage on the way in (`backupRead()`); "Start from scratch" deletes the
 tickets and the bus. `docs/ARCHITECTURE.md`, "Dressing the bus".
+
+**A rider can say a bus or a sighting is wrong** (October 2026,
+`sql/15-say-wrong.sql`): "Not a real bus?" on the place line of a bus's popup,
+"Wrong?" on each sighting. It is what Play's content rating means by
+reporting, and it is fenced like salamat: a child of the bus row or the
+sighting row by cascade, so it dies with them; a scrambled mark, never the
+watcher id; a count for organizers only, beside Stop and Delete on the admin
+page, never for riders or the sharer; and it never acts on its own, because the
+call takes no key and a threshold would let one person take a real bus off the
+map. Named `wrong*`, never `report*` or `flag*`. `db/13-say-wrong-tests.sql`
+and `test-boot.js` section 16.
 
 **A request nobody waits for is never sent.** supabase-js sends an `rpc()`
 only when something awaits it or calls `.then`; a bare call is silently

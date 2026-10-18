@@ -954,6 +954,37 @@ towers), not this route's landmarks, and an optional sixth field on each
 have a mark and no line: leave the fifth field empty. `parseCheckpoint()`
 reads the line and is tested with four, five and six fields.
 
+## Saying a bus or a sighting is wrong
+
+October 2026. "Not a real bus?" sits at the end of the place line in a bus's
+popup, and "Wrong?" under each sighting's age on the board. One tap tells the
+organizers, and the count shows in red beside the Stop and Delete buttons on
+the admin page, with the most-reported bus at the top of the list. Two reasons
+it exists: a made-up bus leaves somebody at the roadside waiting for nothing,
+and Google Play expects an app whose content comes from its users to let them
+report it. Every bus on this map is a user's.
+
+What it may not become, and why it is shaped the way it is:
+
+- **It never acts on its own.** No number of taps hides anything. The call
+  takes no key, because a watcher has none, so a threshold would let one
+  person with a few tabs take a real bus off the map. The organizer decides.
+- **Nobody but an organizer sees a count.** Beside a bus on the map it would
+  read as a verdict, and riders would pick buses by it; on the sharer's screen
+  it would be an accusation with nothing to do about it.
+- **It cannot outlive what it is about**, by the same cascade salamat uses,
+  so there is no list of reported sharers to keep, ask for or hand to the bus
+  company. `docs/DATABASE.md`, "Saying something is wrong".
+- **Remembered for the tab only** (`wt-wrong`, sessionStorage), so the button
+  stops asking and the six things kept between visits stay six. A tap that
+  did not land gives the button back, as salamat does.
+- **Where it sits.** The popup was already the map's height on a phone, and a
+  line of its own at the foot pushed "Send a link" out of the map, so it
+  shares the place line. It is the quietest control in the popup, a muted
+  underlined word, because it is for the rare bus that is wrong.
+- **Named `wrong*`**, never `report*`, `flag*` or `abuse*`, in the DOM and in
+  the request path, for the reason in "Content blockers" below.
+
 ## Small celebrations, and what they may not become
 
 October 2026. Four small things, each of which had to be checked against the

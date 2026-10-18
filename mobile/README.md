@@ -170,7 +170,9 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
     lists (direction, place, time) and never typed, with no name, deleted
     after a couple of hours.
   - *App activity, app interactions*: a salamat tap, stored scrambled so it
-    counts once per bus, deleted when that trip ends.
+    counts once per bus, deleted when that trip ends; and a "Not a real
+    bus?" or "Wrong?" tap, stored the same way, seen only by the organizer,
+    deleted when that trip ends or that sighting expires.
   - *Device or other IDs*: a random ID made fresh for each trip, and one made
     fresh by each open page for the live count of watchers, deleted three
     minutes after the page closes.
@@ -182,7 +184,19 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
   position, and everything else goes by itself.
 - **Content rating:** no violence, no gambling, no ads. Users share their
   location with everyone (while sharing) and can post sightings, which are
-  picked from lists, so there is no free text to moderate.
+  picked from lists, so there is no free text to moderate. The questionnaire's
+  answers (October 2026): users interact, yes; user-generated content is the
+  main content, yes (every bus on the map is a user's); nudity and graphic
+  violence, no; can block, yes (an organizer's Stop keeps that phone off for 6
+  hours, and Delete removes a sighting); **can report, yes**, since
+  `sql/15-say-wrong.sql`: "Not a real bus?" in a bus's popup and "Wrong?" on
+  each sighting, counted beside Stop and Delete on the admin page; chat
+  moderation, no (there is no chat); limited to invited friends, no (anyone
+  with the link sees the map); online content, yes (the app loads the live
+  site). Reports are only useful if somebody reads them: an organizer has to
+  look at the admin page, because Play expects reported content to be acted
+  on.
+- **Category:** Maps & Navigation.
 - **Target audience:** 13 and over. Nothing here is made for children.
 - **App access ("Sign in details"):** nothing about the app depends on where
   the reviewer is. Outside the route area a bus is kept for its own phone and

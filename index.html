@@ -926,6 +926,19 @@
   /* "I'm on this bus", and once tapped "I got off": the card's own colour,
      because it is about the reader's stop, not about the bus. */
   .buspop .buslink.onit{border-style:solid; border-color:var(--mine); color:var(--mine-ink);}
+  /* "Not a real bus?" and the board's "Wrong?": a word to the organizers,
+     so the quietest thing in the popup and on the board, a plain link at
+     the end of a line that is there anyway. The padding is taken back by
+     the margin so the target is bigger than the line it adds nothing to.
+     Named wrong*, never report* or flag*: see sayWrong(). */
+  .buspop .pwhere{display:flex; justify-content:space-between; align-items:baseline; gap:8px;}
+  .wrongbtn{
+    flex:none; display:block; margin:-6px 0 -6px auto; padding:6px 0 6px 6px; border:0; background:transparent; white-space:nowrap;
+    font:inherit; font-size:var(--fs-cap); font-weight:700; color:var(--muted); text-decoration:underline; cursor:pointer;
+  }
+  .wrongdone{flex:none; display:block; margin-left:auto; white-space:nowrap; font-size:var(--fs-cap); font-weight:700; color:var(--muted);}
+  .sighting .wrongbtn{margin:-4px 0 -6px auto; padding:4px 0 6px 6px;}
+  .sighting .wrongdone{margin-top:2px; text-align:right;}
   /* And the other end of it, on the screen of the person being thanked.
      --ok-ink because it is spelling a word, not painting a shape. */
   .tyline{
@@ -1889,18 +1902,20 @@
       <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the page or the app, and is never sent either.</p>
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
       <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number. On our side it never adds up across trips: <b>no running total is kept for any driver or any bus on the server.</b> The sharer's own phone adds theirs up for their bus in My tickets, and that never leaves it.</p>
+      <p>And one more, also only if you tap it: <b>Not a real bus?</b>, on a bus, or <b>Wrong?</b>, on a sighting, to tell the organizer something on the map looks wrong. It is stored the same scrambled way as Salamat, so it can't be traced back to you and a second tap isn't counted twice. <b>Only the organizer sees how many</b>, not the sharer and not other riders, and it is deleted when that trip ends or the sighting expires. Nothing happens on its own: the organizer looks and decides.</p>
       <p>“Send a link to this bus”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do.</p>
 
       <h4 class="ok">If you share from the bus</h4>
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip, plus, only if you switched on “Show customized bus to riders”, a short code for how your bus is painted and dressed. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map. Outside the route area, the bus shows on your own phone only, never on anyone else's map.</p>
       <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop. Swiping the app away stops sharing. Its GPS comes through Google Play services, as in most Android apps. If you get it from Google Play, Google knows your account installed it, as with any app there. Play shows us only totals, never who.</p>
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and on our side it goes when the trip does. Your phone adds it to your bus in My tickets, a total only you can see.</p>
+      <p>Riders can also tell the organizer your bus doesn't look like a real one. Only the organizer sees that, for this trip only, and it goes when the trip does.</p>
       <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>it is not sent anywhere</b>. Close it and it is gone.</p>
       <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Start from scratch” in My tickets deletes every copy.</p>
 
       <div id="privSightings">
         <h4 class="ok">Sightings</h4>
-        <p>Picked from lists, never typed. Posted with no name attached and deleted automatically after a couple of hours.</p>
+        <p>Picked from lists, never typed. Posted with no name attached and deleted automatically after a couple of hours. Anyone can tap Wrong? on one to tell the organizer, who can delete it.</p>
       </div>
 
       <h4 class="hon">To be fully honest</h4>
@@ -5062,12 +5077,104 @@ function busPopupHtml(b){
       (b.label ? '<span class="vh">'+way+' </span>'+escapeHtml(b.label) : way)+
       ' <span class="page">· '+(fresh==='live' ? 'live' : timeAgo(b.ts)+' ago')+
       ((b.count&&b.count>1) ? ' · '+(b.count|0)+' sharing' : '')+'</span></div>'+
-    '<div>'+escapeHtml(pl ? pl.label : 'position unclear')+'</div>'+
+    // "Not a real bus?" rides at the end of the place line: the popup is
+    // already about the map's height on a phone, and a line of its own
+    // pushed the bottom button out of the map.
+    '<div class="pwhere"><span>'+escapeHtml(pl ? pl.label : 'position unclear')+'</span>'+wrongControl(b, linkable)+'</div>'+
     (story ? '<div class="kw">'+markSvg(story.mark)+'<span><b>'+story.lead+'</b>'+escapeHtml(story.name+', '+story.about)+'</span></div>' : '')+
     thanksControl(b.id, b.self, thanksDone(b))+
     aboardControl(b, linkable)+
     (linkable ? '<button type="button" class="buslink" onclick="sendBusLink(\''+b.id+'\')">'+LINK_GLYPH+'Send a link to this bus</button>' : '')+
     '</div>';
+}
+
+// ---- Saying a bus or a sighting is wrong -------------------------------
+// "Not a real bus?" in a bus's popup and "Wrong?" on each sighting: one tap
+// tells the organizers, and the count lands beside the Stop and Delete
+// buttons they already have on admin.html (sql/15-say-wrong.sql). It does
+// nothing by itself. No number of taps takes a bus off the map, because one
+// person with a few tabs could then take a real one off, and nobody but an
+// organizer sees a count: beside a bus, riders would read it as a verdict.
+// Remembered for the tab only, like salamat, so the button stops asking;
+// the server drops a repeat regardless.
+//
+// Named wrong*, never report*, flag* or abuse*: the request path and these
+// class names are what content blockers match, and a blocked one fails
+// where nobody would see it. The shareBtn lesson again.
+let WRONGED = null;
+function wrongSet(){
+  if (WRONGED) return WRONGED;
+  WRONGED = {};
+  try{
+    const raw = JSON.parse(sessionStorage.getItem('wt-wrong') || '[]');
+    if (Array.isArray(raw)) raw.forEach(function(k){ WRONGED[k] = 1; });
+  }catch(e){}
+  return WRONGED;
+}
+function saveWronged(){
+  try{ sessionStorage.setItem('wt-wrong', JSON.stringify(Object.keys(wrongSet()).slice(-200))); }catch(e){}
+}
+function wrongKey(kind, id){ return (kind === 'bus' ? 'b:' : 's:') + id; }
+// Never on the bus this phone is sharing, never on the practice bus, and
+// only for an id that is safe to put in a handler.
+function wrongControl(b, linkable){
+  if (b.self || WALK || !linkable) return '';
+  const t = wrongSet();
+  const done = (b.members || [b.id]).every(function(m){ return !!t[wrongKey('bus', m)]; });
+  return done
+    ? '<span class="wrongdone">Sent</span>'
+    : '<button type="button" class="wrongbtn" onclick="sayWrong(\'bus\',\''+b.id+'\')">Not a real bus?</button>';
+}
+function wrongSightControl(sid){
+  if (!/^[0-9]{1,18}$/.test(String(sid))) return '';
+  return wrongSet()[wrongKey('sighting', sid)]
+    ? '<span class="wrongdone">Sent</span>'
+    : '<button type="button" class="wrongbtn" onclick="sayWrong(\'sighting\',\''+sid+'\')">Wrong?</button>';
+}
+// Said once per visit, to the console only, naming the migration that is
+// the likely cause, as thanksTrouble() does for salamat.
+let wrongWarned = false;
+function wrongTrouble(err){
+  if (wrongWarned) return;
+  wrongWarned = true;
+  const msg = ((err && (err.message || err.hint)) || err || '') + '';
+  try{
+    console.warn('[tracker] "Not a real bus?" is not reaching the database: ' + msg +
+      (/does not exist|schema cache|PGRST202|404/i.test(msg)
+        ? '\nThe database has not had sql/15-say-wrong.sql applied. Run it in the ' +
+          'Supabase SQL editor, then reload this page.' : ''));
+  }catch(e){}
+}
+async function sayWrong(kind, id){
+  if (WALK) return;   // the practice bus is not anybody's to report
+  // One tick first, for the reason sayThanks() gives: the redraw below takes
+  // the button out of the popup while the tap is still on its way to the map.
+  await new Promise(function(r){ setTimeout(r, 0); });
+  let ids = [id];
+  if (kind === 'bus'){
+    const cl = clusterBuses(BUSES).find(function(x){ return x.id === id; });
+    ids = (cl && cl.members) || [id];
+  }
+  const t = wrongSet();
+  const redraw = function(){ if (kind === 'bus') renderBuses(); else drawSightingBoard(); };
+  ids.forEach(function(m){ t[wrongKey(kind, m)] = 1; });
+  saveWronged();
+  redraw();
+  let failed = false;
+  for (const m of ids){
+    let res = null;
+    // Nothing comes back on success, nor for something that has gone.
+    try{ res = await rpc('say_wrong', { p_slug:CFG.ROUTE_SLUG, p_kind:kind, p_target:String(m), p_watcher:getWatcherId() }); }
+    catch(e){ res = { error:e }; }
+    if (res && res.error){ failed = true; wrongTrouble(res.error); }
+  }
+  if (failed){
+    // The button comes back rather than "Sent" standing over a tap that
+    // never landed.
+    ids.forEach(function(m){ delete t[wrongKey(kind, m)]; });
+    saveWronged();
+    redraw();
+  }
 }
 
 // ============================================================
@@ -6733,20 +6840,29 @@ async function pollSightings() {
   // parts, so text somebody sent is never shown: not the note an older page
   // could still add after a " · ", and not a post made outside this page.
   const posts = (res.data||[]).map(function(s){
-    return { p:parseSighting(s.body), created:Date.parse(s.created_at) };
+    return { p:parseSighting(s.body), created:Date.parse(s.created_at), sid:s.sid };
   }).filter(function(x){ return x.p; });
   const n = posts.length;
   SIGHTINGS = posts.map(function(x){
     return { direction:x.p.direction, idx:x.p.idx, kind:x.p.kind, ts:sightingTime(x.created, x.p.at) };
   });
   renderBuses();                             // the strip owns the ghost markers
-  document.getElementById('sightingsList').innerHTML = n
-    ? posts.map(function(x){return '<div class="sighting"><span>'+escapeHtml(sightingWords(x.p))+'</span><span class="time">'+timeAgo(x.created)+' ago</span></div>';}).join('')
-    : '<div class="hint">No sightings yet today.</div>';
+  SIGHT_POSTS = posts;
+  drawSightingBoard();
   // The folded card has to say whether opening it is worth the tap.
   document.getElementById('sightSummary').textContent = n
     ? (n===1 ? '1 recent sighting posted' : n+' recent sightings posted')
     : 'Bus spotted but nobody sharing? Post it here';
+}
+// The board, from the last poll's posts. Its own function so that "Wrong?"
+// can redraw it at once instead of waiting fifteen seconds for the next poll.
+let SIGHT_POSTS = [];
+function drawSightingBoard(){
+  const list = document.getElementById('sightingsList');
+  if (!list) return;
+  list.innerHTML = SIGHT_POSTS.length
+    ? SIGHT_POSTS.map(function(x){return '<div class="sighting"><span>'+escapeHtml(sightingWords(x.p))+'</span><span class="time">'+timeAgo(x.created)+' ago'+wrongSightControl(x.sid)+'</span></div>';}).join('')
+    : '<div class="hint">No sightings yet today.</div>';
 }
 async function addSighting() {
   if (WALK) return;   // nothing is posted from a practice run

@@ -1909,6 +1909,97 @@ function run(page, include, label, configText, setup) {
     ok.w.closeModal('privModal');
   }
 
+  console.log('\n=== 16. saying a bus or a sighting is wrong ===');
+  // "Not a real bus?" in a popup and "Wrong?" on the board tell the
+  // organizers and nobody else (sql/15-say-wrong.sql). What is checked here is
+  // what the page sends, that the button stops asking, and that a tap that
+  // did not land gives the button back instead of saying it was sent.
+  {
+    const sim = { calls: [], sightings: [], fail: false, warned: [] };
+    const pause = ms => new Promise(r => setTimeout(r, ms));
+    const waitFor = async (f, ms = 3000) => {
+      const end = Date.now() + ms;
+      while (!f() && Date.now() < end) await pause(20);
+      return f();
+    };
+    const json = (body, status) => new Response(JSON.stringify(body),
+      { status: status || 200, headers: { 'content-type': 'application/json' } });
+    const r = await run('/index.html', () => true, 'wrong', null, window => {
+      const passOn = window.fetch;
+      window.fetch = function(u, o){
+        const m = String(u).match(/\/rest\/v1\/rpc\/([a-z_]+)/);
+        if (!m) return passOn(u, o);
+        let args = {};
+        try { args = JSON.parse((o && o.body) || '{}'); } catch (e) {}
+        sim.calls.push({ fn: m[1], args });
+        if (m[1] === 'say_wrong' && sim.fail) return Promise.resolve(json({ code: 'PGRST202',
+          message: 'Could not find the function public.say_wrong in the schema cache', details: null, hint: null }, 404));
+        if (m[1] === 'get_settings') return Promise.resolve(json({ settings: {}, notice: null }));
+        if (m[1] === 'get_positions') return Promise.resolve(json([]));
+        if (m[1] === 'get_sightings') return Promise.resolve(json(sim.sightings));
+        return Promise.resolve(new Response(null, { status: 204 }));
+      };
+      window.console.warn = function(m){ sim.warned.push(String(m)); };
+    });
+    const { w, d } = r;
+    const sent = () => sim.calls.filter(c => c.fn === 'say_wrong');
+    const PUB = 'a1'.repeat(16);
+    const pop = b => { const div = d.createElement('div'); div.innerHTML = w.busPopupHtml(b); return div; };
+    const bus = { id: PUB, lat: 14.29, lng: 120.91, direction: 'north', ts: Date.now(), members: [PUB] };
+    const ask = el => [...el.querySelectorAll('button')].find(b => /Not a real bus\?/.test(b.textContent));
+
+    const offer = ask(pop(bus));
+    check(!!offer && offer.getAttribute('onclick') === "sayWrong('bus','" + PUB + "')",
+      'a bus\'s popup offers "Not a real bus?", naming that bus', offer && offer.getAttribute('onclick'));
+    check(!ask(pop({ ...bus, self: true })), 'but never on the bus this phone is sharing');
+    check(!ask(pop({ ...bus, id: 'x\'); alert(1); (\'' })), 'nor on an id that is not plain, which would reach a handler');
+
+    await w.sayWrong('bus', PUB);
+    const one = sent()[0];
+    check(sent().length === 1 && one.args.p_kind === 'bus' && one.args.p_target === PUB &&
+          one.args.p_slug === 'wonderful-mendez-ayala' && one.args.p_watcher === w.sessionStorage.getItem('wt-watcher'),
+      'a tap sends the bus\'s public id, the route and this tab\'s watcher id, and nothing else',
+      one && Object.keys(one.args).sort().join(','));
+    check(!ask(pop(bus)) && pop(bus).querySelector('.pwhere .wrongdone').textContent === 'Sent',
+      'and the popup says it was sent instead of asking again');
+    check(JSON.parse(w.sessionStorage.getItem('wt-wrong') || '[]').join() === 'b:' + PUB,
+      'remembered for this visit, in sessionStorage');
+    check(!/wrong/.test(Object.keys(w.localStorage).join()), 'and never between visits');
+
+    // The board.
+    const where = w.eval('CHECKPOINTS[2].name');
+    sim.sightings = [
+      { sid: 41, body: '▲ Northbound at ' + where, created_at: new Date().toISOString() },
+      { sid: 42, body: '▼ Southbound at ' + where, created_at: new Date().toISOString() }
+    ];
+    w.eval('lastSightingsAt = 0');
+    await w.pollSightings();
+    const list = d.getElementById('sightingsList');
+    const wrongs = [...list.querySelectorAll('button.wrongbtn')];
+    check(wrongs.length === 2 && wrongs[0].textContent === 'Wrong?' && wrongs[0].getAttribute('onclick') === "sayWrong('sighting','41')",
+      'every sighting on the board has its own "Wrong?", naming it', wrongs.map(b => b.getAttribute('onclick')).join(' '));
+    await w.sayWrong('sighting', '41');
+    const two = sent()[1];
+    check(!!two && two.args.p_kind === 'sighting' && two.args.p_target === '41',
+      'a tap on one sends that sighting\'s number', two && JSON.stringify(two.args));
+    check(list.querySelectorAll('button.wrongbtn').length === 1 && /Sent/.test(list.querySelector('.sighting').textContent),
+      'and that line says Sent at once, without waiting for the next poll');
+
+    // A tap that does not land: the button comes back, and the console says
+    // which migration is missing.
+    sim.fail = true;
+    await w.sayWrong('sighting', '42');
+    await waitFor(() => sent().length === 3);
+    await pause(50);
+    check(list.querySelectorAll('button.wrongbtn').length === 1 &&
+          !JSON.parse(w.sessionStorage.getItem('wt-wrong') || '[]').includes('s:42'),
+      'a failed tap gives the button back rather than saying Sent');
+    check(sim.warned.some(m => /15-say-wrong\.sql/.test(m)), 'and the console names the migration to run');
+    check(!/[0-9]+ (riders|reports|people)/i.test(list.textContent + pop(bus).textContent),
+      'no count is ever drawn for riders');
+    w.close();
+  }
+
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');
   process.exit(fail ? 1 : 0);
 })();

@@ -184,6 +184,8 @@
   .item:last-child{border-bottom:none;}
   .item .meta{color:var(--muted); font-size:var(--fs-cap); margin-top:2px;}
   .dir-n{color:var(--gold-deep); font-weight:800;}
+  /* How many riders tapped "Not a real bus?" or "Wrong?". A word, so the ink. */
+  .said{color:var(--lost-ink); font-weight:800;}
   .dir-s{color:var(--brand-ink); font-weight:800;}
   .hidden{display:none !important;}
   .gate{position:fixed; inset:0; background:var(--paper); z-index:3000; display:flex; align-items:center; justify-content:center; padding:24px;}
@@ -348,6 +350,7 @@
   <div class="card">
     <span class="badge">LIVE SHARERS</span>
     <div class="hint" style="margin-top:8px;">Everyone currently sharing a bus position. Stopping one removes the bus and blocks that phone from sharing for 6 hours, and their app tells them an organizer stopped it.</div>
+    <div class="hint" style="margin-top:6px;">Riders can tap <b>Not a real bus?</b> on a bus. How many did shows in red beside it, and the bus moves to the top. Nothing happens on its own: look, then Stop it or leave it. Only you see the number, and it goes when the trip ends.</div>
     <div class="hint warn hidden" id="keyAlert" style="margin-top:8px;"></div>
     <div id="liveList" style="margin-top:6px;"></div>
     <div class="hint warn" style="margin-top:10px;">Honest limit: someone determined can open the tracker in a new tab to get a new session and share again. Changing the share key below is the only real expulsion, and it affects everyone with the key. A bus marked <b>no key</b> was started while open sharing was on; turning open sharing off removes all of those at once.</div>
@@ -361,7 +364,7 @@
 
   <div class="card">
     <span class="badge">SIGHTINGS</span>
-    <div class="hint" style="margin-top:8px;">Posted by anyone, no key needed. Delete spam here; the rest expire on their own.</div>
+    <div class="hint" style="margin-top:8px;">Posted by anyone, no key needed. Delete spam here; the rest expire on their own. Riders can tap <b>Wrong?</b> on a sighting, and how many did shows in red beside it.</div>
 
     <!-- The switch lives here rather than in Freshness + limits, which is
          folded away: this is the card an organizer already opens to look at
@@ -806,13 +809,37 @@ async function refreshWatching(){
 // ============================================================
 // Live sharers
 // ============================================================
+// How many riders said a bus or a sighting is wrong, by session id and by
+// sid (sql/15-say-wrong.sql). Read alongside each list rather than on a timer
+// of its own, so a count is never older than the row it sits beside. Against
+// a database without the migration the call fails and the lists draw as they
+// always did.
+let WRONG = { bus:{}, sighting:{} };
+async function refreshWrong(){
+  const res = await rpc('admin_list_wrong', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
+  if (res.error) return;
+  const next = { bus:{}, sighting:{} };
+  (res.data||[]).forEach(function(r){
+    if (r.kind === 'bus' && r.session_id) next.bus[r.session_id] = r.reports|0;
+    else if (r.kind === 'sighting' && r.sid != null) next.sighting[r.sid] = r.reports|0;
+  });
+  WRONG = next;
+}
+function saidWrong(n, what){
+  return n > 0 ? ' · <span class="said">' + n + (n === 1 ? ' rider says ' : ' riders say ') + what + '</span>' : '';
+}
+
 // admin_list_sharers, not get_positions: only the admin function returns
 // real session ids, and Stop needs one. See sql/04-session-id-privacy.sql.
 async function refreshSharers(){
   const res = await rpc('admin_list_sharers', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
   if (res.error) return;
+  await refreshWrong();
   const list=document.getElementById('liveList');
-  const data=res.data||[];
+  // The buses riders say are not real come first, the most-said at the top.
+  const data=(res.data||[]).slice().sort(function(a, b){
+    return (WRONG.bus[b.session_id]||0) - (WRONG.bus[a.session_id]||0);
+  });
   // A row with no position or direction got past the database until
   // sql/08-position-checks.sql, and it is exactly the row an organiser needs
   // a Stop button for, so it is listed as such rather than allowed to throw
@@ -827,6 +854,7 @@ async function refreshSharers(){
       // Started without the key, while open sharing was on. Missing on a
       // database without sql/11-open-sharing.sql, which reads as keyed.
       (b.keyless === true ? ' · <b>no key</b>' : '')+
+      saidWrong(WRONG.bus[b.session_id]||0, 'not a real bus')+
       '<div class="meta">'+at+
       ' · updated '+timeAgo(Date.parse(b.updated_at))+' ago · session '+esc(b.session_id.slice(0,8))+'...</div></div>'+
       '<button class="small btn-danger" onclick="kick(\''+esc(b.session_id)+'\')">Stop</button></div>';
@@ -871,10 +899,11 @@ async function unblock(session){
 async function refreshSightings(){
   const res = await rpc('get_sightings', { p_slug:CFG.ROUTE_SLUG });
   if (res.error) return;
+  await refreshWrong();
   const list=document.getElementById('sightingList');
   const data=res.data||[];
   list.innerHTML = data.length ? data.map(function(s){
-    return '<div class="item"><div>'+esc(s.body)+
+    return '<div class="item"><div>'+esc(s.body)+saidWrong(WRONG.sighting[s.sid]||0, 'wrong')+
       '<div class="meta">'+timeAgo(Date.parse(s.created_at))+' ago</div></div>'+
       '<button class="small btn-danger" onclick="delSighting('+s.sid+')">Delete</button></div>';
   }).join('') : '<div class="hint">No sightings on the board.</div>';

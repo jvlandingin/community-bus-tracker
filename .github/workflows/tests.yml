@@ -78,14 +78,16 @@ jobs:
                       ../sql/11-open-sharing.sql
                       ../sql/12-share-pin.sql
                       ../sql/13-bus-look.sql
-                      ../sql/14-off-route-private.sql"
+                      ../sql/14-off-route-private.sql
+                      ../sql/15-say-wrong.sql"
           # Each suite gets its own fresh database, exactly as
           # tests/README.md says, because they move the seeded rows the
           # next one expects.
           for suite in 01-core-tests 02-rotation-tests 03-kick-tests \
                        04-privacy-tests 05-rotate-tests 06-watching-tests \
                        07-thanks-tests 08-position-tests 09-open-sharing-tests \
-                       10-share-pin-tests 11-bus-look-tests 12-off-route-tests; do
+                       10-share-pin-tests 11-bus-look-tests 12-off-route-tests \
+                       13-say-wrong-tests; do
             db="bustest_${suite%%-*}"
             echo "::group::$suite"
             psql -q -d postgres -v ON_ERROR_STOP=1 \

@@ -52,7 +52,7 @@ stop, so the road and the posts crept on a pixel or two and stood still.
 Their idea was to set the posts further apart, keep two or three in sight
 with the rest over the horizon, and show their stop as its pin there, so the
 stops and the road could move together. That became the road at its real
-length: the stops as far apart as they are, the dashes 16 m apart on the
+length: the stops as far apart as they are, the dashes 50 m apart on the
 same road, 1.2 km in sight, and the view following the positions at an even
 pace a poll behind the bus, so it moves while the bus does and stops when it
 stops. That moves at the bus's pace, which the rules had kept off every

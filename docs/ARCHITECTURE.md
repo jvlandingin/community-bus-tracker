@@ -828,7 +828,7 @@ go only where the screen would be empty still holds everywhere else.
   far back from it every stop before it is (`stopsBack()`), so the posts
   stand as far apart as the stops do, a thing g km up the road at depth
   z + 7.7 g. The dashes down the middle are on the road like the posts,
-  every 16 m, so the road and the stops go by together, at one pace, and a
+  every 50 m, so the road and the stops go by together, at one pace, and a
   stop the bus passes goes by the glass. Further than 1.2 km (`SV_SEEN`) is
   over the horizon: two or three stops are in sight, and your stop, until
   it is, is its pin on the horizon (`svBeacon()`), kept to a size that can
@@ -882,7 +882,7 @@ twentieth of a stop between polls, so the view barely moved while the bus
 did. The maintainer's idea was to set the posts further apart, keep two or
 three in sight with the rest over the horizon, and show your stop as its pin
 there. That is the road at its real length: the stops as far apart as they
-are, the dashes 16 m apart on the same road, so a far stop barely moves and
+are, the dashes 50 m apart on the same road, so a far stop barely moves and
 a near one comes up and goes by, as from a real bus. To move while the bus
 moves without guessing, the view follows the positions a poll behind,
 which gives it the bus's pace; the rule against a picture moving with the

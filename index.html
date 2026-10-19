@@ -3323,10 +3323,10 @@ function rideStand(was, b){
 // t: { aboard, f, km, stops, from, ago, here, sky, worn, paint, still }. No ids.
 const STOP_VIEW_MOST = 80, STOP_GLIDE_MS = 1000, STOP_RIDE_MS = 6000;
 const SV_WAIT = { vx:214, h:58, k:70, z:.926, dz:.6, glide:'sv-glide' }, SV_ABOARD = { vx:150, h:62, k:70, z:.78, dz:7.7, glide:'sv-ride' };
-// On board, in km: as far as the road can be seen, a dash every 16 m as
+// On board, in km: as far as the road can be seen, a dash every 50 m as
 // far as dashes can be told apart, and where a thing the bus has passed
 // goes: off the glass. Your stop's pin is never smaller than SV_PIN.
-const SV_SEEN = 1.2, SV_DASH = .016, SV_DASH_FAR = .25, SV_GONE = 3.2, SV_PIN = 4.5;
+const SV_SEEN = 1.2, SV_DASH = .05, SV_DASH_FAR = .25, SV_GONE = 3.2, SV_PIN = 4.5;
 function svNum(n){ return Math.round(n * 1000) / 1000; }
 // A thing at depth k, gliding there from depth k0 if it was elsewhere. cls
 // is a moment of its own, run on the same clock as the glide.
@@ -3393,7 +3393,7 @@ function svLine(P, X){
 // One dash of it, drawn at depth 1 from the vanishing point, for the road
 // on board to bring on.
 function svDash(P, X){
-  return 'M' + svNum(X * P.k) + ' ' + P.k + 'L' + svNum(X * P.k * 1.07) + ' ' + svNum(P.k * 1.07);
+  return 'M' + svNum(X * P.k) + ' ' + P.k + 'L' + svNum(X * P.k * 1.12) + ' ' + svNum(P.k * 1.12);
 }
 const SV_LIT = ['#ff5d5d', '#ffd23f', '#5ad2ff', '#7be495'];
 // The coach head on, in its paint, wearing what can be seen from the front.

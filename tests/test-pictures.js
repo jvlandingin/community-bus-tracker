@@ -501,12 +501,12 @@ console.log('\n=== 9. the saved stop\'s picture ===');
     // went, at an even pace for a poll's length; one the bus passes goes
     // by the glass, and between positions nothing moves.
     const still = things(view(.62));
-    check(still.filter(x => x.what === 'dash').length >= 10 && still.every(x => x.k0 === null) && !/sv-ride|sv-glide|infinite/.test(view(.62)),
+    check(still.filter(x => x.what === 'dash').length >= 4 && still.every(x => x.k0 === null) && !/sv-ride|sv-glide|infinite/.test(view(.62)),
       'on board: the dashes are on the road, and nothing moves between positions', still.filter(x => x.what === 'dash').length + ' dashes');
     const ride = view(.57, { from: .62, ago: 1500 }), moving = things(ride);
     const kept = moving.filter(x => x.k < S.SV_GONE && x.k0 !== null && x.k0 < S.SV_GONE);
     const wrong = kept.filter(x => Math.abs(gOf(x.k0) - gOf(x.k) - .05) > slack(P, x.k0, x.k));
-    check(kept.length > 10 && ['dash', 'post', 'sign'].every(w => kept.some(x => x.what === w)) && !wrong.length &&
+    check(kept.length >= 6 && ['dash', 'post', 'sign'].every(w => kept.some(x => x.what === w)) && !wrong.length &&
           kept.every(x => x.glide === 'sv-ride') && pin(ride) && pin(ride).k0 !== null && pin(ride).glide === 'sv-ride',
       'when a position arrives, the dashes, the posts, your stop and its pin all come on by the 50 m the bus went',
       kept.length + ' things' + (wrong.length ? ', ' + wrong.map(x => x.what + ' by ' + (gOf(x.k0) - gOf(x.k)).toFixed(3)).join(' ') : ''));

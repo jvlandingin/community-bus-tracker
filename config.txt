@@ -24,7 +24,7 @@ ROUTE_SLUG = wonderful-mendez-ayala
 # Optional. Shown next to the source link inside "How your data is
 # handled", alongside the accuracy/no-warranty note. Leave blank to
 # hide it.
-CONTACT_EMAIL = jvlandingin@proton.me
+CONTACT_EMAIL = johnvincentland@gmail.com
 
 # --- CARTO basemap key (free; leave blank and the map still works) ---
 # CARTO began stamping "API KEY REQUIRED" across keyless map tiles in

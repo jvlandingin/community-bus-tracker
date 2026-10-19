@@ -46,7 +46,10 @@ CARTO_API_KEY =
 # https link to the APK. The sharing tab then offers it to sharers on an
 # Android phone in a browser, and the guide links to it too. Blank
 # offers nothing, which is right for a deployment with no app.
-ANDROID_APP_URL =
+# During a closed test, put testers.html's full address here instead:
+# Play says "App not available" to anyone not yet in the test.
+# Back to the Play page when the app goes public.
+ANDROID_APP_URL = https://community-bus-tracker.netlify.app/testers.html
 
 # ============================================================
 #  Operating hours, headway, and expiry times are NOT here

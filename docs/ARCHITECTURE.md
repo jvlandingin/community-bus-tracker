@@ -2107,7 +2107,9 @@ available" to an account not in the group yet: the page says both are normal
 where they happen, because each is where a tester decides it is broken and
 stops. It asks for riding, not installing. Like the guide it loads nothing;
 unlike it, it runs no script, so a blocker or an old phone cannot leave three
-buttons that do nothing. Nothing links to it until the test opens.
+buttons that do nothing. Nothing linked to it until the test opened; while it
+runs, `ANDROID_APP_URL` in `config.txt` names it, so the sharing tab and the
+guide offer the test, not a Play page that would say "App not available".
 
 The background-geolocation plugin takes its fixes from Google Play services'
 fused location provider, so a phone without Play services, like most Huawei

@@ -39,6 +39,14 @@ outside the test. It goes back to the Play listing when the app is public.
 Sharers are the testers the test needs: they are the ones who would use it on
 every ride.
 
+The same day the page got screenshots, one per tap, from the maintainer's own
+run through the steps, as the sister project's page has: the group's
+"permission" page, the join form, the welcome post, Play's invitation, "You
+are a tester" and the listing. The group's welcome post now carries the steps
+too, as the sister project's does. The maintainer's name, photo and email
+address appear on those screens and are blurred or cropped out: the
+repository is public.
+
 ## 2026-10-18: An icon for Play
 
 The maintainer found the icon, the front-on coach on maroon, too generic for

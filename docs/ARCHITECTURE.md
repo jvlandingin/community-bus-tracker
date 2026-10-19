@@ -2105,7 +2105,12 @@ and the organizer adds nobody by hand. The group's posts are for members only,
 so Google tells everyone else they have no permission, and Play says "App not
 available" to an account not in the group yet: the page says both are normal
 where they happen, because each is where a tester decides it is broken and
-stops. It asks for riding, not installing. Like the guide it loads nothing;
+stops. Each step shows Google's own screen, cropped, with the tap ringed in
+gold and the maintainer's name, photo and email blurred or cut out: a rider
+matches a picture faster than a sentence, and Google's screens are the ones
+they have never seen. They are inlined WebP, so the page still loads nothing,
+and they are the one part of it that goes stale by itself, when Google
+redesigns a screen. It asks for riding, not installing. Like the guide it loads nothing;
 unlike it, it runs no script, so a blocker or an old phone cannot leave three
 buttons that do nothing. Nothing linked to it until the test opened; while it
 runs, `ANDROID_APP_URL` in `config.txt` names it, so the sharing tab and the

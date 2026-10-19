@@ -126,7 +126,9 @@ three taps on their own phone: join the Google Group that is the test's tester
 list, become a tester on Play, install. Nobody sends anybody an email address.
 Its ask is riding, not installing, because Google refuses production when
 testers installed and never used the app. It loads nothing and runs no script
-at all. While the test runs, `ANDROID_APP_URL` names it, so the sharing
+at all. Each step shows Google's own screen with the tap ringed, inlined as a
+data URI, with the maintainer's name, photo and email blurred or cut out;
+those pictures go stale when Google redesigns, so retake them then. While the test runs, `ANDROID_APP_URL` names it, so the sharing
 tab's app line and the guide send Android sharers there rather than to a Play
 page that says "App not available"; the group's name and the package in its
 links are this deployment's, so a fork edits them.

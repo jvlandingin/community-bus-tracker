@@ -1658,7 +1658,9 @@ liked neither, and chose to let the app speak for itself. So there are
 three captions, one for each part of the story, kept at the top for the
 whole of it: "Know when your bus is near." while waiting, "On the bus?
 Share it." while sharing, and "Earn coins and dress up your bus." in My
-tickets. The rest is said by the app's own words on screen: Malapit na!,
+tickets. The dark band a caption sits on over a close-up comes and goes
+with it, so a close-up with no caption fills the frame to the top. The rest
+is said by the app's own words on screen: Malapit na!,
 Sakay na!, the salamat, Bababa na!, the ticket. Every beat goes the same
 way: the camera settles on what is about to be used, a ring closes in on
 the button for a third of a second so the eye is there first, the tap, and

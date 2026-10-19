@@ -47,7 +47,7 @@
 
   /* The caption: one short sentence, big, at the top, over a band of the
      background so the phone can be zoomed under it without the words
-     losing their ground. */
+     losing their ground. The band comes and goes with the caption. */
   #v-band{position:absolute; left:0; top:0; width:1080px; height:420px; pointer-events:none;
           background:linear-gradient(#5a141e 0%, #5a141e 81%, rgba(90,20,30,0) 100%); opacity:0;}
   #v-cap{position:absolute; left:50px; right:50px; top:64px; height:240px; display:flex; align-items:center; justify-content:center;}
@@ -245,19 +245,23 @@ const V = (function(){
     });
     $('v-world').style.transform = 'translate(' + (cam.x + dx).toFixed(2) + 'px,' + (cam.y + dy).toFixed(2) + 'px) scale(' + cam.z.toFixed(4) + ')';
     $('v-phone').style.transform = shake ? shake.trim() : '';
-    // The band behind the caption, as soon as the phone comes up under it.
-    $('v-band').style.opacity = clamp((cam.z - 1) * 8, 0, 1).toFixed(3);
 
     // The caption: in from below, out by fading.
     const cap = $('v-cap');
     cap.classList.toggle('on-sky', !!plan.captions.some(function(c){ return c.sky && t >= c.from && t < c.to; }));
+    let shown = 0;
     [].forEach.call(cap.children, function(el){
       const c = plan.captions[+el.getAttribute('data-i')];
       const pin = easeOut((t - c.from) / .32), pout = clamp((c.to - t) / .22, 0, 1);
       const o = t < c.from || t >= c.to ? 0 : Math.min(pin, pout);
+      shown = Math.max(shown, o);
       el.style.opacity = o.toFixed(3);
       el.style.transform = 'translateY(' + ((1 - pin) * 34).toFixed(1) + 'px)';
     });
+    // The band behind the caption, as soon as the phone comes up under it,
+    // and only while there is a caption: without one the close-up goes to
+    // the top of the frame.
+    $('v-band').style.opacity = (clamp((cam.z - 1) * 8, 0, 1) * shown).toFixed(3);
 
     // Taps: a ring that grows a little and goes. Before each, an empty ring
     // closes in on the place, and hands over to it as the tap lands.

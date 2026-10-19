@@ -1588,7 +1588,7 @@ preview with no picture and nothing else changes.
 
 ## The showcase video
 
-`tools/render-video.sh` makes a vertical video of about 75 seconds (1080x1920, English
+`tools/render-video.sh` makes a vertical video of about 67 seconds (1080x1920, English
 captions, the interface's own sounds) for Facebook, TikTok and Reels, where the riders who have
 never heard of the tracker are. The story is one sharer's morning: wait at a
 stop until the card says Sakay na!, get on and share the bus, riders say
@@ -1647,26 +1647,30 @@ card. It goes no closer than 1.35 times (`SHARP` in `film.js`). The phone
 is filmed at three pixels a point and the stage draws it at 2.2, so a
 closer camera enlarges the capture, and at 2.4 times the map blurred.
 
-**A caption is read before anything happens under it** (October 2026). A
-viewer of the first cut found it too fast: they were still reading a caption
-when the screen had already changed. Measured, ten of its thirteen captions
-had a tap or a camera move within a second of appearing, most about half a
-second in, and a viewer reads the words first and looks at the phone after.
-Slowing the whole film would have kept the caption and the tap starting
-together and made the calm scenes drag; the fault was the order. So every
-beat now goes: the camera settles on what is about to be used, the caption
-lands on a still screen, nothing is tapped or moved for its reading time
-(`READ` in `film.js`: 0.4 seconds to notice it and a quarter of a second a
-word), a ring closes in on the button for a third of a second so the eye is
-there first, the tap, and a moment on what it did before the next caption. Taps are timed
-from the caption above them (`read()`), and `rehearse()` plays the cues on
-stand-ins before anything is launched: a tap, a camera move, a scroll, a
-letter typed, a salamat or the phone moving inside a caption's reading time,
-a caption gone before it can be read, or a tap while the camera is still
-moving, stops the render and names both. It cost 13 seconds, 62 to 75; the
-maintainer chose that over cutting a caption. The end card got longer too,
-6.5 seconds, because a feed loops the video back to the title the moment it
-ends.
+**Three captions, and the app says the rest** (October 2026). A viewer of
+the first cut found it too fast: they were still reading a caption when the
+screen had already changed. It had a caption for every step, thirteen, and
+ten had a tap or a camera move within a second of appearing, most about half
+a second in, while a viewer reads the words first and looks at the phone
+after. Holding each until it could be read made the video 75 seconds, and
+showing each on its own over the dimmed phone made it 80; the maintainer
+liked neither, and chose to let the app speak for itself. So there are
+three captions, one for each part of the story, kept at the top for the
+whole of it: "Know when your bus is near." while waiting, "On the bus?
+Share it." while sharing, and "Earn coins and dress up your bus." in My
+tickets. The rest is said by the app's own words on screen: Malapit na!,
+Sakay na!, the salamat, Bababa na!, the ticket. Every beat goes the same
+way: the camera settles on what is about to be used, a ring closes in on
+the button for a third of a second so the eye is there first, the tap, and
+a moment on what it did. Under a caption nothing is tapped or moved for its
+reading time (`READ` in `film.js`: 0.4 seconds to notice it and a quarter
+of a second a word; the first tap is timed from it, `read()`), and
+`rehearse()` plays the cues on stand-ins before anything is launched: a
+tap, a camera move, a scroll, a letter typed, a salamat or the phone moving
+inside a caption's reading time, a caption gone before it can be read, or a
+tap while the camera is still moving, stops the render and names both.
+About 67 seconds, with an end card of 6.5, because a feed loops the video
+back to the title the moment it ends.
 
 **Choices the app forced.** The story waits at Javalera and gets off at SM
 City General Trias because the card counts down to both one stop at a time;

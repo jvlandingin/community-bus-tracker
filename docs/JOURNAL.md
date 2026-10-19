@@ -25,19 +25,22 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
-## 2026-10-18: The video waits for its captions
+## 2026-10-18: The video lets the app speak
 
 Someone the maintainer showed the showcase video to found it too fast: they
 were still reading a caption when something was already happening on the
 phone. Measured, ten of its thirteen captions had a tap or a camera move
-within a second of appearing, most about half a second in. The maintainer
-chose a longer video over a shorter story: every caption stays, and the
-video goes from 62 to about 75 seconds so that each caption is read before
-anything happens under it, with a ring pointing at each button just before
-it is tapped. The render now refuses a cut that breaks that. The end card's
-"No app, no account." became "Nothing to install. No account.", true of the
-website now that there is an Android app, which the video does not name
-until it is public on Google Play.
+within a second of appearing, most about half a second in. Two fixes were
+tried and dropped: holding every caption until it could be read (75
+seconds), then showing each on its own over the dimmed phone first (80).
+The maintainer's call was to let the app speak for itself: three captions,
+one for each part of the story (waiting, sharing, dressing up the bus), and
+the app's own words for the rest, in about 67 seconds. A ring now points at
+each button just before it is tapped, and the render refuses a cut that
+taps under a caption before it can be read. The end card's "No app, no
+account." became "Nothing to install. No account.", true of the website
+now that there is an Android app, which the video does not name until it
+is public on Google Play.
 
 ---
 

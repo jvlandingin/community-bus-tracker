@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Renders the showcase video: about 75 seconds, vertical (1080x1920), of the
+// Renders the showcase video: about 67 seconds, vertical (1080x1920), of the
 // real tracker being used on a phone, with drawn interludes made by the
 // app's own picture code and the interface's sounds (sounds.js).
 //
@@ -17,9 +17,9 @@
 // label on it: the maintainer took it out (October 2026).
 //
 // The captions keep to the app's own rules (CLAUDE.md, "Say it in a few
-// words"): one short, plain sentence each, and no minutes or arrival times,
-// because it counts stops and kilometres. One says coins where the app says
-// spare parts, the maintainer's own words.
+// words"): three of them, one short, plain sentence each, and no minutes or
+// arrival times, because it counts stops and kilometres. One says coins
+// where the app says spare parts, the maintainer's own words.
 //
 // Frame-exact. Each phone's clock is Playwright's fake one, paused, and
 // moved on by one frame's worth before each screenshot, and every CSS

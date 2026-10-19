@@ -1,5 +1,5 @@
 #!/bin/sh
-# Renders the showcase video: about 75 seconds, vertical (1080x1920), of the
+# Renders the showcase video: about 67 seconds, vertical (1080x1920), of the
 # real tracker on a phone with made-up buses, with the interface's sounds.
 #
 #   CARTO_API_KEY=... sh tools/render-video.sh [output-directory] [options]

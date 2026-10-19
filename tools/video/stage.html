@@ -47,18 +47,15 @@
 
   /* The caption: one short sentence, big, at the top, over a band of the
      background so the phone can be zoomed under it without the words
-     losing their ground. Until it has been read it sits in the middle over
-     the veil, the phone dimmed under it, so it is the one thing to look at.
-     Over an interlude's sky it is drawn in the sky's own ink (--cap-ink,
-     --cap-gold, --cap-shade, set as it turns white; not --ink and --gold,
-     which are the app's own colours, put in above). */
+     losing their ground. */
   #v-band{position:absolute; left:0; top:0; width:1080px; height:420px; pointer-events:none;
           background:linear-gradient(#5a141e 0%, #5a141e 81%, rgba(90,20,30,0) 100%); opacity:0;}
-  #v-veil{position:absolute; inset:0; pointer-events:none; background:rgba(30,6,10,.66); opacity:0;}
   #v-cap{position:absolute; left:50px; right:50px; top:64px; height:240px; display:flex; align-items:center; justify-content:center;}
   #v-cap .c{position:absolute; left:0; right:0; text-align:center; font:700 92px/1.04 var(--font-ui); text-wrap:balance;
-            letter-spacing:-.5px; color:var(--cap-ink, #fff); text-shadow:0 3px 14px rgba(40,6,12,calc(.45 * var(--cap-shade, 1))); opacity:0;}
-  #v-cap .c b{color:var(--cap-gold, #ffc24a); font-weight:700;}
+            letter-spacing:-.5px; color:#fff; text-shadow:0 3px 14px rgba(40,6,12,.45); opacity:0;}
+  #v-cap .c b{color:#ffc24a; font-weight:700;}
+  #v-cap.on-sky .c{color:#5a1520; text-shadow:none;}
+  #v-cap.on-sky .c b{color:#b35a00;}
 
   /* Taps and the buzz, drawn over everything at stage positions. */
   #v-fx{position:absolute; inset:0; pointer-events:none;}
@@ -130,10 +127,9 @@
     </div></div>
   </div>
   <div id="v-band"></div>
-  <div id="v-ints"></div>
-  <div id="v-veil"></div>
   <div id="v-cap"></div>
   <div id="v-fx"></div>
+  <div id="v-ints"></div>
 </div>
 <script>
 'use strict';
@@ -159,16 +155,8 @@ const V = (function(){
   const ease = function(p){ p = clamp(p, 0, 1); return p < .5 ? 4*p*p*p : 1 - Math.pow(-2*p + 2, 3) / 2; };
   const easeOut = function(p){ p = clamp(p, 0, 1); return 1 - Math.pow(1 - p, 3); };
   const $ = function(id){ return document.getElementById(id); };
-  // From the caption's place at the top (its middle is 184 down) to the
-  // middle of the frame, a little above centre, where it is read first.
-  const MID = 716;
-  // A colour f of the way from a to b, both #rrggbb.
-  const mix = function(a, b, f){
-    const n = function(s, i){ return parseInt(s.slice(1 + i * 2, 3 + i * 2), 16); };
-    return 'rgb(' + [0, 1, 2].map(function(i){ return Math.round(n(a, i) + (n(b, i) - n(a, i)) * f); }).join(',') + ')';
-  };
 
-  let plan = { captions:[], phone:[], ints:[], rel:.4 };
+  let plan = { captions:[], phone:[], ints:[] };
   const cams = [], taps = [], points = [], buzzes = [], marks = [];
 
   function init(p){
@@ -257,36 +245,19 @@ const V = (function(){
     });
     $('v-world').style.transform = 'translate(' + (cam.x + dx).toFixed(2) + 'px,' + (cam.y + dy).toFixed(2) + 'px) scale(' + cam.z.toFixed(4) + ')';
     $('v-phone').style.transform = shake ? shake.trim() : '';
+    // The band behind the caption, as soon as the phone comes up under it.
+    $('v-band').style.opacity = clamp((cam.z - 1) * 8, 0, 1).toFixed(3);
 
-    // The caption: in from below, out by fading. Until it has been read
-    // (release) it is in the middle, over the phone dimmed and softened
-    // by the veil; then it goes up to its place at the top as the phone
-    // comes back, in plan.rel seconds. One over an interlude's sky stays at
-    // the top in the sky's ink and turns white as the phone comes up. A
-    // caption with no release is at the top from the start.
+    // The caption: in from below, out by fading.
     const cap = $('v-cap');
-    let veil = 0;
+    cap.classList.toggle('on-sky', !!plan.captions.some(function(c){ return c.sky && t >= c.from && t < c.to; }));
     [].forEach.call(cap.children, function(el){
       const c = plan.captions[+el.getAttribute('data-i')];
-      const on = t >= c.from && t < c.to;
       const pin = easeOut((t - c.from) / .32), pout = clamp((c.to - t) / .22, 0, 1);
-      const f = on && c.release != null ? 1 - ease((t - c.release) / plan.rel) : 0;
-      el.style.opacity = (on ? Math.min(pin, pout) : 0).toFixed(3);
-      if (c.sky){
-        el.style.setProperty('--cap-ink', mix('#ffffff', '#5a1520', f));
-        el.style.setProperty('--cap-gold', mix('#ffc24a', '#b35a00', f));
-        el.style.setProperty('--cap-shade', (1 - f).toFixed(3));
-        el.style.transform = 'translateY(' + ((1 - pin) * 34).toFixed(1) + 'px)';
-        return;
-      }
-      if (on) veil = Math.max(veil, f * clamp((t - c.from) / .25, 0, 1));
-      el.style.transform = 'translateY(' + ((1 - pin) * 34 + f * MID).toFixed(1) + 'px)';
+      const o = t < c.from || t >= c.to ? 0 : Math.min(pin, pout);
+      el.style.opacity = o.toFixed(3);
+      el.style.transform = 'translateY(' + ((1 - pin) * 34).toFixed(1) + 'px)';
     });
-    $('v-veil').style.opacity = veil.toFixed(3);
-    $('v-world').style.filter = veil > .005 ? 'blur(' + (3 * veil).toFixed(2) + 'px)' : 'none';
-    // The band behind the caption at the top, as soon as the phone comes up
-    // under it.
-    $('v-band').style.opacity = (clamp((cam.z - 1) * 8, 0, 1) * (1 - veil)).toFixed(3);
 
     // Taps: a ring that grows a little and goes. Before each, an empty ring
     // closes in on the place, and hands over to it as the tap lands.

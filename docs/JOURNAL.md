@@ -37,10 +37,7 @@ anything happens under it, with a ring pointing at each button just before
 it is tapped. The render now refuses a cut that breaks that. The end card's
 "No app, no account." became "Nothing to install. No account.", true of the
 website now that there is an Android app, which the video does not name
-until it is public on Google Play. On seeing that cut the maintainer asked
-for each caption to be read on its own before the app is shown: it now
-lands big in the middle over the dimmed phone and goes up to the top as the
-phone comes back, and the video is about 80 seconds.
+until it is public on Google Play.
 
 ---
 

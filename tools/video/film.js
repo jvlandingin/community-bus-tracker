@@ -257,6 +257,11 @@ function cues(A, B, stage, world, browser, heard){
       return tap(phone, { x:p.x, y:p.y, w:0, h:0 }, v);
     });
   };
+  // The camera onto an element of the page, or back out to the whole phone.
+  // A close-up under a caption leaves the top of the frame to the caption's
+  // band; one with no caption over it fills the frame with the screen
+  // (fill), or the backdrop would show above the phone. The render says if
+  // a settled close-up shows any.
   const cam = async (phone, sel, at, o) => {
     const r = sel ? await phone.rect(sel) : null;
     if (r && o && o.maxH) r.h = Math.min(r.h, o.maxH);
@@ -348,20 +353,20 @@ function cues(A, B, stage, world, browser, heard){
   at(START + 1.25, v => cam(A, '#onbusStripCard', v, { width:1000, cy:1170 }));
   // trip: off camera, the card under the strip in the middle of the screen.
   at(T.trip + 1.05, centre(A, '#tripStop', .3));
-  at(T.trip + 1.6, v => cam(A, '#tripStop', v - .6, { width:1010, cy:1170 }));
+  at(T.trip + 1.6, v => cam(A, '#tripStop', v - .6, { width:1010, cy:960, fill:true }));
   // getoff: the stop's sign comes up the road by itself. Then the camera
   // comes back out and the page goes up to Stop.
   at(T.ticket - .5, v => cam(A, null, v, { dur:.45 }));
   at(T.ticket - .5, glideDoc(A, () => 0, .4));
   // ticket: Stop, the ticket, down it, Keep.
   press(A, '#onbusActive .btn-stop', STOP);
-  at(STOP + .6, v => cam(A, '#tktCard', v, { width:1040, topAt:430, maxH:420 }));
+  at(STOP + .6, v => cam(A, '#tktCard', v, { width:1040, topAt:60, maxH:420, fill:true }));
   at(T.ticket + 2.4, glide(A, '#tktModal', s => { const b = document.querySelector(s); return b.scrollHeight - b.clientHeight; }, 1.3));
   at(T.ticket + 4.2, v => cam(A, null, v, { dur:.5 }));
   press(A, '#tktKeep', T.ticket + 5.05);
   // collect: My tickets, down to the tickets.
   press(A, '#tktKeep', T.collect + .6);
-  at(T.collect + .85, v => cam(A, '#albumModal .modal-card', v, { width:1040, cy:1130, dur:.5 }));
+  at(T.collect + .85, v => cam(A, '#albumModal .modal-card', v, { width:1040, cy:960, dur:.5, fill:true }));
   at(T.collect + 1.5, glide(A, '#albumModal .modal-scroll', s => {
     const box = document.querySelector(s), list = box.querySelector('.alb-list');
     return list.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - 60;
@@ -373,9 +378,10 @@ function cues(A, B, stage, world, browser, heard){
     return Math.max(0, p.getBoundingClientRect().bottom - box.getBoundingClientRect().top + box.scrollTop - box.clientHeight + 16);
   }, .8));
   // Close on the bus from here to the switch, so filmed twice as fine (see
-  // SHARP), and the montage after it closer still.
+  // SHARP), and the montage after it closer still. Filling the frame: the
+  // caption comes over its top once it has settled.
   at(T.dress + .85, () => A.resolution(6));
-  at(T.dress + .9, v => cam(A, '.alb-bus', v, { width:1000, cy:1000 }));
+  at(T.dress + .9, v => cam(A, '.alb-bus', v, { width:1000, cy:1000, fill:true }));
   press(A, '.alb-paint[data-paint="kahel"]', read('dress'));
   press(A, '.alb-paint[data-paint="kahel"]', read('dress') + .7);
   // Then what else it could wear: the same bus in other paints and with
@@ -417,7 +423,7 @@ function cues(A, B, stage, world, browser, heard){
   at(T.rider - .4, v => cam(A, null, v, { dur:.3 }));
   press(B, BUS_1043, T.rider + 1.0);
   at(T.rider + 1.3, centre(B, '.buspop .leaflet-popup-content-wrapper', .4));
-  at(T.rider + 1.75, v => cam(B, '.buspop .leaflet-popup-content-wrapper', v, { width:980, cy:1170 }));
+  at(T.rider + 1.75, v => cam(B, '.buspop .leaflet-popup-content-wrapper', v, { width:980, cy:1170, fill:true }));
   return { list: list.sort((a, b) => a.t - b.t), scrolls };
 }
 // The sharer's bus on the rider's map, by its number: run in the page, it
@@ -643,6 +649,14 @@ async function main(){
     execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(at), '-i', file, '-frames:v', '1', '-q:v', '2', path.join(R.OUT, base + '-cover.jpg')]);
   } catch (e) {}
   console.log('Calls answered here, none sent to Supabase: ' + JSON.stringify(world.log));
+  // Settled close-ups that showed the backdrop round the glass, as spans of
+  // the film.
+  const gaps = (await stage.page.evaluate(() => V.gaps())).reduce((a, t) => {
+    const last = a[a.length - 1];
+    if (last && t - last[1] < 1.5 / R.FPS) last[1] = t; else a.push([t, t]);
+    return a;
+  }, []).map(g => g[0].toFixed(2) + (g[1] > g[0] ? '-' + g[1].toFixed(2) : '') + 's');
+  console.log('Backdrop round a close-up: ' + (gaps.join(', ') || 'none'));
   console.log('Sounds: ' + heard.filter(e => e.t >= from && e.t < to).map(e => e.kind + '@' + e.t.toFixed(2)).join(' '));
   console.log('Wrote ' + file + ' and ' + path.basename(track) + ' (' + drawn + ' frames in ' + Math.round((Date.now() - started) / 1000) + 's)');
   await browser.close();

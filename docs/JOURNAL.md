@@ -46,6 +46,20 @@ it was the other way to make the two agree, and was not taken: between
 positions that is a guess at where the bus is, and at the bus's own pace it
 would be the speed the rules keep off every rider's screen.
 
+Then they asked whether that meant the view on board no longer moved while
+the bus did. Nearly so: a position every six seconds is a twentieth of a
+stop, so the road and the posts crept on a pixel or two and stood still.
+Their idea was to set the posts further apart, keep two or three in sight
+with the rest over the horizon, and show their stop as its pin there, so the
+stops and the road could move together. That became the road at its real
+length: the stops as far apart as they are, the dashes 16 m apart on the
+same road, 1.2 km in sight, and the view following the positions at an even
+pace a poll behind the bus, so it moves while the bus does and stops when it
+stops. That moves at the bus's pace, which the rules had kept off every
+picture; it was put to the maintainer as an exception for on board only,
+where the one looking is on that bus. The waiting card keeps every stop as
+a post.
+
 The showcase video shows the old picture until it is rendered again.
 
 ## 2026-10-19: The tester page is linked

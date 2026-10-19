@@ -20,7 +20,7 @@ new Function('S', hav + prog + mine +
   'S.buildRouteChain=buildRouteChain;S.routeProgressKm=routeProgressKm;' +
   'S.stopChainKms=stopChainKms;S.approachInfo=approachInfo;S.myStopWords=myStopWords;' +
   'S.haversineKm=haversineKm;S.namedStopKms=namedStopKms;S.stopsBetween=stopsBetween;S.rideState=rideState;' +
-  'S.aboardBus=aboardBus;S.aboardInfo=aboardInfo;S.aboardWords=aboardWords;S.stopsAway=stopsAway;')(S);
+  'S.aboardBus=aboardBus;S.aboardInfo=aboardInfo;S.aboardWords=aboardWords;S.stopsAway=stopsAway;S.stopsBack=stopsBack;')(S);
 
 const txt = fs.readFileSync(path.join(ROOT, 'config-template.txt'), 'utf8').split(/\r?\n/);
 const CP = txt.filter(l => l.trim().startsWith('CHECKPOINT =')).map(l => {
@@ -342,6 +342,20 @@ console.log('\n=== 11. where the picture puts the bus ===');
     'no bus, no stop or a bus off the chain: nothing to place, never a throw');
   // A place and nothing else: no clock is read, so it cannot become a time.
   check(!/Date|\bnow\b|\.ts\b|speed|minute/.test(S.stopsAway.toString()), 'it reads places along the road and nothing about time');
+
+  // On board the picture stands each post as far back from your stop as its
+  // stop is (stopsBack): the same stops, measured the way the bus comes.
+  const back = S.stopsBack({ direction: 'north' }, me, KMS);
+  check(back.length > 20 && back.every((w, i) => w > 0 && (i === 0 || w >= back[i - 1])),
+    'stopsBack: every stop before yours, how far back from it, nearest first', `${back.length} stops`);
+  const nb = at('north', kmOf('Biclatan'));
+  check(back.filter(w => w < nb.km).length === nb.stops,
+    'and the ones nearer than the bus are exactly the stops the card counts', `${nb.stops} stops`);
+  const sbBack = S.stopsBack({ direction: 'south' }, sbMe, KMS);
+  check(sbBack.length > 20 && sbBack.filter(w => w < sb.km).length === sb.stops,
+    'southbound, back is the other way along the chain, and counts the same', `${sb.stops} stops`);
+  check(S.stopsBack(null, me, KMS).length === 0 && S.stopsBack({ direction: 'north' }, null, KMS).length === 0,
+    'no bus or no stop: nothing, never a throw');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

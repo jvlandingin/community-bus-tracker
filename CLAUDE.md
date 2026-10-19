@@ -86,7 +86,8 @@ own code; run it after changing those words or the drawings. It also draws the
 guide's pictures of your bus, from the decorations and paint named in each
 `<!-- mybus keys=… paint=… -->` marker, the bus on the road in its popup, from
 `<!-- ride views=… sky=… -->`, and the saved stop's picture in the guide, the
-flyer and the briefing, from `<!-- stopview p=… sky=… -->`. And it draws the
+flyer and the briefing, from `<!-- stopview f=… sky=… -->` (or, on board,
+`stop=… at=…`, measured from `config.txt`). And it draws the
 icon into `tools/app-icons.html`, from `<!-- appicon id=… -->`, and the small
 mark into every page's favicon and the Android app's status-bar and themed
 icons. `test-tokens.js`, `test-signboard.js` and `test-pictures.js` fail until
@@ -206,14 +207,19 @@ between are counted by projecting them onto the chain, never by `config.txt`
 order, which is merged from two posters and is not route order. **The card
 draws the bus coming** (October 2026, the maintainer's choice over a line of
 dots that looked the same however near the bus was): down the road to the
-shed you wait at, or on board your stop's sign coming up to the windscreen,
-a post for every stop between, however many (`stopViewSvg()`), each one even
-step of depth by `stopsAway()`, so forty stops off is a speck at the end of a
-long road and never looks like six, and dressed by `busLookOf()`, the popup's
-rule. It glides only when a position arrives and never creeps between them,
-because a picture that moved on its own would be a guess at an arrival; on
-board the road's dashes are on the road with the posts and move only with
-them. It is the one working screen with a picture. It reports distance and stop counts only,
+shed you wait at, or on board your stop's sign coming up to the windscreen
+(`stopViewSvg()`), dressed by `busLookOf()`, the popup's rule. Waiting, a
+post stands for every stop between, however many, each one even step of
+depth by `stopsAway()`, so forty stops off is a speck at the end of a long
+road and never looks like six, and the bus glides only when a position
+arrives and never creeps between them, because a picture that moved on its
+own would be a guess at an arrival. On board the road is drawn at its real
+length (`stopsBack()`, in km): two or three stops in sight, your stop a pin
+on the horizon until it is, and the dashes and the posts going by together,
+from one position to the next over a poll (`STOP_RIDE_MS`), a poll behind
+the bus and never ahead. That is the one picture that moves at a bus's pace
+(October 2026), because its viewer is on that bus. It is the one working
+screen with a picture. It reports distance and stop counts only,
 never minutes: an ETA needs travel-time history this system does not keep,
 and `test-mystop.js` fails if the wording drifts towards implying one. **On board, the card follows your own bus** to the stop
 you get off at instead of the nearest one coming: a sharer's is the row the

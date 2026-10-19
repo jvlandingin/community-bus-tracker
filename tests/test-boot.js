@@ -670,6 +670,25 @@ function run(page, include, label, configText, setup) {
     check(/on your bus · [\d.]+ km to go/.test(said) && /· your bus 98018 ·/.test(said) && !!stopBar.querySelector('.ride-art svg.stopview .sv-swing'),
       'and the card now follows that bus, not the one nearer the stop, seen from inside it', said.slice(0, 90));
     check(/I got off this bus/.test(pop(mineBus).textContent), 'its popup now offers "I got off this bus" instead');
+    // On board the view keeps to the road: a few metres either way is the
+    // GPS and moves nothing, a real move goes by over a poll, and a long way
+    // back starts the view again where the bus is, drawn at once.
+    {
+      const along = f => ({ ...mineBus, lat: busCp.lat + (myCp.lat - busCp.lat) * f, lng: busCp.lng + (myCp.lng - busCp.lng) * f });
+      const ride = () => !!stopBar.querySelector('.ride-art svg.stopview .sv-ride');
+      ok.w.renderMyStop([near, along(.3)]);
+      const jumped = !ride();
+      ok.w.renderMyStop([near, along(.30005)]);
+      const held = !ride();
+      ok.w.renderMyStop([near, along(.303)]);
+      const moved = ride() && !stopBar.querySelector('.ride-art svg.stopview .sv-glide');
+      ok.w.renderMyStop([near, along(.29)]);
+      const back = !ride();
+      check(jumped && held && moved && back,
+        'on board, a jump is drawn at once, the GPS wobbling moves nothing, a real move goes by, and going back starts again',
+        [jumped, held, moved, back].join(','));
+      ok.w.renderMyStop([near, mineBus]);
+    }
     ok.w.renderMyStop([near]);
     check(/isn.t on the map right now/.test(stopBar.textContent) && /I got off/.test(stopBar.textContent),
       'if that bus leaves the map the card says so, rather than falling back to another bus');

@@ -42,12 +42,16 @@
 //
 //   <!-- ride views=coffee sky=day frame=popup -->  ...  <!-- /ride -->
 //
-// And the saved stop's picture, as the card draws it (stopViewSvg): how
-// many stops away the bus is (f, from stopsAway), aboard=1 for the card that
-// follows your own bus, here=1 for Sakay na or Bababa na, its sky, and keys
-// and paint for a bus shown as dressed:
+// And the saved stop's picture, as the card draws it (stopViewSvg): waiting,
+// how many stops away the bus is (f, from stopsAway); on board (aboard=1),
+// the saved stop and the checkpoint the bus is at, by its short name, from
+// which config.txt and the tracker's own code give how far the stop is and
+// where every stop before it stands; here=1 for Sakay na or Bababa na, its
+// sky, and keys and paint for a bus shown as dressed. A + in a name is a
+// space:
 //
 //   <!-- stopview f=0.42 sky=day here=1 -->  ...  <!-- /stopview -->
+//   <!-- stopview aboard=1 stop=New+Imus+City+Hall at=GEN.T sky=day -->  ...  <!-- /stopview -->
 //
 // And the app's icon, in tools/app-icons.html, with an id unique on the page,
 // name=fibi for the app's (the website's has no name), and the options
@@ -85,7 +89,8 @@ function renderer() {
     'S.COACH_SIDE=COACH_SIDE;S.SCENE_TIMES=SCENE_TIMES;S.sceneSvg=sceneSvg;S.MARKS=MARKS;S.markSvg=markSvg;' +
     'S.TICKET_SKIES=TICKET_SKIES;S.TICKET_VIEWS=TICKET_VIEWS;S.ticketArtSvg=ticketArtSvg;' +
     'S.TICKET_SIGHTS=TICKET_SIGHTS;S.sightTile=sightTile;S.moonSvg=moonSvg;S.BUS_DECOR=BUS_DECOR;S.busSvg=busSvg;S.DECOR_BOX=DECOR_BOX;S.decorTile=decorTile;S.BUS_PAINTS=BUS_PAINTS;S.paintStyle=paintStyle;S.rideSvg=rideSvg;S.RIDE_LOOPS=RIDE_LOOPS;S.RIDE_FRAMES=RIDE_FRAMES;' +
-    'S.stopViewSvg=stopViewSvg;S.STOP_VIEW_MOST=STOP_VIEW_MOST;S.STOP_GLIDE_MS=STOP_GLIDE_MS;S.SV_WAIT=SV_WAIT;S.SV_ABOARD=SV_ABOARD;S.SV_GONE=SV_GONE;')(S);
+    'S.stopViewSvg=stopViewSvg;S.STOP_VIEW_MOST=STOP_VIEW_MOST;S.STOP_GLIDE_MS=STOP_GLIDE_MS;S.STOP_RIDE_MS=STOP_RIDE_MS;' +
+    'S.SV_WAIT=SV_WAIT;S.SV_ABOARD=SV_ABOARD;S.SV_SEEN=SV_SEEN;S.SV_PIN=SV_PIN;S.SV_GONE=SV_GONE;')(S);
   return S;
 }
 
@@ -195,6 +200,37 @@ function rides(src, S) {
   return out;
 }
 
+// The route as config.txt has it, measured by the tracker's own code: where
+// a stop or a checkpoint is along the chain, and the riding card's numbers
+// for a bus at a checkpoint going to a stop.
+let ROUTE = null;
+function route() {
+  if (ROUTE) return ROUTE;
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const R = {};
+  new Function('R', block(html, 'function haversineKm(a,b){', 'function timeAgo(ts){') +
+    block(html, '// ---- ROUTE PROGRESS + WRONG-DIRECTION GUARD', '// ---- END ROUTE PROGRESS') +
+    block(html, "// ---- THE READER'S OWN STOP (unit tested)", '// ---- END MY STOP') +
+    'R.buildRouteChain=buildRouteChain;R.routeProgressKm=routeProgressKm;R.stopChainKms=stopChainKms;R.aboardInfo=aboardInfo;R.stopsBack=stopsBack;')(R);
+  const lines = fs.readFileSync(path.join(ROOT, 'config.txt'), 'utf8').split(/\r?\n/);
+  const field = (l, n) => l.split('=').slice(1).join('=').split('|').map(x => x.trim())[n];
+  const cps = lines.filter(l => /^CHECKPOINT\s*=/.test(l.trim())).map(l => ({ short: field(l, 1), lat: +field(l, 2), lng: +field(l, 3) }));
+  const stops = lines.filter(l => /^STOP\s*=/.test(l.trim())).map(l => ({ name: field(l, 0), lat: +field(l, 1), lng: +field(l, 2) }));
+  const chain = R.buildRouteChain(cps), kms = R.stopChainKms(stops, cps, chain);
+  const kmOf = p => R.routeProgressKm(p, cps, chain);
+  ROUTE = {
+    riding(stopName, at, dir) {
+      const stop = stops.find(s => s.name === stopName), cp = cps.find(c => c.short === at);
+      if (!stop) throw new Error('config.txt has no stop called ' + stopName);
+      if (!cp) throw new Error('config.txt has no checkpoint called ' + at);
+      const myKm = kmOf(stop), info = R.aboardInfo({ id: 'b', direction: dir, ts: 1, km: kmOf(cp) }, myKm, kms);
+      if (!info || info.passed) throw new Error('a bus at ' + at + ' going ' + dir + ' has passed ' + stopName);
+      return { km: info.km, stops: R.stopsBack(info, myKm, kms), between: info.stops };
+    }
+  };
+  return ROUTE;
+}
+
 // Every saved stop's picture in one file, the same way.
 function stopviews(src, S) {
   const out = [];
@@ -204,12 +240,16 @@ function stopviews(src, S) {
     const opts = {};
     for (const part of m[1].trim().split(/\s+/).filter(Boolean)) { const [k, v] = part.split('='); opts[k] = v; }
     if (!(opts.sky in S.TICKET_SKIES)) throw new Error('no stopview sky called ' + opts.sky);
-    const f = Number(opts.f);
-    if (!(f >= 0 && f <= S.STOP_VIEW_MOST)) throw new Error('a stopview needs f, how many stops away the bus is, not ' + opts.f);
-    const { keys, paint } = dressOf(opts, S);
-    const svg = S.stopViewSvg({ aboard: opts.aboard === '1', f, here: opts.here === '1', sky: opts.sky, worn: keys, paint, still: opts.still === '1' });
+    const aboard = opts.aboard === '1', { keys, paint } = dressOf(opts, S);
+    let f = null, ride = null;
+    if (aboard) ride = route().riding((opts.stop || '').replace(/\+/g, ' '), opts.at, opts.dir || 'north');
+    else {
+      f = Number(opts.f);
+      if (!(f >= 0 && f <= S.STOP_VIEW_MOST)) throw new Error('a stopview needs f, how many stops away the bus is, not ' + opts.f);
+    }
+    const svg = S.stopViewSvg({ aboard, f, km: ride && ride.km, stops: ride && ride.stops, here: opts.here === '1', sky: opts.sky, worn: keys, paint, still: opts.still === '1' });
     out.push({ start: m.index, end: m.index + m[0].length, open: '<!-- stopview' + m[1] + ' -->', close: '<!-- /stopview -->',
-      f, aboard: opts.aboard === '1', here: opts.here === '1', sky: opts.sky, keys, paint, current: m[2], wanted: svg });
+      f, ride, aboard, here: opts.here === '1', sky: opts.sky, keys, paint, current: m[2], wanted: svg });
   }
   return out;
 }

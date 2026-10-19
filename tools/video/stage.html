@@ -167,9 +167,12 @@ const V = (function(){
   // of the page's: kept the same as VIEW in render.js. The glass is 860 by
   // 1511 from (SX, TOP), the bar BAR high across its top, above the screen.
   const SX = 110, SY = 421, K = 860 / 390, BAR = 56, TOP = SY - BAR;
-  // The least a close-up that fills the frame can be: the glass as wide and
-  // as tall as the frame.
-  const FILL = Math.max(1080 / 860, 1920 / 1511);
+  // The least a close-up can be for the glass to be as wide as the frame,
+  // and as tall.
+  const WIDE = 1080 / 860, TALL = 1920 / 1511;
+  // The caption's band, as #v-band draws it: BAND high, solid down to SOLID
+  // and fading out below.
+  const BAND = 420, SOLID = .81 * BAND;
   const clamp = function(x, a, b){ return x < a ? a : x > b ? b : x; };
   const ease = function(p){ p = clamp(p, 0, 1); return p < .5 ? 4*p*p*p : 1 - Math.pow(-2*p + 2, 3) / 2; };
   const easeOut = function(p){ p = clamp(p, 0, 1); return 1 - Math.pow(1 - p, 3); };
@@ -216,32 +219,36 @@ const V = (function(){
   // The camera: a scale and a shift of the whole phone, from where the last
   // move ended to where the next one goes. A move names a rectangle of the
   // page (in the page's pixels) to fill a width of the stage, or null to go
-  // back to the whole phone. moving while it goes; fill once it is there,
-  // if it went to a close-up that fills the frame.
+  // back to the whole phone. moving while it goes; close once it is there,
+  // if it went to a close-up.
   function camAt(t){
     let from = { z:1, x:0, y:0 }, cur = from;
     cams.forEach(function(c){
       if (c.at > t) return;
-      const to = c.rect ? frameFor(c.rect, c.width || 1000, c.cy || 1080, c.topAt, c.maxZ, c.fill) : { z:1, x:0, y:0 };
-      const p = ease((t - c.at) / (c.dur || .6));
+      const dur = c.dur || .6;
+      const to = c.rect ? frameFor(c.rect, c.width || 1000, c.cy || 1080, c.topAt, c.maxZ, captioned(c.at + dur)) : { z:1, x:0, y:0 };
+      const p = ease((t - c.at) / dur);
       cur = { z: from.z + (to.z - from.z) * p, x: from.x + (to.x - from.x) * p, y: from.y + (to.y - from.y) * p,
-              moving: p < 1, fill: p >= 1 && !!c.fill };
+              moving: p < 1, close: p >= 1 && !!c.rect };
       from = p >= 1 ? to : cur;
     });
     return cur;
   }
-  // fill: the glass to every edge of the frame, for a close-up with no
-  // caption over its top. Without it a close-up leaves the top of the frame
-  // to the caption's band, and with no band there the backdrop shows above
-  // the phone. As near as the frame needs, moved only as far as the glass
-  // goes, and the bar across the top whole or not at all.
-  function frameFor(r, width, cy, topAt, maxZ, fill){
+  function captioned(t){ return plan.captions.some(function(c){ return t >= c.from && t < c.to; }); }
+  // A close-up fills the frame with the glass, but for the top of the frame
+  // where a caption's band is over it once the camera is there (capped): as
+  // near as that needs, moved only as far as the glass goes, and the bar
+  // across the top of the glass whole or out of sight (under a caption,
+  // under the band's solid part). Framed only by where the element was, a
+  // close-up could leave the top of the frame to a band that was not there,
+  // or bring the foot of the phone into sight, and the backdrop showed.
+  function frameFor(r, width, cy, topAt, maxZ, capped){
     const w = r.w * K, cx = SX + (r.x + r.w / 2) * K, y = SY + (r.y + r.h / 2) * K;
-    const z = Math.max(clamp(width / w, 1, maxZ || 1.75), fill ? FILL : 1);
+    const z = Math.max(clamp(width / w, 1, maxZ || 1.75), WIDE, capped ? 1 : TALL);
     if (topAt) cy = topAt + r.h * K * z / 2;
-    const f = { z:z, x: 540 - cx * z, y: cy - y * z };
-    if (fill){
-      f.x = clamp(f.x, 1080 - (SX + 860) * z, -SX * z);
+    const f = { z:z, x: clamp(540 - cx * z, 1080 - (SX + 860) * z, -SX * z), y: cy - y * z };
+    if (capped) f.y = clamp(f.y, 1920 - (TOP + 1511) * z, SOLID - SY * z);
+    else {
       f.y = clamp(f.y, 1920 - (TOP + 1511) * z, -TOP * z);
       if (f.y > -SY * z) f.y = -TOP * z;
     }
@@ -284,9 +291,9 @@ const V = (function(){
         const a = b.strong ? 1 : .45;
         const w = Math.sin(u * 2 * Math.PI * 24);
         shake = ' translate(' + (w * 9 * a).toFixed(1) + 'px,' + (Math.cos(u * 2 * Math.PI * 19) * 3 * a).toFixed(1) + 'px) rotate(' + (w * 1.1 * a).toFixed(2) + 'deg)';
-        // In a close-up that fills the frame the phone also grows as it
-        // shakes, just enough that its edges stay out of the frame.
-        if (cam.fill) shake += ' scale(' + (1 + .055 * a).toFixed(3) + ')';
+        // In a close-up the phone also grows as it shakes, just enough that
+        // its edges stay out of the frame.
+        if (cam.close) shake += ' scale(' + (1 + .055 * a).toFixed(3) + ')';
       }
     });
     $('v-world').style.transform = 'translate(' + (cam.x + dx).toFixed(2) + 'px,' + (cam.y + dy).toFixed(2) + 'px) scale(' + cam.z.toFixed(4) + ')';
@@ -310,10 +317,11 @@ const V = (function(){
     const band = clamp((cam.z - 1) * 8, 0, 1) * shown;
     $('v-band').style.opacity = band.toFixed(3);
     // A close-up that has settled shows nothing round the glass but the
-    // band: noted when it does, for the render to say when.
-    if (cam.z > 1.001 && !cam.moving && !dx && !dy && !shake){
-      const l = SX * cam.z + cam.x, r = (SX + 860) * cam.z + cam.x, top = TOP * cam.z + cam.y, foot = (TOP + 1511) * cam.z + cam.y;
-      if (l > .5 || r < 1079.5 || top > (band > .99 ? 420 : 0) + .5 || foot < 1919.5) gaps.push(t);
+    // band: noted when it does, and which edge, for the render to say.
+    if (cam.close && !dx && !dy && !shake){
+      const edges = [SX * cam.z + cam.x > .5 && 'left', (SX + 860) * cam.z + cam.x < 1079.5 && 'right',
+                     TOP * cam.z + cam.y > (band > .01 ? BAND : 0) + .5 && 'top', (TOP + 1511) * cam.z + cam.y < 1919.5 && 'foot'];
+      if (edges.some(Boolean)) gaps.push({ t:t, edges:edges.filter(Boolean) });
     }
 
     // Taps: a ring that grows a little and goes. Before each, an empty ring

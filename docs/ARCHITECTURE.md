@@ -1774,11 +1774,14 @@ three captions, one for each part of the story, kept at the top for the
 whole of it: "Know when your bus is near." while waiting, "On the bus?
 Share it." while sharing, and "Earn coins and dress up your bus." in My
 tickets. The band a caption sits on over a close-up comes and goes with
-it. A close-up under a caption leaves the top of the frame to the band; one
-with no caption fills the frame with the screen (`fill` in `film.js`),
-because without the band the backdrop showed above the phone, which the
-maintainer saw at once. The render's log names any settled close-up that
-shows backdrop round the glass. The rest
+it. Every close-up fills the frame with the screen, but for the top where
+a caption's band is over it (`frameFor()` in `stage.html`), wherever the
+element it closes on is on the page. Framed only by that, the close-ups
+after the trip left the top of the frame to a band that was no longer
+there, and three under a caption brought the foot of the phone into
+sight, so the backdrop showed round it; the maintainer saw the first at
+once. The render's log names any settled close-up that shows backdrop
+round the glass, and which edge. The rest
 is said by the app's own words on screen: Malapit na!,
 Sakay na!, the salamat, Bababa na!, the ticket. Every beat goes the same
 way: the camera settles on what is about to be used, a ring closes in on

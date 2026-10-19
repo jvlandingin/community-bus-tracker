@@ -25,6 +25,29 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-19: The saved stop's picture draws every stop
+
+Looking at the card on a phone, the maintainer saw "about 47 stops before
+yours" under a picture of a bus a few stops off, waiting and on board alike:
+the picture held only the last six stops, so anything further looked six
+away. And on board the road's dashes ran past while the stops beside them
+stood still, as though the stops were riding along. They asked for the view
+to be improved, open to keeping it or trying something new.
+
+The view down the road was kept, since it was chosen over the others drawn
+three days before, and now draws every stop between as a post, each one
+even step of depth, so the line of posts is as long as the count: two stops
+off the bus is close, six and it is small, forty and it is a speck at the end
+of a long road. On board the dashes are on the road with the posts and move
+only when a position does, all by the distance the bus went, and a stop it
+passes goes by the glass. Between positions the view stands still, as the
+waiting one always has. Keeping the road running and moving the posts with
+it was the other way to make the two agree, and was not taken: between
+positions that is a guess at where the bus is, and at the bus's own pace it
+would be the speed the rules keep off every rider's screen.
+
+The showcase video shows the old picture until it is rendered again.
+
 ## 2026-10-19: The tester page is linked
 
 The app is in internal testing and the closed test is open. `testers.html`

@@ -207,11 +207,13 @@ order, which is merged from two posters and is not route order. **The card
 draws the bus coming** (October 2026, the maintainer's choice over a line of
 dots that looked the same however near the bus was): down the road to the
 shed you wait at, or on board your stop's sign coming up to the windscreen,
-a post for each stop between (`stopViewSvg()`), placed one even step a stop
-by `stopProgress()` and dressed by `busLookOf()`, the popup's rule. It glides
-only when a position arrives and never creeps between them, because a
-picture that moved on its own would be a guess at an arrival. It is the one
-working screen with a picture. It reports distance and stop counts only,
+a post for every stop between, however many (`stopViewSvg()`), each one even
+step of depth by `stopsAway()`, so forty stops off is a speck at the end of a
+long road and never looks like six, and dressed by `busLookOf()`, the popup's
+rule. It glides only when a position arrives and never creeps between them,
+because a picture that moved on its own would be a guess at an arrival; on
+board the road's dashes are on the road with the posts and move only with
+them. It is the one working screen with a picture. It reports distance and stop counts only,
 never minutes: an ETA needs travel-time history this system does not keep,
 and `test-mystop.js` fails if the wording drifts towards implying one. **On board, the card follows your own bus** to the stop
 you get off at instead of the nearest one coming: a sharer's is the row the

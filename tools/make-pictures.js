@@ -42,12 +42,12 @@
 //
 //   <!-- ride views=coffee sky=day frame=popup -->  ...  <!-- /ride -->
 //
-// And the saved stop's picture, as the card draws it (stopViewSvg): where
-// the bus is along the last stops (p, from stopProgress), aboard=1 for the
-// card that follows your own bus, here=1 for Sakay na or Bababa na, its sky,
-// and keys and paint for a bus shown as dressed:
+// And the saved stop's picture, as the card draws it (stopViewSvg): how
+// many stops away the bus is (f, from stopsAway), aboard=1 for the card that
+// follows your own bus, here=1 for Sakay na or Bababa na, its sky, and keys
+// and paint for a bus shown as dressed:
 //
-//   <!-- stopview p=0.93 sky=day here=1 -->  ...  <!-- /stopview -->
+//   <!-- stopview f=0.42 sky=day here=1 -->  ...  <!-- /stopview -->
 //
 // And the app's icon, in tools/app-icons.html, with an id unique on the page,
 // name=fibi for the app's (the website's has no name), and the options
@@ -85,7 +85,7 @@ function renderer() {
     'S.COACH_SIDE=COACH_SIDE;S.SCENE_TIMES=SCENE_TIMES;S.sceneSvg=sceneSvg;S.MARKS=MARKS;S.markSvg=markSvg;' +
     'S.TICKET_SKIES=TICKET_SKIES;S.TICKET_VIEWS=TICKET_VIEWS;S.ticketArtSvg=ticketArtSvg;' +
     'S.TICKET_SIGHTS=TICKET_SIGHTS;S.sightTile=sightTile;S.moonSvg=moonSvg;S.BUS_DECOR=BUS_DECOR;S.busSvg=busSvg;S.DECOR_BOX=DECOR_BOX;S.decorTile=decorTile;S.BUS_PAINTS=BUS_PAINTS;S.paintStyle=paintStyle;S.rideSvg=rideSvg;S.RIDE_LOOPS=RIDE_LOOPS;S.RIDE_FRAMES=RIDE_FRAMES;' +
-    'S.stopViewSvg=stopViewSvg;S.STOP_VIEW_STOPS=STOP_VIEW_STOPS;S.STOP_GLIDE_MS=STOP_GLIDE_MS;S.STOP_ROAD_S=STOP_ROAD_S;')(S);
+    'S.stopViewSvg=stopViewSvg;S.STOP_VIEW_MOST=STOP_VIEW_MOST;S.STOP_GLIDE_MS=STOP_GLIDE_MS;S.SV_WAIT=SV_WAIT;S.SV_ABOARD=SV_ABOARD;S.SV_GONE=SV_GONE;')(S);
   return S;
 }
 
@@ -204,12 +204,12 @@ function stopviews(src, S) {
     const opts = {};
     for (const part of m[1].trim().split(/\s+/).filter(Boolean)) { const [k, v] = part.split('='); opts[k] = v; }
     if (!(opts.sky in S.TICKET_SKIES)) throw new Error('no stopview sky called ' + opts.sky);
-    const p = Number(opts.p);
-    if (!(p >= 0 && p <= 1)) throw new Error('a stopview needs p between 0 and 1, not ' + opts.p);
+    const f = Number(opts.f);
+    if (!(f >= 0 && f <= S.STOP_VIEW_MOST)) throw new Error('a stopview needs f, how many stops away the bus is, not ' + opts.f);
     const { keys, paint } = dressOf(opts, S);
-    const svg = S.stopViewSvg({ aboard: opts.aboard === '1', p, here: opts.here === '1', sky: opts.sky, worn: keys, paint, still: opts.still === '1' });
+    const svg = S.stopViewSvg({ aboard: opts.aboard === '1', f, here: opts.here === '1', sky: opts.sky, worn: keys, paint, still: opts.still === '1' });
     out.push({ start: m.index, end: m.index + m[0].length, open: '<!-- stopview' + m[1] + ' -->', close: '<!-- /stopview -->',
-      p, aboard: opts.aboard === '1', here: opts.here === '1', sky: opts.sky, keys, paint, current: m[2], wanted: svg });
+      f, aboard: opts.aboard === '1', here: opts.here === '1', sky: opts.sky, keys, paint, current: m[2], wanted: svg });
   }
   return out;
 }

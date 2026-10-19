@@ -301,7 +301,7 @@ const viewStale = Object.keys(views).filter(f => views[f].some(v => v.current !=
 check(views['how-to.html'].length === 2 && views['flyer.html'].length === 1 && views['for-operators.html'].length === 1 && !viewStale.length,
   'the saved stop\'s picture in the guide, the poster and the briefing is drawn by the tracker\'s own code, as it is now',
   viewStale.length ? 'stale in ' + viewStale.join(', ') + ' (run node tools/make-pictures.js)' : Object.keys(views).map(f => f + ' ' + views[f].length).join(', '));
-check(views['how-to.html'].map(v => v.aboard).join(',') === 'false,true' && views['flyer.html'][0].p === views['for-operators.html'][0].p &&
+check(views['how-to.html'].map(v => v.aboard).join(',') === 'false,true' && views['flyer.html'][0].f === views['for-operators.html'][0].f &&
       !views['flyer.html'][0].aboard && !views['for-operators.html'][0].aboard,
   'the guide draws it waiting and on board, and the poster and the briefing the same moment');
 
@@ -401,76 +401,124 @@ check(readers.join(',') === 'clusterBuses,pollPositions,popupRide,rideCardHtml' 
 
 console.log('\n=== 9. the saved stop\'s picture ===');
 // stopViewSvg: the bus coming down the road to the shed, or on board your
-// stop coming up to the windscreen, with a post for each stop between. p
-// is stopProgress()'s; test-mystop.js holds that n stops between is the
-// n-th step from your stop, (5 - n) / 6 to (6 - n) / 6, so the middle of a
-// step stands for n here.
+// stop coming up to the windscreen, with a post for every stop between. f
+// is stopsAway()'s; test-mystop.js holds that n stops between is the step
+// from just over n to n + 1, so n + .5 stands for n here.
 {
-  const N = S.STOP_VIEW_STOPS, mid = n => (N - .5 - n) / N;
+  const mid = n => n + .5;
   const plates = svg => (svg.match(/height="6\.72" rx="1\.44" fill="#(?:e39a1c|efe7da)"/g) || []).length;
   const golds = svg => (svg.match(/height="6\.72" rx="1\.44" fill="#e39a1c"/g) || []).length;
-  const scales = svg => [...svg.matchAll(/class="sv-k[^"]*" style="transform:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\)/g)].map(m => +m[1]);
-  check(N === 6, 'the last six stops before yours are drawn', String(N));
+  // Every thing placed on the road: its depth now, the depth it glides from
+  // if it does, whether it is fading, and what it is.
+  const things = svg => svg.split('<g class="sv-k').slice(1).map(g => {
+    const k = (/^[^"]*" style="transform:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\)/.exec(g) || [])[1];
+    const k0 = (/--from:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\)/.exec(g.slice(0, g.indexOf('>'))) || [])[1];
+    return { k: +k, k0: k0 === undefined ? null : +k0, gone: /^ sv-gone|^ sv-glide sv-gone/.test(g),
+      what: /#4f46b8/.test(g.split('</g>')[0]) ? 'sign' : /<svg/.test(g) ? 'bus' : /height="6\.72"/.test(g.split('</g>')[0]) ? 'post' : 'dash' };
+  });
+  const subject = (svg, aboard) => things(svg).filter(x => x.what === (aboard ? 'sign' : 'bus'))[0];
   for (const aboard of [false, true]) {
     const who = aboard ? 'on board' : 'waiting';
-    const ns = [0, 1, 2, 3, 4, 5].map(n => plates(S.stopViewSvg({ aboard, p: mid(n) })));
-    check(ns.join(',') === '0,1,2,3,4,5' && plates(S.stopViewSvg({ aboard, p: 0 })) === 5,
-      `${who}: a post for every stop still between, as many as the card counts, and five at the edge`, ns.join(','));
-    check([1, 2, 3, 4, 5].every(n => golds(S.stopViewSvg({ aboard, p: mid(n) })) === 1) && golds(S.stopViewSvg({ aboard, p: mid(0) })) === 0,
+    const counts = [0, 1, 2, 5, 6, 7, 12, 23, 47, 70].map(n => [n, plates(S.stopViewSvg({ aboard, f: mid(n) }))]);
+    check(counts.every(([n, got]) => got === n) && plates(S.stopViewSvg({ aboard, f: 0 })) === 0,
+      `${who}: a post for every stop still between, as many as the card counts, however many`, counts.map(c => c[1]).join(','));
+    check([1, 2, 5, 23, 47].every(n => golds(S.stopViewSvg({ aboard, f: mid(n) })) === 1) && golds(S.stopViewSvg({ aboard, f: mid(0) })) === 0,
       `${who}: one of them gold, the bus's next stop, and none when the next is yours`);
-    // What comes nearer: the bus waiting, your sign on board, the first
-    // thing in the picture placed by depth either way.
-    const near = [0, .1, .25, .5, .75, .9, 1].map(p => scales(S.stopViewSvg({ aboard, p }))[0]);
-    check(near.every((k, i) => i === 0 || k > near[i - 1]), `${who}: ${aboard ? 'your stop' : 'the bus'} grows at every step nearer`, near.map(k => k.toFixed(2)).join(' '));
-    const a = S.stopViewSvg({ aboard, p: .4, sky: 'night', worn: ['dice'], paint: 'dagat', here: true });
-    check(a === S.stopViewSvg({ aboard, p: .4, sky: 'night', worn: ['dice'], paint: 'dagat', here: true }) &&
+    // What comes nearer: the bus waiting, your sign on board.
+    const fs_ = [60, 47, 40, 23, 12, 6, 5, 3, 2, 1.5, 1, .5, 0], near = fs_.map(f => subject(S.stopViewSvg({ aboard, f }), aboard).k);
+    check(near.every((k, i) => i === 0 || k > near[i - 1]), `${who}: ${aboard ? 'your stop' : 'the bus'} grows at every step nearer, from as far off as the route goes`,
+      near.map(k => k.toFixed(3)).join(' '));
+    // The fault this was drawn to fix: forty stops off looked like six.
+    const k = f => subject(S.stopViewSvg({ aboard, f }), aboard).k;
+    check(k(40) < k(6) / 3 && k(6) < k(2) / 2, `${who}: forty stops off is a speck, six is small and two is close, so the picture and the count agree`,
+      `40: ${k(40).toFixed(3)}, 6: ${k(6).toFixed(3)}, 2: ${k(2).toFixed(3)}`);
+    // Each stop one even step of depth, as along a real road. Depth is 1 / k,
+    // and k is drawn to three places, so far off it is known less exactly.
+    const P = aboard ? S.SV_ABOARD : S.SV_WAIT, slack = (...ks) => ks.reduce((a, k) => a + .0005 / (k * k), 1e-6);
+    const posts = things(S.stopViewSvg({ aboard, f: 9.5 })).filter(x => x.what === 'post').map(x => x.k);
+    const even = posts.slice(1).every((k, i) => Math.abs(Math.abs(1 / k - 1 / posts[i]) - P.dz) <= slack(k, posts[i]));
+    check(posts.length === 9 && even, `${who}: the posts stand an even step of depth apart`,
+      posts.slice(1).map((k, i) => Math.abs(1 / k - 1 / posts[i]).toFixed(3)).join(' '));
+    const a = S.stopViewSvg({ aboard, f: 3.4, sky: 'night', worn: ['dice'], paint: 'dagat', here: true });
+    check(a === S.stopViewSvg({ aboard, f: 3.4, sky: 'night', worn: ['dice'], paint: 'dagat', here: true }) &&
           a.startsWith('<svg class="stopview" viewBox="0 0 330 160" preserveAspectRatio="xMid' + (aboard ? 'YMid' : 'YMax') + ' slice" aria-hidden="true" focusable="false">') &&
           !/\sid="|<text|https?:|url\(/.test(a),
       `${who}: the same drawing for the same state, hidden from screen readers, with no ids, no words and nothing loaded`);
     // The glide: from where it was drawn last, only when that is elsewhere,
     // and carried on through a redraw by a delay never longer than itself.
-    const g = S.stopViewSvg({ aboard, p: .5, from: .3, ago: 400 }), same = S.stopViewSvg({ aboard, p: .5, from: .5 });
+    const g = S.stopViewSvg({ aboard, f: 2.5, from: 3.5, ago: 400 }), same = S.stopViewSvg({ aboard, f: 2.5, from: 2.5 });
     check(/class="sv-k sv-glide" style="transform:[^;]+;--from:translate\([^;]+\);animation-delay:-0\.40s"/.test(g) &&
-          !/sv-glide/.test(same) && !/sv-glide/.test(S.stopViewSvg({ aboard, p: .5 })) &&
-          /animation-delay:-1\.00s/.test(S.stopViewSvg({ aboard, p: .5, from: .3, ago: 99999 })),
+          !/sv-glide/.test(same) && !/sv-glide/.test(S.stopViewSvg({ aboard, f: 2.5 })) &&
+          /animation-delay:-1\.00s/.test(S.stopViewSvg({ aboard, f: 2.5, from: 3.5, ago: 99999 })),
       `${who}: it glides from where it was, only when it was elsewhere, and a redraw carries the glide on`);
-    check(/^<svg class="stopview still"/.test(S.stopViewSvg({ aboard, p: .5, still: true })), `${who}: and stands still when the bus does`);
+    check(/^<svg class="stopview still"/.test(S.stopViewSvg({ aboard, f: 2.5, still: true })), `${who}: and stands still when the bus does`);
+    // Nothing placed and nothing it cannot place throws or draws a wrong count.
+    check([null, undefined, NaN, 'x', -3, 1e9].every(f => plates(S.stopViewSvg({ aboard, f })) === (f === -3 ? 0 : S.STOP_VIEW_MOST - 1)),
+      `${who}: a bus it cannot place is as far as the picture goes, and one past your stop is at it`);
+  }
+  // Waiting, the road stands still: only the bus comes on, and a stop it has
+  // just passed fades as it goes by, on the glide's own clock.
+  {
+    const g = things(S.stopViewSvg({ f: 1.6, from: 3.4, ago: 300 }));
+    check(g.filter(x => x.k0 !== null).map(x => x.what).join(',') === 'bus' && g.filter(x => x.gone).length === 2 &&
+          g.filter(x => x.gone).every(x => x.what === 'post' && x.k0 === null),
+      'waiting: when a position arrives only the bus moves, and the two stops it passed fade behind it',
+      g.map(x => x.what + (x.gone ? '-' : x.k0 !== null ? '>' : '')).join(' '));
+    check(!/sv-gone/.test(S.stopViewSvg({ f: 1.6 })) && !/sv-gone/.test(S.stopViewSvg({ f: 1.6, from: 1.9, ago: 300 })),
+      'and none fade when none were passed');
+  }
+  // On board everything on the road is the road's: the dashes down the
+  // middle, the posts and your stop come on together, by the same distance
+  // the bus moved, and only when a position says it did.
+  {
+    const P = S.SV_ABOARD, gOf = k => (1 / k - P.z) / P.dz, slack = (...ks) => ks.reduce((a, k) => a + .0005 / (k * k), 1e-6) / P.dz;
+    const still = things(S.stopViewSvg({ aboard: true, f: 4.3 }));
+    check(still.filter(x => x.what === 'dash').length >= 10 && still.every(x => x.k0 === null) && !/sv-dash|infinite/.test(S.stopViewSvg({ aboard: true, f: 4.3 })),
+      'on board: the road\'s dashes are placed on it like the posts, and nothing moves between positions',
+      still.filter(x => x.what === 'dash').length + ' dashes');
+    // From 5.2 stops off to 4.3: 0.9 of a stop on, past the fifth.
+    const moving = things(S.stopViewSvg({ aboard: true, f: 4.3, from: 5.2, ago: 200 }));
+    const kept = moving.filter(x => x.k < S.SV_GONE && x.k0 !== null && x.k0 < S.SV_GONE);
+    const off = kept.filter(x => Math.abs(gOf(x.k0) - gOf(x.k) - .9) > slack(x.k0, x.k));
+    check(kept.length > 10 && ['dash', 'post', 'sign'].every(w => kept.some(x => x.what === w)) && !off.length,
+      'and when one does, the dashes, the posts and your stop all come on by the distance the bus went',
+      kept.length + ' things' + (off.length ? ', ' + off.map(x => x.what + ' by ' + (gOf(x.k0) - gOf(x.k)).toFixed(3)).join(' ') : ', by 0.9 of a stop'));
+    const passed = moving.filter(x => x.k === S.SV_GONE);
+    check(passed.filter(x => x.what === 'post').length === 1 && passed.every(x => x.k0 !== null && x.k0 < S.SV_GONE),
+      'a stop the bus passes goes by the glass rather than vanishing', passed.map(x => x.what).join(','));
+    check(subject(S.stopViewSvg({ aboard: true, f: 0 }), true).k > 1,
+      'and your own stop is never passed: at it, it is at the glass');
   }
   // Sakay na, Bababa na: your sign lit; waiting, you wave the bus down.
   const lit = svg => /r="20\.8" fill="#4f46b8" opacity="\.28"/.test(svg) || /r="19\.2" fill="#4f46b8" opacity="\.28"/.test(svg);
-  check(lit(S.stopViewSvg({ p: .95, here: true })) && !lit(S.stopViewSvg({ p: .95 })) && lit(S.stopViewSvg({ aboard: true, p: .95, here: true })),
+  check(lit(S.stopViewSvg({ f: .3, here: true })) && !lit(S.stopViewSvg({ f: .3 })) && lit(S.stopViewSvg({ aboard: true, f: .3, here: true })),
     'at the next stop your sign is lit', 'never before rideState() says so');
   const arm = svg => (/M[\d.]+ [\d.]+V[\d.]+M[\d.]+ [\d.]+V[\d.]+(M[^"]+)" stroke="#3a2e2a" stroke-width="4\.2"/.exec(svg) || [])[1] || '';
-  check(arm(S.stopViewSvg({ p: .95, here: true })) !== arm(S.stopViewSvg({ p: .95 })) && arm(S.stopViewSvg({ p: .95 })) !== '',
+  check(arm(S.stopViewSvg({ f: .3, here: true })) !== arm(S.stopViewSvg({ f: .3 })) && arm(S.stopViewSvg({ f: .3 })) !== '',
     'and waiting, you wave it down');
   // Dressed only as its sharer chose, which the card decides (busLookOf):
   // this draws what it is given and nothing when given nothing.
   const dice = { wait: 'x="60.5" y="44" width="7"', aboard: 'x="150" y="48" width="12"' };
-  check(S.stopViewSvg({ p: .5, worn: ['dice'] }).includes(dice.wait) && !S.stopViewSvg({ p: .5 }).includes(dice.wait) &&
-        S.stopViewSvg({ aboard: true, p: .5, worn: ['dice'] }).includes(dice.aboard) && !S.stopViewSvg({ aboard: true, p: .5 }).includes(dice.aboard),
+  check(S.stopViewSvg({ f: 3.5, worn: ['dice'] }).includes(dice.wait) && !S.stopViewSvg({ f: 3.5 }).includes(dice.wait) &&
+        S.stopViewSvg({ aboard: true, f: 3.5, worn: ['dice'] }).includes(dice.aboard) && !S.stopViewSvg({ aboard: true, f: 3.5 }).includes(dice.aboard),
     'the bus wears what it is given, from the front waiting and inside on board, and nothing when plain');
-  check(S.stopViewSvg({ p: .5, paint: 'dagat' }).includes('fill="' + S.BUS_PAINTS.dagat[3] + '"') &&
-        S.stopViewSvg({ aboard: true, p: .5, paint: 'dagat' }).includes('stroke="' + S.BUS_PAINTS.dagat[3] + '"') &&
-        S.stopViewSvg({ p: .5, paint: 'nonsense' }) === S.stopViewSvg({ p: .5 }),
+  check(S.stopViewSvg({ f: 3.5, paint: 'dagat' }).includes('fill="' + S.BUS_PAINTS.dagat[3] + '"') &&
+        S.stopViewSvg({ aboard: true, f: 3.5, paint: 'dagat' }).includes('stroke="' + S.BUS_PAINTS.dagat[3] + '"') &&
+        S.stopViewSvg({ f: 3.5, paint: 'nonsense' }) === S.stopViewSvg({ f: 3.5 }),
     'in its paint, outside waiting and on the dashboard on board, and an unknown paint is the plain one');
   // The stylesheet runs the moving parts, so it must agree with the code.
   const rule = cls => (new RegExp('\\.stopview \\.' + cls + '\\{([^}]*)\\}').exec(html) || [])[1] || '';
   const glideS = +((/animation:stopglide ([\d.]+)s/.exec(rule('sv-glide')) || [])[1]);
-  const roadS = +((/animation:stoproad ([\d.]+)s linear infinite/.exec(rule('sv-dash')) || [])[1]);
-  check(glideS * 1000 === S.STOP_GLIDE_MS && roadS === S.STOP_ROAD_S,
-    'the glide and the road run for the times the code counts with', `glide ${glideS}s, road ${roadS}s`);
-  // The road comes on at an even speed: depth 1/z with z falling evenly, so
-  // each keyframe's scale is 1 / (9 - 8.45 t), from the horizon to the glass.
-  const kf = (/@keyframes stoproad\{([^@]*?)\}\}/.exec(html) || [])[1] || '';
-  const frames = [...kf.matchAll(/([\d.]+)%\{transform:scale\(([\d.]+)\)/g)].map(m => [+m[1] / 100, +m[2]]);
-  check(frames.length >= 5 && frames[0][0] === 0 && frames[frames.length - 1][0] === 1 &&
-        frames.every(([t, k]) => Math.abs(k * (9 - 8.45 * t) - 1) < .02),
-    'the road comes on at an even pace, as a road does in depth', frames.map(f => f.join(':')).join(' '));
-  check(/transform-origin:150px 62px/.test(rule('sv-dash')) && /transform-origin:165px 26px/.test(rule('sv-swing')) &&
-        /SV_ABOARD = \{ vx:150, h:62, k:70 \}/.test(html),
-    'the road grows from the vanishing point on board, and what hangs swings from the mirror');
-  check(/still \.sv-rock, \.stopview\.still \.sv-dash, \.stopview\.still \.sv-swing\{animation-play-state:paused;\}/.test(html),
-    'and all of it stops for a bus standing still');
+  const goneS = +((/animation:stopgone ([\d.]+)s/.exec(rule('sv-gone')) || [])[1]);
+  check(glideS * 1000 === S.STOP_GLIDE_MS && goneS * 1000 === S.STOP_GLIDE_MS,
+    'the glide and the fade of a passed stop run for the time the code counts with', `glide ${glideS}s, fade ${goneS}s`);
+  // The one thing that ran on its own, the road on board, is gone: what
+  // still loops is the coach idling and what hangs from the mirror.
+  const loops = [...html.matchAll(/\.stopview \.([\w-]+)\{[^}]*infinite/g)].map(m => m[1]).sort();
+  check(loops.join(',') === 'sv-rock,sv-swing' && !/@keyframes stoproad/.test(html) && /transform-origin:165px 26px/.test(rule('sv-swing')),
+    'nothing on the road moves on its own: what loops is the coach idling and the charm swinging from the mirror', loops.join(','));
+  check(/still \.sv-rock, \.stopview\.still \.sv-swing\{animation-play-state:paused;\}/.test(html),
+    'and both stop for a bus standing still');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');

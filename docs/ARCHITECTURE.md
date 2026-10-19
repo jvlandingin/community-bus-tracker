@@ -797,12 +797,16 @@ the right, the side the bus pulls in on, with the posts before it. It is the
 one working screen with a picture, by that decision: the rule that pictures
 go only where the screen would be empty still holds everywhere else.
 
-- **Six stops, one step each.** The picture holds the last six stops
-  (`STOP_VIEW_STOPS`); further than that the bus is at the horizon, or the
-  sign is. `stopProgress()`, in the MY STOP block, says where: an even step
-  per stop, the step being the card's own count (`test-mystop.js` section
-  11), and inside a step by the road, so every position that arrives moves
-  it, which the dots never did. The posts are the counted stops, as the dots
+- **Every stop, one step of depth each** (changed October 2026, below). A
+  post stands for every stop still between, however many, so the picture
+  and the count agree: `stopsAway()`, in the MY STOP block, says how many
+  stops away the bus is, just over n with n stops between and up to n + 1,
+  the step being the card's own count (`test-mystop.js` section 11), and
+  inside a step by the road, so every position that arrives moves it, which
+  the dots never did. A thing g stops up the road is drawn at depth
+  z + 0.6 g, so the posts recede as posts along a real road do: two stops
+  away the bus is close, six and it is small, forty and it is a speck at the
+  end of a long line of them. The posts are the counted stops, as the dots
   were (`test-pictures.js` section 9).
 - **It moves when a position does, and only then.** The bus glides from
   where it was drawn to its new place in a second (`STOP_GLIDE_MS`, the
@@ -815,11 +819,16 @@ go only where the screen would be empty still holds everywhere else.
   perspective is built so that CSS can glide it: everything on the road is
   drawn once at depth 1 and placed by `translate(vanishing point) scale(k)`,
   and a thing's place on the screen is linear in k, so interpolating the
-  transform is the right path in depth.
-- **The road on board goes by** at the popup's decorative pace (`STOP_ROAD_S`,
-  about 60 km/h to the eye) and what hangs from the mirror sways. Both stop
-  when the bus stands still or has gone quiet, by the signal the popup uses
-  (`rideStand()`, `freshness()`). Neither says how fast the bus is going.
+  transform is the right path in depth. Waiting, a stop the bus has just
+  passed fades as it goes by (`stopgone`, on the glide's clock).
+- **On board the road is the road's** (changed October 2026, below). The
+  dashes down the middle are placed on the road like the posts, every half
+  stop, so when a position arrives they all come on together, by the
+  distance the bus went, and a stop it passes goes by the glass. Between
+  positions the view stands still. What hangs from the mirror sways, and
+  stops when the bus stands still or has gone quiet, by the signal the popup
+  uses (`rideStand()`, `freshness()`). Nothing says how fast the bus is
+  going.
 - **Dressed as the popup dresses it** (`busLookOf()`, shared with
   `popupRide()`): a coming bus as its sharer dressed it only if they chose to
   show it, a sharer's own bus as they dressed it, plain otherwise. Waiting it
@@ -835,6 +844,24 @@ go only where the screen would be empty still holds everywhere else.
 The cost is height: the card went from about 230 px to about 290 px on a
 phone. On a wide screen the picture is cut rather than grown past 200 px,
 from the sky down waiting and at both edges on board.
+
+**Then it drew every stop** (October 2026). The maintainer found two things
+wrong with the picture as first shipped. It held the last six stops only, so
+a bus 47 stops away was drawn at the horizon behind five posts, the same
+picture as a bus six away, and waiting or on board the card said "about 47
+stops" under a bus that looked a few stops off. And on board the road's
+dashes ran past at the popup's decorative pace while the posts beside them
+stood still until the next position, as though the stops were riding along.
+Both came from the first version's choices: six steps spaced evenly down
+the screen, and a road that moved on its own. Now every stop between is a post
+and each is one step of depth, so the line of them is as long as the count,
+and the dashes are on the road with the posts, so nothing moves but what a
+position moved. The cost: far off, the bus (or your sign) is a speck at the
+end of the road, and on board the view no longer runs on its own between
+positions; the charm from the mirror is what moves. Every post is drawn,
+up to `STOP_VIEW_MOST` (80, more than the route has), which is about 16 KB
+of picture at 47 stops, and beyond about twenty they run together into a
+fine line at the horizon, as they would along a real road.
 
 It speaks up twice, and only twice: **Malapit na!** at two stops or fewer,
 and **Sakay na!** when yours is the next stop and the bus is inside 2 km

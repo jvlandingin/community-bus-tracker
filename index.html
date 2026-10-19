@@ -608,20 +608,20 @@
   /* The picture, as wide as the card; on a wide screen it is cropped, from
      the sky waiting and top and bottom on board, rather than growing past
      200px. It moves only when a position arrives, gliding from where it was
-     (stopglide, STOP_GLIDE_MS in the PICTURES block), and on board the road
-     goes by and what hangs from the mirror sways, at one decorative pace,
+     (stopglide, STOP_GLIDE_MS in the PICTURES block), the road on board
+     with it, and a stop the bus has passed fades on the same clock
+     (stopgone). The coach idles and what hangs from the mirror sways, both
      stopped while the bus stands still. Under the reduced-motion blanket
-     below the glide lands at once, and the road and the swing stand still. */
+     below the glide lands at once, and the coach and the swing stand still. */
   .ride-art{position:relative; margin:10px 0 0; border-radius:var(--r-s); overflow:hidden; line-height:0; background:var(--line);}
   .stopview{display:block; width:100%; height:auto; max-height:200px;}
   .stopview .sv-glide{animation:stopglide 1s var(--ease-move) both;}
+  .stopview .sv-gone{animation:stopgone 1s var(--ease-move) both;}
   .stopview .sv-rock{animation:riderock .8s ease-in-out infinite;}
-  .stopview .sv-dash{transform-origin:150px 62px; animation:stoproad 4.2s linear infinite;}
   .stopview .sv-swing{transform-origin:165px 26px; animation:stopswing 1.8s ease-in-out infinite alternate;}
-  .stopview.still .sv-rock, .stopview.still .sv-dash, .stopview.still .sv-swing{animation-play-state:paused;}
+  .stopview.still .sv-rock, .stopview.still .sv-swing{animation-play-state:paused;}
   @keyframes stopglide{from{transform:var(--from);}}
-  @keyframes stoproad{0%{transform:scale(.111); opacity:0;} 8%{opacity:.7;} 50%{transform:scale(.209);} 75%{transform:scale(.376);}
-    87.5%{transform:scale(.621);} 95%{transform:scale(1.03);} 100%{transform:scale(1.82); opacity:.7;}}
+  @keyframes stopgone{to{opacity:0;}}
   @keyframes stopswing{from{transform:rotate(-3deg);} to{transform:rotate(3deg);}}
   .ride-big{display:flex; align-items:baseline; flex-wrap:wrap; gap:0 6px; margin-top:8px; line-height:1.2;}
   .ride-big .num{font-size:var(--fs-number); font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums;}
@@ -3282,36 +3282,49 @@ function rideStand(was, b){
 // down the road, the way a commuter looks for a bus. Waiting, you stand at
 // the shed and the coming bus grows as it nears; on board, you look out of
 // the windscreen past what hangs from the mirror, and your stop's sign
-// grows at the roadside. A post stands for each stop still between them,
+// grows at the roadside. A post stands for every stop still between them,
 // the bus's next one in gold, and your stop is the round sign with the
-// app's pin on it. Up to STOP_VIEW_STOPS are drawn; further than that the
-// bus is at the horizon, or the sign is.
+// app's pin on it.
 //
-// p is where the bus is along those last stops, from stopProgress(): 0 at
-// the edge, 1 at your stop, one even step per stop, so every stop passed
-// shows. The picture moves when a position arrives and at no other time:
-// from (where it was drawn last) glides to p in STOP_GLIDE_MS, and ago
-// (how long since that glide began) carries a glide on through a redraw
-// rather than starting it again. Between positions it stands where the
-// bus was last seen, because a picture that crept on would be a guess at
-// when it arrives, which this card never makes. The road on board goes by
-// at a decorative pace, the popup's, and stops when the bus is still.
+// f is how many stops away the bus is, from stopsAway(): n stops between
+// and part of the way to the next, so every position that arrives moves it
+// on and every stop passed shows. Each stop is one even step of depth, so
+// the posts recede as posts along a real road do: two stops off the bus is
+// close, six and it is small, forty and it is a speck at the end of a long
+// line of them. Until October 2026 the picture held the last six stops
+// only, and forty stops away looked like six.
+//
+// The picture moves when a position arrives and at no other time: from
+// (where it was drawn last) glides to f in STOP_GLIDE_MS, and ago (how long
+// since that glide began) carries a glide on through a redraw rather than
+// starting it again. Between positions it stands where the bus was last
+// seen, because a picture that crept on would be a guess at when it
+// arrives, which this card never makes. On board that goes for the road
+// as well: its dashes are on the road like the posts, so they come on with
+// them, and a post the bus passes goes by the glass.
 //
 // Perspective by hand: k is how near a thing is, and everything on the road
 // is drawn once at k = 1 and placed by one transform, translate to the
 // vanishing point and scale by k, which is what lets CSS glide it. X is
-// across the road in road units, 0 under the vanishing point.
-// t: { aboard, p, from, ago, here, sky, worn, paint, still }. No ids.
-const STOP_VIEW_STOPS = 6, STOP_GLIDE_MS = 1000, STOP_ROAD_S = 4.2;
-const SV_WAIT = { vx:214, h:58, k:70 }, SV_ABOARD = { vx:150, h:62, k:70 };
+// across the road in road units, 0 under the vanishing point, and a thing
+// g stops up the road is at depth z + dz g, so k = 1 / (z + dz g).
+// t: { aboard, f, from, ago, here, sky, worn, paint, still }. No ids.
+const STOP_VIEW_MOST = 80, STOP_GLIDE_MS = 1000;
+const SV_WAIT = { vx:214, h:58, k:70, z:.926, dz:.6 }, SV_ABOARD = { vx:150, h:62, k:70, z:.78, dz:.6 };
+// On board, a dash every half a stop, as far as one can be seen, and where
+// a thing the bus has passed goes: off the glass.
+const SV_DASH = .5, SV_DASH_FAR = 14, SV_GONE = 3.2;
 function svNum(n){ return Math.round(n * 1000) / 1000; }
-// A thing at depth k, gliding there from depth k0 if it was elsewhere.
-function svAt(P, k, k0, ago){
+// A thing at depth k, gliding there from depth k0 if it was elsewhere. cls
+// is a moment of its own, run on the same clock as the glide.
+function svAt(P, k, k0, ago, cls){
   const tf = function(x){ return 'translate(' + P.vx + 'px,' + P.h + 'px) scale(' + svNum(x) + ')'; };
   const glide = k0 !== null && k0 !== undefined && Math.abs(k0 - k) > .0005;
-  return '<g class="sv-k' + (glide ? ' sv-glide' : '') + '" style="transform:' + tf(k) +
-    (glide ? ';--from:' + tf(k0) + (ago >= 10 ? ';animation-delay:-' + (ago / 1000).toFixed(2) + 's' : '') : '') + '">';
+  return '<g class="sv-k' + (glide ? ' sv-glide' : '') + (cls ? ' ' + cls : '') + '" style="transform:' + tf(k) +
+    (glide ? ';--from:' + tf(k0) : '') + ((glide || cls) && ago >= 10 ? ';animation-delay:-' + (ago / 1000).toFixed(2) + 's' : '') + '">';
 }
+// How near a thing g stops up the road is.
+function svK(P, g){ return 1 / (P.z + P.dz * Math.max(0, g)); }
 // Someone at a stop, s times the size drawn, waving at the bus if wave.
 function svPerson(x, y, s, wave, col){
   const n = svNum;
@@ -3348,10 +3361,11 @@ function svLand(c, sky, P, orb){
     '<path d="M0 ' + (P.h + 1) + 'H330" stroke="' + c.hill + '" stroke-width="3"/>';
   return s;
 }
-// The road from the horizon to your feet, between X0 and X1.
+// The road from the horizon to your feet, between X0 and X1: all the way to
+// the horizon, because a bus forty stops off is nearly there.
 function svRoad(P, c, X0, X1){
   const x = function(k, X){ return svNum(P.vx + X * P.k * k); }, y = function(k){ return svNum(P.h + P.k * k); };
-  return '<path d="M' + x(.1, X0) + ' ' + y(.1) + 'L' + x(.1, X1) + ' ' + y(.1) + 'L' + x(1.9, X1) + ' ' + y(1.9) + 'L' + x(1.9, X0) + ' ' + y(1.9) + 'Z" fill="' + c.road + '"/>';
+  return '<path d="M' + x(.01, X0) + ' ' + y(.01) + 'L' + x(.01, X1) + ' ' + y(.01) + 'L' + x(1.9, X1) + ' ' + y(1.9) + 'L' + x(1.9, X0) + ' ' + y(1.9) + 'Z" fill="' + c.road + '"/>';
 }
 // The middle line, standing still: dashes that shrink with distance.
 function svLine(P, X){
@@ -3363,9 +3377,10 @@ function svLine(P, X){
   }
   return '<path d="' + d + '" stroke="#fbf4e4" stroke-width="1.6" opacity=".7"/>';
 }
-// One dash of it, drawn at depth 1, for the road on board to move.
+// One dash of it, drawn at depth 1 from the vanishing point, for the road
+// on board to bring on.
 function svDash(P, X){
-  return 'M' + svNum(P.vx + X * P.k) + ' ' + (P.h + P.k) + 'L' + svNum(P.vx + X * P.k * 1.12) + ' ' + svNum(P.h + P.k * 1.12);
+  return 'M' + svNum(X * P.k) + ' ' + P.k + 'L' + svNum(X * P.k * 1.12) + ' ' + svNum(P.k * 1.12);
 }
 const SV_LIT = ['#ff5d5d', '#ffd23f', '#5ad2ff', '#7be495'];
 // The coach head on, in its paint, wearing what can be seen from the front.
@@ -3422,35 +3437,31 @@ function svCoachFront(paint, worn, night){
   s += '<rect x="8" y="120" width="124" height="7" rx="2" fill="' + (chrome ? '#dfe5ea' : '#2b2320') + '"/><rect x="58" y="121" width="24" height="5" rx="1" fill="#fbfaf4"/>';
   return s;
 }
-// How near the coming bus is for a p: one even step per stop.
-function svNear(p){ return .13 + .95 * Math.pow(Math.max(0, Math.min(1, p)), 1.15); }
-// How near a thing u of the way along is, seen from a bus at p: as near as
-// it really is, so the sign grows faster the closer it gets.
-function svAhead(u, p){ return 1 / (.78 + 3.62 * Math.max(0, Math.min(1, u - p))); }
 function stopViewSvg(t){
   t = t || {};
   const sky = hasOwn(TICKET_SKIES, t.sky) ? t.sky : 'day', c = TICKET_SKIES[sky], night = sky === 'night';
-  const clamp = function(v){ v = +v; return isNaN(v) ? 0 : Math.max(0, Math.min(1, v)); };
-  const p = clamp(t.p), from = t.from === null || t.from === undefined || isNaN(+t.from) ? null : clamp(t.from);
+  // A bus that cannot be placed is as far as the picture goes.
+  const away = function(v){ return v === null || v === undefined || isNaN(+v) ? STOP_VIEW_MOST : Math.max(0, Math.min(STOP_VIEW_MOST, +v)); };
+  const f = away(t.f), from = t.from === null || t.from === undefined || isNaN(+t.from) ? null : away(t.from);
   const ago = Math.max(0, Math.min(STOP_GLIDE_MS, +t.ago || 0));
-  const N = STOP_VIEW_STOPS, worn = Array.isArray(t.worn) ? t.worn : [];
+  // n stops between for f in (n, n + 1]: the card's count.
+  const between = function(v){ return Math.max(0, Math.ceil(v) - 1); };
+  const n = between(f), was = from === null ? n : between(from);
+  const worn = Array.isArray(t.worn) ? t.worn : [];
   const ink = night ? '#120d0b' : '#3a2e2a';
   let s = '';
   if (!t.aboard){
-    const P = SV_WAIT, kb = svNear(p);
+    const P = SV_WAIT;
     s += svLand(c, sky, P, [270, 30]) + svRoad(P, c, -1.55, 2.1) + svLine(P, .3);
+    // A stop the bus has just passed, behind it now, fading as it goes by.
+    for (let i = was; i > n; i--) s += svAt(P, svK(P, i), null, ago, 'sv-gone') + svPost(-1.8 * P.k, P.k, 24, i === was) + '</g>';
     // The bus, head on, in the near lane: its own side of the road.
     const bw = 140 * P.k / 86;
-    s += svAt(P, kb, from === null ? null : svNear(from), ago) + '<g class="sv-rock"><svg x="' + svNum(-.62 * P.k - bw / 2) + '" y="' + svNum(P.k - bw * 136 / 140) +
+    s += svAt(P, svK(P, f), from === null ? null : svK(P, from), ago) + '<g class="sv-rock"><svg x="' + svNum(-.62 * P.k - bw / 2) + '" y="' + svNum(P.k - bw * 136 / 140) +
       '" width="' + svNum(bw) + '" height="' + svNum(bw) + '" viewBox="-10 -12 160 152" overflow="visible">' + svCoachFront(t.paint, worn, night) + '</svg></g></g>';
-    // The stops still between it and you, on the same side, nearer than it.
-    let first = true;
-    for (let i = N - 1; i >= 1; i--){
-      const u = (N - i) / N;
-      if (u <= p + .0001) continue;
-      s += svAt(P, svNear(u), null, 0) + svPost(-1.8 * P.k, P.k, 24, first) + '</g>';
-      first = false;
-    }
+    // Every stop still between it and you, on the same side, nearer than it,
+    // from the far end in.
+    for (let i = n; i >= 1; i--) s += svAt(P, svK(P, i), null, 0) + svPost(-1.8 * P.k, P.k, 24, i === n) + '</g>';
     // The shed where you wait, in front of everything, and you at it.
     s += '<path d="M0 96L60 90L63 95L0 102Z" fill="' + (night ? '#5c161f' : '#7a1f2b') + '"/><path d="M0 102L63 95V97L0 104Z" fill="#e39a1c"/>' +
       '<rect x="5" y="102" width="3.5" height="58" fill="#6f655e"/><rect x="54" y="96" width="3.5" height="64" fill="#6f655e"/>' +
@@ -3462,19 +3473,23 @@ function stopViewSvg(t){
   const P = SV_ABOARD, has = function(k){ return worn.indexOf(k) >= 0; };
   const band = BUS_PAINTS[hasOwn(BUS_PAINTS, t.paint) ? t.paint : 'klasiko'][3];
   s += svLand(c, sky, P, [256, 36]) + svRoad(P, c, -2.1, 1.05);
-  // The middle line going by: six dashes, each from the horizon to the
-  // glass in STOP_ROAD_S (the stoproad loop's length), a sixth of that
-  // apart, which is about the popup's 60 km/h to the eye.
-  for (let i = 0; i < 6; i++) s += '<path class="sv-dash" style="animation-delay:-' + (i * STOP_ROAD_S / 6).toFixed(2) + 's" d="' + svDash(P, -.45) + '" stroke="#fbf4e4" stroke-width="1.6"/>';
-  // Your stop, with two people waiting at it, and the stops before it, on
-  // the right shoulder, where the bus pulls in.
-  const ahead = [];
-  for (let i = N - 1; i >= 1; i--){ const u = (N - i) / N; if (u > p + .02) ahead.push(u); }
-  s += svAt(P, svAhead(1, p), from === null ? null : svAhead(1, from), ago) +
-    svPerson(1.62 * P.k, P.k, 1.9, false, night ? '#120d0b' : '#4a3b35') + svPerson(1.86 * P.k, P.k, 2, false, ink) + svSign(1.35 * P.k, P.k, 48, !!t.here) + '</g>';
-  ahead.reverse().forEach(function(u, i){
-    s += svAt(P, svAhead(u, p), from === null ? null : svAhead(u, from), ago) + svPost(1.3 * P.k, P.k, 24, i === ahead.length - 1) + '</g>';
-  });
+  // Seen from the bus at v, a thing w stops back from yours is v - w up
+  // the road, or past the glass once the bus has passed it. Your stop is
+  // never passed: the card has let go of the bus by then.
+  const f0 = from === null ? f : from;
+  const near = function(w, v){ return v - w > 0 || w === 0 ? svK(P, v - w) : SV_GONE; };
+  const put = function(w){ return svAt(P, near(w, f), from === null ? null : near(w, from), ago); };
+  // The middle line, on the road like the posts, so it comes on with them.
+  const lo = Math.floor((Math.min(f, f0) - SV_DASH_FAR) / SV_DASH), hi = Math.ceil(Math.max(f, f0) / SV_DASH);
+  for (let j = lo; j <= hi; j++){
+    const w = j * SV_DASH, seen = function(v){ return v - w > 0 && v - w <= SV_DASH_FAR; };
+    if (seen(f) || seen(f0)) s += put(w) + '<path d="' + svDash(P, -.45) + '" stroke="#fbf4e4" stroke-width="1.6"/></g>';
+  }
+  // Your stop, with two people waiting at it, and every stop before it, on
+  // the right shoulder, where the bus pulls in, from the far end in; one it
+  // has just passed goes by the glass.
+  s += put(0) + svPerson(1.62 * P.k, P.k, 1.9, false, night ? '#120d0b' : '#4a3b35') + svPerson(1.86 * P.k, P.k, 2, false, ink) + svSign(1.35 * P.k, P.k, 48, !!t.here) + '</g>';
+  for (let i = 1; i <= Math.max(n, was); i++) s += put(i) + svPost(1.3 * P.k, P.k, 24, i === (i > n ? was : n)) + '</g>';
   if (night) s += '<path d="M96 160L142 72L160 72L250 160Z" fill="#fff6d2" opacity=".08"/>';
   // The inside of the bus around the glass, and what its sharer hung there.
   s += '<g fill="#1c1512"><path d="M0 0H330V20Q165 12 0 20Z"/><path d="M0 18L22 18L7 142H0Z"/><path d="M330 18L308 18L323 142H330Z"/></g>';
@@ -5678,20 +5693,21 @@ function aboardWords(info){
                                  : 'about ' + info.stops + (info.stops === 1 ? ' stop' : ' stops') + ' before yours';
   return dir + ' · on your bus · ' + dist + ' · ' + stops;
 }
-// Where the bus is along the last `most` stops before yours, for the card's
-// picture (stopViewSvg): 0 with that many or more still between them, 1 at
-// your stop, and an even step for every stop between, so passing one always
-// shows. Inside a step it goes by the road, so a bus halfway from one stop
-// to the next is half a step on, and every position that arrives moves it.
-// Counted from the same stops approachInfo() and aboardInfo() count, by the
-// same strict test, so the posts in the picture are the card's number.
-function stopProgress(info, myKm, stopKms, most){
-  if (!info || myKm === null || myKm === undefined || isNaN(myKm)) return 0;
-  if (info.busKm === null || info.busKm === undefined || isNaN(info.busKm) || !(most > 0)) return 0;
+// How many stops away from yours the bus is, for the card's picture
+// (stopViewSvg): n and part of the way to the next with n stops still
+// between them, from just over n as it reaches the next one to n + 1 as it
+// leaves the one before, and 0 at your stop. Inside a step it goes by the
+// road, so a bus halfway from one stop to the next is half a step on, and
+// every position that arrives moves it. Counted from the same stops
+// approachInfo() and aboardInfo() count, by the same strict test, so the
+// posts in the picture are the card's number.
+function stopsAway(info, myKm, stopKms){
+  if (!info || myKm === null || myKm === undefined || isNaN(myKm)) return null;
+  if (info.busKm === null || info.busKm === undefined || isNaN(info.busKm)) return null;
   // Distances back along the chain from your stop, the way the bus comes.
   const back = function(km){ return info.direction === 'south' ? km - myKm : myKm - km; };
   const bus = back(info.busKm);
-  if (bus <= 0) return 1;
+  if (bus <= 0) return 0;
   const d = [];
   for (let i=0;i<stopKms.length;i++){ const x = back(stopKms[i]); if (x > 0) d.push(x); }
   d.sort(function(a,b){ return a-b; });
@@ -5699,8 +5715,7 @@ function stopProgress(info, myKm, stopKms, most){
   while (n < d.length && d[n] < bus) n++;
   // The stop ahead of the bus and the one it last passed, or itself.
   const ahead = n ? d[n-1] : 0, behind = n < d.length ? d[n] : bus;
-  const f = n + (bus - ahead) / (behind - ahead);
-  return Math.max(0, Math.min(1, (most - f) / most));
+  return n + (bus - ahead) / (behind - ahead);
 }
 // ---- END MY STOP -------------------------------------------------------
 
@@ -5895,18 +5910,18 @@ function rideCardHtml(info, riding, bus){
     BUZZED[id] = 1;
     try{ if (navigator.vibrate) navigator.vibrate([180, 90, 180]); }catch(e){}
   }
-  const p = stopProgress(info, MYSTOP_KM, STOP_KMS, STOP_VIEW_STOPS);
+  const f = stopsAway(info, MYSTOP_KM, STOP_KMS);
   const now = Date.now();
-  if (STOPVIEW.id !== id) STOPVIEW = { id:id, from:p, to:p, at:0 };
-  else if (Math.abs(STOPVIEW.to - p) > .0005){
+  if (STOPVIEW.id !== id) STOPVIEW = { id:id, from:f, to:f, at:0 };
+  else if (Math.abs(STOPVIEW.to - f) > .0005){
     // From where the picture has the bus now, which mid-glide is part of
     // the way there (smoothstep, near enough the glide's own curve).
     const u = STOPVIEW.at ? Math.min(1, (now - STOPVIEW.at) / STOP_GLIDE_MS) : 1;
-    STOPVIEW = { id:id, from:STOPVIEW.from + (STOPVIEW.to - STOPVIEW.from) * u * u * (3 - 2 * u), to:p, at:now };
+    STOPVIEW = { id:id, from:STOPVIEW.from + (STOPVIEW.to - STOPVIEW.from) * u * u * (3 - 2 * u), to:f, at:now };
   }
   const gliding = STOPVIEW.at > 0 && now - STOPVIEW.at < STOP_GLIDE_MS;
   const look = busLookOf(bus);
-  const art = stopViewSvg({ aboard:riding, p:p, from: gliding ? STOPVIEW.from : null, ago: gliding ? now - STOPVIEW.at : 0,
+  const art = stopViewSvg({ aboard:riding, f:f, from: gliding ? STOPVIEW.from : null, ago: gliding ? now - STOPVIEW.at : 0,
     here: state === 'here', sky:skyNow(), worn: look ? look.worn : [], paint: look ? look.paint : 'klasiko',
     still: freshness(info.ts) === 'delayed' || !!(bus && bus.standing) });
   const km = info.km < 0.5 ? 'under 500 m' : info.km < 10 ? info.km.toFixed(1) + ' km' : Math.round(info.km) + ' km';

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Renders the showcase video: about 67 seconds, vertical (1080x1920), of the
+# Renders the showcase video: about 68 seconds, vertical (1080x1920), of the
 # real tracker on a phone with made-up buses, with the interface's sounds.
 #
 #   CARTO_API_KEY=... sh tools/render-video.sh [output-directory] [options]
@@ -13,7 +13,12 @@
 #
 # Options, after the directory: --from S --to S renders only that part
 # (the phones still run from the start, so they are in the right state);
-# --no-key renders without the map key, watermarked, for a quick look.
+# --no-key renders without the map key, watermarked, for a quick look;
+# --ending picks where the video sends the viewer, and so what it films:
+#   web       the website (the default), filmed in a browser
+#   testers   the Android app's closed test, filmed as the app
+#   play      the app on Google Play, filmed as the app
+# An ending other than web adds its name to the files, bus-tracker-testers.mp4.
 #
 # Like render-flyer.sh this is run by hand, never at deploy, and nothing it
 # writes is committed. The video is the real index.html, so after a change

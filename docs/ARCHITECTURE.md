@@ -1684,7 +1684,7 @@ preview with no picture and nothing else changes.
 
 ## The showcase video
 
-`tools/render-video.sh` makes a vertical video of about 67 seconds (1080x1920, English
+`tools/render-video.sh` makes a vertical video of about 68 seconds (1080x1920, English
 captions, the interface's own sounds) for Facebook, TikTok and Reels, where the riders who have
 never heard of the tracker are. The story is one sharer's morning: wait at a
 stop until the card says Sakay na!, get on and share the bus, riders say
@@ -1701,6 +1701,25 @@ so it cannot show a screen the app does not have; between scenes it shows
 drawings made by the app's own SIGNBOARD and PICTURES blocks, run the way
 `tools/make-pictures.js` runs them. When the screens change, the video is
 out of date until it is rendered again.
+
+**The app's video, with three endings** (October 2026, once the app was on
+Play for its internal test). It wears the app's look: the icon's morning
+coral with the print in deep maroon, as Play's feature graphic and the link
+preview have it, and it opens on the feature graphic's question, "Nasaan na
+ang bus?". Where it sends the viewer is picked when it is rendered
+(`--ending`): `web`, the website, while the app is only in internal
+testing; `testers`, the closed test's sign-up (`testers.html`), while Play
+wants testers who ride; `play`, the app's listing, once it is public. The
+two app endings film the page as the app shows it, with Android's plugins
+stood in for the way `test-boot.js` section 11 boots it, and Android's
+status bar where the browser's bar was, so the sharing tab says the app's
+"Keeps sharing with the screen locked." rather than the browser's "Keep the
+screen on.", and the camera closes on it. A film of the website never shows
+what only the app does, and a film of the app never sends the viewer to the
+website. The website is Bus Tracker and the app is Fibi, on the end card as
+everywhere else. Play's listing takes a video too, as a YouTube link;
+guides disagree on whether a portrait one suits it, so check Play Console's
+help before using this cut there.
 
 **Nothing reaches the database.** Every request the page makes to Supabase
 is answered by the script (`World` in `tools/video/render.js`) with made-up
@@ -1784,10 +1803,11 @@ most) goes out the moment the bus reaches the last stretch.
 same rules as the app's own words: no minutes and no arrival time, Bus
 Tracker and never the company's initials, and the end card's
 "Community-run. Not affiliated with the bus company." The end card said "No
-app, no account." until there was an Android app; it says "Nothing to
-install. No account.", which the website still is, and the video names no app
-until Fibi is public on Google Play, since a post naming an app nobody can
-install yet only frustrates (the maintainer's call, October 2026). One caption is the
+app, no account." until there was an Android app; the website's ending says
+"Nothing to install. No account.", which the website still is, and names no
+app, since a post naming an app nobody can install yet only frustrates (the
+maintainer's call, October 2026). The app's endings name it, Fibi, once
+there is a way in: the closed test's sign-up, then the listing. One caption is the
 maintainer's own and breaks the spare-parts rule on purpose: "Earn coins and
 dress up your bus." (October 2026). The app still says spare parts and draws
 a nut; the video's word is coins. The stage draws a buzz only in the two

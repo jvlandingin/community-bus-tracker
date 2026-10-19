@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Renders the showcase video: about 67 seconds, vertical (1080x1920), of the
+// Renders the showcase video: about 68 seconds, vertical (1080x1920), of the
 // real tracker being used on a phone, with drawn interludes made by the
 // app's own picture code and the interface's sounds (sounds.js).
 //
@@ -59,6 +59,15 @@ const FPS = +opt('--fps', 30);
 // the phones are in the state they would be, but only FROM to TO is drawn.
 const FROM = +opt('--from', 0), TO = +opt('--to', 1e9);
 const NAME = opt('--name', 'bus-tracker');
+// How the film ends, and so what it is for (film.js, ENDS): 'web' sends the
+// viewer to the website; 'testers' to the Android app's closed test; 'play'
+// to the app on Google Play. The two app endings film the page as the app
+// shows it (APP): the same page, with Android's plugins stood in for, so it
+// says what it says inside the app ("Keeps sharing with the screen locked.")
+// and the phone has Android's status bar rather than a browser's.
+const ENDING = opt('--ending', 'web');
+if (['web', 'testers', 'play'].indexOf(ENDING) < 0){ console.error('--ending is web, testers or play'); process.exit(1); }
+const APP = ENDING !== 'web';
 const CHROME = process.env.CHROME || '';
 const KEY = (process.env.CARTO_API_KEY || '').trim();
 
@@ -249,7 +258,7 @@ class Phone {
     await this.ctx.clock.install({ time:this.now });
     await this.ctx.clock.pauseAt(this.now + 1);
     this.now += 1;
-    await this.ctx.addInitScript(INIT, { seed });
+    await this.ctx.addInitScript(INIT, { seed, app:APP });
     await this.ctx.route(SITE + '/**', route => serveRepo(route, route.request().url()));
     await this.ctx.route(/^https:\/\/[^/]+\.supabase\.co\//, route => this.supabase(route));
     await this.ctx.route(/^https:\/\/[a-d]\.basemaps\.cartocdn\.com\//, route => {
@@ -350,7 +359,10 @@ class Phone {
   async gps(p){
     if (this.lastGps && metres(this.lastGps, p) < 1) return;
     this.lastGps = p;
-    await this.ctx.setGeolocation({ latitude:p.lat, longitude:p.lng, accuracy:8 });
+    // In the app the trip's fixes come through the background plugin's
+    // watcher (INIT), in a browser through navigator.geolocation.
+    if (APP) await this.page.evaluate(p => window.__bgFix(p), p);
+    else await this.ctx.setGeolocation({ latitude:p.lat, longitude:p.lng, accuracy:8 });
   }
   // The page's own poll for positions, now rather than at its next turn.
   async poll(){ await this.page.evaluate(() => { lastPositionsAt = 0; return pollPositions(); }); await this.settle(); }
@@ -369,6 +381,26 @@ function INIT(o){
   const log = [];
   Object.defineProperty(window, '__buzzes', { value:log });
   try { Navigator.prototype.vibrate = function(p){ log.push(Array.isArray(p) ? p : [p]); return true; }; } catch (e) {}
+  // The Android app's plugins, for a film of the app: the page finds them
+  // where Capacitor puts them and behaves as it does inside the app, the way
+  // test-boot.js section 11 boots it. The trip's GPS comes through the
+  // background plugin's watcher, fed by Phone.gps().
+  if (o.app){
+    const watchers = [], done = function(v){ return Promise.resolve(v); };
+    window.__bgFix = function(p){
+      watchers.slice().forEach(function(w){ w.cb({ latitude:p.lat, longitude:p.lng, accuracy:8, speed:null, time:Date.now() }); });
+    };
+    window.Capacitor = { isNativePlatform: function(){ return true; }, Plugins: {
+      BackgroundGeolocation: {
+        addWatcher: function(opts, cb){ const id = 'w' + (watchers.length + 1); watchers.push({ id:id, cb:cb }); return id; },
+        removeWatcher: function(w){ for (let i = watchers.length - 1; i >= 0; i--) if (watchers[i].id === w.id) watchers.splice(i, 1); return done(); }
+      },
+      LocalNotifications: { requestPermissions: function(){ return done({ display:'granted' }); }, schedule: done, cancel: done },
+      App: { addListener: function(){ return done({ remove: function(){} }); }, minimizeApp: done },
+      Filesystem: { writeFile: function(f){ return done({ uri:'file:///cache/' + f.path }); } },
+      Share: { share: function(){ return done({}); } }
+    } };
+  }
   const born = new WeakMap();
   window.__vseek = function(ms){
     document.getAnimations().forEach(function(a){
@@ -415,12 +447,14 @@ class Stage {
   }
   init(plan){ return this.page.evaluate(p => V.init(p), plan); }
   event(e){ return this.page.evaluate(e => V.event(e), e); }
-  async frame(t, screen){
+  // clock: the time the phone on screen shows in its status bar (a film of
+  // the app), or nothing.
+  async frame(t, screen, clock){
     if (screen){
       this.screenBuf = screen;
       await this.page.evaluate(u => V.screen(u), STAGE + '/screen?n=' + (++this.n));
     }
-    await this.page.evaluate(t => V.render(t), t);
+    await this.page.evaluate(([t, c]) => V.render(t, c), [t, clock || null]);
     const r = await this.cdp.send('Page.captureScreenshot', { format:'jpeg', quality:93 });
     return Buffer.from(r.data, 'base64');
   }
@@ -459,5 +493,5 @@ function encoder(file){
   };
 }
 
-module.exports = { World, Phone, Stage, road, keys, stop, pictures, board, encoder, FPS, POLL_FRAMES, FROM, TO, OUT, NAME, KEY, CHROME, playwright };
+module.exports = { World, Phone, Stage, road, keys, stop, pictures, board, encoder, FPS, POLL_FRAMES, FROM, TO, OUT, NAME, ENDING, APP, SITE, KEY, CHROME, playwright };
 if (require.main === module) require('./film.js').main().catch(e => { console.error(e); process.exit(1); });

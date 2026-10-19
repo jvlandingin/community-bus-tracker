@@ -25,6 +25,20 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-19: The video becomes the app's
+
+With Fibi on Google Play for its internal test, the maintainer asked how the
+showcase video should work now. It wears the app's coral and opens on the
+feature graphic's "Nasaan na ang bus?", and where it sends the viewer is
+picked when it is rendered: the website for now, since only the internal
+testers can install the app; the closed test's sign-up once that opens,
+because Play wants testers who ride for two weeks before a public release;
+the listing once it is public. The app's endings film the app rather than
+the website, so the sharing tab says what only the app does: "Keeps sharing
+with the screen locked."
+
+---
+
 ## 2026-10-18: The video lets the app speak
 
 Someone the maintainer showed the showcase video to found it too fast: they

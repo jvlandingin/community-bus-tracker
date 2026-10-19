@@ -26,9 +26,9 @@ const R = require('./render.js');
 const S = require('./sounds.js');
 
 // ---- How long each scene runs, in seconds ----------------------------------
-// As long as its beats take at the film's pace (below): about 67 seconds in
+// As long as its beats take at the film's pace (below): about 68 seconds in
 // all.
-const DUR = { title:3.2, watch:4.2, wait:12.9, share:8.0, trip:2.2, getoff:6.3, ticket:5.65, collect:3.0, dress:8.5, show:2.4, rider:3.85, end:6.5 };
+const DUR = { title:3.2, watch:4.2, wait:12.9, share:8.8, trip:2.2, getoff:6.3, ticket:5.65, collect:3.0, dress:8.5, show:2.4, rider:3.85, end:6.5 };
 const T = {};
 let acc = 0;
 Object.keys(DUR).forEach(k => { T[k] = acc; acc += DUR[k]; });
@@ -145,8 +145,8 @@ const CAP = {
 const read = k => CAP[k].at + READ(CAP[k].say);
 const SAY = Object.keys(CAP).map(k => [CAP[k].at, CAP[k].to, CAP[k].say]);
 // Start and Stop, and the salamat (one, then three in all).
-const START = read('share') + 1.6, STOP = T.ticket + .6;
-const SALAMAT = [T.share + 6.0, T.share + 7.2];
+const START = read('share') + 2.4, STOP = T.ticket + .6;
+const SALAMAT = [T.share + 6.8, T.share + 8.0];
 
 // The sharer's GPS, from Start until Stop. 700 m past the stop when Start is
 // tapped: the card still has the stop they waited at, and within 300 m of it
@@ -337,7 +337,12 @@ function cues(A, B, stage, world, browser, heard){
   // share: the other tab, northbound, Start; then close on the strip, where
   // the salamat arrive.
   press(A, '#tabOnbus', read('share'));
-  press(A, '#pickNorth', read('share') + .8);
+  // Close on the sharing card: the direction, Start, and under them what
+  // sharing asks of the phone. The app says "Keeps sharing with the screen
+  // locked." where a browser says "Keep the screen on.", and it is the one
+  // thing only the app does, so it is near enough here to be read.
+  at(read('share') + .3, v => cam(A, '#onbusView > .card', v, { width:1000, topAt:440, maxH:560 }));
+  press(A, '#pickNorth', read('share') + 1.6);
   press(A, '#onbusStartBtn', START);
   at(START + .8, centre(A, '#onbusStripCard', .4));
   at(START + 1.25, v => cam(A, '#onbusStripCard', v, { width:1000, cy:1170 }));
@@ -430,10 +435,34 @@ function BUS_1043(){
 }
 
 function easeIO(p){ p = Math.max(0, Math.min(1, p)); return p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; }
+// A phone's clock as Android's status bar shows it, 6:15.
+function clockOf(ms){
+  return new Date(ms).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true, timeZone:'Asia/Manila' }).replace(/\s*[AP]M$/i, '');
+}
 
 // The bus on the road, as a bus's popup draws it, framed for a tall picture
 // (the popup's framing is RIDE_FRAMES in index.html; this is only the camera).
 const framed = (P, t, box) => P.rideSvg(t).replace(/viewBox="[^"]*"/, 'viewBox="' + box + '"');
+
+// ---- How it ends ----------------------------------------------------------------
+// One film, three endings (render.js --ending), for where the Android app is:
+// the website while the app is only in internal testing, the closed test's
+// sign-up while it needs testers who ride (testers.html says what it asks),
+// and the app on Google Play once it is public. The two app endings film the
+// page as the app shows it (R.APP), so it never shows what the website does
+// not do and then sends the viewer to the website, or the other way round.
+// The website is Bus Tracker and the app is Fibi, as everywhere else.
+const SITE_URL = 'https://community-bus-tracker.netlify.app';
+const PLAY_ID = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'mobile', 'capacitor.config.json'), 'utf8')).appId;
+const ENDS = {
+  web:     { qr:SITE_URL, name:'Bus Tracker', lede:'See where the bus is right now.', url:'community-bus-tracker.netlify.app',
+             fine:'Nothing to install. No account.<br>Community-run. Not affiliated with the bus company.' },
+  testers: { qr:SITE_URL + '/testers', app:true, name:'Fibi', lede:'Test the app early.', url:'community-bus-tracker.netlify.app/testers', long:true,
+             fine:'Android. It keeps sharing with your screen locked.<br>Community-run. Not affiliated with the bus company.' },
+  play:    { qr:'https://play.google.com/store/apps/details?id=' + PLAY_ID, app:true, name:'Fibi', lede:'On Google Play.', url:'Fibi: Bus Tracker PH',
+             fine:'It keeps sharing with your screen locked.<br>Community-run. Not affiliated with the bus company.' }
+};
+const END = ENDS[R.ENDING];
 
 // ---- What the stage is told before the first frame ---------------------------
 function plan(P, worn, qr){
@@ -442,10 +471,13 @@ function plan(P, worn, qr){
     captions: SAY.map(c => ({ from:c[0], to:c[1], html:gold(c[2]) })),
     phone: PHONE_Y,
     phoneX: PHONE_X,
+    app: R.APP,
     ints: [
+      // "Where is the bus now?", as riders ask it in the group chat and as
+      // Play's feature graphic asks it.
       { id:'title', out:[T.watch - .6, T.watch],
         html: '<div class="v-board" style="top:330px">' + R.board(P, ['MENDEZ / TAGAYTAY', '⇄ ONE AYALA'], 'tb', 8.6) + '</div>' +
-              '<div class="hook">Where is the bus?</div>' +
+              '<div class="hook">Nasaan na ang bus?</div>' +
               '<div class="v-scene">' + P.sceneSvg('dawn', 'ts') + '</div>' },
       { id:'trip', in:[T.trip - .1, T.trip + .5], out:[T.getoff - .6, T.getoff],
         html: '<div class="v-sky" style="background:' + sky.sky + '"></div>' +
@@ -454,12 +486,13 @@ function plan(P, worn, qr){
               '<div class="v-ground" style="background:' + sky.ground + '"></div>' },
       { id:'end', in:[T.end, T.end + .6],
         html: '<div class="v-board">' + R.board(P, ['MENDEZ / TAGAYTAY', '⇄ ONE AYALA'], 'te', 5.4) + '</div>' +
-              '<div class="name">Bus Tracker</div>' +
-              '<div class="lede">See where the bus is right now.</div>' +
+              '<div class="name">' + (END.app ? '<img class="icon" src="' + R.SITE + '/mobile/store/play-icon-512.png" alt="">' : '') +
+                END.name + '</div>' +
+              '<div class="lede">' + END.lede + '</div>' +
               '<div class="v-scene" id="endRide"></div>' +
               '<div class="qr">' + qr + '</div>' +
-              '<div class="url">community-bus-tracker.netlify.app</div>' +
-              '<div class="fine">Nothing to install. No account.<br>Community-run. Not affiliated with the bus company.</div>' }
+              '<div class="url' + (END.long ? ' long' : '') + '">' + END.url + '</div>' +
+              '<div class="fine">' + END.fine + '</div>' }
     ]
   };
 }
@@ -533,7 +566,7 @@ async function main(){
     const b = loadBus(); b.paid = busEarned(b, CHECKPOINTS); saveBus(b);
     return { worn: busWorn(b, CHECKPOINTS), paint: b.paint };
   });
-  const qr = execFileSync(process.execPath, [path.join(__dirname, '..', 'make-qr.js'), 'https://community-bus-tracker.netlify.app'],
+  const qr = execFileSync(process.execPath, [path.join(__dirname, '..', 'make-qr.js'), END.qr],
     { stdio:['ignore', 'pipe', 'ignore'] }).toString();
   await stage.init(plan(P, worn, qr));
   // What is heard, and when: taps and buzzes as they happen, what the page
@@ -541,7 +574,8 @@ async function main(){
   const heard = SCORE.slice();
   const { list, scrolls } = cues(A, B, stage, world, browser, heard);
 
-  const name = R.NAME + (R.FROM > 0 || R.TO < T.total ? '-part' : '');
+  const base = R.NAME + (R.ENDING === 'web' ? '' : '-' + R.ENDING);
+  const name = base + (R.FROM > 0 || R.TO < T.total ? '-part' : '');
   const file = path.join(R.OUT, name + '.mp4'), silent = path.join(R.OUT, name + '-picture.mp4');
   const enc = R.encoder(silent);
   const frames = Math.round(T.total * R.FPS);
@@ -590,7 +624,7 @@ async function main(){
       if (onScreen && which.was) heard.push(...changes(which.was, now).map(kind => ({ t:v, kind })));
       which.was = now;
     }
-    const jpg = await stage.frame(v, shot);
+    const jpg = await stage.frame(v, shot, R.APP ? clockOf(which.now) : null);
     await enc.write(jpg);
     drawn++;
     if (drawn % 30 === 0) process.stdout.write('  ' + v.toFixed(1) + 's of ' + T.total.toFixed(1) + 's (' + Math.round((Date.now() - started) / 1000) + 's)\n');
@@ -606,7 +640,7 @@ async function main(){
   // The cover: a frame worth stopping on, for a post's thumbnail.
   try {
     const at = Math.max(R.FROM, Math.min(T.wait + 9.4, R.TO - .1)) - R.FROM;
-    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(at), '-i', file, '-frames:v', '1', '-q:v', '2', path.join(R.OUT, R.NAME + '-cover.jpg')]);
+    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(at), '-i', file, '-frames:v', '1', '-q:v', '2', path.join(R.OUT, base + '-cover.jpg')]);
   } catch (e) {}
   console.log('Calls answered here, none sent to Supabase: ' + JSON.stringify(world.log));
   console.log('Sounds: ' + heard.filter(e => e.t >= from && e.t < to).map(e => e.kind + '@' + e.t.toFixed(2)).join(' '));

@@ -99,7 +99,8 @@ key and Playwright, which never goes in a package.json: a global install, or
 to `video-out/`, which is not committed:
 
 ```
-CARTO_API_KEY=... sh tools/render-video.sh
+CARTO_API_KEY=... sh tools/render-video.sh                           # ends on the website
+CARTO_API_KEY=... sh tools/render-video.sh video-out --ending testers # the app's closed test (or play)
 ```
 
 ## Architecture
@@ -606,8 +607,13 @@ maintainer's choice, after a viewer of the first cut, which captioned every
 step, was still reading when the screen changed). Under each, nothing
 happens until it can have been read: the first tap is timed from it
 (`read()`), and `rehearse()` stops the render if a tap, a camera move or a
-scroll lands inside its reading time. `docs/ARCHITECTURE.md`, "The
-showcase video".
+scroll lands inside its reading time. **It is the app's video** (October
+2026): the icon's coral, Play's feature graphic's "Nasaan na ang bus?", and
+an ending picked at render time, the website, the closed test or the Play
+listing. The app's endings film the page as the app shows it (Android's
+plugins stood in for, its status bar, "Keeps sharing with the screen
+locked."), so the video never shows one and sends the viewer to the other.
+`docs/ARCHITECTURE.md`, "The showcase video".
 
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`
 each redraw the tracker's screen the same way, showing four buses live because

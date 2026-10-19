@@ -19,7 +19,7 @@ function build(dirHit) {
                                   remove: c => { if (id === 'askModal' && c === 'hidden') { log.modalHidden = false; } },
                                   toggle: () => {} } }) };
   const prelude = `
-    let sharing=true, lastCoords=null, shareDir='north', lastWrite=0, hiddenSinceFix=false;
+    let sharing=true, lastCoords=null, shareDir='north', lastWrite=0, hiddenSinceFix=false, writePrivate=false;
     const accessKey='key';
     const CFG={ ROUTE_SLUG:'test-route' };
     const CHECKPOINTS=__CP__, ROUTE_CHAIN=__CHAIN__;

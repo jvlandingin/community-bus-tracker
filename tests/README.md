@@ -51,7 +51,8 @@ it. Now there is nothing to 404.
 
 Its section 14 drives a whole trip on the real page, against a stand-in for
 Supabase and for the GPS: what a write sends (no speed), what the sharing tab
-shows when one fails (Stop stays, and the error is not painted over), that no
+shows when one fails (Stop stays, and the error is not painted over) and when
+one is kept for this phone alone outside the route area, that no
 fix costs a read, and every way a trip ends — Stop, a block, a full route, a
 changed key, GPS giving up — with the session id that goes with each. Run
 against the page as it was before the October 2026 fixes, most of them fail,
@@ -90,6 +91,8 @@ psql -d bustest -f ../sql/10-weekend-hours.sql
 psql -d bustest -f ../sql/11-open-sharing.sql
 psql -d bustest -f ../sql/12-share-pin.sql
 psql -d bustest -f ../sql/13-bus-look.sql
+psql -d bustest -f ../sql/14-off-route-private.sql
+psql -d bustest -f ../sql/15-say-wrong.sql
 ```
 
 Then run one suite against it:
@@ -106,6 +109,8 @@ psql -d bustest -f db/08-position-tests.sql    # 36 checks, what a position writ
 psql -d bustest -f db/09-open-sharing-tests.sql # 34 checks, sharing without the key
 psql -d bustest -f db/10-share-pin-tests.sql   # 78 checks, a PIN and the limit on guessing it
 psql -d bustest -f db/11-bus-look-tests.sql    # 20 checks, a bus shown to riders, and only the app's own codes
+psql -d bustest -f db/12-off-route-tests.sql   # 39 checks, a bus outside the route area, seen by its own phone only
+psql -d bustest -f db/13-say-wrong-tests.sql   # 38 checks, a rider saying a bus or a sighting is wrong
 ```
 
 `dropdb bustest` and build it again between suites. Apply **all** the migration

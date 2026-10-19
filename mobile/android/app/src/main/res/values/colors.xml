@@ -4,4 +4,6 @@
     <color name="colorPrimary">#7A1F2B</color>
     <color name="colorPrimaryDark">#5C161F</color>
     <color name="colorAccent">#E39A1C</color>
+    <!-- The launcher icon's morning coral, between the two ends of its gradient. -->
+    <color name="splashBackground">#EB9B76</color>
 </resources>

@@ -25,6 +25,28 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-19: The tester page is linked
+
+The app is in internal testing and the closed test is open. `testers.html`
+is the page copied from the sister project's: join the group, become a
+tester, install. It was built unlinked until the closed test opened, so a
+rider could only reach it from a link posted by hand. `ANDROID_APP_URL` now
+names it, which turns on the two places the site already offers the app: the
+line on the sharing tab ("Keep the screen on, or get the app and lock it",
+Android browsers only) and the guide's line under "More about sharing". The
+Play listing was not used there because it says "App not available" to anyone
+outside the test. It goes back to the Play listing when the app is public.
+Sharers are the testers the test needs: they are the ones who would use it on
+every ride.
+
+The same day the page got screenshots, one per tap, from the maintainer's own
+run through the steps, as the sister project's page has: the group's
+"permission" page, the join form, the welcome post, Play's invitation, "You
+are a tester" and the listing. The group's welcome post now carries the steps
+too, as the sister project's does. The maintainer's name, photo and email
+address appear on those screens and are blurred or cropped out: the
+repository is public.
+
 ## 2026-10-18: An icon for Play
 
 The maintainer found the icon, the front-on coach on maroon, too generic for

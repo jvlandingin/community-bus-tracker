@@ -241,8 +241,10 @@ Google Group `fibi-testers@googlegroups.com`, tap Become a tester on Play's
 page for the app, and install. The group is the closed test's tester list
 (the track's Testers tab, Google Groups), so nobody's email is collected and
 nobody is added by hand. Set the group so anyone can join, only members see
-its posts and only managers see who is in it. Nothing links to the page until
-the closed test opens; then the flyer and the riders' chat can.
+its posts and only managers see who is in it. While the closed test runs,
+`ANDROID_APP_URL` in `config.txt` is the page's full address, so the sharing
+tab and the guide offer it; the riders' chat can link it too. When the app
+goes public, put the Play listing there instead.
 
 The app takes its location from Google Play services, so a phone without
 them, like most Huawei phones launched since 2019, cannot run it from any

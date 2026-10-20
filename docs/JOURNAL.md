@@ -25,6 +25,22 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-20: The flyer, in fewer words
+
+The maintainer found the flyer wordy and asked for some motion or something
+to try. Its words are now the app's English with its Tagalog, as the poster's:
+each step is a line, the five reassurances are chips with their reasons folded
+under "Why", and the four caveats stay, a line each. It now has a card with
+the guide's two buttons into the tracker's own one-minute tours, and the
+example screen moves as the app does: the one bus fresh enough to be live
+breathes and rocks, and the saved stop's road runs, with the app's keyframes,
+which a test now holds to index.html's.
+
+Re-rendering it showed the chat image had been ending at the top edge of the
+link's card since the saved stop joined the example screen, so the picture
+meant to carry the link and its QR code carried neither. It is 1826 points
+tall now and ends under the "post it in your group chat" line.
+
 ## 2026-10-20: A poster that shows, with two ways in
 
 Asked for: a PDF poster that is a quick showcase of what the tracker does,

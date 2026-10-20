@@ -91,8 +91,9 @@ company's name or initials, for the same reason.
   design tokens as the app, so it loads nothing over the network. The one
   exception is the map inside the first figure, a real cropped screenshot of
   this route embedded inline — a fork recrops that, and nothing else.
-- **Adoption flyer:** `flyer.html`, a one-page pitch for riders in the mix of
-  Tagalog and English the group chat actually uses. It shows an example of the
+- **Adoption flyer:** `flyer.html`, a one-page pitch for riders in the app's
+  own mix of English and Tagalog, a line per idea with the reasons folded, and
+  a card that opens the tracker's two one-minute tours. It shows an example of the
   tracker with four buses live, labelled as an example, and prints as a single
   landscape A4 poster for a terminal wall — three columns: headline and
   caveats, the example screen, then the link with its QR and the three steps.

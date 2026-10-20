@@ -122,6 +122,17 @@ chat-sized PNG, and `tools/make-qr.js` regenerates the flyer's QR code as an
 inline path when the deployment URL changes. Neither tool runs at deploy time
 and neither needs anything installed.
 
+**The flyer says each thing in a line** (October 2026, the maintainer's
+"too wordy"): the app's English with its Tagalog, as the poster, steps of one
+line each, the five reassurances as chips with their reasons folded under
+"Why", and every caveat kept but cut to a line. On screen it also moves and
+can be tried: a card opens the tracker's two tours (`#tour`, `#tour=share`),
+and it animates only what the app animates, with the app's keyframes, which
+`test-boot.js` section 8 compares: the one example bus under 45 seconds old
+breathes and rocks on the strip and the map, and the saved stop's road runs.
+Every frame is a picture the app could show, because the chat image is a
+screenshot taken mid-loop; nothing moves on paper or for reduced motion.
+
 **`poster.html` is the showcase poster** (October 2026): one portrait A4
 sheet, `assets/flyer/poster-a4.pdf`, that shows rather than explains. The
 flyer argues, with an example screen, steps and fine print; the poster is read

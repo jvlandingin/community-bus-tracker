@@ -338,6 +338,24 @@ function run(page, include, label, configText, setup) {
         ? dr.map(k => `${k}: app ${appTokens[k]} vs page ${t[k]}`).join('; ')
         : 'in step');
 
+    // The flyer moves only as the app moves: every animation it declares is
+    // one index.html declares, with the same keyframes, copied like its icons.
+    if (page === 'flyer.html') {
+      const frames = text => {
+        const out = {};
+        for (const m of text.matchAll(/@keyframes ([\w-]+)\s*\{/g)) {
+          let depth = 1, i = m.index + m[0].length;
+          while (depth && i < text.length) { if (text[i] === '{') depth++; else if (text[i] === '}') depth--; i++; }
+          out[m[1]] = text.slice(m.index + m[0].length, i - 1).replace(/\s+/g, '');
+        }
+        return out;
+      };
+      const mine = frames(src), app = frames(fs.readFileSync(path.join(APP, 'index.html'), 'utf8'));
+      const odd = Object.keys(mine).filter(k => mine[k] !== app[k]);
+      check(Object.keys(mine).length > 0 && !odd.length, `${page}: its motion is the app's, keyframe for keyframe`,
+        odd.length ? 'differs or unknown: ' + odd.join(' ') : Object.keys(mine).join(' '));
+    }
+
     // The flyer's QR code is the one thing on a printed poster that cannot be
     // typed around if it is wrong, and nothing about it is readable by eye.
     // It is drawn as an inline path, so at least assert it is still drawn

@@ -416,7 +416,7 @@ console.log('\n=== 9. the saved stop\'s picture ===');
     const k = (/^[^"]*" style="transform:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\)/.exec(g) || [])[1];
     const k0 = (/--from:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\)/.exec(g.slice(0, g.indexOf('>'))) || [])[1];
     return { k: +k, k0: k0 === undefined ? null : +k0, gone: /^[^"]*\bsv-gone\b/.test(g), glide: (/^[^"]*/.exec(g) || [''])[0].trim(),
-      what: /#4f46b8/.test(own) ? 'sign' : /<svg/.test(own) ? 'bus' : /height="6\.72"/.test(own) ? 'post' : 'dash' };
+      what: /#4f46b8/.test(own) ? 'sign' : /<svg/.test(own) ? 'bus' : /height="6\.72"/.test(own) ? 'post' : /#2e6b45/.test(own) ? 'km' : 'dash' };
   });
   // Your stop's pin, drawn on its own: the depth its place is at, now and
   // before, read back from where it is put.
@@ -466,26 +466,27 @@ console.log('\n=== 9. the saved stop\'s picture ===');
       'waiting: a bus it cannot place is as far as the picture goes, and one past your stop is at it');
   }
 
-  // ---- On board: the road at its own length, in km. These are how far
-  // back from S&R Kawit its stops are, as stopsBack() has them.
+  // ---- On board: the road at its own length, in km, as close as 260 m of
+  // it in sight. These are how far back from S&R Kawit its stops are, as
+  // stopsBack() has them.
   {
     const P = S.SV_ABOARD, gOf = k => (1 / k - P.z) / P.dz;
     const BACK = [.109, .471, .973, 1.4, 2.548, 3.116, 3.562, 4.02, 5.6, 7.9, 11.2];
     const view = (km, more) => S.stopViewSvg(Object.assign({ aboard: true, km, stops: BACK }, more));
     const inSight = km => BACK.filter(w => km - w > 0 && km - w <= S.SV_SEEN);
-    const off = [.05, .3, .9, 1.6, 3.4, 12].map(km => {
+    const off = [.05, .2, .3, .5, 1.6, 12].map(km => {
       const posts = things(view(km)).filter(x => x.what === 'post'), want = inSight(km);
       const placed = posts.length === want.length && posts.every((x, i) => Math.abs(gOf(x.k) - (km - want[i])) <= slack(P, x.k));
       return placed ? '' : km + ' km: ' + posts.length + ' of ' + want.length;
     }).filter(Boolean);
-    check(!off.length && S.SV_SEEN > .9 && S.SV_SEEN < 2,
+    check(!off.length && S.SV_SEEN > .2 && S.SV_SEEN < .5,
       'on board: a post for every stop in sight, each as far up the road as its stop is, and none over the horizon', off.join('; ') || 'as far as ' + S.SV_SEEN + ' km');
-    check([.3, .9, 1.6, 3.4].every(km => golds(view(km)) === (BACK.some(w => w < km && km - w <= S.SV_SEEN && w === Math.max(...BACK.filter(v => v < km))) ? 1 : 0)) &&
+    check([.2, .3, .5, 1.6].every(km => golds(view(km)) === (BACK.some(w => w < km && km - w <= S.SV_SEEN && w === Math.max(...BACK.filter(v => v < km))) ? 1 : 0)) &&
           golds(view(.05)) === 0,
       'on board: the bus\'s next stop in gold when it is in sight, and none when the next is yours');
     // Your stop: the sign once it is in sight, and its pin, never too small
     // to see, at the end of the road while it is not.
-    const far = view(40), mid_ = view(.9), close = view(.05);
+    const far = view(40), mid_ = view(.2), close = view(.02);
     check(!things(far).some(x => x.what === 'sign') && pin(far) && Math.abs(pin(far).k - 1 / (P.z + P.dz * S.SV_SEEN)) < .002,
       'on board: your stop further than the eye reaches is its pin on the horizon');
     check(things(mid_).some(x => x.what === 'sign') && pin(mid_) && Math.abs(pin(mid_).k - things(mid_).filter(x => x.what === 'sign')[0].k) < .002,
@@ -493,30 +494,46 @@ console.log('\n=== 9. the saved stop\'s picture ===');
     check(things(close).some(x => x.what === 'sign') && !pin(close) && 9.6 * things(close).filter(x => x.what === 'sign')[0].k >= S.SV_PIN,
       'and close, the sign alone');
     const seen = km => { const sg = things(view(km)).filter(x => x.what === 'sign')[0]; return sg ? sg.k : pin(view(km)).k; };
-    const nearer = [40, 5, 1.2, 1, .7, .4, .2, .1, .05, 0].map(seen);
-    check(nearer.every((k, i) => i === 0 || k >= nearer[i - 1]) && nearer.slice(2).every((k, i) => k > nearer[i + 1]),
+    const nearer = [40, 5, .5, .25, .2, .15, .1, .05, .02, 0].map(seen);
+    check(nearer.every((k, i) => i === 0 || k >= nearer[i - 1]) && nearer.slice(3).every((k, i) => k > nearer[i + 2]),
       'on board: your stop comes nearer at every step, and grows once it is in sight', nearer.map(k => k.toFixed(3)).join(' '));
     // The road's dashes are on it like the posts. A new position moves
     // them all, your stop and its pin with them, by the distance the bus
     // went, at an even pace for a poll's length; one the bus passes goes
     // by the glass, and between positions nothing moves.
     const still = things(view(.62));
-    check(still.filter(x => x.what === 'dash').length >= 4 && still.every(x => x.k0 === null) && !/sv-ride|sv-glide|infinite/.test(view(.62)),
+    check(still.filter(x => x.what === 'dash').length >= 15 && still.every(x => x.k0 === null) && !/sv-ride|sv-glide|infinite/.test(view(.62)),
       'on board: the dashes are on the road, and nothing moves between positions', still.filter(x => x.what === 'dash').length + ' dashes');
-    const ride = view(.57, { from: .62, ago: 1500 }), moving = things(ride);
+    const ride = view(.15, { from: .2, ago: 1500 }), moving = things(ride);
     const kept = moving.filter(x => x.k < S.SV_GONE && x.k0 !== null && x.k0 < S.SV_GONE);
     const wrong = kept.filter(x => Math.abs(gOf(x.k0) - gOf(x.k) - .05) > slack(P, x.k0, x.k));
-    check(kept.length >= 6 && ['dash', 'post', 'sign'].every(w => kept.some(x => x.what === w)) && !wrong.length &&
+    check(kept.length >= 15 && ['dash', 'post', 'sign', 'km'].every(w => kept.some(x => x.what === w)) && !wrong.length &&
           kept.every(x => x.glide === 'sv-ride') && pin(ride) && pin(ride).k0 !== null && pin(ride).glide === 'sv-ride',
-      'when a position arrives, the dashes, the posts, your stop and its pin all come on by the 50 m the bus went',
+      'when a position arrives, the dashes, the posts, the km signs, your stop and its pin all come on by the 50 m the bus went',
       kept.length + ' things' + (wrong.length ? ', ' + wrong.map(x => x.what + ' by ' + (gOf(x.k0) - gOf(x.k)).toFixed(3)).join(' ') : ''));
     const passing = things(view(.1, { from: .13, ago: 0 }));
     check(passing.some(x => x.what === 'post' && x.k === S.SV_GONE && x.k0 < S.SV_GONE),
       'a stop the bus passes goes by the glass rather than vanishing');
-    check(/animation-delay:-1\.50s/.test(ride) && /animation-delay:-6\.00s/.test(view(.57, { from: .62, ago: 99999 })),
+    check(/animation-delay:-1\.50s/.test(ride) && /animation-delay:-6\.00s/.test(view(.15, { from: .2, ago: 99999 })),
       'and a redraw carries the move on, never longer than a poll');
     check(!/sv-ride/.test(view(.1, { from: .9, ago: 100 })),
-      'a jump further than the dashes reach is drawn at once, not driven');
+      'a jump further than can be seen is drawn at once, not driven');
+    // Perspective, not an even pace down the screen: a quarter of the way
+    // through, a thing coming close has moved less than a quarter of its
+    // way on the screen, and three quarters through, more.
+    const q = /class="sv-k sv-ride" style="transform:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\);--from:[^;]+scale\(([\d.]+)\);--q1:[^;]+scale\(([\d.]+)\);--q2:[^;]+scale\(([\d.]+)\);--q3:[^;]+scale\(([\d.]+)\)/g;
+    const coming = [...ride.matchAll(q)].map(m => m.slice(1).map(Number)).filter(([k, k0]) => k < S.SV_GONE && k - k0 > .1);
+    check(coming.length > 3 && coming.every(([k, k0, q1, q2, q3]) => q1 - k0 < (k - k0) / 4 && q3 - k0 > (k - k0) * .5 && k0 < q1 && q1 < q2 && q2 < q3 && q3 < k),
+      'and things coming close come on slowly and then fast, as perspective has it', coming.length + ' things');
+    // A sign every 100 m in sight, saying the km still to go at it, as far
+    // up the road as it is, its figures in the strokes their digits take.
+    const kms = things(view(.62)).filter(x => x.what === 'km');
+    check(kms.length === 3 && kms.every((x, i) => Math.abs(gOf(x.k) - (.62 - [.4, .5, .6][i])) <= slack(P, x.k)),
+      'on board: a sign every 100 m in sight, each where it stands', kms.map(x => gOf(x.k).toFixed(3)).join(' '));
+    const strokes = v => ((/<path d="([^"]*)" stroke="#fbf4e4" stroke-width="1\.5"/.exec(S.svKmSign(0, 0, v)) || [])[1] || '').split('M').length - 1;
+    check(strokes(8.8) === 14 && strokes(1.1) === 4 && strokes(2.3) === 10 && strokes(0.7) === 9 && S.svKmSign(0, 0, 2.3) !== S.svKmSign(0, 0, 2.4) &&
+          view(.62).includes(S.svKmSign(1.12 * P.k, P.k, .6)),
+      'and each says the km still to go when the bus is at it, in road-sign figures');
     check(things(view(0)).filter(x => x.what === 'sign')[0].k > 1, 'and your own stop is never passed: at it, it is at the glass');
     const a = view(.4, { sky: 'night', worn: ['dice'], paint: 'dagat', here: true });
     check(a === view(.4, { sky: 'night', worn: ['dice'], paint: 'dagat', here: true }) &&
@@ -548,10 +565,12 @@ console.log('\n=== 9. the saved stop\'s picture ===');
   // The stylesheet runs the moving parts, so it must agree with the code.
   const rule = cls => (new RegExp('\\.stopview \\.' + cls + '\\{([^}]*)\\}').exec(html) || [])[1] || '';
   const glideS = +((/animation:stopglide ([\d.]+)s var\(--ease-move\) both/.exec(rule('sv-glide')) || [])[1]);
-  const rideS = +((/animation:stopglide ([\d.]+)s linear both/.exec(rule('sv-ride')) || [])[1]);
+  const rideS = +((/animation:stopride ([\d.]+)s linear both/.exec(rule('sv-ride')) || [])[1]);
+  const rideKf = (/@keyframes stopride\{([^@]*?)\}\}/.exec(html) || [])[1] || '';
   const goneS = +((/animation:stopgone ([\d.]+)s/.exec(rule('sv-gone')) || [])[1]);
-  check(glideS * 1000 === S.STOP_GLIDE_MS && goneS * 1000 === S.STOP_GLIDE_MS && rideS * 1000 === S.STOP_RIDE_MS && /setInterval\(pollPositions, 6000\)/.test(html) && S.STOP_RIDE_MS === 6000,
-    'waiting glides in a second, and on board the view moves at an even pace for one poll\'s length', `glide ${glideS}s, ride ${rideS}s, fade ${goneS}s`);
+  check(glideS * 1000 === S.STOP_GLIDE_MS && goneS * 1000 === S.STOP_GLIDE_MS && rideS * 1000 === S.STOP_RIDE_MS && /setInterval\(pollPositions, 6000\)/.test(html) && S.STOP_RIDE_MS === 6000 &&
+        /0%\{transform:var\(--from\);\} 25%\{transform:var\(--q1\);\} 50%\{transform:var\(--q2\);\} 75%\{transform:var\(--q3\);/.test(rideKf),
+    'waiting glides in a second, and on board the road goes from one position to the next over a poll\'s length, in perspective', `glide ${glideS}s, ride ${rideS}s, fade ${goneS}s`);
   // Nothing on the road runs on its own: what loops is the coach idling
   // and the charm swinging from the mirror.
   const loops = [...html.matchAll(/\.stopview \.([\w-]+)\{[^}]*infinite/g)].map(m => m[1]).sort();

@@ -60,6 +60,20 @@ picture; it was put to the maintainer as an exception for on board only,
 where the one looking is on that bus. The waiting card keeps every stop as
 a post.
 
+That was still far too slow to the maintainer, and they asked for signs
+saying how many km are left, all along the road, so that something is
+always happening. There is one every 100 m now, green, with the figures
+drawn like a road sign's, and the view came closer to the road, 260 m in
+sight, so at 30 km/h a dash goes by every second and a half and a sign
+every twelve.
+
+They also asked whether the moving picture drains the battery of a sharer
+who has to keep the page open. Measured in Chromium at a phone's size: the
+riding picture adds about 2% of a CPU core to a trip screen that costs under
+1% at rest. What costs is the breathing green dots on the sharing tab: any
+loop that never stops makes the browser repaint the page sixty times a
+second, about 20% of a core, and that was already so before any of this.
+
 The showcase video shows the old picture until it is rendered again.
 
 ## 2026-10-19: The tester page is linked

@@ -214,10 +214,11 @@ depth by `stopsAway()`, so forty stops off is a speck at the end of a long
 road and never looks like six, and the bus glides only when a position
 arrives and never creeps between them, because a picture that moved on its
 own would be a guess at an arrival. On board the road is drawn at its real
-length (`stopsBack()`, in km): two or three stops in sight, your stop a pin
-on the horizon until it is, and the dashes and the posts going by together,
-from one position to the next over a poll (`STOP_RIDE_MS`), a poll behind
-the bus and never ahead. That is the one picture that moves at a bus's pace
+length (`stopsBack()`, in km) and seen close, about 260 m of it: a green sign
+every 100 m with the km still to go, your stop a pin on the horizon until it
+is in sight, and the dashes, the signs and the posts going by together, in
+perspective, from one position to the next over a poll (`STOP_RIDE_MS`), a
+poll behind the bus and never ahead. That is the one picture that moves at a bus's pace
 (October 2026), because its viewer is on that bus. It is the one working
 screen with a picture. It reports distance and stop counts only,
 never minutes: an ETA needs travel-time history this system does not keep,

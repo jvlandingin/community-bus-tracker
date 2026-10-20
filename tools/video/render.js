@@ -217,7 +217,7 @@ function filmPage(html){
   const swaps = [['STOP_GLIDE_MS = 1000', 'STOP_GLIDE_MS = ' + GLIDE_MS],
                  ['STOP_RIDE_MS = 6000', 'STOP_RIDE_MS = ' + GLIDE_MS],
                  ['animation:stopglide 1s var(--ease-move) both', 'animation:stopglide ' + GLIDE_MS / 1000 + 's linear both'],
-                 ['animation:stopglide 6s linear both', 'animation:stopglide ' + GLIDE_MS / 1000 + 's linear both'],
+                 ['animation:stopride 6s linear both', 'animation:stopride ' + GLIDE_MS / 1000 + 's linear both'],
                  ['riding ? u : u * u * (3 - 2 * u)', 'riding ? u : u'],
                  ['if (Date.now()-lastWrite<5000) return;', 'if (Date.now()-lastWrite<' + WRITE_MS + ') return;']];
   swaps.forEach(function(s){

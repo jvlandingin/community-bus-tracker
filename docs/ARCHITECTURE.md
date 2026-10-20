@@ -823,21 +823,26 @@ go only where the screen would be empty still holds everywhere else.
   is linear in k, so interpolating the transform is the right path in
   depth. A stop the bus has just passed fades as it goes by (`stopgone`, on
   the glide's clock).
-- **On board, the road at its own length** (changed October 2026, below).
-  The picture works in km: how far your stop still is (`info.km`) and how
-  far back from it every stop before it is (`stopsBack()`), so the posts
-  stand as far apart as the stops do, a thing g km up the road at depth
-  z + 7.7 g. The dashes down the middle are on the road like the posts,
-  every 50 m, so the road and the stops go by together, at one pace, and a
-  stop the bus passes goes by the glass. Further than 1.2 km (`SV_SEEN`) is
-  over the horizon: two or three stops are in sight, and your stop, until
-  it is, is its pin on the horizon (`svBeacon()`), kept to a size that can
-  be seen (`SV_PIN`) until the sign's own pin is as big.
+- **On board, the road at its own length, seen close** (changed October
+  2026, below). The picture works in km: how far your stop still is
+  (`info.km`) and how far back from it every stop before it is
+  (`stopsBack()`), so the posts stand as far apart as the stops do, a thing
+  g km up the road at depth z + 35 g. The dashes down the middle are on the
+  road like the posts, every 12 m, and every 100 m a green sign says how
+  many km are still to go (`svKmSign()`, its figures drawn in strokes), so
+  the road, the signs and the stops go by together and a stop the bus
+  passes goes by the glass. About 260 m is in sight (`SV_SEEN`); further is
+  over the horizon, and your stop, until it is in sight, is its pin there
+  (`svPinMark()`), kept to a size that can be seen (`SV_PIN`) until the
+  sign's own pin is as big.
 - **On board, it moves while the bus does.** The view goes from the last
-  position to the new one at an even pace over a poll's length
-  (`STOP_RIDE_MS`, 6 seconds, the `sv-ride` animation), so it is on the move
-  while positions keep coming and still when they stop: a poll behind the
-  bus, never ahead of it, so it guesses nothing. Its pace is therefore the
+  position to the new one over a poll's length (`STOP_RIDE_MS`, 6 seconds),
+  the road at an even pace and each thing on it drawn in perspective: the
+  `stopride` keyframes put it where it is a quarter, a half and three
+  quarters of the way (`svRide()`), so it comes on slowly far off and fast
+  close by. It is on the move while positions keep coming and still when
+  they stop: a poll behind the bus, never ahead of it, so it guesses
+  nothing. Its pace is therefore the
   bus's, which the waiting card and the popup never show; on board the one
   looking is on that bus, and feels its speed anyway. A few metres on or
   back is the GPS and moves nothing (`RIDE_STILL_KM`, `RIDE_BACK_KM`), and a
@@ -882,7 +887,7 @@ twentieth of a stop between polls, so the view barely moved while the bus
 did. The maintainer's idea was to set the posts further apart, keep two or
 three in sight with the rest over the horizon, and show your stop as its pin
 there. That is the road at its real length: the stops as far apart as they
-are, the dashes 50 m apart on the same road, so a far stop barely moves and
+are, the dashes on the same road, so a far stop barely moves and
 a near one comes up and goes by, as from a real bus. To move while the bus
 moves without guessing, the view follows the positions a poll behind,
 which gives it the bus's pace; the rule against a picture moving with the
@@ -890,6 +895,25 @@ bus's speed is kept for every rider who is not on that bus (see "Rules
 revisited"). The waiting card keeps its stop-per-step picture: its camera
 stands still, so it never had the problem, and at real length a bus forty
 stops off would be nothing at all.
+
+Seen from 1.2 km off, a bus's real pace barely moved the road, and the
+maintainer found it far too slow. Their answer was signs: one every 100 m
+saying how many km are still to go, so there is always something coming
+up the road. With them the eye moved close, 260 m in sight instead of
+1.2 km, so at 30 km/h a dash goes by every second and a half and a sign
+every twelve, and things come on in perspective rather than at one pace
+down the screen.
+
+**What it costs to keep moving** (measured October 2026, headless Chromium
+at a phone's size, so in proportion rather than in watts). With nothing
+animating, the trip screen a sharer keeps open costs under 1% of a CPU
+core; the riding picture moving on its own adds about 2%. The breathing
+dots on the sharing tab, which never stop, cost about 20%: while anything
+on the page loops, the browser repaints the page for every frame, and a
+page that never rests keeps the phone from resting either. `main` before
+this change, with its running road, was about the same. A blurred veil
+behind an open modal (`backdrop-filter`) makes every such frame cost a
+whole core.
 
 It speaks up twice, and only twice: **Malapit na!** at two stops or fewer,
 and **Sakay na!** when yours is the next stop and the bus is inside 2 km

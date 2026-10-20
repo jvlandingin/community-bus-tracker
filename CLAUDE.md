@@ -219,10 +219,13 @@ every 100 m with the km still to go, a power pole every 25 m across the road,
 at every stop a sign with your stop's name and the km still to go from there
 (the only words in the picture, the maintainer's ask), your stop a pin on the
 horizon until it is in sight, and the dashes, the signs, the poles and the
-posts going by together, in
-perspective, from one position to the next over the time until the next
-comes (a poll, `STOP_RIDE_MS`, or on the sharing tab its 18 s feed and a
-poll more), a position behind the bus and never ahead. That is the one picture that moves at a bus's pace
+posts going by together, moved by the card itself 30 times a second on a
+timer (`rideFrame()`) in true perspective (`svOnRoad()`), at one steady
+speed: the view runs the feed and a poll behind the bus (12 s on the map
+tab, 24 s on the sharing tab), reaching each position that long after its
+report's own time, so it keeps the bus's pace however the reports fall and
+never runs ahead. A stylesheet glide in four straight steps made it lunge
+and stall. That is the one picture that moves at a bus's pace
 (October 2026), because its viewer is on that bus. It is the one working
 screen with a picture. It reports distance and stop counts only,
 never minutes: an ETA needs travel-time history this system does not keep,

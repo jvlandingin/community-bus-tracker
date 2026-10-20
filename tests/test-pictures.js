@@ -410,21 +410,25 @@ console.log('\n=== 9. the saved stop\'s picture ===');
   const plates = svg => (svg.match(/height="6\.72" rx="1\.44" fill="#(?:e39a1c|efe7da)"/g) || []).length;
   const golds = svg => (svg.match(/height="6\.72" rx="1\.44" fill="#e39a1c"/g) || []).length;
   // Every thing placed on the road: its depth now, the depth it glides from
-  // if it does, whether it is fading, and what it is.
-  const things = svg => svg.split('<g class="sv-k').slice(1).map(g => {
-    const own = g.split('</g>')[0];
-    const k = (/^[^"]*" style="transform:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\)/.exec(g) || [])[1];
-    const k0 = (/--from:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\)/.exec(g.slice(0, g.indexOf('>'))) || [])[1];
-    return { k: +k, k0: k0 === undefined ? null : +k0, gone: /^[^"]*\bsv-gone\b/.test(g), glide: (/^[^"]*/.exec(g) || [''])[0].trim(),
+  // if it does, whether it is fading, and what it is. Waiting, a thing says
+  // both in its own style. On board, it says where it stands (data-w) and
+  // its depth now; where it was with the bus at `from` is the picture's own
+  // sum (svOnRoad()), which the card's frames bring it on from.
+  const scaleOf = t => +((/scale\(([\d.]+)\)/.exec(t) || [])[1]);
+  const things = (svg, from) => svg.split('<g class="sv-k').slice(1).map(g => {
+    const own = g.split('</g>')[0], head = g.slice(0, g.indexOf('>')), wm = /data-w="(-?[\d.]+)"/.exec(head), w = wm ? +wm[1] : null;
+    const k = (/transform:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\)/.exec(head) || [])[1];
+    const k0 = w !== null ? (from === undefined ? undefined : scaleOf(S.svOnRoad(from, w))) : (/--from:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\)/.exec(head) || [])[1];
+    return { k: +k, k0: k0 === undefined ? null : +k0, w, gone: /^[^"]*\bsv-gone\b/.test(g), glide: (/^[^"]*/.exec(g) || [''])[0].trim(),
       what: /#4f46b8/.test(own) ? 'sign' : /<svg/.test(own) ? 'bus' : /height="6\.72"/.test(own) ? 'post' : /#2e6b45/.test(own) ? 'km' :
         /fill="#(?:a39a91|4a4039)"/.test(own) ? 'pole' : 'dash' };
   });
   // Your stop's pin, drawn on its own: the depth its place is at, now and
-  // before, read back from where it is put.
-  const pin = svg => {
-    const m = /<g class="sv-pin([^"]*)" style="transform:translate\(([\d.]+)px,([\d.]+)px\)(?:;--from:translate\(([\d.]+)px,([\d.]+)px\))?/.exec(svg);
+  // with the bus at `from`, read back from where it is put.
+  const pin = (svg, from) => {
+    const m = /<g class="sv-pin" style="transform:translate\(([\d.]+)px,([\d.]+)px\)/.exec(svg);
     const P = S.SV_ABOARD, kOf = y => (y - P.h) / (P.k - 48 * .8);
-    return m ? { k: kOf(+m[3]), k0: m[5] === undefined ? null : kOf(+m[5]), glide: m[1].trim() } : null;
+    return m ? { k: kOf(+m[2]), k0: from === undefined ? null : kOf(+(/,([\d.]+)px\)/.exec(S.svPinAt(from)) || [])[1]) } : null;
   };
   const slack = (P, ...ks) => ks.reduce((a, k) => a + .0005 / (k * k), 1e-6) / P.dz;
 
@@ -505,44 +509,51 @@ console.log('\n=== 9. the saved stop\'s picture ===');
     const still = things(view(.62));
     check(still.filter(x => x.what === 'dash').length >= 15 && still.every(x => x.k0 === null) && !/sv-ride|sv-glide|infinite/.test(view(.62)),
       'on board: the dashes are on the road, and nothing moves between positions', still.filter(x => x.what === 'dash').length + ' dashes');
-    const ride = view(.15, { from: .2, ago: 1500 }), moving = things(ride);
-    const kept = moving.filter(x => x.k < S.SV_GONE && x.k0 !== null && x.k0 < S.SV_GONE);
+    const ride = view(.15, { from: .2 }), moving = things(ride, .2);
+    const kept = moving.filter(x => x.k < 1 / P.z && x.k0 !== null && x.k0 < 1 / P.z);
     const wrong = kept.filter(x => Math.abs(gOf(x.k0) - gOf(x.k) - .05) > slack(P, x.k0, x.k));
     check(kept.length >= 15 && ['dash', 'post', 'sign', 'km', 'pole'].every(w => kept.some(x => x.what === w)) && !wrong.length &&
-          kept.every(x => x.glide === 'sv-ride') && pin(ride) && pin(ride).k0 !== null && pin(ride).glide === 'sv-ride',
+          pin(ride, .2) && pin(ride, .2).k0 < pin(ride, .2).k,
       'when a position arrives, the dashes, the posts, the km signs, the poles, your stop and its pin all come on by the 50 m the bus went',
       kept.length + ' things' + (wrong.length ? ', ' + wrong.map(x => x.what + ' by ' + (gOf(x.k0) - gOf(x.k)).toFixed(3)).join(' ') : ''));
-    const passing = things(view(.1, { from: .13, ago: 0 }));
-    check(passing.some(x => x.what === 'post' && x.k === S.SV_GONE && x.k0 < S.SV_GONE),
+    const passing = things(view(.1, { from: .13 }), .13);
+    check(passing.some(x => x.what === 'post' && x.k > 1 / P.z && x.k0 < 1 / P.z) && S.SV_PAST > 0 && S.SV_PAST < P.z / 4,
       'a stop the bus passes goes by the glass rather than vanishing');
-    check(/animation-delay:-1\.50s/.test(ride) && /animation-delay:-6\.00s/.test(view(.15, { from: .2, ago: 99999 })),
-      'and a redraw carries the move on, never longer than a poll');
-    // On the sharing tab the next position is a slower feed away, and the
-    // view goes on until it comes rather than driving for a poll and then
-    // standing: the picture says that length once, and a poll's is the
-    // stylesheet's own.
-    const slowRide = view(.15, { from: .2, ago: 9000, span: 18000 });
-    check(/^<svg class="stopview slow" style="--ride:18\.00s"/.test(slowRide) && /animation-delay:-9\.00s/.test(slowRide) &&
-          /animation-delay:-18\.00s/.test(view(.15, { from: .2, ago: 99999, span: 18000 })) &&
-          !/slow|--ride/.test(ride) && !/slow|--ride/.test(view(.15, { from: .2, ago: 1500, span: S.STOP_RIDE_MS })),
-      'over a slower feed the view goes on until the next position, its length said once on the picture',
-      (/^<svg[^>]*>/.exec(slowRide) || [''])[0].slice(0, 60));
-    check(!/sv-ride/.test(view(.1, { from: .9, ago: 100 })) && !/sv-ride/.test(view(.1, { from: .9, ago: 100, span: 24000 })),
+    check(view(.1, { from: .9 }) === view(.1) && view(.1, { from: .9, span: 24000 }) === view(.1),
       'a jump further than a glide may drive is drawn at once, not driven');
     // Fed every 18 seconds, a bus on the highway goes further than can be
     // seen between positions, and is driven there all the same, as far as
     // a bus goes in the glide's time: never less than can be seen, and on
-    // a poll's glide no more.
+    // a poll's glide no more. The stop at 0.471, in sight from 0.6 and
+    // passed by 0.1, is there to go by only when it is driven.
     check(S.svReach(S.STOP_RIDE_MS) === S.SV_SEEN && Math.abs(S.svReach(24000) - S.SV_FASTEST * 24 / 3600) < 1e-9 && S.SV_FASTEST >= 100 && S.SV_FASTEST <= 120 &&
-          /sv-ride/.test(view(.1, { from: .6, ago: 100, span: 24000 })) && !/sv-ride/.test(view(.1, { from: .6, ago: 100 })),
+          /data-w="0.471"/.test(view(.1, { from: .6, span: 24000 })) && !/data-w="0.471"/.test(view(.1, { from: .6 })),
       'and a longer glide drives as far as a bus could in it, so a fast bus on the sharing tab still goes by',
       S.svReach(24000).toFixed(3) + ' km in 24 s');
-    // Perspective, not an even pace down the screen: a quarter of the way
-    // through, a thing coming close has moved less than a quarter of its
-    // way on the screen, and three quarters through, more.
-    const q = /class="sv-k sv-ride" style="transform:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\);--from:[^;]+scale\(([\d.]+)\);--q1:[^;]+scale\(([\d.]+)\);--q2:[^;]+scale\(([\d.]+)\);--q3:[^;]+scale\(([\d.]+)\)/g;
-    const coming = [...ride.matchAll(q)].map(m => m.slice(1).map(Number)).filter(([k, k0]) => k < S.SV_GONE && k - k0 > .1);
-    check(coming.length > 3 && coming.every(([k, k0, q1, q2, q3]) => q1 - k0 < (k - k0) / 4 && q3 - k0 > (k - k0) * .5 && k0 < q1 && q1 < q2 && q2 < q3 && q3 < k),
+    // Driven further than the eye reaches, the road never runs out on the
+    // way: every pole and sign the bus comes to between is there to go by,
+    // not only those in sight at either end.
+    const way = things(view(.1, { from: .7, span: 24000 })), on = what => way.filter(x => x.what === what).map(x => x.w).sort((a, b) => a - b).join(' ');
+    const every = (step, to) => { const a = []; for (let i = 1; i * step < to - 1e-9; i++) a.push(Math.round(i * step * 1000) / 1000); return a.join(' '); };
+    check(on('pole') === every(S.SV_POLE, .7) && on('km') === every(S.SV_MARK, .7) && on('post') === BACK.filter(w => w < .7).join(' '),
+      'and on a way further than the eye reaches the road never runs out: every pole, sign and stop on the way is there to go by',
+      on('pole').split(' ').length + ' poles, ' + on('km').split(' ').length + ' signs');
+    // The picture draws the road standing, every thing where the picture's
+    // own sum puts it, and the card moves it with the same sum frame by
+    // frame (rideFrame() in index.html, tested in test-boot.js), so at
+    // every frame each thing is where perspective has it, at one speed
+    // along the road: no glide of the stylesheet's, whose few straight
+    // steps made things lunge and stall.
+    const standing = things(view(.62)), pinNow = /<g class="sv-pin" style="transform:([^"]*)"/.exec(view(40));
+    check(standing.length > 20 && standing.every(x => x.w !== null && view(.62).includes('data-w="' + x.w + '" style="transform:' + S.svOnRoad(.62, x.w) + '"')) &&
+          !!pinNow && pinNow[1] === S.svPinAt(40) && !/sv-ride|--v|animation/.test(view(.15, { from: .2, ago: 1500 })),
+      'on board the picture draws the road standing, each thing where its own sum puts it, for the card to move frame by frame');
+    // So a thing coming close goes further on the screen in each quarter of
+    // the way than in the one before, however near it comes: perspective,
+    // with no straight steps between.
+    const coming = moving.filter(x => x.k0 !== null && x.k < 1 / P.z && x.k - x.k0 > .1);
+    const at = (x, u) => scaleOf(S.svOnRoad(.2 + (.15 - .2) * u, x.w)), steps = x => [0, 1, 2, 3].map(i => at(x, (i + 1) / 4) - at(x, i / 4));
+    check(coming.length > 3 && coming.every(x => steps(x).every((d, i, a) => i === 0 || d > a[i - 1])),
       'and things coming close come on slowly and then fast, as perspective has it', coming.length + ' things');
     // A sign every 100 m in sight, saying the km still to go at it, as far
     // up the road as it is, its figures in the strokes their digits take.
@@ -616,13 +627,11 @@ console.log('\n=== 9. the saved stop\'s picture ===');
   // The stylesheet runs the moving parts, so it must agree with the code.
   const rule = cls => (new RegExp('\\.stopview \\.' + cls + '\\{([^}]*)\\}').exec(html) || [])[1] || '';
   const glideS = +((/animation:stopglide ([\d.]+)s var\(--ease-move\) both/.exec(rule('sv-glide')) || [])[1]);
-  const rideS = +((/animation:stopride ([\d.]+)s linear both/.exec(rule('sv-ride')) || [])[1]);
-  const rideKf = (/@keyframes stopride\{([^@]*?)\}\}/.exec(html) || [])[1] || '';
   const goneS = +((/animation:stopgone ([\d.]+)s/.exec(rule('sv-gone')) || [])[1]);
-  check(glideS * 1000 === S.STOP_GLIDE_MS && goneS * 1000 === S.STOP_GLIDE_MS && rideS * 1000 === S.STOP_RIDE_MS && /setInterval\(pollPositions, 6000\)/.test(html) && S.STOP_RIDE_MS === 6000 &&
-        /\.stopview\.slow \.sv-ride\{animation-duration:var\(--ride\);\}/.test(html) &&
-        /0%\{transform:var\(--from\);\} 25%\{transform:var\(--q1\);\} 50%\{transform:var\(--q2\);\} 75%\{transform:var\(--q3\);/.test(rideKf),
-    'waiting glides in a second, and on board the road goes from one position to the next over a poll\'s length, or the length the picture says, in perspective', `glide ${glideS}s, ride ${rideS}s, fade ${goneS}s`);
+  check(glideS * 1000 === S.STOP_GLIDE_MS && goneS * 1000 === S.STOP_GLIDE_MS && /setInterval\(pollPositions, 6000\)/.test(html) && S.STOP_RIDE_MS === 6000 &&
+        !/@keyframes stopride|\.sv-ride\{|@property --v/.test(html) && /function rideFrame\(\)/.test(html) && /const RIDE_FPS = (\d+);/.test(html) &&
+        +/const RIDE_FPS = (\d+);/.exec(html)[1] >= 20 && +/const RIDE_FPS = (\d+);/.exec(html)[1] <= 30,
+    'waiting glides in a second; on board the card moves the road itself, a few frames a second fewer than the screen', `glide ${glideS}s, fade ${goneS}s`);
   // Nothing on the road runs on its own: what loops is the coach idling
   // and the charm swinging from the mirror.
   const loops = [...html.matchAll(/\.stopview \.([\w-]+)\{[^}]*infinite/g)].map(m => m[1]).sort();

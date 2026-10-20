@@ -76,6 +76,24 @@ is up from September. In parol season, with another bus on the strip, the
 trip screen a minute into a trip went from 46% of a core to 2%, and to 19%
 with the road open.
 
+Watching it, the maintainer saw the road go slow, fast, slow, and asked
+whether one steady speed was impossible. It was the stylesheet's glide:
+each thing went straight between four points of its way, and over the
+sharing tab's 24-second glides its speed on the screen swung between about
+20 and 60 km/h every six seconds for a bus going 30. Reports arriving
+unevenly would have made each glide faster or slower than the last as
+well. Now the card moves the road itself, 30 times a second, every thing
+where perspective has it at that moment, and the view runs a fixed lag
+behind each report's own time, so it keeps the bus's pace: measured on the
+page, 30 km/h every second for a bus at 30, and 100 for one at 100. Three
+other ways were tried and measured first and cost from a quarter more to
+five times as much; this one costs what the glide did. Watching it at
+highway speed turned up one more fault, as old as the glide: only what was
+in sight at either end of a move was drawn, so above about 40 km/h on the
+sharing tab the road went bare halfway, for seconds at 90. Everything on
+the way is drawn now, and the card keeps what is still further off than
+the eye reaches out of sight until the bus comes within it.
+
 ## 2026-10-19: The saved stop's picture draws every stop
 
 Looking at the card on a phone, the maintainer saw "about 47 stops before

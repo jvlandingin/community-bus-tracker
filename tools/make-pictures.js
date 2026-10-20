@@ -90,8 +90,8 @@ function renderer() {
     'S.TICKET_SKIES=TICKET_SKIES;S.TICKET_VIEWS=TICKET_VIEWS;S.ticketArtSvg=ticketArtSvg;' +
     'S.TICKET_SIGHTS=TICKET_SIGHTS;S.sightTile=sightTile;S.moonSvg=moonSvg;S.BUS_DECOR=BUS_DECOR;S.busSvg=busSvg;S.DECOR_BOX=DECOR_BOX;S.decorTile=decorTile;S.BUS_PAINTS=BUS_PAINTS;S.paintStyle=paintStyle;S.rideSvg=rideSvg;S.RIDE_LOOPS=RIDE_LOOPS;S.RIDE_FRAMES=RIDE_FRAMES;' +
     'S.stopViewSvg=stopViewSvg;S.STOP_VIEW_MOST=STOP_VIEW_MOST;S.STOP_GLIDE_MS=STOP_GLIDE_MS;S.STOP_RIDE_MS=STOP_RIDE_MS;' +
-    'S.SV_WAIT=SV_WAIT;S.SV_ABOARD=SV_ABOARD;S.SV_SEEN=SV_SEEN;S.SV_PIN=SV_PIN;S.SV_GONE=SV_GONE;S.svKmSign=svKmSign;S.SV_FASTEST=SV_FASTEST;S.svReach=svReach;' +
-    'S.SV_POLE=SV_POLE;S.SV_POLE_X=SV_POLE_X;S.svPole=svPole;S.svPlace=svPlace;S.svStopKm=svStopKm;')(S);
+    'S.SV_WAIT=SV_WAIT;S.SV_ABOARD=SV_ABOARD;S.SV_SEEN=SV_SEEN;S.SV_PIN=SV_PIN;S.SV_PAST=SV_PAST;S.svKmSign=svKmSign;S.SV_FASTEST=SV_FASTEST;S.svReach=svReach;' +
+    'S.SV_POLE=SV_POLE;S.SV_MARK=SV_MARK;S.SV_POLE_X=SV_POLE_X;S.svPole=svPole;S.svPlace=svPlace;S.svStopKm=svStopKm;S.svOnRoad=svOnRoad;S.svPinAt=svPinAt;')(S);
   return S;
 }
 

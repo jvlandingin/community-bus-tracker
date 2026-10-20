@@ -845,30 +845,52 @@ go only where the screen would be empty still holds everywhere else.
   over the horizon, and your stop, until it is in sight, is its pin there
   (`svPinMark()`), kept to a size that can be seen (`SV_PIN`) until the
   sign's own pin is as big.
-- **On board, it moves while the bus does.** The view goes from the last
-  position to the new one over the time until the next comes: a poll's
-  length (`STOP_RIDE_MS`, 6 seconds), or on the sharing tab, which is fed
-  every 18 seconds (`SLOW_FEED_MS`, `slowFeed()`), that and a poll more,
-  because after a fetch out of turn the next waits for a poll's tick and
-  comes up to six seconds late. That length is carried on the picture as
-  `--ride`. Until October 2026 it took six seconds there too, and then
-  stood for twelve while the bus went on. The road goes at an
-  even pace and each thing on it is drawn in perspective: the
-  `stopride` keyframes put it where it is a quarter, a half and three
-  quarters of the way (`svRide()`), so it comes on slowly far off and fast
-  close by. It is on the move while positions keep coming and still when
-  they stop: a position behind the bus, never ahead of it, so it guesses
-  nothing. Its pace is therefore the
+- **On board, it moves while the bus does, at its pace.** The view shows
+  the bus a lag behind, the feed and a poll more: 12 seconds on the
+  tracker, 24 on the sharing tab, which is fed every 18 seconds
+  (`SLOW_FEED_MS`, `slowFeed()`), and reaches each new position that long
+  after the bus was there by its report's own time, the phone's clock held
+  against the server's by the smallest gap seen between a report's time
+  and its drawing (`STOPVIEW.off`). So the next position always comes
+  before the view gets to the last, and it goes at the bus's own pace
+  however late each report and each poll falls: a report drawn late makes
+  a shorter glide, not a faster one. The card moves the road itself, 30
+  times a second on a timer (`rideFrame()`, `RIDE_FPS`): each time, every
+  thing on it is put from how far your stop then is by the picture's own
+  sum (`svOnRoad()`, `svPinAt()`), so each is where perspective has it at
+  that moment, slowly far off and fast close by, at one speed along the
+  road. Nothing runs while the bus stands, or for a road folded away or on
+  the other tab. Until October 2026 a stylesheet glide moved each thing
+  straight between four points of its way, and over the sharing tab's long
+  glides the road lunged and stalled, its speed on the screen swinging
+  between about 20 and 60 km/h every six seconds for a bus going 30; before
+  that it took six seconds there and stood for twelve. Three other ways to
+  move it exactly were measured and dropped: one number animated for the
+  stylesheet to place everything from cost five times what the glide did,
+  the browser's own animations sampled finely three times, and a script on
+  every frame the screen draws a quarter more. On a timer at 30 frames it
+  costs what the glide did. It is on the move while positions keep coming
+  and still when they stop, behind the bus and never ahead of it, so it
+  guesses nothing. Its pace is therefore the
   bus's, which the waiting card and the popup never show; on board the one
   looking is on that bus, and feels its speed anyway. A few metres on or
   back is the GPS and moves nothing (`RIDE_STILL_KM`, `RIDE_BACK_KM`), and a
-  jump back, or further on than a bus at 110 km/h goes in the glide's
-  time (`svReach()`, never less than the 260 m in sight), starts the view
-  again where the bus is, drawn at once. Fed every 18 seconds, a bus on
-  the highway goes further than can be seen between positions, and until
-  that reach it is driven there rather than jumping each time. Switching
-  from the sharing tab to the map at speed still jumps once, since the
-  first poll there brings 18 seconds of road for a six-second glide.
+  jump back, or further on from where the view has the bus than a bus at
+  110 km/h goes in the glide's time (`svReach()`, never less than the
+  260 m in sight), starts the view again where the bus is, drawn at once.
+  Fed every 18 seconds, a bus on the highway goes further than can be seen
+  between positions, and until that reach it is driven there rather than
+  jumping each time. The picture draws everything on the way, and the card
+  keeps what is still further up the road than the eye reaches out of
+  sight until the bus comes within it, so the road comes into view a thing
+  at a time and never runs out; until October 2026 only what was in sight
+  at either end was drawn, and above about 40 km/h on the sharing tab the
+  road went bare halfway. Setting off, the first glide starts from where
+  the bus stood, a feed behind rather than the lag, so the view comes up
+  to the bus's pace over a few positions, as a bus pulling away does; and
+  going from the sharing tab to the map, it makes up the 12 seconds
+  between their lags in one glide at about twice the pace, or at once
+  above about 50 km/h.
   What hangs from the mirror sways, and stops
   when the bus stands still or has gone quiet, by the signal the popup uses
   (`rideStand()`, `freshness()`).
@@ -946,12 +968,15 @@ again at every poll, and the parol, in the header, which never leaves the
 screen to start it again, hold still there from the start. And the road on
 the card is folded away until "Show the road" is tapped, for that visit
 (`toggleRoad()`, `wt-road` in `sessionStorage`), because it moves for as
-long as the bus does: about 19% on its own with its poles and signs, 6%
-back when it drove for a third of each wait (above). Folding it alone saved
-only a third; the rest went when nothing else on the screen moved either.
-In parol season, with another bus on the strip and a bus moving all the
-while, the trip screen a minute into a trip went from 46% to 2%, and to 19%
-with the road open. A blurred veil
+long as the bus does: about 20% with its poles and signs, moved 30 times a
+second (above), 6% back when it drove for a third of each wait. Folding it
+alone saved only a third; the rest went when nothing else on the screen
+moved either. In parol season, with another bus on the strip and a bus
+moving all the while, the trip screen a minute into a trip went from 46% to
+2%, and to 20% with the road open. A script that moves anything does it on
+a timer at the rate it needs, not on every frame the screen draws: woken
+sixty times a second, the road's script cost a fifth more even on the
+frames it drew nothing. A blurred veil
 behind an open modal (`backdrop-filter`) makes every frame cost a whole
 core. To measure it again, fake the GPS in the page
 rather than through the browser: Chromium's emulated GPS reports a short

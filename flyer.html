@@ -130,7 +130,7 @@
   /* Sentences in the normal width of the typeface, everything that is a
      heading, a label or a piece of the app in the condensed one: the split
      the app makes. */
-  .hero .lede, .steps .tx span, .limits ul, .cta .note, .passiton, footer, .demo-sub{font-family:var(--font-text);}
+  .hero .lede, .steps .tx span, .cta .note, .passiton, footer, .demo-sub{font-family:var(--font-text);}
 
   /* ---- Header band, same signboard as the app ---------------------- */
   header{
@@ -498,17 +498,6 @@
     *, *::before, *::after{animation:none !important; transition:none !important;}
   }
 
-  /* ---- Honest limits ----------------------------------------------- */
-  /* The app says this about itself in two places. A flyer that quietly
-     dropped it would be the one piece of the system overselling the rest. */
-  .limits{
-    background:var(--gold-soft); border:1px solid var(--gold-line);
-    border-radius:var(--r-m); padding:12px 14px;
-  }
-  .limits b{font-size:12.5px; display:block; margin-bottom:4px; color:var(--gold-deep);}
-  .limits ul{margin:0; padding-left:17px; font-size:11.5px; color:var(--muted); font-weight:600;}
-  .limits li{margin-bottom:3px;}
-  .limits li:last-child{margin-bottom:0;}
 
   /* ---- Call to action ---------------------------------------------- */
   .cta{
@@ -626,7 +615,7 @@
     header .route .dm-1{display:block; width:auto; height:10.5pt;}
     header .route.dm{margin-bottom:2pt; padding:1.5pt;}
     header .sub{font-size:5.5pt; margin-top:1px;}
-    .demo, .cta, .limits, .point, .steps li, .demo-badge, .buspill, .demo-ctl b, .cover,
+    .demo, .cta, .point, .steps li, .demo-badge, .buspill, .demo-ctl b, .cover,
     .demo-seg span.on, .steps .n, .demo-map, .track .rail, .demo-cp, .demo-cp b{
       -webkit-print-color-adjust:exact; print-color-adjust:exact;
     }
@@ -639,7 +628,7 @@
     .demo{box-shadow:none;}
     /* A poster is read from two metres away and then walked up to. Nothing
        here may split across a page break. */
-    .screenwrap, .cta, .limits, .steps li, .point{break-inside:avoid;}
+    .screenwrap, .cta, .steps li, .point{break-inside:avoid;}
     .backfoot{display:none;}
     footer{font-size:7pt; margin-top:3px; padding-top:3px; line-height:1.35;}
     /* The map fills the card, exactly as it does in the app: same width as
@@ -712,9 +701,10 @@
        dropped is the reassurance — "browser only", "no account" and
        the rest — because every word of it is on the page the QR opens, and a
        passer-by reads a headline, a picture and a link, not a feature list.
-       Nothing that qualifies the tool goes: the limits box and the
-       not-affiliated footer both print, because a poster that oversells is
-       the one failure this whole project is written against. */
+       The not-affiliated footer always prints, and says it is not an official
+       schedule: the "To be fair" box that listed the caveats one by one was
+       taken off at the maintainer's word in October 2026, as too many words
+       for a flyer, and the app says them itself where they matter. */
     .points, .pointshead{display:none;}
     h2{margin:5px 0 2px; font-size:9.5pt;}
     .hero{padding:0.5mm 0 0;}
@@ -740,16 +730,6 @@
     .droid .kicker{font-size:6.5pt;}
     .droid .url{font-size:7.5pt;}
     .droid .note{font-size:7.5pt;}
-    /* The caveats run in as one dense paragraph on paper rather than four
-       bulleted lines. Every caveat survives — this is the section that must
-       not be cut, only shortened, each to one line as in October 2026 — but
-       it costs a third of the height, which is what buys the single sheet. */
-    .limits{padding:5px 9px;}
-    .limits ul{font-size:8pt; padding-left:0; margin:0;}
-    .limits li{display:inline; margin:0;}
-    .limits li::after{content:" · ";}
-    .limits li:last-child::after{content:"";}
-    .limits b{font-size:9.5pt;}
   }
 </style>
 <script>
@@ -1014,20 +994,11 @@
       </ul>
     </details>
   </div>
-  <h2>To be fair</h2>
-  <div class="limits">
-    <b>Not an official schedule</b>
-    <ul>
-      <li>Positions come from riders and crew who choose to share.</li>
-      <li>No one sharing means no bus on the map, not no bus.</li>
-      <li>A position can be minutes late, or briefly the wrong way.</li>
-      <li>If it looks wrong, trust your eyes and the posted schedule.</li>
-    </ul>
-  </div>
   <footer>
-    <b>Hindi ito opisyal.</b> Not affiliated with, run by, or endorsed by Wonderful
-    Transport. Run by a community volunteer; the route name only says which buses
-    it tracks. Provided as-is, with no warranty of accuracy or uptime.
+    <b>Hindi ito opisyal.</b> Not an official schedule. Not affiliated with, run
+    by, or endorsed by Wonderful Transport. Run by a community volunteer; the
+    route name only says which buses it tracks. Provided as-is, with no warranty
+    of accuracy or uptime.
     <div class="backfoot"><a href="index.html">← Open the tracker</a></div>
   </footer>
   </div><!-- /pgroup fine -->

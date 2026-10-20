@@ -86,7 +86,8 @@ own code; run it after changing those words or the drawings. It also draws the
 guide's pictures of your bus, from the decorations and paint named in each
 `<!-- mybus keys=… paint=… -->` marker, the bus on the road in its popup, from
 `<!-- ride views=… sky=… -->`, and the saved stop's picture in the guide, the
-flyer and the briefing, from `<!-- stopview p=… sky=… -->`. And it draws the
+flyer, the briefing and the poster, from `<!-- stopview f=… sky=… -->` (or, on board,
+`stop=… at=…`, measured from `config.txt`). And it draws the
 icon into `tools/app-icons.html`, from `<!-- appicon id=… -->`, and the small
 mark into every page's favicon and the Android app's status-bar and themed
 icons. `test-tokens.js`, `test-signboard.js` and `test-pictures.js` fail until
@@ -244,19 +245,45 @@ between are counted by projecting them onto the chain, never by `config.txt`
 order, which is merged from two posters and is not route order. **The card
 draws the bus coming** (October 2026, the maintainer's choice over a line of
 dots that looked the same however near the bus was): down the road to the
-shed you wait at, or on board your stop's sign coming up to the windscreen,
-a post for each stop between (`stopViewSvg()`), placed one even step a stop
-by `stopProgress()` and dressed by `busLookOf()`, the popup's rule. It glides
-only when a position arrives and never creeps between them, because a
-picture that moved on its own would be a guess at an arrival. It is the one
-working screen with a picture. It reports distance and stop counts only,
+shed you wait at, or on board your stop's sign coming up to the windscreen
+(`stopViewSvg()`), dressed by `busLookOf()`, the popup's rule. Waiting, a
+post stands for every stop between, however many, each one even step of
+depth by `stopsAway()`, so forty stops off is a speck at the end of a long
+road and never looks like six, and the bus glides only when a position
+arrives and never creeps between them, because a picture that moved on its
+own would be a guess at an arrival. On board the road is drawn at its real
+length (`stopsBack()`, in km) and seen wide from the front seat, about 150 m
+of it, so what is close rushes past (the maintainer's ask, October 2026,
+even at a sign at a time or none): a green sign every 100 m with the km
+still to go, a power pole every 25 m across the road, the middle line 4 m of
+paint every 20 m and, close by, the concrete's joints and the verges' grass,
+painted on the ground (`svDashes()`, `svJoints()`, `svTufts()`), at every
+stop a big sign with your stop's name and the km still to go from there, big
+so it can be read as it comes on (the only words in the picture, the
+maintainer's ask), your stop a pin on the
+horizon until it is in sight, and the dashes, the signs, the poles and the
+posts going by together, moved by the card itself 30 times a second on a
+timer (`rideFrame()`) in true perspective (`svOnRoad()`), at one steady
+speed: the view runs the feed and a poll behind the bus (12 s on the map
+tab, 24 s on the sharing tab), reaching each position that long after its
+report's own time, so it keeps the bus's pace however the reports fall and
+never runs ahead. A stylesheet glide in four straight steps made it lunge
+and stall. That is the one picture that moves at a bus's pace
+(October 2026), because its viewer is on that bus. It is the one working
+screen with a picture. It reports distance and stop counts only,
 never minutes: an ETA needs travel-time history this system does not keep,
 and `test-mystop.js` fails if the wording drifts towards implying one. **On board, the card follows your own bus** to the stop
 you get off at instead of the nearest one coming: a sharer's is the row the
 server flags `is_self`, anyone else's is picked with "I'm on this bus" in the
 popup and kept in `sessionStorage` only. While sharing, the card shows on the
-sharing tab too, and that tab carries a live dot so leaving it never looks
-like stopping.
+sharing tab too, with the road folded away until "Show the road" is
+tapped, for that visit only (`wt-road` in `sessionStorage`), and that tab
+carries a live dot so leaving it never looks like stopping. Everything that
+loops on that tab rests after half a minute: the live dots, the strip's
+pills, its sighting glows and the parol. A sharer's screen stays on all
+trip, and any one thing moving keeps it redrawing; a dot breathing all trip
+cost more battery than the rest of the screen together
+(`docs/ARCHITECTURE.md`, "What it costs to keep moving").
 
 **A reader can thank a sharer**, once per bus, from the bus's popup on the
 map. Deliberately narrow, and each narrowing is load-bearing: the count belongs
@@ -396,7 +423,8 @@ a file the sharer holds, never another stored key. Adding one means editing that
 commit — the panel is the promise, not the code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
 `localStorage` keys the app writes stops matching the set the panel names.
 Per-visit switches go in `sessionStorage` for exactly this reason — the
-location dot, and the saved-stop card's "buzz once" switch.
+location dot, the saved-stop card's "buzz once" switch, and its road shown
+on the sharing tab.
 
 **There is a tour, one per tab** (October 2026): a minute each, on the real
 page, opened from the guide, from a quiet button at the foot of each tab, from

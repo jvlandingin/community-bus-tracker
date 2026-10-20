@@ -20,7 +20,7 @@ new Function('S', hav + prog + mine +
   'S.buildRouteChain=buildRouteChain;S.routeProgressKm=routeProgressKm;' +
   'S.stopChainKms=stopChainKms;S.approachInfo=approachInfo;S.myStopWords=myStopWords;' +
   'S.haversineKm=haversineKm;S.namedStopKms=namedStopKms;S.stopsBetween=stopsBetween;S.rideState=rideState;' +
-  'S.aboardBus=aboardBus;S.aboardInfo=aboardInfo;S.aboardWords=aboardWords;S.stopProgress=stopProgress;')(S);
+  'S.aboardBus=aboardBus;S.aboardInfo=aboardInfo;S.aboardWords=aboardWords;S.stopsAway=stopsAway;S.stopsBack=stopsBack;')(S);
 
 const txt = fs.readFileSync(path.join(ROOT, 'config-template.txt'), 'utf8').split(/\r?\n/);
 const CP = txt.filter(l => l.trim().startsWith('CHECKPOINT =')).map(l => {
@@ -300,45 +300,62 @@ console.log('\n=== 10. on the bus already: your own bus, to where you get off ==
 }
 
 console.log('\n=== 11. where the picture puts the bus ===');
-// The card's picture (stopViewSvg) draws the last six stops before yours,
-// with the bus somewhere along them: stopProgress() says where, 0 at the
-// edge and 1 at your stop. One even step a stop, so the step it is on is
-// the card's own count, and inside a step it goes by the road, so every
-// position that arrives moves it on.
+// The card's picture (stopViewSvg) draws every stop still between the bus
+// and yours, one even step of depth a stop: stopsAway() says how many steps
+// away the bus is. Just over n with n stops between, up to n + 1, so the
+// step it is on is the card's own count however far it is, and inside a
+// step it goes by the road, so every position that arrives moves it on.
 {
   const me = kmOf('New Imus City Hall');
   const at = (dir, km, mk) => S.approachInfo([{ id: 'b', direction: dir, ts: 1, km }], mk === undefined ? me : mk, KMS, 'all');
-  // Northbound towards Imus, from far up the road to the stop, 100 m at a time.
-  const from = kmOf('Javalera'), seq = [];
+  const onStep = (f, n) => f > n && f <= n + 1 + 1e-9;
+  // Northbound towards Imus from Mendez, the far end of the route, to the
+  // stop, 100 m at a time.
+  const from = kmOf('Crossing Mendez'), seq = [];
   for (let km = from; km <= me + 1e-9; km += 0.1) seq.push(at('north', km));
-  const ps = seq.map(i => S.stopProgress(i, me, KMS, 6));
-  check(ps[0] === 0 && seq[0].stops >= 6, 'six or more stops away, the bus waits at the edge', `${seq[0].stops} stops`);
-  check(ps.every((p, i) => i === 0 || p >= ps[i - 1] - 1e-9), 'and from there it only ever comes nearer, never back');
-  const steps = seq.map((i, k) => ({ n: i.stops, p: ps[k] })).filter(x => x.n < 6);
-  check(steps.length > 20 && steps.every(x => x.p >= (5 - x.n) / 6 - 1e-9 && x.p <= (6 - x.n) / 6 + 1e-9),
-    'with n stops still between, it is on the n-th step from your stop: the card\'s own count',
-    steps.filter(x => !(x.p >= (5 - x.n) / 6 - 1e-9 && x.p <= (6 - x.n) / 6 + 1e-9)).slice(0, 3).map(x => x.n + ':' + x.p.toFixed(3)).join(' '));
-  const moved = ps.filter((p, i) => i && p > ps[i - 1] + 1e-9).length, inside = ps.filter((p, i) => i && seq[i].stops < 6).length;
-  check(moved === inside, 'inside the last six, every 100 m of road moves it', `${moved} of ${inside}`);
-  check(S.stopProgress(at('north', me - 0.001), me, KMS, 6) > 0.99 && S.stopProgress(at('north', me), me, KMS, 6) === 1,
+  const fs_ = seq.map(i => S.stopsAway(i, me, KMS));
+  check(seq[0].stops > 20 && onStep(fs_[0], seq[0].stops), 'from the far end of the route it is as many stops away as the card says, not six',
+    `${seq[0].stops} stops, ${fs_[0].toFixed(2)}`);
+  check(fs_.every((f, i) => i === 0 || f <= fs_[i - 1] + 1e-9), 'and from there it only ever comes nearer, never back');
+  const off = seq.map((i, k) => ({ n: i.stops, f: fs_[k] })).filter(x => !onStep(x.f, x.n));
+  check(!off.length, 'with n stops still between, it is on the n-th step from your stop, all the way: the card\'s own count',
+    off.slice(0, 3).map(x => x.n + ':' + x.f.toFixed(3)).join(' ') || `${seq.length} positions`);
+  const moved = fs_.filter((f, i) => i && f < fs_[i - 1] - 1e-9).length;
+  check(moved === fs_.length - 1, 'every 100 m of road moves it, near or far', `${moved} of ${fs_.length - 1}`);
+  check(S.stopsAway(at('north', me - 0.001), me, KMS) < 0.01 && S.stopsAway(at('north', me), me, KMS) === 0,
     'and at your stop it is there');
   // Southbound runs the chain the other way, and is measured the other way.
   const sbMe = kmOf('Biclatan');
   const sb = S.approachInfo([{ id: 's', direction: 'south', ts: 1, km: kmOf('Monterey') }], sbMe, KMS, 'all');
-  const sbP = S.stopProgress(sb, sbMe, KMS, 6);
-  check(sb.stops < 6 && sbP >= (5 - sb.stops) / 6 && sbP <= (6 - sb.stops) / 6, 'southbound is measured down the chain, to the same steps',
-    `${sb.stops} stops, ${sbP.toFixed(3)}`);
+  const sbF = S.stopsAway(sb, sbMe, KMS);
+  check(onStep(sbF, sb.stops), 'southbound is measured down the chain, to the same steps', `${sb.stops} stops, ${sbF.toFixed(3)}`);
   // On board it reads aboardInfo()'s shape, and a fix just past the sign is at it.
   const on = S.aboardInfo({ id: 'm', direction: 'north', ts: 1, km: kmOf('Malagasang 1-G') }, me, KMS);
-  const onP = S.stopProgress(on, me, KMS, 6);
-  check(onP >= (5 - on.stops) / 6 && onP <= (6 - on.stops) / 6, 'riding, the same steps for your own bus', `${on.stops} stops, ${onP.toFixed(3)}`);
-  check(S.stopProgress(S.aboardInfo({ id: 'm', direction: 'north', ts: 1, km: me + 0.2 }, me, KMS), me, KMS, 6) === 1,
+  const onF = S.stopsAway(on, me, KMS);
+  check(onStep(onF, on.stops), 'riding, the same steps for your own bus', `${on.stops} stops, ${onF.toFixed(3)}`);
+  const far = S.aboardInfo({ id: 'm', direction: 'north', ts: 1, km: from }, me, KMS);
+  check(onStep(S.stopsAway(far, me, KMS), far.stops), 'from the far end too', `${far.stops} stops`);
+  check(S.stopsAway(S.aboardInfo({ id: 'm', direction: 'north', ts: 1, km: me + 0.2 }, me, KMS), me, KMS) === 0,
     'and pulled in a little past the sign, it is at your stop');
-  check(S.stopProgress(null, me, KMS, 6) === 0 && S.stopProgress(at('north', from), null, KMS, 6) === 0 &&
-        S.stopProgress({ direction: 'north', busKm: NaN }, me, KMS, 6) === 0,
-    'no bus, no stop or a bus off the chain: the edge, never a throw');
+  check(S.stopsAway(null, me, KMS) === null && S.stopsAway(at('north', from), null, KMS) === null &&
+        S.stopsAway({ direction: 'north', busKm: NaN }, me, KMS) === null,
+    'no bus, no stop or a bus off the chain: nothing to place, never a throw');
   // A place and nothing else: no clock is read, so it cannot become a time.
-  check(!/Date|\bnow\b|\.ts\b|speed|minute/.test(S.stopProgress.toString()), 'it reads places along the road and nothing about time');
+  check(!/Date|\bnow\b|\.ts\b|speed|minute/.test(S.stopsAway.toString()), 'it reads places along the road and nothing about time');
+
+  // On board the picture stands each post as far back from your stop as its
+  // stop is (stopsBack): the same stops, measured the way the bus comes.
+  const back = S.stopsBack({ direction: 'north' }, me, KMS);
+  check(back.length > 20 && back.every((w, i) => w > 0 && (i === 0 || w >= back[i - 1])),
+    'stopsBack: every stop before yours, how far back from it, nearest first', `${back.length} stops`);
+  const nb = at('north', kmOf('Biclatan'));
+  check(back.filter(w => w < nb.km).length === nb.stops,
+    'and the ones nearer than the bus are exactly the stops the card counts', `${nb.stops} stops`);
+  const sbBack = S.stopsBack({ direction: 'south' }, sbMe, KMS);
+  check(sbBack.length > 20 && sbBack.filter(w => w < sb.km).length === sb.stops,
+    'southbound, back is the other way along the chain, and counts the same', `${sb.stops} stops`);
+  check(S.stopsBack(null, me, KMS).length === 0 && S.stopsBack({ direction: 'north' }, null, KMS).length === 0,
+    'no bus or no stop: nothing, never a throw');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

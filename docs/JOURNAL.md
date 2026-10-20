@@ -25,6 +25,96 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-20: The road seen from the front seat
+
+With the road at one steady speed, the maintainer found the ride still
+looked slow, and asked for it to look faster, with the dashes further
+apart: a sign at a time was fine, and none for a few seconds too. The pace
+had to stay the bus's, since the picture is behind the bus and never ahead,
+so the eye moved instead. It had seen as a long lens does, as if from 22 m
+behind the front, and a pole took ten seconds at 30 km/h to grow from a
+quarter of its size to full; from the front seat, seeing wide, it takes two
+and a half, and the near things sweep out of the glass. About 150 m is in
+sight instead of 260. The middle line went from a dash every 12 m to 4 m of
+paint every 20 m, drawn on the ground so it stretches as it nears, and the
+near road got joints across the concrete every 4.5 m and grass on the
+verges, which stream past at the foot of the glass. Measured, it costs what
+the long lens did.
+
+The maintainer liked it, but the sign at each stop with their stop's name
+went by too fast to read. Keeping the speed, it became three times the
+size, on two legs by the road, readable from about 25 m off, two and a half
+seconds at 30 km/h, where before it could be read for a third of one.
+
+## 2026-10-20: The trip screen comes to rest
+
+The maintainer asked how the green dots on the sharing tab compared with the
+picture of the bus driving, for a sharer who has to keep the page open.
+Measured again in Chromium at a phone's size, each on its own, over whole
+feeds with a bus moving all the while: the screen at rest about 1% of a CPU
+core, the picture about 6%, the two dots breathing all trip about 20%.
+
+The measuring found something else. The sharing tab is fed every 18 seconds,
+not every 6, and the picture took six seconds to reach each position, so on
+the screen sharers watch most it drove for six seconds and stood for twelve:
+the stillness the maintainer had already asked about. It now goes on until
+the next position comes, which doubles its cost and leaves it well under the
+dots'. Behind that was a second fault: fed every 18 seconds, a bus faster
+than about 50 km/h goes further than the 260 m in sight between positions,
+and every such move was drawn at once, so on the highway the picture jumped
+instead of driving. A glide now drives as far as a bus at 110 km/h goes in
+its time.
+
+The maintainer suggested the dots breathe less often, or only for the first
+30 seconds and then stop or go slower. Measured: slower cost exactly the
+same, since anything moving is a repaint every frame however slowly it
+moves; one breath every twelve seconds still half; half a minute and then
+still, nothing at all after it. So they breathe for half a minute and hold
+still, green, and breathe again when that means something: the status dot
+when the sharing tab or the GPS comes back, the tab's dot each time the
+sharer goes to watch the map. With a bus moving all the while, the trip
+screen went from 35% of a core to 16%, its picture moving the whole time.
+
+Still looping on a trip are the coach rocking on the strip, about 7%, and
+the sampaguita a sharer has from their first trip on, swinging from the
+mirror, about 6%.
+
+Then the maintainer asked how the picture looked now, whether it still
+moved slowly and stopped, and whether folding it away until tapped would
+save battery. The preview page had been timed for the map tab and never
+showed the sharing tab's 18 seconds; rebuilt at that pace it drove all the
+time, but slow it still looked, because at the bus's real pace things stay
+specks until the last 50 m. Folding the road alone saved only a third: one
+thing moving costs most of what several do. The maintainer chose the road
+folded on the sharing tab until "Show the road" is tapped, for that visit
+only; the strip's rocking bus to rest after half a minute like the dots;
+and, for the look, a power pole every 25 m with bigger km signs, and, their
+own idea, a sign at every stop with the stop's name and the km still to
+go, like "2.5 km One Ayala". Those signs are the first words written in a
+picture, other than the night's z z Z. The rest of what loops on that tab
+rests too: the other buses' pills, the sighting glows and the parol, which
+is up from September. In parol season, with another bus on the strip, the
+trip screen a minute into a trip went from 46% of a core to 2%, and to 19%
+with the road open.
+
+Watching it, the maintainer saw the road go slow, fast, slow, and asked
+whether one steady speed was impossible. It was the stylesheet's glide:
+each thing went straight between four points of its way, and over the
+sharing tab's 24-second glides its speed on the screen swung between about
+20 and 60 km/h every six seconds for a bus going 30. Reports arriving
+unevenly would have made each glide faster or slower than the last as
+well. Now the card moves the road itself, 30 times a second, every thing
+where perspective has it at that moment, and the view runs a fixed lag
+behind each report's own time, so it keeps the bus's pace: measured on the
+page, 30 km/h every second for a bus at 30, and 100 for one at 100. Three
+other ways were tried and measured first and cost from a quarter more to
+five times as much; this one costs what the glide did. Watching it at
+highway speed turned up one more fault, as old as the glide: only what was
+in sight at either end of a move was drawn, so above about 40 km/h on the
+sharing tab the road went bare halfway, for seconds at 90. Everything on
+the way is drawn now, and the card keeps what is still further off than
+the eye reaches out of sight until the bus comes within it.
+
 ## 2026-10-20: The Google Play badge, and a shorter tester page
 
 The maintainer asked for Google Play's logo on the flyer and the tester page,
@@ -86,6 +176,57 @@ the app's own mix instead ("Dress your bus", not "Bihisan ang bus mo") and for
 the map itself. The second code follows `ANDROID_APP_URL`,
 and a test fails when the two part, so when the app goes public the poster
 cannot keep sending riders to a closed test.
+
+## 2026-10-19: The saved stop's picture draws every stop
+
+Looking at the card on a phone, the maintainer saw "about 47 stops before
+yours" under a picture of a bus a few stops off, waiting and on board alike:
+the picture held only the last six stops, so anything further looked six
+away. And on board the road's dashes ran past while the stops beside them
+stood still, as though the stops were riding along. They asked for the view
+to be improved, open to keeping it or trying something new.
+
+The view down the road was kept, since it was chosen over the others drawn
+three days before, and now draws every stop between as a post, each one
+even step of depth, so the line of posts is as long as the count: two stops
+off the bus is close, six and it is small, forty and it is a speck at the end
+of a long road. On board the dashes are on the road with the posts and move
+only when a position does, all by the distance the bus went, and a stop it
+passes goes by the glass. Between positions the view stands still, as the
+waiting one always has. Keeping the road running and moving the posts with
+it was the other way to make the two agree, and was not taken: between
+positions that is a guess at where the bus is, and at the bus's own pace it
+would be the speed the rules keep off every rider's screen.
+
+Then they asked whether that meant the view on board no longer moved while
+the bus did. Nearly so: a position every six seconds is a twentieth of a
+stop, so the road and the posts crept on a pixel or two and stood still.
+Their idea was to set the posts further apart, keep two or three in sight
+with the rest over the horizon, and show their stop as its pin there, so the
+stops and the road could move together. That became the road at its real
+length: the stops as far apart as they are, the dashes 50 m apart on the
+same road, 1.2 km in sight, and the view following the positions at an even
+pace a poll behind the bus, so it moves while the bus does and stops when it
+stops. That moves at the bus's pace, which the rules had kept off every
+picture; it was put to the maintainer as an exception for on board only,
+where the one looking is on that bus. The waiting card keeps every stop as
+a post.
+
+That was still far too slow to the maintainer, and they asked for signs
+saying how many km are left, all along the road, so that something is
+always happening. There is one every 100 m now, green, with the figures
+drawn like a road sign's, and the view came closer to the road, 260 m in
+sight, so at 30 km/h a dash goes by every second and a half and a sign
+every twelve.
+
+They also asked whether the moving picture drains the battery of a sharer
+who has to keep the page open. Measured in Chromium at a phone's size: the
+riding picture adds about 2% of a CPU core to a trip screen that costs under
+1% at rest. What costs is the breathing green dots on the sharing tab: any
+loop that never stops makes the browser repaint the page sixty times a
+second, about 20% of a core, and that was already so before any of this.
+
+The showcase video shows the old picture until it is rendered again.
 
 ## 2026-10-19: The tester page is linked
 

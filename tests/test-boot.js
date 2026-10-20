@@ -730,6 +730,25 @@ function run(page, include, label, configText, setup) {
     check(/on your bus · [\d.]+ km to go/.test(said) && /· your bus 98018 ·/.test(said) && !!stopBar.querySelector('.ride-art svg.stopview .sv-swing'),
       'and the card now follows that bus, not the one nearer the stop, seen from inside it', said.slice(0, 90));
     check(/I got off this bus/.test(pop(mineBus).textContent), 'its popup now offers "I got off this bus" instead');
+    // On board the view keeps to the road: a few metres either way is the
+    // GPS and moves nothing, a real move goes by over a poll, and a long way
+    // back starts the view again where the bus is, drawn at once.
+    {
+      const along = f => ({ ...mineBus, lat: busCp.lat + (myCp.lat - busCp.lat) * f, lng: busCp.lng + (myCp.lng - busCp.lng) * f });
+      const ride = () => ok.w.eval('STOPVIEW.at > 0 && Math.abs(STOPVIEW.from - STOPVIEW.to) > .0005');
+      ok.w.renderMyStop([near, along(.3)]);
+      const jumped = !ride();
+      ok.w.renderMyStop([near, along(.30005)]);
+      const held = !ride();
+      ok.w.renderMyStop([near, along(.303)]);
+      const moved = ride() && !stopBar.querySelector('.ride-art svg.stopview .sv-glide') && !!stopBar.querySelector('.ride-art svg.stopview .sv-road');
+      ok.w.renderMyStop([near, along(.29)]);
+      const back = !ride();
+      check(jumped && held && moved && back,
+        'on board, a jump is drawn at once, the GPS wobbling moves nothing, a real move goes by, and going back starts again',
+        [jumped, held, moved, back].join(','));
+      ok.w.renderMyStop([near, mineBus]);
+    }
     ok.w.renderMyStop([near]);
     check(/isn.t on the map right now/.test(stopBar.textContent) && /I got off/.test(stopBar.textContent),
       'if that bus leaves the map the card says so, rather than falling back to another bus');
@@ -748,11 +767,120 @@ function run(page, include, label, configText, setup) {
     ok.w.setShareUI('on', 'Sharing live');
     check(tab.className.includes('live') && /sharing now/.test(tab.textContent),
       'while sharing, the tab says so from the tracker, in a dot and in words for screen readers');
+    // The dots say live by breathing, for half a minute and then held still:
+    // breathing all trip kept the phone repainting for all of it, the most a
+    // sharer's screen cost, and slower would have cost the same.
+    {
+      const css = [...ok.d.querySelectorAll('style')].map(st => st.textContent).join('\n').replace(/\/\*[\s\S]*?\*\//g, '');
+      const dots = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(m => /statusdot|tablive/.test(m[1]) && /animation/.test(m[2]));
+      const breath = dots.map(m => /animation:breathe ([\d.]+)s ease-in-out (\d+);/.exec(m[2])).filter(Boolean);
+      check(dots.length === 1 && breath.length === 1 && +breath[0][1] * +breath[0][2] <= 32 &&
+            /:root:not\(\.trip-on\) \.tab\.live \.tablive/.test(dots[0][1]),
+        'the live dots breathe for half a minute and then hold still, the tab\'s only while the sharer is on the other tab',
+        dots.map(m => m[1].trim() + '{' + m[2] + '}').join(' | '));
+      // The rest of the trip screen rests too: one thing moving keeps the
+      // whole screen redrawing. The strip's pills for about half a minute,
+      // as long as their own loops say; the glows, drawn again every poll,
+      // and the parol, which never leaves the screen, not at all.
+      const secs = re => +((re.exec(css) || [])[1]);
+      const rock = secs(/\.buspill\.live svg, \.busmk\.live svg\{animation:idle ([\d.]+)s/), breathe = secs(/\.buspill\.live:not\(\.me\)\{animation:breathe-nb ([\d.]+)s/);
+      const times = secs(/#onbusStrip \.buspill\.live svg\{animation-iteration-count:(\d+);\}/) * rock;
+      const breaths = secs(/#onbusStrip \.buspill\.live:not\(\.me\)\{animation-iteration-count:(\d+);\}/) * breathe;
+      check(times > 25 && times <= 32 && breaths > 25 && breaths <= 32 &&
+            /#onbusStrip \.sightband\{animation:none;\}/.test(css) && /:root\.trip-on #parol\{animation:none;\}/.test(css),
+        'and so does the rest of the trip screen: the strip\'s pills after half a minute, its glows and the parol from the start',
+        'rocking ' + times.toFixed(1) + ' s, breathing ' + breaths.toFixed(1) + ' s');
+    }
     check(ok.w.sessionStorage.getItem('wt-aboard') === null,
       'and a bus picked from a popup is superseded, so it cannot come back after Stop');
     ok.w.renderMyStop([near, { ...mineBus, self: true }]);
     check(/on your bus/.test(stopBar.textContent) && !tripBox.className.includes('hidden') && /on your bus/.test(tripBox.textContent),
       'the sharer\'s own bus drives the card, on the tracker and on the sharing tab both');
+    // On the sharing tab the road is folded away until asked for, then open
+    // for the rest of the visit only: a sharer's screen stays on all trip,
+    // and the road going by kept it redrawing. The tracker's copy shows it.
+    {
+      const lsKeys = () => { const k = []; for (let i = 0; i < ok.w.localStorage.length; i++) k.push(ok.w.localStorage.key(i)); return k.sort().join(','); };
+      // A tap draws the card again from the page's own buses; these are the
+      // test's, so it is drawn again from them.
+      const before = lsKeys(), fold = () => tripBox.querySelector('.ride-fold'), mine = () => ok.w.renderMyStop([near, { ...mineBus, self: true }]);
+      mine();
+      const folded = !tripBox.classList.contains('road') && !!fold() && !!tripBox.querySelector('svg.stopview') && fold().getAttribute('aria-expanded') === 'false';
+      fold().click(); mine();
+      const opened = tripBox.classList.contains('road') && ok.w.sessionStorage.getItem('wt-road') === '1' && fold().getAttribute('aria-expanded') === 'true';
+      ok.w.eval('WALK = {}');
+      ok.w.toggleRoad();
+      const walked = tripBox.classList.contains('road');
+      ok.w.eval('WALK = null');
+      fold().click(); mine();
+      const closed = !tripBox.classList.contains('road') && ok.w.sessionStorage.getItem('wt-road') === null;
+      const css = [...ok.d.querySelectorAll('style')].map(st => st.textContent).join('\n');
+      const rules = /\.ride-fold\{display:none;\}/.test(css) && /#tripStop:not\(\.road\) \.stopview\{display:none;\}/.test(css) &&
+        !/#myStop[^{]*\.stopview\{display:none/.test(css);
+      check(folded && opened && walked && closed && rules && lsKeys() === before,
+        'on the sharing tab the road is folded until asked for, then open for this visit only, and never during a tour',
+        [folded, opened, walked, closed, rules].join(','));
+    }
+    // Positions come every poll on the tracker but every SLOW_FEED_MS on the
+    // sharing tab, and on board the view shows the bus a lag behind, the
+    // feed and a poll more, reaching each position that long after the bus
+    // was there by the report's own time. So the view never stands while the
+    // bus goes on, and a report that comes later than the others makes a
+    // shorter glide rather than a slower one: the pace stays the bus's.
+    {
+      const mine = (f, late) => ({ ...mineBus, self: true, ts: Date.now() - (late || 0),
+        lat: busCp.lat + (myCp.lat - busCp.lat) * f, lng: busCp.lng + (myCp.lng - busCp.lng) * f });
+      const length = () => ok.w.eval('STOPVIEW.at > 0') ? ok.w.eval('STOPVIEW.span') / 1000 : 'still';
+      ok.w.renderMyStop([near, mine(.3)]);
+      ok.w.renderMyStop([near, mine(.303)]);
+      const tracker = length();
+      ok.w.switchTab('share');
+      ok.w.renderMyStop([near, mine(.306)]);
+      const shareTab = length();
+      ok.w.renderMyStop([near, mine(.309, 3000)]);
+      const late = length();
+      ok.w.switchTab('track');
+      const slowMs = +((/const SLOW_FEED_MS = (\d+);/.exec(fs.readFileSync(path.join(APP, 'index.html'), 'utf8')) || [])[1]);
+      check(Math.abs(tracker - 12) < .5 && slowMs > 6000 && Math.abs(shareTab - (slowMs + 6000) / 1000) < .5 && Math.abs(late - (shareTab - 3)) < .5,
+        'on board the view runs the feed and a poll behind the report\'s own time: 12 s on the tracker, 24 on the sharing tab, a late report a shorter glide',
+        [tracker, shareTab, late].map(x => typeof x === 'number' ? x.toFixed(2) + 's' : x).join(', '));
+      // The card moves the road itself, frame by frame: halfway through a
+      // glide every thing on the open road is where the picture's own sum
+      // puts it for the bus halfway, and nothing moves on a folded one.
+      ok.w.switchTab('share');
+      ok.w.toggleRoad();
+      ok.w.renderMyStop([near, mine(.312)]);
+      const half = ok.w.eval('STOPVIEW.at + STOPVIEW.span / 2'), v = ok.w.eval('(STOPVIEW.from + STOPVIEW.to) / 2');
+      const placed = ok.w.ridePlace(half);
+      const onRoad = [...tripBox.querySelectorAll('.sv-road .sv-k')], at = g => +g.getAttribute('data-w');
+      // This glide is longer than the eye reaches, as a bus on the highway
+      // goes between positions on this tab: what is further up the road
+      // than that waits out of sight, and comes into view as the bus nears.
+      const seenKm = ok.w.eval('SV_SEEN'), long = ok.w.eval('STOPVIEW.from - STOPVIEW.to'), far = g => v - at(g) > seenKm;
+      const exact = onRoad.length > 20 && onRoad.every(g => far(g) ? g.style.display === 'none' : g.style.display === '' && g.style.transform === ok.w.svOnRoad(v, at(g)));
+      // and what is painted on it, the middle line, the joints and the
+      // grass, drawn again for the bus halfway.
+      const painted = [['.sv-dashes', 'svDashes'], ['.sv-joints', 'svJoints'], ['.sv-tufts', 'svTufts']].every(([sel, fn]) => {
+        const path = tripBox.querySelector('.sv-road ' + sel);
+        return !!path && path.getAttribute('d') === ok.w[fn](v) && path.getAttribute('d') !== ok.w[fn](ok.w.eval('STOPVIEW.to'));
+      });
+      const waiting = onRoad.filter(far).length, end = ok.w.eval('STOPVIEW.to');
+      ok.w.ridePlace(ok.w.eval('STOPVIEW.at + STOPVIEW.span'));
+      const arrived = onRoad.every(g => g.style.display === '' && g.style.transform === ok.w.svOnRoad(end, at(g)));
+      ok.w.toggleRoad();
+      ok.w.renderMyStop([near, mine(.315)]);
+      const before = [...tripBox.querySelectorAll('.sv-road .sv-k')].map(g => g.style.transform).join('|');
+      const folded = !ok.w.ridePlace(ok.w.eval('STOPVIEW.at + STOPVIEW.span / 2')) &&
+        [...tripBox.querySelectorAll('.sv-road .sv-k')].map(g => g.style.transform).join('|') === before;
+      ok.w.switchTab('track');
+      check(placed && exact && painted && folded,
+        'and the card moves the open road frame by frame, each thing where the picture\'s own sum puts it, its paint drawn again, and leaves a folded one be',
+        [placed, exact, painted, folded].join(',') + (exact ? '' : ' ' + (onRoad[0] ? onRoad[0].style.transform + ' vs ' + ok.w.svOnRoad(v, at(onRoad[0])) : 'nothing on the road')));
+      check(long > seenKm && waiting > 5 && arrived,
+        'and on a way longer than the eye reaches, what is further off waits out of sight until the bus nears it',
+        long.toFixed(3) + ' km, ' + waiting + ' of ' + onRoad.length + ' things waiting halfway, ' + (arrived ? 'all in place at the end' : 'not all in place at the end'));
+      ok.w.renderMyStop([near, { ...mineBus, self: true }]);
+    }
     check(!/I got off/.test(tripBox.textContent), 'with no "I got off": a sharer gets off by tapping Stop');
     check(!/on this bus/.test(pop(near).textContent), 'and no "I\'m on this bus" on any popup while sharing');
     check(ok.d.querySelectorAll('[id="buzzBox"]').length === 0,

@@ -108,8 +108,8 @@ company's name or initials, for the same reason.
   tester, install. It names this deployment's Google Group and the app's
   package, so a fork running its own test edits both.
 - **Showcase poster:** `poster.html`, one portrait A4 sheet
-  (`assets/flyer/poster-a4.pdf`): what the tracker does in four of its own
-  pictures, and two QR codes, one for the tracker and one for the Android app
+  (`assets/flyer/poster-a4.pdf`): what the tracker does in four pictures (the
+  map and three of the tracker's own drawings), and two QR codes, one for the tracker and one for the Android app
   (its closed test's tester page, while the test runs). A fork regenerates
   both codes with `node tools/make-qr.js <url>`.
 - **Showcase video:** `sh tools/render-video.sh` makes a one-minute vertical

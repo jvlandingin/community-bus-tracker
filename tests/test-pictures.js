@@ -305,13 +305,14 @@ check(views['how-to.html'].map(v => v.aboard).join(',') === 'false,true' && view
       !views['flyer.html'][0].aboard && !views['for-operators.html'][0].aboard,
   'the guide draws it waiting and on board, and the poster and the briefing the same moment');
 
-// The showcase poster's four pictures are the tracker's own too: a bus on the
-// road, the saved stop, a ticket and your bus, each as the tool draws it now.
+// Three of the showcase poster's four pictures are the tracker's own too: the
+// saved stop, a ticket and your bus, each as the tool draws it now. The
+// fourth is the map, a crop of the flyer's screenshot.
 {
   const poster = read('poster.html');
-  const kinds = [tool.rides, tool.stopviews, tool.arts, tool.buses].map(f => f(poster, S));
+  const kinds = [tool.stopviews, tool.arts, tool.buses].map(f => f(poster, S));
   check(kinds.every(k => k.length === 1) && tool.redraw(poster, S) === poster,
-    'poster.html: its four pictures are drawn by the tracker\'s own code, as it is now',
+    'poster.html: its three drawings are drawn by the tracker\'s own code, as it is now',
     kinds.some(k => k.length !== 1) ? kinds.map(k => k.length).join(' ') + ' pictures' : tool.redraw(poster, S) === poster ? 'current' : 'stale (run node tools/make-pictures.js)');
 }
 

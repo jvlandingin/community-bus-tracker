@@ -33,9 +33,12 @@ riders who would rather share from the Play app. The flyer already carries
 the tracker's QR code, but it is the long argument: an example screen, the
 steps, the fine print, in three columns on a landscape sheet. So the poster is
 its own page, `poster.html`, one portrait sheet read from across a terminal:
-the headline, four of the tracker's own pictures with a line each (two for
-whoever waits, two for whoever shares), and the two codes side by side. Its
-words follow the flyer's Tagalog. The second code follows `ANDROID_APP_URL`,
+the headline, four pictures with a line each (the map, then three of the
+tracker's own drawings: two for whoever waits, two for whoever shares), and
+the two codes side by side. The first draft was all Tagalog, like the flyer,
+and had the bus on the road where the map is now; the maintainer asked for
+the app's own mix instead ("Dress your bus", not "Bihisan ang bus mo") and for
+the map itself. The second code follows `ANDROID_APP_URL`,
 and a test fails when the two part, so when the app goes public the poster
 cannot keep sending riders to a closed test.
 

@@ -125,13 +125,16 @@ and neither needs anything installed.
 **`poster.html` is the showcase poster** (October 2026): one portrait A4
 sheet, `assets/flyer/poster-a4.pdf`, that shows rather than explains. The
 flyer argues, with an example screen, steps and fine print; the poster is read
-from across a terminal: the headline, four of the tracker's own drawings (a
-bus on the road, the saved stop, a sharer's ticket, your bus) with a line
-each, and two QR codes, the tracker for everyone and the Android app for
+from across a terminal: the headline, four pictures with a line each (the
+map, cropped from the flyer's screenshot, then three of the tracker's own
+drawings: the saved stop, a sharer's ticket, your bus), and two QR codes, the tracker for everyone and the Android app for
 whoever shares. The app's code is for `ANDROID_APP_URL`, the tester page while
 the closed test runs, and `test-boot.js` section 8 fails while the two
 disagree or either code is not what `tools/make-qr.js` draws for the address
-its label names. It loads nothing and runs no script, like the flyer.
+its label names. It loads nothing and runs no script, like the flyer. Its
+words are the app's: English, with the Tagalog the app itself uses, never
+all Tagalog (the maintainer's call: "Dress your bus", not "Bihisan ang bus
+mo").
 
 **`testers.html` signs riders up for the closed test** (October 2026), in
 three taps on their own phone: join the Google Group that is the test's tester
@@ -650,6 +653,10 @@ single bus placed by interpolating along the Tagaytay–Amadeo leg from
 sized to the image rather than to the figure box, because that box's shape
 changes with the viewport and the image's does not. Every other figure on the
 guide is still drawn, and the guide still loads nothing over the network.
+
+`poster.html` carries a third crop of the flyer's screenshot, around Kawit and
+Imus with the flyer's two buses there, in a tile of the crop's own shape, and
+labelled an example like the flyer's screen. A fork recrops it too.
 
 `tools/make-route-figure.js` still generates a fully portable, geography-
 agnostic vector version of the same figure — not used by any shipped page

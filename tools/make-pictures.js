@@ -4,7 +4,7 @@
 // flyer, the briefing, the tester page and the poster, the picture on the
 // guide's salamat ticket, the guide's pictures of your bus, standing and on
 // the road, the saved stop's picture in the guide, the flyer and the
-// briefing, the poster's four pictures, and the app's icon and small mark
+// briefing, three of the poster's four pictures, and the app's icon and small mark
 // wherever they appear.
 //
 // The tracker draws its board at load (drawSignboard in index.html) and its

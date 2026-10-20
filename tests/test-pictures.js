@@ -416,7 +416,8 @@ console.log('\n=== 9. the saved stop\'s picture ===');
     const k = (/^[^"]*" style="transform:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\)/.exec(g) || [])[1];
     const k0 = (/--from:translate\([\d.]+px,[\d.]+px\) scale\(([\d.]+)\)/.exec(g.slice(0, g.indexOf('>'))) || [])[1];
     return { k: +k, k0: k0 === undefined ? null : +k0, gone: /^[^"]*\bsv-gone\b/.test(g), glide: (/^[^"]*/.exec(g) || [''])[0].trim(),
-      what: /#4f46b8/.test(own) ? 'sign' : /<svg/.test(own) ? 'bus' : /height="6\.72"/.test(own) ? 'post' : /#2e6b45/.test(own) ? 'km' : 'dash' };
+      what: /#4f46b8/.test(own) ? 'sign' : /<svg/.test(own) ? 'bus' : /height="6\.72"/.test(own) ? 'post' : /#2e6b45/.test(own) ? 'km' :
+        /fill="#(?:a39a91|4a4039)"/.test(own) ? 'pole' : 'dash' };
   });
   // Your stop's pin, drawn on its own: the depth its place is at, now and
   // before, read back from where it is put.
@@ -507,9 +508,9 @@ console.log('\n=== 9. the saved stop\'s picture ===');
     const ride = view(.15, { from: .2, ago: 1500 }), moving = things(ride);
     const kept = moving.filter(x => x.k < S.SV_GONE && x.k0 !== null && x.k0 < S.SV_GONE);
     const wrong = kept.filter(x => Math.abs(gOf(x.k0) - gOf(x.k) - .05) > slack(P, x.k0, x.k));
-    check(kept.length >= 15 && ['dash', 'post', 'sign', 'km'].every(w => kept.some(x => x.what === w)) && !wrong.length &&
+    check(kept.length >= 15 && ['dash', 'post', 'sign', 'km', 'pole'].every(w => kept.some(x => x.what === w)) && !wrong.length &&
           kept.every(x => x.glide === 'sv-ride') && pin(ride) && pin(ride).k0 !== null && pin(ride).glide === 'sv-ride',
-      'when a position arrives, the dashes, the posts, the km signs, your stop and its pin all come on by the 50 m the bus went',
+      'when a position arrives, the dashes, the posts, the km signs, the poles, your stop and its pin all come on by the 50 m the bus went',
       kept.length + ' things' + (wrong.length ? ', ' + wrong.map(x => x.what + ' by ' + (gOf(x.k0) - gOf(x.k)).toFixed(3)).join(' ') : ''));
     const passing = things(view(.1, { from: .13, ago: 0 }));
     check(passing.some(x => x.what === 'post' && x.k === S.SV_GONE && x.k0 < S.SV_GONE),
@@ -548,11 +549,43 @@ console.log('\n=== 9. the saved stop\'s picture ===');
     const kms = things(view(.62)).filter(x => x.what === 'km');
     check(kms.length === 3 && kms.every((x, i) => Math.abs(gOf(x.k) - (.62 - [.4, .5, .6][i])) <= slack(P, x.k)),
       'on board: a sign every 100 m in sight, each where it stands', kms.map(x => gOf(x.k).toFixed(3)).join(' '));
-    const strokes = v => ((/<path d="([^"]*)" stroke="#fbf4e4" stroke-width="1\.5"/.exec(S.svKmSign(0, 0, v)) || [])[1] || '').split('M').length - 1;
+    const strokes = v => ((/<path d="([^"]*)" stroke="#fbf4e4" stroke-width="2\.1"/.exec(S.svKmSign(0, 0, v)) || [])[1] || '').split('M').length - 1;
     check(strokes(8.8) === 14 && strokes(1.1) === 4 && strokes(2.3) === 10 && strokes(0.7) === 9 && S.svKmSign(0, 0, 2.3) !== S.svKmSign(0, 0, 2.4) &&
           view(.62).includes(S.svKmSign(1.12 * P.k, P.k, .6)),
       'and each says the km still to go when the bus is at it, in road-sign figures');
     check(things(view(0)).filter(x => x.what === 'sign')[0].k > 1, 'and your own stop is never passed: at it, it is at the glass');
+    // A power pole every 25 m across the road, going by on the left as the
+    // stops and signs go by on the right, on wires that stand still: they
+    // run along the road, so from the vanishing point through every
+    // pole's crossarm, however near.
+    const poles = things(view(.62)).filter(x => x.what === 'pole');
+    const want = [];
+    for (let w = .375; w < .62; w += S.SV_POLE) want.push(Math.round(w * 1000) / 1000);
+    check(S.SV_POLE === .025 && poles.length === want.length && poles.every((x, i) => Math.abs(gOf(x.k) - (.62 - want[i])) <= slack(P, x.k)),
+      'on board: a pole every 25 m in sight across the road, each where it stands', poles.map(x => gOf(x.k).toFixed(3)).join(' '));
+    const wires = /<path d="M([\d.]+) ([\d.]+)L(-?[\d.]+) (-?[\d.]+)M[^"]*" stroke="#3d322d"/.exec(view(.62));
+    const arm = S.svPole(S.SV_POLE_X * P.k, P.k, false);
+    const armY = +(/<rect x="[^"]*" y="([\d.-]+)" width="22"/.exec(arm) || [])[1] + 1.2, armX = S.SV_POLE_X * P.k - 10;
+    const onWire = k => { if (!wires) return false; const [x0, y0, x1, y1] = wires.slice(1).map(Number), x = P.vx + armX * k, y = P.h + armY * k;
+      return Math.abs((x - x0) * (y1 - y0) - (y - y0) * (x1 - x0)) < .5 * Math.hypot(x1 - x0, y1 - y0); };
+    check(!!wires && !/sv-ride|sv-k/.test(view(.62).slice(view(.62).lastIndexOf('<path', wires.index + 1), wires.index + wires[0].length)) &&
+          poles.every(x => onWire(x.k)) && onWire(.3) && onWire(1.5),
+      'and their wires stand still, through every crossarm near or far');
+    // Each stop on the way says how far your stop still is from it, under
+    // your stop's name: the only words ever written in a picture.
+    const named = view(2.7, { place: 'One Ayala Terminal' });
+    const signs = [...named.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map(m => m[1]);
+    check(JSON.stringify(signs) === JSON.stringify(['One Ayala', 'Terminal', '2.5 km']) && named.split('<text').length - 1 === 3,
+      'at each stop in sight a sign with your stop\'s name and the km still to go from there', signs.join(' / '));
+    check(JSON.stringify(S.svPlace('One Ayala Terminal')) === '["One Ayala","Terminal"]' && JSON.stringify(S.svPlace('New Imus City Hall')) === '["New Imus","City Hall"]' &&
+          JSON.stringify(S.svPlace('LRT Buendia (Gil Puyat)')) === '["LRT Buendia"]' && JSON.stringify(S.svPlace('Magallanes Square / Hiraya')) === '["Magallanes","Square"]' &&
+          JSON.stringify(S.svPlace('PITX')) === '["PITX"]' && S.svPlace('').length === 0,
+      'the name as a sign has room for it: before any bracket or slash, in two even lines past 13 letters');
+    check(/&lt;b&gt;/.test(S.svStopKm(0, 70, 1.2, '<b>')) && !/<b>/.test(S.svStopKm(0, 70, 1.2, '<b>')) && S.svStopKm(0, 70, 1.2, '') === '' &&
+          /textLength="52"/.test(S.svStopKm(0, 70, 1.2, 'Supercalifragilistic')),
+      'written as text, never as markup, nothing without a name, and a word too long for the sign squeezed to fit');
+    check(!/<text/.test(view(2.9)) && !/<text/.test(S.stopViewSvg({ f: 2.5, place: 'One Ayala Terminal' })),
+      'and no words at all without a name, nor on the waiting picture');
     const a = view(.4, { sky: 'night', worn: ['dice'], paint: 'dagat', here: true });
     check(a === view(.4, { sky: 'night', worn: ['dice'], paint: 'dagat', here: true }) &&
           a.startsWith('<svg class="stopview" viewBox="0 0 330 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">') &&

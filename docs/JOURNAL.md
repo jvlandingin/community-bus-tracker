@@ -25,7 +25,7 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
-## 2026-10-20: The live dots breathe for half a minute
+## 2026-10-20: The trip screen comes to rest
 
 The maintainer asked how the green dots on the sharing tab compared with the
 picture of the bus driving, for a sharer who has to keep the page open.
@@ -57,6 +57,24 @@ screen went from 35% of a core to 16%, its picture moving the whole time.
 Still looping on a trip are the coach rocking on the strip, about 7%, and
 the sampaguita a sharer has from their first trip on, swinging from the
 mirror, about 6%.
+
+Then the maintainer asked how the picture looked now, whether it still
+moved slowly and stopped, and whether folding it away until tapped would
+save battery. The preview page had been timed for the map tab and never
+showed the sharing tab's 18 seconds; rebuilt at that pace it drove all the
+time, but slow it still looked, because at the bus's real pace things stay
+specks until the last 50 m. Folding the road alone saved only a third: one
+thing moving costs most of what several do. The maintainer chose the road
+folded on the sharing tab until "Show the road" is tapped, for that visit
+only; the strip's rocking bus to rest after half a minute like the dots;
+and, for the look, a power pole every 25 m with bigger km signs, and, their
+own idea, a sign at every stop with the stop's name and the km still to
+go, like "2.5 km One Ayala". Those signs are the first words written in a
+picture, other than the night's z z Z. The rest of what loops on that tab
+rests too: the other buses' pills, the sighting glows and the parol, which
+is up from September. In parol season, with another bus on the strip, the
+trip screen a minute into a trip went from 46% of a core to 2%, and to 19%
+with the road open.
 
 ## 2026-10-19: The saved stop's picture draws every stop
 

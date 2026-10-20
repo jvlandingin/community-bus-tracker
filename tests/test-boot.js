@@ -718,12 +718,49 @@ function run(page, include, label, configText, setup) {
             /:root:not\(\.trip-on\) \.tab\.live \.tablive/.test(dots[0][1]),
         'the live dots breathe for half a minute and then hold still, the tab\'s only while the sharer is on the other tab',
         dots.map(m => m[1].trim() + '{' + m[2] + '}').join(' | '));
+      // The rest of the trip screen rests too: one thing moving keeps the
+      // whole screen redrawing. The strip's pills for about half a minute,
+      // as long as their own loops say; the glows, drawn again every poll,
+      // and the parol, which never leaves the screen, not at all.
+      const secs = re => +((re.exec(css) || [])[1]);
+      const rock = secs(/\.buspill\.live svg, \.busmk\.live svg\{animation:idle ([\d.]+)s/), breathe = secs(/\.buspill\.live:not\(\.me\)\{animation:breathe-nb ([\d.]+)s/);
+      const times = secs(/#onbusStrip \.buspill\.live svg\{animation-iteration-count:(\d+);\}/) * rock;
+      const breaths = secs(/#onbusStrip \.buspill\.live:not\(\.me\)\{animation-iteration-count:(\d+);\}/) * breathe;
+      check(times > 25 && times <= 32 && breaths > 25 && breaths <= 32 &&
+            /#onbusStrip \.sightband\{animation:none;\}/.test(css) && /:root\.trip-on #parol\{animation:none;\}/.test(css),
+        'and so does the rest of the trip screen: the strip\'s pills after half a minute, its glows and the parol from the start',
+        'rocking ' + times.toFixed(1) + ' s, breathing ' + breaths.toFixed(1) + ' s');
     }
     check(ok.w.sessionStorage.getItem('wt-aboard') === null,
       'and a bus picked from a popup is superseded, so it cannot come back after Stop');
     ok.w.renderMyStop([near, { ...mineBus, self: true }]);
     check(/on your bus/.test(stopBar.textContent) && !tripBox.className.includes('hidden') && /on your bus/.test(tripBox.textContent),
       'the sharer\'s own bus drives the card, on the tracker and on the sharing tab both');
+    // On the sharing tab the road is folded away until asked for, then open
+    // for the rest of the visit only: a sharer's screen stays on all trip,
+    // and the road going by kept it redrawing. The tracker's copy shows it.
+    {
+      const lsKeys = () => { const k = []; for (let i = 0; i < ok.w.localStorage.length; i++) k.push(ok.w.localStorage.key(i)); return k.sort().join(','); };
+      // A tap draws the card again from the page's own buses; these are the
+      // test's, so it is drawn again from them.
+      const before = lsKeys(), fold = () => tripBox.querySelector('.ride-fold'), mine = () => ok.w.renderMyStop([near, { ...mineBus, self: true }]);
+      mine();
+      const folded = !tripBox.classList.contains('road') && !!fold() && !!tripBox.querySelector('svg.stopview') && fold().getAttribute('aria-expanded') === 'false';
+      fold().click(); mine();
+      const opened = tripBox.classList.contains('road') && ok.w.sessionStorage.getItem('wt-road') === '1' && fold().getAttribute('aria-expanded') === 'true';
+      ok.w.eval('WALK = {}');
+      ok.w.toggleRoad();
+      const walked = tripBox.classList.contains('road');
+      ok.w.eval('WALK = null');
+      fold().click(); mine();
+      const closed = !tripBox.classList.contains('road') && ok.w.sessionStorage.getItem('wt-road') === null;
+      const css = [...ok.d.querySelectorAll('style')].map(st => st.textContent).join('\n');
+      const rules = /\.ride-fold\{display:none;\}/.test(css) && /#tripStop:not\(\.road\) \.stopview\{display:none;\}/.test(css) &&
+        !/#myStop[^{]*\.stopview\{display:none/.test(css);
+      check(folded && opened && walked && closed && rules && lsKeys() === before,
+        'on the sharing tab the road is folded until asked for, then open for this visit only, and never during a tour',
+        [folded, opened, walked, closed, rules].join(','));
+    }
     // Positions come every poll on the tracker but every SLOW_FEED_MS on the
     // sharing tab, and on either the view goes on until the next one comes:
     // driving for a poll and then standing was two thirds of every wait.

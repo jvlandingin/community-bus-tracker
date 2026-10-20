@@ -649,6 +649,22 @@
   .ride.here .ride-big .num{font-size:var(--fs-title);}
   .ride-art > .ride-flag{position:absolute; left:8px; top:8px; margin:0; line-height:1.2; box-shadow:var(--sh-2);}
   .ride.here .ride-art{box-shadow:0 0 0 2px var(--mine);}
+  /* On the sharing tab the road is folded away until asked for, for this
+     visit (toggleRoad()): a sharer's screen stays on all trip, and the road
+     going by kept the phone redrawing for all of it. Folded, the card keeps
+     its words and its flag; the tracker's own copy shows the road as ever. */
+  .ride-fold{display:none;}
+  #tripStop .ride-fold{
+    display:block; flex:1 1 auto; min-height:40px; padding:0 12px; line-height:1.2;
+    border:1.5px dashed var(--line); border-radius:var(--r-s); background:var(--surface);
+    font-family:inherit; font-size:var(--fs-label); font-weight:700; color:var(--muted); cursor:pointer;
+  }
+  #tripStop:not(.road) .ride-art{display:flex; flex-wrap:wrap; align-items:center; gap:8px; background:transparent; overflow:visible;}
+  #tripStop:not(.road) .stopview{display:none;}
+  #tripStop:not(.road) .ride-art > .ride-flag{position:static; box-shadow:none;}
+  #tripStop.road .ride-fold{position:absolute; right:8px; top:8px; min-height:30px; border-style:solid; box-shadow:var(--sh-2);}
+  #tripStop .rf-hide, #tripStop.road .rf-show{display:none;}
+  #tripStop.road .rf-hide{display:inline;}
   /* The optional buzz. A per-visit choice, kept in sessionStorage like the
      blue dot's switch, so it never becomes a seventh remembered thing. Only
      drawn where the browser can vibrate at all, which leaves out iPhones. */
@@ -1634,6 +1650,17 @@
      breathes only while the sharer is on the other tab, where it is the
      one saying the trip goes on. */
   .statusdot.live, :root:not(.trip-on) .tab.live .tablive{animation:breathe 2.6s ease-in-out 12;}
+  /* And everything else that loops on the sharing tab's trip screen rests
+     the same way, since any one thing moving keeps the whole screen
+     redrawing: the strip's pills rock and breathe for about half a minute
+     when the tab comes into view, then hold still; the sighting glows on
+     that strip, drawn again at every poll, hold still from the start; and
+     the parol hangs still, being in the header, which never leaves the
+     screen to start it again. */
+  #onbusStrip .buspill.live svg{animation-iteration-count:27;}
+  #onbusStrip .buspill.live:not(.me){animation-iteration-count:12;}
+  #onbusStrip .sightband{animation:none;}
+  :root.trip-on #parol{animation:none;}
   @keyframes breathe{0%,100%{box-shadow:0 0 0 4px rgba(29,138,95,.15);} 50%{box-shadow:0 0 0 9px rgba(29,138,95,.04);}}
 
   /* A bus arriving on the page. .arrive is added only to chips and badges
@@ -3336,13 +3363,15 @@ function rideStand(was, b){
 // across the road in road units, 0 under the vanishing point, and a thing
 // g up the road (stops waiting, km on board) is at depth z + dz g, so
 // k = 1 / (z + dz g).
-// t: { aboard, f, km, stops, from, ago, span, here, sky, worn, paint, still }. No ids.
+// t: { aboard, f, km, stops, place, from, ago, span, here, sky, worn, paint, still }.
+// place is your stop's name, for the signs at the stops on board. No ids.
 const STOP_VIEW_MOST = 80, STOP_GLIDE_MS = 1000, STOP_RIDE_MS = 6000;
 const SV_WAIT = { vx:214, h:58, k:70, z:.926, dz:.6, glide:'sv-glide' }, SV_ABOARD = { vx:150, h:62, k:70, z:.78, dz:35, glide:'sv-ride' };
-// On board, in km: as far as the road can be seen, a dash every 12 m and a
-// sign with the km still to go every 100 m, and where a thing the bus has
-// passed goes: off the glass. Your stop's pin is never smaller than SV_PIN.
-const SV_SEEN = .26, SV_DASH = .012, SV_MARK = .1, SV_GONE = 3.2, SV_PIN = 4.5;
+// On board, in km: as far as the road can be seen, a dash every 12 m, a
+// power pole every 25 m on the far side and a sign with the km still to go
+// every 100 m, and where a thing the bus has passed goes: off the glass.
+// Your stop's pin is never smaller than SV_PIN.
+const SV_SEEN = .26, SV_DASH = .012, SV_POLE = .025, SV_MARK = .1, SV_GONE = 3.2, SV_PIN = 4.5;
 // How far one glide may drive: as far as can be seen, or as far as a bus at
 // SV_FASTEST km/h goes in the glide's span, which on the sharing tab's
 // slower feed is further. A longer move is a gap in the positions, drawn at
@@ -3500,23 +3529,71 @@ const SV_FIGS = ['abcdef', 'bc', 'abdeg', 'abcdg', 'bcfg', 'acdfg', 'acdefg', 'a
 // A green roadside sign on a post, with how many km are still to go to
 // your stop: what the card says in words, coming up the road.
 function svKmSign(x, ground, km){
-  const n = svNum, h = 9, w = h * .5, gap = h * .3, text = km.toFixed(1);
+  const n = svNum, z = 1.4, h = 9 * z, w = h * .5, gap = h * .3, pad = 4.5 * z, tall = 15 * z, post = 18, text = km.toFixed(1);
   // How far each figure moves the next one on: a 1 is a single stroke.
   const step = function(ch){ return ch === '.' ? h * .3 : ch === '1' ? gap : w + gap; };
   let width = -gap;
   for (const ch of text) width += step(ch);
-  const top = ground - 14 - 15, left = x - (width + 9) / 2;
-  let s = '<rect x="' + n(x - .9) + '" y="' + n(top + 15) + '" width="1.8" height="14" fill="#7d7168"/>' +
-    '<rect x="' + n(left) + '" y="' + n(top) + '" width="' + n(width + 9) + '" height="15" rx="2.2" fill="#2e6b45" stroke="#fbf4e4" stroke-width=".9"/>';
-  let d = '', dots = '', cx = left + 4.5;
-  const T = top + 3, M = T + h / 2, B = T + h;
+  const top = ground - post - tall, left = x - width / 2 - pad;
+  let s = '<rect x="' + n(x - 1.1) + '" y="' + n(top + tall) + '" width="2.2" height="' + post + '" fill="#7d7168"/>' +
+    '<rect x="' + n(left) + '" y="' + n(top) + '" width="' + n(width + 2 * pad) + '" height="' + n(tall) + '" rx="2.8" fill="#2e6b45" stroke="#fbf4e4" stroke-width="1.1"/>';
+  let d = '', dots = '', cx = left + pad;
+  const T = top + 3 * z, M = T + h / 2, B = T + h;
   for (const ch of text){
-    if (ch === '.'){ dots += '<circle cx="' + n(cx + h * .1) + '" cy="' + n(B) + '" r=".95" fill="#fbf4e4"/>'; cx += h * .3; continue; }
+    if (ch === '.'){ dots += '<circle cx="' + n(cx + h * .1) + '" cy="' + n(B) + '" r="1.3" fill="#fbf4e4"/>'; cx += h * .3; continue; }
     const L = cx, R = ch === '1' ? cx : cx + w, seg = { a:[L, T, R, T], b:[R, T, R, M], c:[R, M, R, B], d:[L, B, R, B], e:[L, M, L, B], f:[L, T, L, M], g:[L, M, R, M] };
     for (const k of SV_FIGS[+ch]) d += 'M' + n(seg[k][0]) + ' ' + n(seg[k][1]) + 'L' + n(seg[k][2]) + ' ' + n(seg[k][3]);
     cx += step(ch);
   }
-  return s + '<path d="' + d + '" stroke="#fbf4e4" stroke-width="1.5" stroke-linecap="round" fill="none"/>' + dots;
+  return s + '<path d="' + d + '" stroke="#fbf4e4" stroke-width="2.1" stroke-linecap="round" fill="none"/>' + dots;
+}
+// A concrete power pole on the far side of the road, its crossarm on the
+// wires, which run along the road and so stand still as it goes by
+// (svWires()): straight lines from the vanishing point through every
+// pole's crossarm ends, however near.
+const SV_POLE_X = -2.45, SV_POLE_H = 96;
+function svPole(x, ground, night){
+  const n = svNum, top = ground - SV_POLE_H;
+  return '<rect x="' + n(x - 1.7) + '" y="' + n(top) + '" width="3.4" height="' + SV_POLE_H + '" fill="' + (night ? '#4a4039' : '#a39a91') + '"/>' +
+    '<rect x="' + n(x - 11) + '" y="' + n(top + 6) + '" width="22" height="2.4" fill="' + (night ? '#2b2320' : '#6f655e') + '"/>';
+}
+function svWires(P, night){
+  const y = P.k - SV_POLE_H + 7.2, at = function(dx, k){ return svNum(P.vx + (SV_POLE_X * P.k + dx) * k) + ' ' + svNum(P.h + y * k); };
+  return '<path d="M' + at(-10, .01) + 'L' + at(-10, 1.6) + 'M' + at(10, .01) + 'L' + at(10, 1.6) + '" stroke="' + (night ? '#0f0c0a' : '#3d322d') + '" stroke-width=".45" opacity=".7" fill="none"/>';
+}
+// A stop's name as a sign has room for it: before any " (", " / " or
+// " - ", and past 13 letters in two lines broken where they come out
+// most even. These and the km beside them are the only words written in
+// a picture but the night's z z Z (October 2026, the maintainer's ask):
+// everything else is drawn.
+function svPlace(name){
+  const s = String(name || '').split(/ \(| \/ | - /)[0].trim();
+  if (!s) return [];
+  const words = s.split(/\s+/);
+  if (s.length <= 13 || words.length < 2) return [s];
+  let best = null;
+  for (let i = 1; i < words.length; i++){
+    const two = [words.slice(0, i).join(' '), words.slice(i).join(' ')];
+    if (!best || Math.max(two[0].length, two[1].length) < Math.max(best[0].length, best[1].length)) best = two;
+  }
+  return best;
+}
+// At each stop on the way, a green sign as a road's would say it: your
+// stop's name and how many km it still is from there, on its own post
+// beside the stop's.
+function svStopKm(x, ground, w, place){
+  const n = svNum, lines = svPlace(place);
+  if (!lines.length) return '';
+  const esc = function(t){ return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+  const most = 52, wide = function(t, size){ return t.length * size * .5; };
+  const inner = Math.min(most, Math.max.apply(null, lines.map(function(l){ return wide(l, 7); }).concat([wide(w.toFixed(1) + ' km', 9)])));
+  const W = inner + 8, H = 6 + lines.length * 7.5 + 10, left = x, mid = x + W / 2, top = ground - 30 - H;
+  const fit = function(t, size){ return wide(t, size) > most ? ' textLength="' + most + '" lengthAdjust="spacingAndGlyphs"' : ''; };
+  let s = '<rect x="' + n(mid - 1.1) + '" y="' + n(top + H) + '" width="2.2" height="30" fill="#7d7168"/>' +
+    '<rect x="' + n(left) + '" y="' + n(top) + '" width="' + n(W) + '" height="' + n(H) + '" rx="2.8" fill="#2e6b45" stroke="#fbf4e4" stroke-width="1.1"/>' +
+    '<g fill="#fbf4e4" font-family="Barlow Semi Condensed,sans-serif" font-weight="700" text-anchor="middle">';
+  lines.forEach(function(l, i){ s += '<text x="' + n(mid) + '" y="' + n(top + 9.5 + i * 7.5) + '" font-size="7"' + fit(l, 7) + '>' + esc(l) + '</text>'; });
+  return s + '<text x="' + n(mid) + '" y="' + n(top + H - 4) + '" font-size="9">' + w.toFixed(1) + ' km</text></g>';
 }
 function stopViewSvg(t){
   t = t || {};
@@ -3579,6 +3656,13 @@ function stopViewSvg(t){
     const w = j * SV_DASH;
     if (seen(w)) s += put(w) + '<path d="' + svDash(P, X) + '" stroke="#fbf4e4" stroke-width="2.2"/></g>';
   }
+  // The power poles across the road, a pole every 25 m going by on the
+  // left while the stops and signs go by on the right, and their wires.
+  s += svWires(P, night);
+  for (let j = Math.ceil((Math.min(km, f0) - SV_SEEN) / SV_POLE); j <= Math.ceil(Math.max(km, f0) / SV_POLE); j++){
+    const w = Math.round(j * SV_POLE * 1000) / 1000;
+    if (w > 0 && seen(w)) s += put(w) + svPole(SV_POLE_X * P.k, P.k, night) + '</g>';
+  }
   // Your stop, with two people waiting at it, once it is in sight; and its
   // pin, never too small to see, at the end of the road while it is not.
   if (seen(0) || km === 0)
@@ -3587,12 +3671,12 @@ function stopViewSvg(t){
     s += svRide(function(v){ return svK(P, Math.min(v, SV_SEEN)); }, function(k){ return 'translate(' + svNum(P.vx + 1.35 * P.k * k) + 'px,' + svNum(P.h + (P.k - 48 * .8) * k) + 'px)'; },
       from, km, ago, 'sv-pin') + svPinMark() + '</g>';
   // Every stop before it in sight, on the right shoulder, where the bus
-  // pulls in, the bus's next one in gold, and a sign every 100 m with the
-  // km still to go, from the far end in; one the bus passes goes by the
-  // glass.
+  // pulls in, the bus's next one in gold, each with a sign saying how far
+  // your stop still is from it, and a sign every 100 m with the km still
+  // to go, from the far end in; one the bus passes goes by the glass.
   const next = function(v){ let x = null; stops.forEach(function(w){ if (w < v) x = w; }); return x; };
   const nx = next(km), nx0 = next(f0), things = [];
-  stops.forEach(function(w){ if (seen(w)) things.push([w, svPost(1.3 * P.k, P.k, 24, w === (w < km ? nx : nx0))]); });
+  stops.forEach(function(w){ if (seen(w)) things.push([w, svPost(1.3 * P.k, P.k, 24, w === (w < km ? nx : nx0)) + svStopKm(1.3 * P.k + 6, P.k, w, t.place)]); });
   for (let j = Math.ceil((Math.min(km, f0) - SV_SEEN) / SV_MARK); j <= Math.ceil(Math.max(km, f0) / SV_MARK); j++){
     const w = Math.round(j * SV_MARK * 1000) / 1000;
     if (w > 0 && seen(w)) things.push([w, svKmSign(1.12 * P.k, P.k, w)]);
@@ -5852,6 +5936,9 @@ function stopsAway(info, myKm, stopKms){
 // per-visit decision.
 let MYSTOP = null;        // {name, lat, lng}, in this browser and nowhere else
 let MYSTOP_KM = null;     // where that sits on the checkpoint chain
+// Whether the sharing tab shows the road on the card: folded until asked
+// for, then open for the rest of the visit, kept like the buzz switch.
+let ROAD = (function(){ try{ return sessionStorage.getItem('wt-road') === '1'; }catch(e){ return false; } })();
 let STOP_KMS = [];        // every listed stop, projected onto the chain once
 let NAMED_STOPS = [];     // the same, with their names, for the dots on the card
 let myStopMarker = null, myLocMarker = null, myLocRing = null;
@@ -5919,6 +6006,14 @@ function setBuzz(on){
   // A buzz now, when switching it on, is the only way to know the phone can.
   if (on){ try{ if (navigator.vibrate) navigator.vibrate(60); }catch(e){} }
 }
+// The sharing tab's road, folded until asked for (ROAD). The card is drawn
+// again at once, so the road is where the bus is now.
+function toggleRoad(){
+  if (WALK) return;
+  ROAD = !ROAD;
+  try{ if (ROAD) sessionStorage.setItem('wt-road', '1'); else sessionStorage.removeItem('wt-road'); }catch(e){}
+  renderBuses();
+}
 // Which bus a rider who is not sharing said they are on, from its popup. A
 // public bus id, kept for this visit only and sent nowhere: see aboardBus().
 // Sharing takes over from it while it runs, because then the server says.
@@ -5962,6 +6057,7 @@ function renderMyStop(shown, all){
   const trip = document.getElementById('tripStop');
   if (trip){
     trip.classList.toggle('hidden', !sharing);
+    trip.classList.toggle('road', ROAD);
     trip.innerHTML = sharing ? html : '';
   }
 }
@@ -6055,7 +6151,7 @@ function rideCardHtml(info, riding, bus){
   }
   const gliding = STOPVIEW.at > 0 && now - STOPVIEW.at < STOPVIEW.span;
   const look = busLookOf(bus);
-  const art = stopViewSvg({ aboard:riding, f:STOPVIEW.to, km:STOPVIEW.to, stops: riding ? stopsBack(info, MYSTOP_KM, STOP_KMS) : null,
+  const art = stopViewSvg({ aboard:riding, f:STOPVIEW.to, km:STOPVIEW.to, stops: riding ? stopsBack(info, MYSTOP_KM, STOP_KMS) : null, place: MYSTOP.name,
     from: gliding ? STOPVIEW.from : null, ago: gliding ? now - STOPVIEW.at : 0, span: STOPVIEW.span,
     here: state === 'here', sky:skyNow(), worn: look ? look.worn : [], paint: look ? look.paint : 'klasiko',
     still: freshness(info.ts) === 'delayed' || !!(bus && bus.standing) });
@@ -6077,7 +6173,8 @@ function rideCardHtml(info, riding, bus){
         (riding && !sharing ? '<button type="button" class="edit" onclick="leaveBus()">I got off</button>' : '') +
         '<button type="button" class="edit" onclick="openStopPicker()">Change</button></span></div>' +
       // The flag sits on the picture, so the card is the same height with it.
-      '<div class="ride-art">' + art + (state ? '<div class="ride-flag' + (fresh ? ' fresh' : '') + '">' + flag + '</div>' : '') + '</div>' +
+      '<div class="ride-art">' + art + (state ? '<div class="ride-flag' + (fresh ? ' fresh' : '') + '">' + flag + '</div>' : '') +
+        '<button type="button" class="ride-fold" onclick="toggleRoad()" aria-expanded="' + ROAD + '"><span class="rf-show">Show the road</span><span class="rf-hide">Hide</span></button></div>' +
       '<div class="ride-big" aria-hidden="true">' + big + '</div>' +
       '<div class="ride-sub" aria-hidden="true">' + dirWords + (which ? ' · ' + which : '') +
         (between.length ? ' · next stop <b>' + escapeHtml(between[0].name) + '</b>' : '') +

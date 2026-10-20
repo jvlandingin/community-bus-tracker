@@ -90,7 +90,8 @@ function renderer() {
     'S.TICKET_SKIES=TICKET_SKIES;S.TICKET_VIEWS=TICKET_VIEWS;S.ticketArtSvg=ticketArtSvg;' +
     'S.TICKET_SIGHTS=TICKET_SIGHTS;S.sightTile=sightTile;S.moonSvg=moonSvg;S.BUS_DECOR=BUS_DECOR;S.busSvg=busSvg;S.DECOR_BOX=DECOR_BOX;S.decorTile=decorTile;S.BUS_PAINTS=BUS_PAINTS;S.paintStyle=paintStyle;S.rideSvg=rideSvg;S.RIDE_LOOPS=RIDE_LOOPS;S.RIDE_FRAMES=RIDE_FRAMES;' +
     'S.stopViewSvg=stopViewSvg;S.STOP_VIEW_MOST=STOP_VIEW_MOST;S.STOP_GLIDE_MS=STOP_GLIDE_MS;S.STOP_RIDE_MS=STOP_RIDE_MS;' +
-    'S.SV_WAIT=SV_WAIT;S.SV_ABOARD=SV_ABOARD;S.SV_SEEN=SV_SEEN;S.SV_PIN=SV_PIN;S.SV_GONE=SV_GONE;S.svKmSign=svKmSign;S.SV_FASTEST=SV_FASTEST;S.svReach=svReach;')(S);
+    'S.SV_WAIT=SV_WAIT;S.SV_ABOARD=SV_ABOARD;S.SV_SEEN=SV_SEEN;S.SV_PIN=SV_PIN;S.SV_GONE=SV_GONE;S.svKmSign=svKmSign;S.SV_FASTEST=SV_FASTEST;S.svReach=svReach;' +
+    'S.SV_POLE=SV_POLE;S.SV_POLE_X=SV_POLE_X;S.svPole=svPole;S.svPlace=svPlace;S.svStopKm=svStopKm;')(S);
   return S;
 }
 
@@ -247,7 +248,8 @@ function stopviews(src, S) {
       f = Number(opts.f);
       if (!(f >= 0 && f <= S.STOP_VIEW_MOST)) throw new Error('a stopview needs f, how many stops away the bus is, not ' + opts.f);
     }
-    const svg = S.stopViewSvg({ aboard, f, km: ride && ride.km, stops: ride && ride.stops, here: opts.here === '1', sky: opts.sky, worn: keys, paint, still: opts.still === '1' });
+    const svg = S.stopViewSvg({ aboard, f, km: ride && ride.km, stops: ride && ride.stops, place: aboard ? (opts.stop || '').replace(/\+/g, ' ') : '',
+      here: opts.here === '1', sky: opts.sky, worn: keys, paint, still: opts.still === '1' });
     out.push({ start: m.index, end: m.index + m[0].length, open: '<!-- stopview' + m[1] + ' -->', close: '<!-- /stopview -->',
       f, ride, aboard, here: opts.here === '1', sky: opts.sky, keys, paint, current: m[2], wanted: svg });
   }

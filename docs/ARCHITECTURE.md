@@ -831,7 +831,17 @@ go only where the screen would be empty still holds everywhere else.
   road like the posts, every 12 m, and every 100 m a green sign says how
   many km are still to go (`svKmSign()`, its figures drawn in strokes), so
   the road, the signs and the stops go by together and a stop the bus
-  passes goes by the glass. About 260 m is in sight (`SV_SEEN`); further is
+  passes goes by the glass. Across the road a power pole stands every 25 m
+  (`svPole()`), on wires that run along the road and so stand still
+  (`svWires()`): lines from the vanishing point through every crossarm,
+  however near. At every stop a second green sign gives your stop's name
+  and the km still to go from there (`svStopKm()`, the name cut and broken
+  to fit by `svPlace()`). Those are the only words in any picture besides
+  the night's z z Z: everything else is drawn, the km signs' figures in
+  strokes, but a place's name cannot be, and the maintainer asked for it
+  (October 2026), so the poles and the stops would give the road something
+  going by at town speeds, where the km signs alone left it bare for long
+  stretches. About 260 m is in sight (`SV_SEEN`); further is
   over the horizon, and your stop, until it is in sight, is its pin there
   (`svPinMark()`), kept to a size that can be seen (`SV_PIN`) until the
   sign's own pin is as big.
@@ -921,20 +931,27 @@ Chromium at a phone's size, with no graphics chip, so in proportion rather
 than in watts: a phone draws all of it for less). The trip screen a sharer
 keeps open costs about 1% of a CPU core with nothing moving. Anything that
 moves is a repaint for every frame it moves, however slowly it goes, so
-what a moving thing costs is how long it moves, not how fast. The two green
-dots breathing for a whole trip were 20%, more than the rest of the screen
-together. Breathing slower cost exactly the same, and one breath every
-twelve seconds still half, because the browser keeps the frames coming for
-a loop that is only resting. So they breathe for half a minute when they
-come into view, then hold still, green: the status dot when the trip
-starts and again when the sharing tab or the GPS comes back, the tab's dot
-only while the sharer is on the other tab, where it is the one saying the
-trip goes on. The riding picture costs about 12% on its own now that it
-moves for as long as the bus does (6% when it drove for a third of each
-wait, above). Still looping on a trip are the coach rocking on the strip,
-about 7%, and whatever hangs from the mirror once the sharer has one, about
-6%. With a bus moving all the while, the trip screen went from 35% to 16%,
-its picture moving the whole time instead of a third of it. A blurred veil
+what a moving thing costs is how long it moves, not how fast, and one thing
+moving costs most of what several do. The two green dots breathing for a
+whole trip were 20%, more than the rest of the screen together. Breathing
+slower cost exactly the same, and one breath every twelve seconds still
+half, because the browser keeps the frames coming for a loop that is only
+resting. So everything that loops on the sharing tab rests after half a
+minute. The dots breathe when they come into view, then hold still, green:
+the status dot when the trip starts and again when the sharing tab or the
+GPS comes back, the tab's dot only while the sharer is on the other tab,
+where it is the one saying the trip goes on. The strip's pills rock and
+breathe as long when the tab comes into view; its sighting glows, drawn
+again at every poll, and the parol, in the header, which never leaves the
+screen to start it again, hold still there from the start. And the road on
+the card is folded away until "Show the road" is tapped, for that visit
+(`toggleRoad()`, `wt-road` in `sessionStorage`), because it moves for as
+long as the bus does: about 19% on its own with its poles and signs, 6%
+back when it drove for a third of each wait (above). Folding it alone saved
+only a third; the rest went when nothing else on the screen moved either.
+In parol season, with another bus on the strip and a bus moving all the
+while, the trip screen a minute into a trip went from 46% to 2%, and to 19%
+with the road open. A blurred veil
 behind an open modal (`backdrop-filter`) makes every frame cost a whole
 core. To measure it again, fake the GPS in the page
 rather than through the browser: Chromium's emulated GPS reports a short
@@ -1837,7 +1854,9 @@ Bababa na!. The maintainer asked for both to move smoothly, for
 presentation. So the copy of `index.html` the film is served (`filmPage()`
 in `render.js`) glides for one poll at an even pace, on the sharing tab
 too, whose slower feed the film's poll stands in for, and lets the phone
-send a little oftener than the film polls. Nothing else in the page
+send a little oftener than the film polls. The sharer opens the road on
+the card in the trip's interlude, off camera, since on the sharing tab it
+starts folded. Nothing else in the page
 differs from the commit, and the render stops if those lines change in
 `index.html`, rather than quietly filming the stutter again.
 

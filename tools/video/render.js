@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Renders the showcase video: about 68 seconds, vertical (1080x1920), of the
+// Renders the showcase video: about 66 seconds, vertical (1080x1920), of the
 // real tracker being used on a phone, with drawn interludes made by the
 // app's own picture code and the interface's sounds (sounds.js).
 //
@@ -63,8 +63,8 @@ const NAME = opt('--name', 'bus-tracker');
 // viewer to the website; 'testers' to the Android app's closed test; 'play'
 // to the app on Google Play. The two app endings film the page as the app
 // shows it (APP): the same page, with Android's plugins stood in for, so it
-// says what it says inside the app ("Keeps sharing with the screen locked.")
-// and the phone has Android's status bar rather than a browser's.
+// takes its GPS and says what it says the way the app does, and the phone
+// has Android's status bar rather than a browser's.
 const ENDING = opt('--ending', 'web');
 if (['web', 'testers', 'play'].indexOf(ENDING) < 0){ console.error('--ending is web, testers or play'); process.exit(1); }
 const APP = ENDING !== 'web';

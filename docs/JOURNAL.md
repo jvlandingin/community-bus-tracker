@@ -25,6 +25,21 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-20: The video catches up with the app
+
+The maintainer asked for the showcase video to be brought up to the day's
+changes. Most of them it took by being rendered again: the fewer words on
+both tabs, the wider popup, the waiting picture with a post for every stop.
+One scene could not. The trip was shown in time-lapse, a stop every 0.75
+seconds, and the card's road, drawn at its real length from the front seat
+since that day, draws a move further than a bus drives as a jump, so on
+screen it jumped twice a second. The trip now goes by in the interlude and
+the film comes back near the end of it: the road comes up at about 110
+km/h, the fastest it drives, and the app asks "Getting off here?" by
+itself, as it has since that day, so the ticket comes from that question's
+Stop sharing. The buzz two stops before the stop, on board, is now off
+screen; the waiting scene keeps its own. The video is 66 seconds.
+
 ## 2026-10-20: A look at every screen
 
 After the words came off, the maintainer asked whether the app now looked

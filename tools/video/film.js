@@ -4,8 +4,9 @@
 //
 // One sharer's morning, then another rider's. Waiting at Javalera, the
 // stop card counts the bus down to "Sakay na!"; on board, the sharer puts
-// the bus on everyone's map, riders say salamat, the card counts down to
-// "Bababa na!", and Stop gives a ticket. The ticket goes into My tickets,
+// the bus on everyone's map, riders say salamat, the card says "Bababa
+// na!" as the road comes up to their stop, the app asks "Getting off here?"
+// and Stop sharing gives a ticket. The ticket goes into My tickets,
 // the bus gets a new paint, and "Show customized bus to riders" goes on.
 // Next morning a rider by Tagaytay taps that bus and sees it as dressed.
 //
@@ -26,9 +27,9 @@ const R = require('./render.js');
 const S = require('./sounds.js');
 
 // ---- How long each scene runs, in seconds ----------------------------------
-// As long as its beats take at the film's pace (below): about 68 seconds in
+// As long as its beats take at the film's pace (below): about 66 seconds in
 // all.
-const DUR = { title:3.2, watch:4.2, wait:12.9, share:8.8, trip:2.2, getoff:6.3, ticket:5.65, collect:3.0, dress:8.5, show:2.4, rider:3.85, end:6.5 };
+const DUR = { title:3.2, watch:4.2, wait:12.9, share:8.8, trip:2.2, getoff:4.65, ticket:5.65, collect:3.0, dress:8.5, show:2.4, rider:3.85, end:6.5 };
 const T = {};
 let acc = 0;
 Object.keys(DUR).forEach(k => { T[k] = acc; acc += DUR[k]; });
@@ -72,10 +73,12 @@ const WAIT_KM = NORTH.km(WAIT);   // 24.7 on this road
 
 // ---- The two days -----------------------------------------------------------
 // The sharer's phone: a Wednesday morning inside the northbound hours, then
-// half an hour of the trip passes during its interlude.
+// half an hour of the trip passes during its interlude, once the phone is
+// off the screen and over by JUMPED, so that the phone keeps the film's time
+// again before it comes back: the road on board goes by the phone's clock.
 const A_DAY = Date.parse('2026-10-14T06:15:00+08:00');
-const JUMP = 30 * 60000;
-const A_CLOCK = R.keys([[0, A_DAY], [T.trip, A_DAY + T.trip * 1000], [T.trip + DUR.trip, A_DAY + (T.trip + DUR.trip) * 1000 + JUMP],
+const JUMP = 30 * 60000, JUMPED = T.trip + .9;
+const A_CLOCK = R.keys([[0, A_DAY], [T.trip + .4, A_DAY + (T.trip + .4) * 1000], [JUMPED, A_DAY + JUMPED * 1000 + JUMP],
                         [1000, A_DAY + 1000 * 1000 + JUMP]]);
 // The other rider's phone, the next morning.
 const B_DAY = Date.parse('2026-10-15T05:52:00+08:00');
@@ -144,28 +147,34 @@ const CAP = {
 };
 const read = k => CAP[k].at + READ(CAP[k].say);
 const SAY = Object.keys(CAP).map(k => [CAP[k].at, CAP[k].to, CAP[k].say]);
-// Start and Stop, and the salamat (one, then three in all).
-const START = read('share') + 2.4, STOP = T.ticket + .6;
+// Start and Stop, and the salamat (one, then three in all). Stop is the
+// "Stop sharing" of the app's "Getting off here?", asked at ASK.
+const START = read('share') + 2.4, STOP = T.ticket + .6, ASK = STOP - 1.85;
 const SALAMAT = [T.share + 6.8, T.share + 8.0];
 
 // The sharer's GPS, from Start until Stop. 700 m past the stop when Start is
 // tapped: the card still has the stop they waited at, and within 300 m of it
 // (AT_STOP_KM) it would say "Bababa na!" and spend the trip's one buzz there.
-// Along the road in time-lapse to Manggahan by the end of the interlude: six
-// stops short of getting off, so the scene opens with the stop's sign far up
-// the road at the horizon (filmPage lets the phone send twice a second). Then
-// a stop every 0.75s, wherever the stops fall on the road, so the sign comes
-// on at an even pace (the picture's one step a stop): LPU-Cavite, Monterey,
-// Sunny Brooke (Malapit na! and its buzz), Vista Mall, Santiago, Bababa na!
-// at 35.25 km, and slower to the sign. Riding to SM City General Trias the
-// card says Bababa na! from 35.2 km until the stop is passed at 37.8, so it
-// still does when Stop is tapped.
-const GPS = R.keys([[START - .05, WAIT_KM + .7], [T.share + DUR.share, 26.4], [T.trip + DUR.trip - .3, 28.95],
-                    [T.getoff, 29.0], [T.getoff + .75, 29.3], [T.getoff + 1.5, 30.47], [T.getoff + 2.25, 31.88],
-                    [T.getoff + 3.0, 32.55], [T.getoff + 3.75, 34.37], [T.getoff + 4.6, 35.25], [T.getoff + DUR.getoff, 36.0],
-                    [1000, 36.0]]);
-// Where a buzz belongs in the story: waiting, and getting off.
-const BUZZ_SCENES = [[T.wait, T.share], [T.getoff - .6, T.ticket]];
+// The trip itself goes by while the phone is off the screen, in a moment of
+// the interlude, to 140 m short of where the app asks "Getting off here?":
+// within 100 m of the stop along the route (STOP_REACHED_KM), at 37.08 km on
+// this road, measured. The card says Bababa na! there, from 35.2 km.
+// From JUMPED it goes at V, about 110 km/h, the fastest the card's road
+// drives rather than jumps (SV_FASTEST in index.html), so the road comes on
+// from the front seat at the bus's own pace: the green sign for 0.2 km to
+// go goes by the glass a second after the phone is up, and the stop with
+// its people comes into sight on the horizon before the app asks. Then it
+// slows, as a bus pulling in does. Faster, the road's joints and dashes go
+// by too fast for the film's frames; the old time-lapse, a stop every
+// 0.75 s, was further each half second than the road drives and was drawn
+// as a jump every time.
+const V = .03, ASK_KM = NORTH.km(OFF) - .1;
+const GPS = R.keys([[START - .05, WAIT_KM + .7], [T.trip + .4, 26.4], [JUMPED, ASK_KM - V * (ASK - JUMPED)], [ASK, ASK_KM],
+                    [ASK + .5, ASK_KM + .012], [ASK + 1, ASK_KM + .02], [ASK + 1.5, ASK_KM + .025], [ASK + 2, ASK_KM + .027],
+                    [1000, ASK_KM + .027]]);
+// Where a buzz belongs in the story: waiting. On board the card buzzes
+// once, two stops before the sharer's own, and that is in the interlude.
+const BUZZ_SCENES = [[T.wait, T.share]];
 // The phone comes up at the end of the title, goes down for the trip and
 // the end, and slides across between the two phones: two whips, getting on
 // the bus (the stop to get off at is set while the phone is off the screen)
@@ -206,7 +215,7 @@ function LISTEN(){
   const ty = q('#tyLine'), toast = q('#toast'), keep = q('#tktKeep');
   return { flag: flag ? flag.textContent : '', live: typeof sharing !== 'undefined' && !!sharing,
            ty: shown(ty) ? ty.textContent : '', tkt: shown(q('#tktModal .tkt')), kept: !!keep && keep.classList.contains('done'),
-           album: shown(q('#albumModal .modal-card')), stops: shown(q('#stopModal .modal-card')),
+           album: shown(q('#albumModal .modal-card')), stops: shown(q('#stopModal .modal-card')), ask: shown(q('#askModal .modal-card')),
            toast: shown(toast) ? toast.textContent : '', on: !!q('.alb-toggle.on'), popup: !!q('.buspop') };
 }
 function changes(a, b){
@@ -216,7 +225,7 @@ function changes(a, b){
   if (b.ty && b.ty !== a.ty) out.push('sparkle');
   if (b.tkt && !a.tkt) out.push('ticket');
   if (b.kept && !a.kept) out.push('stamp');
-  if ((b.album && !a.album) || (b.stops && !a.stops)) out.push('open');
+  if ((b.album && !a.album) || (b.stops && !a.stops) || (b.ask && !a.ask)) out.push('open');
   if (b.toast && b.toast !== a.toast && /^Painted|is on your bus/.test(b.toast)) out.push('coins');
   if (b.on && !a.on) out.push('switch');
   if (b.popup && !a.popup) out.push('pop');
@@ -341,10 +350,7 @@ function cues(A, B, stage, world, browser, heard){
   // share: the other tab, northbound, Start; then close on the strip, where
   // the salamat arrive.
   press(A, '#tabOnbus', read('share'));
-  // Close on the sharing card: the direction, Start, and under them what
-  // sharing asks of the phone. The app says "Keeps sharing with the screen
-  // locked." where a browser says "Keep the screen on.", and it is the one
-  // thing only the app does, so it is near enough here to be read.
+  // Close on the sharing card: the direction and Start.
   at(read('share') + .3, v => cam(A, '#onbusView > .card', v, { width:1000, topAt:440, maxH:560 }));
   press(A, '#pickNorth', read('share') + 1.6);
   press(A, '#onbusStartBtn', START);
@@ -356,12 +362,10 @@ function cues(A, B, stage, world, browser, heard){
   at(T.trip + .5, () => A.run(() => { if (!ROAD) toggleRoad(); }));
   at(T.trip + 1.05, centre(A, '#tripStop', .3));
   at(T.trip + 1.6, v => cam(A, '#tripStop', v - .6, { width:1010, cy:960 }));
-  // getoff: the stop's sign comes up the road by itself. Then the camera
-  // comes back out and the page goes up to Stop.
-  at(T.ticket - .5, v => cam(A, null, v, { dur:.45 }));
-  at(T.ticket - .5, glideDoc(A, () => 0, .4));
-  // ticket: Stop, the ticket, down it, Keep.
-  press(A, '#onbusActive .btn-stop', STOP);
+  // getoff: the road comes up to the stop by itself, and the app asks
+  // "Getting off here?" (ASK, by the GPS).
+  // ticket: its Stop sharing, the ticket, down it, Keep.
+  press(A, '#askYes', STOP);
   at(STOP + .6, v => cam(A, '#tktCard', v, { width:1040, topAt:60, maxH:420 }));
   at(T.ticket + 2.4, glide(A, '#tktModal', s => { const b = document.querySelector(s); return b.scrollHeight - b.clientHeight; }, 1.3));
   at(T.ticket + 4.2, v => cam(A, null, v, { dur:.5 }));

@@ -1980,11 +1980,12 @@ preview with no picture and nothing else changes.
 
 ## The showcase video
 
-`tools/render-video.sh` makes a vertical video of about 68 seconds (1080x1920, English
+`tools/render-video.sh` makes a vertical video of about 66 seconds (1080x1920, English
 captions, the interface's own sounds) for Facebook, TikTok and Reels, where the riders who have
 never heard of the tracker are. The story is one sharer's morning: wait at a
 stop until the card says Sakay na!, get on and share the bus, riders say
-salamat, the card says Bababa na!, Stop gives a ticket, the ticket goes into
+salamat, the card says Bababa na! as the road comes up to the stop, the app
+asks "Getting off here?" and Stop sharing gives a ticket, the ticket goes into
 My tickets, the bus gets a new paint, tries on five other paints and sets of
 accessories for half a second each (the maintainer's ask: show how much can
 be changed, without the taps), and "Show customized bus to riders" goes
@@ -2008,9 +2009,11 @@ testing; `testers`, the closed test's sign-up (`testers.html`), while Play
 wants testers who ride; `play`, the app's listing, once it is public. The
 two app endings film the page as the app shows it, with Android's plugins
 stood in for the way `test-boot.js` section 11 boots it, and Android's
-status bar where the browser's bar was, so the sharing tab says the app's
-"Keeps sharing with the screen locked." rather than the browser's "Keep the
-screen on.", and the camera closes on it. A film of the website never shows
+status bar where the browser's bar was. The sharing tab said the app's
+"Keeps sharing with the screen locked." under Start, where a browser says
+"Keep the screen on.", and the camera closed on it; since 20 October both
+are said only in the trip's first window, which a sharer with nine trips
+behind them, as the film's has, never sees. A film of the website never shows
 what only the app does, and a film of the app never sends the viewer to the
 website. The website is Bus Tracker and the app is Fibi, on the end card as
 everywhere else. Play's listing takes a video too, as a YouTube link;
@@ -2092,7 +2095,7 @@ of a second a word; the first tap is timed from it, `read()`), and
 tap, a camera move, a scroll, a letter typed, a salamat or the phone moving
 inside a caption's reading time, a caption gone before it can be read, or a
 tap while the camera is still moving, stops the render and names both.
-About 67 seconds, with an end card of 6.5, because a feed loops the video
+About 66 seconds, with an end card of 6.5, because a feed loops the video
 back to the title the moment it ends.
 
 **Choices the app forced.** The story waits at Javalera and gets off at SM
@@ -2101,9 +2104,17 @@ at Dagatan it reads "8 stops" and then "2", which is right (the Tagaytay
 hook) but looks like a fault. The sharer starts 700 m past the stop they
 waited at: within 300 m (`AT_STOP_KM`) the card would say Bababa na! at
 once and spend the trip's one buzz there. The stop to get off at is set while
-the phone is swiped off the screen as they board. Near the end the GPS is
-held still, so the page's next position (it sends one every five seconds at
-most) goes out the moment the bus reaches the last stretch.
+the phone is swiped off the screen as they board. The trip ends as the app
+now ends one: within 100 m of the saved stop (`STOP_REACHED_KM`) it asks
+"Getting off here?", and its Stop sharing gives the ticket. The road on the
+card has been drawn at its real length since 20 October, and a move further
+than it drives is drawn as a jump, so the old time-lapse, a stop every 0.75
+seconds, jumped every half second. So the trip goes by in the interlude, the
+phone's clock keeps the film's time again before the phone comes back, and
+the film comes back 140 m short of the question, the road going at about
+110 km/h, the fastest it drives (`SV_FASTEST`): a green km sign goes by the
+glass, the stop comes into sight on the horizon, and the app asks. The
+card's one buzz on board, two stops before the stop, is in the interlude.
 
 **What the captions may say.** One short plain sentence each, under the
 same rules as the app's own words: no minutes and no arrival time, Bus

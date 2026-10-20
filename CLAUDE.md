@@ -711,8 +711,11 @@ scroll lands inside its reading time. **It is the app's video** (October
 2026): the icon's coral, Play's feature graphic's "Nasaan na ang bus?", and
 an ending picked at render time, the website, the closed test or the Play
 listing. The app's endings film the page as the app shows it (Android's
-plugins stood in for, its status bar, "Keeps sharing with the screen
-locked."), so the video never shows one and sends the viewer to the other.
+plugins stood in for, its status bar), so the video never shows one and
+sends the viewer to the other. **The trip ends as the app ends one**: the
+road comes up to the stop at the bus's pace and the app asks "Getting off
+here?", since the road on board is drawn at its real length and a
+time-lapse would make it jump.
 `docs/ARCHITECTURE.md`, "The showcase video".
 
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`

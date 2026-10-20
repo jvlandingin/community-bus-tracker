@@ -38,6 +38,10 @@ flyer's app card above "Testers only for now. Join first". A test holds the
 bytes to Google's. Play shows the listing to testers only until the app is
 public, which is why every badge has a line beside it saying so.
 
+The poster's app card got the same badge next, which cost it a line of
+footer and a few spacings to stay on one sheet, with 11.5 mm clear at the
+foot.
+
 The tester page's "What I need from you" card went at the same time. The
 group's welcome post asks for the 14 days of riding now.
 

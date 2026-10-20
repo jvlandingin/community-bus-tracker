@@ -160,7 +160,7 @@ testers installed and never used the app; since October 2026 the group's
 welcome post makes that ask, the page's own "What I need from you" card taken
 off at the maintainer's word. It loads nothing and runs no script at all.
 **Google's "Get it on Google Play" badge** stands under its first line and is
-step 3's button, and sits in the flyer's app card: Google's own PNG, unaltered
+step 3's button, and sits in the flyer's and the poster's app cards: Google's own PNG, unaltered
 and inlined, linking to the app's listing, with Google's attribution line in
 the page's footer. `test-boot.js` section 8 holds every badge to the bytes
 Google publishes. Never the bare Google Play logo: Google keeps that for its

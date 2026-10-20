@@ -25,6 +25,22 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-20: The Google Play badge, and a shorter tester page
+
+The maintainer asked for Google Play's logo on the flyer and the tester page,
+so it is obvious the app is on Play, in testing at least, and looks the part.
+Google asks for its badge, not its bare logo, wherever people are sent to
+download, and for the badge unaltered, linked to the app, with its
+attribution line. So it is Google's own "Get it on Google Play" PNG, inlined
+like everything else on these pages: under the tester page's first line,
+beside "Early access, for testers", as that page's install button, and in the
+flyer's app card above "Testers only for now. Join first". A test holds the
+bytes to Google's. Play shows the listing to testers only until the app is
+public, which is why every badge has a line beside it saying so.
+
+The tester page's "What I need from you" card went at the same time. The
+group's welcome post asks for the 14 days of riding now.
+
 ## 2026-10-20: The flyer, in fewer words
 
 The maintainer found the flyer wordy and asked for some motion or something

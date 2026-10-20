@@ -87,7 +87,7 @@ check(fsOrder.every((v, i) => i === 0 || v > fsOrder[i - 1]), 'the text sizes cl
 // Every other page carries its own copy, so each survives being opened on its
 // own; test-boot.js compares the values the copies share, and this adds that
 // none of the system may be missing from one.
-const COPIES = ['admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html'];
+const COPIES = ['admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html', 'poster.html'];
 for (const page of COPIES) {
   const src = read(page);
   const root = rootTokens(src), dark = darkTokens(src), appDark = darkTokens(app);
@@ -102,7 +102,7 @@ for (const page of COPIES) {
 }
 // Retired when the system arrived. A page still defining one is a page that
 // was not moved over, and would quietly draw the old card.
-for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html']) {
+for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html', 'poster.html']) {
   const src = read(page);
   const old = ['--shadow', '--radius'].filter(k => new RegExp(k + '\\s*:').test(src) || src.includes('var(' + k + ')'));
   check(!old.length, `${page}: no retired token is defined or used`, old.join(' ') || 'clean');
@@ -225,7 +225,7 @@ check(faces.length === 5 && faces.every(f => fs.existsSync(path.join(ROOT, f.fil
   'the tracker names five font files, and all five are in the repository', faces.map(f => f.file.split('/').pop()).join(' '));
 const adminSrc = read('admin.html');
 check(faces.every(f => adminSrc.includes(`src:url(${f.file})`)), 'admin.html links the same five');
-for (const page of ['how-to.html', 'flyer.html', 'for-operators.html', 'testers.html']) {
+for (const page of ['how-to.html', 'flyer.html', 'for-operators.html', 'testers.html', 'poster.html']) {
   const src = read(page);
   const inline = [...src.matchAll(/@font-face\{font-family:'([^']+)';[^}]*font-weight:(\d+);[^}]*src:url\(data:font\/woff2;base64,([A-Za-z0-9+/=]+)\)/g)];
   const stale = faces.filter(f => {

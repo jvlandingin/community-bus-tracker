@@ -25,6 +25,20 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-20: A poster that shows, with two ways in
+
+Asked for: a PDF poster that is a quick showcase of what the tracker does,
+with the addresses, as QR codes, of both the tracker and the tester page, for
+riders who would rather share from the Play app. The flyer already carries
+the tracker's QR code, but it is the long argument: an example screen, the
+steps, the fine print, in three columns on a landscape sheet. So the poster is
+its own page, `poster.html`, one portrait sheet read from across a terminal:
+the headline, four of the tracker's own pictures with a line each (two for
+whoever waits, two for whoever shares), and the two codes side by side. Its
+words follow the flyer's Tagalog. The second code follows `ANDROID_APP_URL`,
+and a test fails when the two part, so when the app goes public the poster
+cannot keep sending riders to a closed test.
+
 ## 2026-10-19: The tester page is linked
 
 The app is in internal testing and the closed test is open. `testers.html`

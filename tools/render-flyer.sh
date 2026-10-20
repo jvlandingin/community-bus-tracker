@@ -1,9 +1,9 @@
 #!/bin/sh
-# Renders the printable and postable versions of the two adoption pages.
+# Renders the printable and postable versions of the adoption pages.
 #
 #   sh tools/render-flyer.sh [output-directory]   (default: assets/flyer)
 #
-# flyer.html and for-operators.html are the sources. Everything this script
+# flyer.html, for-operators.html and poster.html are the sources. Everything this script
 # writes is derived from them, so a change to a page is picked up by re-running
 # it — nothing here is edited by hand.
 #
@@ -18,6 +18,8 @@
 #                        for printing and putting up at terminals
 #   flyer-chat.png       1080x3440, sized for a Messenger feed
 #   for-operators.pdf    the briefing, for attaching to an email
+#   poster-a4.pdf        the showcase poster: one PORTRAIT A4 sheet, four
+#                        pictures and two QR codes, the tracker and the app
 #
 # The PNGs capture the top of the flyer rather than the whole scroll, which is
 # why the route name, the headline, the example screen and the link all sit in
@@ -62,10 +64,10 @@ FLAGS="--headless --disable-gpu --no-sandbox --hide-scrollbars --force-color-pro
 
 echo "Chromium: $CHROME"
 
-# --- The two PDFs. Page size and margins come from each page's @page rule. ---
+# --- The three PDFs. Page size and margins come from each page's @page rule. ---
 # --no-pdf-header-footer suppresses Chromium's own URL and date furniture,
 # which otherwise prints across the top of a poster.
-for job in "flyer:flyer-a4" "for-operators:for-operators"; do
+for job in "flyer:flyer-a4" "for-operators:for-operators" "poster:poster-a4"; do
   src=${job%%:*}; dst=${job##*:}
   # shellcheck disable=SC2086
   "$CHROME" $FLAGS --no-pdf-header-footer \

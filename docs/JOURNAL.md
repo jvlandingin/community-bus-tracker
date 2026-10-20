@@ -25,6 +25,90 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-20: A look at every screen
+
+After the words came off, the maintainer asked whether the app now looked
+right in that spirit. Every screen was rendered with made-up buses to answer
+it: the map with buses on it, a bus's popup, a trip, the ticket, My tickets.
+The screens a rider meets first were calm, and the ticket and My tickets were
+the best of it, pictures with labels. Five things were not, and the
+maintainer said to do all five.
+
+The Tutorial button sat under Stop sharing all trip, where it could only say
+"Stop sharing first"; it hides while a trip is on now, on both tabs. A bus's
+popup had become the busiest thing in the app, and on a 360 px phone, common
+among the budget Androids riders here carry, it ran 38 px off the map and cut
+off "Not a real bus?" and its buttons; it had for as long as it had been 240
+px wide. It now takes the width the map leaves, with salamat its one big
+button and "I'm on this bus" and "Send a link" a row of words under it. With
+buses live, the line under the headline said again what the chips under it
+say, so it is for screen readers only now, still announcing the buses as they
+move, and the hint under the chips asking for a tap went. On board, the stop
+card's line is just the next stop. And two labels: "Seen a bus? Post it", and
+"Admin" for the organizers' link.
+
+The flyer, the briefing and the guide drew the headline's line too, so they
+lost it, the flyer's PDFs and chat image were rendered again, and the guide's
+numbered dots were measured again. Still open, for the maintainer: whether
+the header keeps the bus company's name, the question from 17 October.
+
+## 2026-10-20: Fewer words, and the trip's first window
+
+The maintainer, from three screenshots of a phone: "The app looks
+unnecessarily too wordy." Then a list. The bus number's "(optional, but it
+helps)" just "optional"; "Which direction is this bus going?" just
+"Direction"; the two lines under Start, "Your bus shows on the public map
+until you tap Stop." and "Anyone on the bus can share. Keep the screen on, or
+get the app and lock it.", said only once sharing has started, perhaps in a
+window with a picture for each, the app's line with Google Play's logo,
+"making it more official"; "First time? Try a practice run. Nothing is
+shared" and "New here? Take the 1-minute tour" just "Tutorial"; the tickets
+row just "My tickets"; the empty map's card just "Nobody is sharing right
+now" and its button; and "Nobody is sharing right now. Seen one? Post it
+below." gone. "Remember less words! Add art if needed."
+
+All of it is done as asked, and three things came with it.
+
+The window's first line, in the maintainer's words, was to be "remember to
+tap Stop, or set your stop below so it stops sharing automatically once you
+arrive", and until now that was not true: sharing stopped by itself only at
+the end of the route. Now it does at the saved stop. Arriving there asks
+"Getting off here?", and with no answer sharing stops a minute later, which
+is about as long as stepping off takes. It only counts once the stop has been
+well ahead of the bus that trip, so a commuter who saved the stop they wait at
+and boards there is never asked on the way to work, and on the way home it
+stops them at their door.
+
+The app's line had been kept before a trip on purpose: started mid-trip, the
+app's trip is a second bus beside the browser's, and the app's own Start,
+finding that one nearby, asks whether it is the same bus, where "yes" shares
+nothing. So going for the app from the window now ends the browser's trip
+first, and says to start it in the app. The badge is Google's own, as on the
+tester page, the flyer and the poster; while the closed test runs it goes to
+the tester page.
+
+And the line under Start had been the Play disclosure: what is shared, with
+whom and until when, said before the location is asked for. It went at the
+maintainer's word. The button still says what is shared, and the rest comes
+once the trip is on, in the window, the welcome line and the strip's
+EVERYONE CAN SEE THIS. If Play's review asks for it, it can go back, as a
+line or in the button's own words.
+
+The window shows for a sharer's first three trips, counted by the bus the
+phone already keeps, and never for a trip carried over: at every Start it
+would be one more tap between a regular and the road. That is a call made
+with the change, not one the maintainer made, and easy to change.
+
+Looking at the result, the maintainer took the empty map's I'm on the bus
+button off too: the card says "Nobody is sharing right now" and nothing
+else. It had been there to ask whoever is on a bus to be the first; the tab
+of that name, at the top of the page, is the way in. Then they asked whether
+the bus icon left beside the line was the most appropriate. It was not: it
+was the map's own bus glyph, kept from when the card had a button, and on a
+map where a bus means a live one it said the opposite of the line. The card
+is now a pill with the grey dot the sharing tab shows by "Not sharing", the
+app's own sign for exactly this, and it covers less of the map.
+
 ## 2026-10-20: The road seen from the front seat
 
 With the road at one steady speed, the maintainer found the ride still

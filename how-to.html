@@ -187,7 +187,7 @@
      the condensed one: the split the app makes. The drawings follow the app
      part by part, so its status line, its fields, its sighting rows, its
      prompts' words and the ticket's small print are in the normal width too. */
-  p, .hint, figcaption, .keyline .muted, .demo-sub, .demo-row, .demo-field, .tkt-fine{font-family:var(--font-text);}
+  p, .hint, figcaption, .keyline .muted, .demo-row, .demo-field, .tkt-fine{font-family:var(--font-text);}
 
   /* ---- Steps ------------------------------------------------------- */
   .step{display:flex; gap:12px; padding:14px 0; border-top:1px solid var(--line);}
@@ -249,7 +249,6 @@
   .demo-title{ font-size:19px; font-weight:700; text-transform:uppercase;
     letter-spacing:.02em; line-height:1.1;
   }
-  .demo-sub{font-size:10.5px; color:var(--muted); margin-top:3px; line-height:1.45;}
 
   .demo-seg{
     display:flex; background:var(--paper); border:1.5px solid var(--line);
@@ -870,12 +869,13 @@
   .pop .kw .mark{flex:0 0 auto; width:28px; height:28px; margin-top:1px; color:var(--gold-deep);}
   .pop .kw b{display:block; margin-bottom:1px; font-size:var(--fs-cap); font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-deep);}
   .pop .tyrow{margin-top:7px; padding-top:6px; border-top:1px solid var(--line);}
-  .pop .tybtn, .pop .buslink{
+  .pop .tybtn{
     display:flex; align-items:center; justify-content:center; gap:5px; min-height:34px; padding:6px 10px;
-    border-radius:var(--r-s); font-weight:800;
+    border-radius:var(--r-s); font-weight:800; border:1px solid var(--line); background:var(--paper);
   }
-  .pop .tybtn{border:1px solid var(--line); background:var(--paper);}
-  .pop .buslink{margin-top:6px; border:1.5px dashed var(--line); color:var(--brand-ink);}
+  /* The popup's second things, one quiet row of words under salamat. */
+  .pop .pacts{display:flex; flex-wrap:wrap; justify-content:center; gap:0 18px; margin-top:4px;}
+  .pop .buslink{display:inline-flex; align-items:center; gap:6px; min-height:34px; padding:6px 2px; font-weight:800; color:var(--brand-ink);}
   .pop .pride{width:100%; margin:0 0 7px; border-radius:var(--r-s); overflow:hidden;}
   .pop .pwhere{display:flex; justify-content:space-between; align-items:baseline; gap:8px;}
   .pop .wrongbtn, .demo-row .wrongbtn{white-space:nowrap; font-size:var(--fs-cap); font-weight:700; color:var(--muted); text-decoration:underline;}
@@ -1070,8 +1070,9 @@
           <div class="ride-big"><span class="num">Next</span><span class="unit">stop is yours</span><span class="km">· 2.4 km</span></div>
           <div class="ride-sub">▲ Northbound · bus 98018 · updated 12s ago</div>
         </div>
+        <!-- The headline alone: the line under it is for screen readers only
+             while buses are live (renderBuses()), so it is not drawn. -->
         <div class="demo-title">1 bus live</div>
-        <div class="demo-sub">Northbound between Tagaytay and Amadeo · updated 12s ago · trips every 30 mins</div>
         <div class="demo-seg">
           <span class="on">All buses</span><span>▲ Northbound</span><span>▼ Southbound</span>
         </div>
@@ -1087,15 +1088,15 @@
              in a real browser at 430 px wide, which is where these were
              set, against the centre of each row: the strip's northbound
              bus, the map badge, the saved-stop card's picture, the filter
-             and the chip. The figure is the same height at 375 and 430 px
-             (the picture has a fixed height in it, see .annotated
-             .stopview) and 16 px shorter at 520, where the line under the
-             headline fits on one. -->
-        <span class="dot" style="top:5.9%">1</span>
-        <span class="dot" style="top:31.2%">2</span>
-        <span class="dot" style="top:55.4%">3</span>
-        <span class="dot" style="top:90.2%">4</span>
-        <span class="dot" style="top:96%">5</span>
+             and the chip. The figure is the same height at 375, 430 and
+             520 px (the picture has a fixed height in it, see .annotated
+             .stopview), since the headline lost the line under it that
+             wrapped (October 2026); measured again then. -->
+        <span class="dot" style="top:6.2%">1</span>
+        <span class="dot" style="top:32.7%">2</span>
+        <span class="dot" style="top:58%">3</span>
+        <span class="dot" style="top:89.8%">4</span>
+        <span class="dot" style="top:95.8%">5</span>
       </div>
       
     </figure>
@@ -1202,8 +1203,7 @@
           <div class="pwhere"><span>2 km to AMADEO</span><span class="wrongbtn">Not a real bus?</span></div>
           <div class="kw"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14h14v4a6 6 0 0 1-6 6h-2a6 6 0 0 1-6-6z"/><path d="M21 15.5h1.6a2.6 2.6 0 0 1 0 5.2H20.4"/><path d="M5 27h18"/><path d="M11 10.5c-1-1.5 1-2.5 0-4.2M15.5 10.5c-1-1.5 1-2.5 0-4.2"/></svg><span><b>Next up</b>Amadeo, the coffee capital of the Philippines</span></div>
           <div class="tyrow"><span class="tybtn"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>Say salamat</span></div>
-          <span class="buslink"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg>I’m on this bus</span>
-          <span class="buslink"><svg class="gi" aria-hidden="true"><use href="#i-link"/></svg>Send a link to this bus</span>
+          <div class="pacts"><span class="buslink"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg>I’m on this bus</span><span class="buslink"><svg class="gi" aria-hidden="true"><use href="#i-link"/></svg>Send a link</span></div>
         </div>
         <span class="pip popbus"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-coach"/><rect class="sign" x="6.6" y="4.1" width="10.8" height="1.9" rx=".7"/></svg></span>
       </div>
@@ -1211,7 +1211,7 @@
     <ul class="rows">
       <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg></span><div><b>Say salamat</b><span>Tells whoever is sharing that you’re glad. The bus hops and says <b>beep beep!</b></span></div></li>
       <li><span class="ic" aria-hidden="true"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg></span><div><b>I’m on this bus</b><span>Your stop card follows this bus to where you get off.</span></div></li>
-      <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-link"/></svg></span><div><b>Send a link to this bus</b><span>Whoever opens it can follow this bus. It stops working when the trip ends.</span></div></li>
+      <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-link"/></svg></span><div><b>Send a link</b><span>Whoever opens it can follow this bus. It stops working when the trip ends.</span></div></li>
       <li><span class="ic" aria-hidden="true"><svg class="gi" aria-hidden="true"><use href="#i-flag"/></svg></span><div><b>Not a real bus?</b><span>Tells the organizer. They check, and can take it off the map.</span></div></li>
     </ul>
     <details class="more">
@@ -1308,7 +1308,6 @@
         </div>
         <div class="demo-field filled">98019</div>
         <div class="fakebtn primary" style="margin-top:10px">Start sharing my location</div>
-        <div class="demo-sub" style="margin-top:8px">Your bus shows on the public map until you tap Stop.</div>
       </div>
       <figcaption>Direction picked (it turns gold), the number in, ready to start.</figcaption>
     </figure>
@@ -1368,7 +1367,7 @@
         <div class="ride-top"><span class="ride-name">New Imus City Hall</span><span class="edit">Change</span></div>
         <div class="ride-art"><!-- stopview aboard=1 stop=New+Imus+City+Hall at=GEN.T sky=day --><svg class="stopview" viewBox="0 0 330 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><rect width="330" height="160" fill="#e3f2f7"/><circle cx="256" cy="36" r="7" fill="#e39a1c"/><path d="M0 64C40 44 90 52 130 46C170 40 210 50 240 44C280 38 310 48 330 46V64Z" fill="#b9d2c4"/><rect y="62" width="330" height="98" fill="#d3e0bf"/><path d="M0 63H330" stroke="#c9dfd0" stroke-width="3"/><path d="M148.53 62.7L150.735 62.7L289.65 195L-129.3 195Z" fill="#8f8579"/><path d="M148.565 65.189L149.685 62.7" stroke="#fbf4e4" stroke-width=".4" opacity=".8"/><g class="sv-road"><path class="sv-joints" d="M117.01 77.709L166.495 77.709L166.364 77.584L117.273 77.584ZM111.442 80.361L169.279 80.361L169.1 80.19L111.8 80.19ZM103.612 84.09L173.194 84.09L172.935 83.843L104.129 83.843ZM91.792 89.718L179.104 89.718L178.698 89.331L92.604 89.331ZM71.888 99.196L189.056 99.196L188.328 98.503L73.344 98.503ZM31.3 118.524L209.35 118.524L207.685 116.938L34.631 116.938ZM-97.092 179.663L273.546 179.663L266.543 172.993L-83.085 172.993Z" fill="#000" opacity=".14"/><path class="sv-dashes" d="M148.323 65.53L148.5 65.53L148.542 65.431L148.37 65.431ZM148.04 66.125L148.247 66.125L148.304 65.991L148.104 65.991ZM147.643 66.962L147.891 66.962L147.973 66.768L147.735 66.768ZM147.044 68.223L147.355 68.223L147.483 67.922L147.187 67.922ZM146.036 70.345L146.453 70.345L146.68 69.812L146.289 69.812ZM143.986 74.662L144.619 74.662L145.123 73.475L144.55 73.475ZM137.539 88.233L138.851 88.233L140.819 83.602L139.739 83.602Z" fill="#fbf4e4"/><path class="sv-tufts" d="M185.951 78.04L185.608 76.665L186.41 78.04M186.364 78.04L186.639 75.978L186.914 78.04M186.868 78.04L187.67 76.551L187.326 78.04ZM93.772 77.832L93.433 76.475L94.225 77.832M94.18 77.832L94.451 75.796L94.722 77.832M94.677 77.832L95.469 76.362L95.129 77.832ZM192.612 81.648L192.191 79.964L193.173 81.648M193.117 81.648L193.454 79.122L193.791 81.648M193.735 81.648L194.717 79.823L194.296 81.648ZM93.178 82.704L92.735 80.929L93.77 82.704M93.711 82.704L94.066 80.042L94.421 82.704M94.361 82.704L95.397 80.781L94.953 82.704ZM204.049 87.311L203.507 85.141L204.773 87.311M204.7 87.311L205.134 84.056L205.568 87.311M205.496 87.311L206.761 84.96L206.219 87.311ZM69.322 89.49L68.733 87.134L70.108 89.49M70.029 89.49L70.5 85.956L70.972 89.49M70.893 89.49L72.268 86.937L71.678 89.49ZM201.289 96.015L200.561 93.099L202.261 96.015M202.164 96.015L202.747 91.642L203.33 96.015M203.233 96.015L204.934 92.856L204.205 96.015ZM24.149 96.931L23.401 93.937L25.147 96.931M25.048 96.931L25.647 92.44L26.245 96.931M26.146 96.931L27.892 93.687L27.144 96.931ZM302.28 132.447L300.77 126.409L304.293 132.447M304.092 132.447L305.299 123.39L306.507 132.447M306.306 132.447L309.828 125.906L308.318 132.447ZM-139.417 153.824L-141.385 145.954L-136.794 153.824M-137.056 153.824L-135.482 142.018L-133.908 153.824M-134.17 153.824L-129.579 145.298L-131.547 153.824Z" fill="#9cb486"/><path d="M148.185 61.812L-140.4 31.92M148.385 61.812L-108.4 31.92" stroke="#3d322d" stroke-width=".45" opacity=".7" fill="none"/><g class="sv-k" data-w="10.9" style="transform:translate(150px,62px) scale(0.049)"><rect x="-173.2" y="-26" width="3.4" height="96" fill="#a39a91"/><rect x="-182.5" y="-20" width="22" height="2.4" fill="#6f655e"/></g><g class="sv-k" data-w="10.925" style="transform:translate(150px,62px) scale(0.059)"><rect x="-173.2" y="-26" width="3.4" height="96" fill="#a39a91"/><rect x="-182.5" y="-20" width="22" height="2.4" fill="#6f655e"/></g><g class="sv-k" data-w="10.95" style="transform:translate(150px,62px) scale(0.075)"><rect x="-173.2" y="-26" width="3.4" height="96" fill="#a39a91"/><rect x="-182.5" y="-20" width="22" height="2.4" fill="#6f655e"/></g><g class="sv-k" data-w="10.975" style="transform:translate(150px,62px) scale(0.103)"><rect x="-173.2" y="-26" width="3.4" height="96" fill="#a39a91"/><rect x="-182.5" y="-20" width="22" height="2.4" fill="#6f655e"/></g><g class="sv-k" data-w="11" style="transform:translate(150px,62px) scale(0.164)"><rect x="-173.2" y="-26" width="3.4" height="96" fill="#a39a91"/><rect x="-182.5" y="-20" width="22" height="2.4" fill="#6f655e"/></g><g class="sv-k" data-w="11.025" style="transform:translate(150px,62px) scale(0.396)"><rect x="-173.2" y="-26" width="3.4" height="96" fill="#a39a91"/><rect x="-182.5" y="-20" width="22" height="2.4" fill="#6f655e"/></g><g class="sv-pin" style="transform:translate(154.305px,63.44px)"><circle r="8.55" fill="#4f46b8" opacity=".25"/><circle r="4.5" fill="#4f46b8" stroke="#fff" stroke-width="0.72"/><path transform="scale(0.45)" d="M0-6.2c-3.3 0-6 2.6-6 6 0 4.5 6 10.5 6 10.5s6-6 6-10.5c0-3.4-2.7-6-6-6zm0 8.4a2.4 2.4 0 1 1 0-4.8 2.4 2.4 0 0 1 0 4.8z" fill="#fff"/></g><g class="sv-k" data-w="10.9" style="transform:translate(150px,62px) scale(0.049)"><rect x="77.3" y="52" width="2.2" height="18" fill="#7d7168"/><rect x="60.13" y="31" width="36.54" height="21" rx="2.8" fill="#2e6b45" stroke="#fbf4e4" stroke-width="1.1"/><path d="M66.43 35.2L66.43 41.5M66.43 41.5L66.43 47.8M70.21 35.2L76.51 35.2M76.51 35.2L76.51 41.5M76.51 41.5L76.51 47.8M70.21 47.8L76.51 47.8M70.21 41.5L70.21 47.8M70.21 35.2L70.21 41.5M84.07 35.2L90.37 35.2M90.37 35.2L90.37 41.5M90.37 41.5L90.37 47.8M84.07 47.8L90.37 47.8M84.07 35.2L84.07 41.5M84.07 41.5L90.37 41.5" stroke="#fbf4e4" stroke-width="2.1" stroke-linecap="round" fill="none"/><circle cx="80.29" cy="47.3" r="1.6" fill="#fbf4e4"/></g><g class="sv-k" data-w="11" style="transform:translate(150px,62px) scale(0.164)"><rect x="77.3" y="52" width="2.2" height="18" fill="#7d7168"/><rect x="63.28" y="31" width="30.24" height="21" rx="2.8" fill="#2e6b45" stroke="#fbf4e4" stroke-width="1.1"/><path d="M69.58 35.2L69.58 41.5M69.58 41.5L69.58 47.8M73.36 35.2L73.36 41.5M73.36 41.5L73.36 47.8M80.92 35.2L87.22 35.2M87.22 35.2L87.22 41.5M87.22 41.5L87.22 47.8M80.92 47.8L87.22 47.8M80.92 41.5L80.92 47.8M80.92 35.2L80.92 41.5" stroke="#fbf4e4" stroke-width="2.1" stroke-linecap="round" fill="none"/><circle cx="77.14" cy="47.3" r="1.6" fill="#fbf4e4"/></g></g><g fill="#1c1512"><path d="M0 0H330V20Q165 12 0 20Z"/><path d="M0 18L22 18L7 142H0Z"/><path d="M330 18L308 18L323 142H330Z"/></g><path d="M165 4V14" stroke="#2b2320" stroke-width="3"/><rect x="134" y="12" width="62" height="14" rx="5" fill="#2b2320" stroke="#5a504a" stroke-width="1.5"/><rect x="138" y="15" width="54" height="8" rx="3" fill="#a9c4d3"/><g class="sv-swing"></g><path d="M0 140Q165 124 330 140V160H0Z" fill="#2a2019"/><path d="M0 140Q165 124 330 140" stroke="#7a1f2b" stroke-width="3" fill="none"/></svg><!-- /stopview --><span class="ride-fold">Hide</span></div>
         <div class="ride-big"><span class="unit">about</span><span class="num">7</span><span class="unit">stops before yours</span><span class="km">· 11 km</span></div>
-        <div class="ride-sub">▲ Northbound · your bus 98018 · next stop <b>Monterey</b> · updated 6s ago</div>
+        <div class="ride-sub">Next stop <b>Monterey</b></div>
       </div>
       </div>
       <figcaption>While you share, the tab goes dark. Your bus has the <b>green ring</b>. Tap <b>Show the road</b> to see it from the bus. A salamat from a rider shows here, only to you.</figcaption>
@@ -1376,7 +1375,8 @@
 
     <h3 class="sub">Stop when you get off</h3>
     <p>Tap <b>Stop sharing</b>. The bus leaves the map at once, and you get a
-      ticket for the trip.</p>
+      ticket for the trip. Or save the stop you get off at: sharing stops there
+      by itself.</p>
     <!-- The ticket, as showTicket() fills it in for one example trip: boarded
          at Mendez at 4:40 AM, off at One Ayala at 7:31, nobody else on the map
          at the start. Every string is one the function prints for that trip —
@@ -1418,6 +1418,8 @@
     <details class="more">
       <summary>More about sharing<svg class="gi" aria-hidden="true"><use href="#i-chev"/></svg></summary>
       <ul>
+        <li><b>Your first trips open with a window</b> saying the two things to know once your bus is on the map: tap Stop when you get off, and keep the screen on.</li>
+        <li><b>At the stop you saved</b>, the app asks “Getting off here?” and stops sharing a minute later if you don’t answer. Only on the way to it: board at your saved stop and ride away, and nothing is asked.</li>
         <li><b>The tab goes dark</b> while you share: easier to read on a dashboard mount, and lighter on most phones’ batteries. It goes back to normal when you stop.</li>
         <li><b>On Android there is an app</b> that keeps sharing with the screen locked, with a notification for as long as it does. <span id="appAsk">Ask the organizer for it.</span><span id="appWhere" hidden><a target="_blank" rel="noopener">Get the app</a>.</span> Watching never needs it.</li>
         <li><b>Outside the route area</b>, your bus shows on your phone only, never on anyone else’s map. It joins the map once the bus is on the route.</li>

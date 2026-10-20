@@ -130,7 +130,7 @@
   /* Sentences in the normal width of the typeface, everything that is a
      heading, a label or a piece of the app in the condensed one: the split
      the app makes. */
-  .hero .lede, .steps .tx span, .cta .note, .passiton, footer, .demo-sub{font-family:var(--font-text);}
+  .hero .lede, .steps .tx span, .cta .note, .passiton, footer{font-family:var(--font-text);}
 
   /* ---- Header band, same signboard as the app ---------------------- */
   header{
@@ -197,7 +197,6 @@
     letter-spacing:.01em; line-height:1.1;
     margin-top:12px; padding-top:10px; border-top:1px solid var(--line);
   }
-  .demo-sub{font-size:10.5px; color:var(--muted); margin-top:3px; line-height:1.45;}
   .demo-seg{
     display:flex; background:var(--paper); border:1.5px solid var(--line);
     border-radius:10px; padding:3px; margin:10px 0 2px;
@@ -652,7 +651,6 @@
        no slack worth the name, so trim here before adding anything else. */
     .screenlabel{font-size:5.5pt; margin-bottom:1px;}
     .demo-title{font-size:11pt; margin-top:4px; padding-top:3px;}
-    .demo-sub{font-size:6pt;}
     .demo-seg{margin:2px 0 1px;}
     .demo-seg span{padding:2px 2px; font-size:6.5pt;}
     .strip{margin:3px 0 1px;}
@@ -782,9 +780,11 @@
        Four buses live, because that is what the tool looks like when it is
        working and an empty map is what it looks like when nobody has heard
        of it. Every string below is the one the app would really print: the
-       headline and subtitle come from renderBuses() and the chip labels from
-       busPlace() in index.html, with the checkpoints and distances taken off
-       the real config.txt. Change either function and this drawing is wrong.
+       headline comes from renderBuses() (the line under it is for screen
+       readers only while buses are live, so it is not drawn) and the chip
+       labels from busPlace() in index.html, with the checkpoints and
+       distances taken off the real config.txt. Change either function and
+       this drawing is wrong.
        Decorative in the accessibility sense: aria-hidden, with the same
        information carried by the prose around it. -->
   <section class="screenwrap">
@@ -889,7 +889,6 @@
       </div>
 
       <div class="demo-title">4 buses live</div>
-      <div class="demo-sub">Northbound between Imus and Kawit · updated 8s ago · trips every 30 mins</div>
 
       <div class="demo-seg">
         <span class="on">All buses</span><span>▲ Northbound</span><span>▼ Southbound</span>

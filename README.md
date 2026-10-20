@@ -26,8 +26,10 @@ company's name or initials, for the same reason.
   one is. No key, no sign-up, no location permission needed.
 - **Share:** a driver, conductor, or volunteer rider taps "I'm on the bus" and
   shares the vehicle's position for that trip. Needs a community key. Stop
-  anytime. In a browser the screen has to stay on; the Android app in
-  `mobile/` keeps sharing with it locked.
+  anytime, or save the stop you get off at and sharing stops there by itself.
+  In a browser the screen has to stay on; the Android app in `mobile/` keeps
+  sharing with it locked. The trip's first window says both, with a picture
+  each, for a sharer's first few trips.
 - **Your own stop:** save the stop you wait at and the card under the map
   draws the next bus coming down the road to your stop, with a post for every
   stop still between them, or on board your stop coming up to the windscreen —
@@ -58,13 +60,13 @@ company's name or initials, for the same reason.
   stopwatch: the day, the places, the stamps and a flower if anyone said
   salamat, with no times, no bus number and no count, so no pile of them can
   time a trip or rank a driver.
-- **Follow one bus:** "Send a link to this bus", in a bus's popup, sends a
+- **Follow one bus:** "Send a link", in a bus's popup, sends a
   link that opens the map following that bus — for whoever is fetching you.
   It carries only the bus's public ID and dies with the trip. The popup also
   has a line about the town the bus is passing.
 - **An empty map says when:** with nobody sharing, the map says when the next
-  trips leave, or that the bus is still asleep, or asks someone on a bus to be
-  the first. The hours card shows the day as a band with a mark at now.
+  trips leave, or that the bus is still asleep, or that nobody is sharing right
+  now. The hours card shows the day as a band with a mark at now.
 - **Light and dark:** follows the device by default, with a ☀/☾/◐ control in
   the header to override it either way. The map's tiles follow too, and the
   sharing tab goes dark during a trip so a phone on a dashboard is easy to
@@ -82,9 +84,9 @@ company's name or initials, for the same reason.
   moderation, and key rotation. Needs a separate admin key.
 - **A tour:** two one-minute practice runs on the real page, one for watching
   and one for sharing, with a practice bus standing in for the real ones and
-  nothing sent or kept. Opened from the guide, from a button at the foot of
-  each tab, from a link ending `#tour` or `#tour=share`, and once from a
-  "New here?" note on a first visit.
+  nothing sent or kept. Opened from the guide, from the Tutorial button at the
+  foot of each tab, from a link ending `#tour` or `#tour=share`, and once from
+  a "New here?" note on a first visit.
 - **How-to page:** `how-to.html`, reached from the ⓘ in the header. Explains
   watching and sharing, a line and a picture per idea with the fine print
   folded away, and opens the tour. Its figures are drawn in HTML and CSS from the same

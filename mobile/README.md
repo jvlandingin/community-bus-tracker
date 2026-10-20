@@ -124,8 +124,10 @@ which a phone can download in one tap for the Play Console upload.
 ## Google Play
 
 The app goes out through Google Play, and the website offers it once
-`ANDROID_APP_URL` in `config.txt` is the Play address: on the sharing tab, in
-an Android browser, before a trip, and in the guide's notes on sharing.
+`ANDROID_APP_URL` in `config.txt` is the Play address: in the trip's first
+window, in an Android browser, once a trip is on (going for it ends the
+browser's trip, so the app's is not a second bus), with Google's badge, and in
+the guide's notes on sharing.
 `docs/ARCHITECTURE.md`, "The Android app", has why Play rather than an APK
 link, and why the offer is that narrow.
 
@@ -150,10 +152,16 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
   asks a privacy policy to name the app or the developer as the listing does.
 - **Permissions:** fine and coarse location, a foreground service of type
   location, notifications, vibrate, internet and wake lock. No background
-  location: the service starts only from a tap on Start with the app on
-  screen, under a line saying the bus shows on the public map until Stop.
+  location: the service starts only from a tap on "Start sharing my
+  location" with the app on screen. The line under it that said the bus
+  shows on the public map until Stop went in October 2026, at the
+  maintainer's word; the trip's first window says to tap Stop when getting
+  off, and the strip says EVERYONE CAN SEE THIS (`docs/ARCHITECTURE.md`,
+  "What a website could assume and an app cannot", has the trade).
 - **Foreground service declaration:** type `location`, for "the user shares
-  the bus they are riding on a public live map until they tap Stop". Play
+  the bus they are riding on a public live map until they tap Stop, or reach
+  the stop they saved, where the app asks and stops a minute later if
+  nobody answers". Play
   wants a short video of it: Start, the notification, the screen locked, the
   bus still moving on a second phone, Stop.
 - **Privacy policy:** `https://community-bus-tracker.netlify.app/#privacy`,

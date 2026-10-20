@@ -1,11 +1,23 @@
 // Exercises the trip-guard state machine as shipped, with a fake clock and a
 // stub DOM. Checks that prompts appear when they should, once, and that the
-// only automatic stop is a bus parked at the end of its own route.
+// only automatic stops are a bus parked at the end of its own route and a
+// bus at the stop its sharer saved, each after a question nobody answered.
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const block = html.slice(html.indexOf('// ---- Trip guards:'), html.indexOf('// ---- Duplicate-sharer guard'));
+// The saved stop's guard and the route maths it reads, as shipped too: the
+// MY STOP block by its markers, and the four functions that place a point on
+// the checkpoint chain, by name (their block declares the chain itself).
+const myStop = html.slice(html.indexOf('// ---- THE READER\'S OWN STOP (unit tested)'), html.indexOf('// ---- END MY STOP'));
+const fnSrc = name => {
+  const a = html.indexOf('function ' + name + '(');
+  let i = html.indexOf('{', a), depth = 0;
+  for (; i < html.length; i++) { if (html[i] === '{') depth++; else if (html[i] === '}' && !--depth) break; }
+  return html.slice(a, i + 1);
+};
+const chainSrc = ['haversineKm', 'buildRouteChain', 'chainPosition', 'routeProgressKm'].map(fnSrc).join('\n');
 
 let fail = 0;
 function check(cond, label) { console.log((cond ? 'PASS  ' : 'FAIL  ') + label); if (!cond) fail++; }
@@ -20,9 +32,11 @@ function build(dirHit) {
                                   toggle: () => {} } }) };
   const prelude = `
     let sharing=true, lastCoords=null, shareDir='north', lastWrite=0, hiddenSinceFix=false, writePrivate=false;
+    let MYSTOP=null;
     const accessKey='key';
     const CFG={ ROUTE_SLUG:'test-route' };
-    const CHECKPOINTS=__CP__, ROUTE_CHAIN=__CHAIN__;
+    ` + chainSrc + myStop + `
+    const CHECKPOINTS=__CP__, ROUTE_CHAIN=buildRouteChain(CHECKPOINTS);
     function getSessionId(){ return 'sess'; }
     function rpc(fn,args){ __log__.rpc.push(fn); return Promise.resolve({}); }
     function setShareUI(s,m){ __log__.ui.push(s+'|'+m); }
@@ -59,6 +73,7 @@ function build(dirHit) {
     __out__.setCoords=function(c){ lastCoords=c; };
     __out__.setHidden=function(h){ hiddenSinceFix=h; };
     __out__.armGuard=function(){ dirGuard=makeDirGuard(); };
+    __out__.setStop=function(st){ MYSTOP=st; stopGuard=makeStopGuard(); };
     __out__.state=function(){ return {sharing:sharing, shareDir:shareDir, guardPaused:guardPaused,
                                       askOpen:askOpen, idleMin:idleRef?( __clock__()-idleRef.t)/60000:null }; };
   `;
@@ -66,8 +81,7 @@ function build(dirHit) {
   const CP = [{ lat: 14.0997, lng: 120.9145 }, { lat: 14.1187, lng: 120.9540 }, { lat: 14.1701, lng: 120.9221 },
               { lat: 14.2912, lng: 120.9068 }, { lat: 14.3897, lng: 120.9196 }, { lat: 14.5101, lng: 120.9913 },
               { lat: 14.5505, lng: 121.0279 }];
-  const src = (prelude + block + tail)
-    .replace('__CP__', JSON.stringify(CP)).replace('__CHAIN__', JSON.stringify([0, 5, 8, 20, 32, 48, 57]));
+  const src = (prelude + block + tail).replace('__CP__', JSON.stringify(CP));
   new Function('document', '__log__', '__out__', '__clock__', '__dirHit__', src)(
     doc, log, out, () => now, dirHit || null);
   out.tick = ms => { now += ms; log.timers.filter(t => t.at <= now).forEach(t => { log.timers = log.timers.filter(x => x !== t); t.fn(); }); };
@@ -200,6 +214,76 @@ const nearby = (c, dlat) => ({ latitude: c.latitude + dlat, longitude: c.longitu
   t.askNo();
   check(t.state().guardPaused === false, 'answered after the screen was off: sharing resumes');
   check(t.log.writes.length === before, 'answered after the screen was off: the fix from before it is not sent');
+}
+
+// 11. the stop this phone saved: sharing stops there by itself (October
+// 2026). Northbound along the checkpoint leg from Amadeo to General Trias,
+// about 11 km, so each hundredth of it is 110 m.
+const leg = f => ({ latitude: 14.2912 + (14.3897 - 14.2912) * f, longitude: 120.9068 + (120.9196 - 120.9068) * f });
+const stopAt = f => { const p = leg(f); return { name: 'Test stop', lat: p.latitude, lng: p.longitude }; };
+// Rides from a to b a hundredth at a time, 20 seconds apart, and says where
+// it was first asked anything, or null.
+const ride = (t, a, b) => {
+  let asked = null;
+  for (let i = 0; a + i * .01 <= b + 1e-9; i++) {
+    t.tick(20000); t.check(leg(a + i * .01));
+    if (!t.log.modalHidden && asked === null) asked = +(a + i * .01).toFixed(3);
+  }
+  return asked;
+};
+{
+  const t = build(null); t.setDir('north'); t.setStop(stopAt(.6));
+  check(ride(t, .1, .59) === null, 'your stop: nothing asked on the way to it, 110 m short included');
+  t.tick(20000); t.check(leg(.595));
+  check(t.log.modalHidden === false && /getting off/i.test(t.log.notes[0] || ''), 'your stop: asked as the bus comes to it, 55 m short');
+  check(t.log.stopped === 0, 'your stop: asking stops nothing');
+  t.tick(50000);
+  check(t.log.stopped === 0, 'your stop: still sharing 50 seconds on');
+  t.tick(11000);
+  check(t.log.stopped === 1 && t.log.unnotes === 1, 'your stop: sharing stops by itself a minute after no answer, the notification with it');
+}
+{
+  const t = build(null); t.setDir('north'); t.setStop(stopAt(.6));
+  ride(t, .4, .6);
+  t.askYes();
+  check(t.log.stopped === 1, 'your stop: answering Stop sharing stops at once');
+}
+{
+  const t = build(null); t.setDir('north'); t.setStop(stopAt(.6));
+  ride(t, .4, .6);
+  t.askNo();
+  check(t.log.stopped === 0 && t.log.timers.length === 0, 'your stop: not yet keeps sharing, and the automatic stop is called off');
+  check(ride(t, .61, .8) === null && t.log.stopped === 0, 'your stop: and is not asked twice on one trip');
+}
+{
+  const t = build(null); t.setDir('north'); t.setStop(stopAt(.3));
+  check(ride(t, .3, .9) === null && t.log.stopped === 0, 'your stop: boarding at it and riding away never counts as arriving');
+}
+{
+  const t = build(null); t.setDir('north'); t.setStop(stopAt(.6));
+  check(ride(t, .58, .7) === null, 'your stop: never well ahead this trip (220 m at the start), never asked');
+}
+{
+  // Southbound runs down the leg, so the rides go the other way.
+  const south = (t, a, b) => {
+    let asked = null;
+    for (let i = 0; a - i * .01 >= b - 1e-9; i++) {
+      t.tick(20000); t.check(leg(a - i * .01));
+      if (!t.log.modalHidden && asked === null) asked = +(a - i * .01).toFixed(3);
+    }
+    return asked;
+  };
+  const t = build(null); t.setDir('south'); t.setStop(stopAt(.9));
+  check(south(t, .8, .1) === null, 'your stop: behind a southbound bus, it is never reached');
+  const u = build(null); u.setDir('south'); u.setStop(stopAt(.3));
+  const asked = south(u, .8, .1);
+  check(asked === .3, 'your stop: southbound, asked arriving from the other side', String(asked));
+}
+{
+  const t = build(null); t.setDir('north'); t.setStop(stopAt(.6));
+  ride(t, .4, .55);
+  t.tick(20000); t.check(leg(.65));
+  check(t.log.modalHidden === true, 'your stop: first seen 550 m past it, the sharer is still on board and nothing is asked');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

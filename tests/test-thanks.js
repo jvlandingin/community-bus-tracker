@@ -201,20 +201,19 @@ console.log('\n=== 10. every RPC the pages call exists in a migration ===');
 }
 
 console.log('\n=== 11. the feature is findable without shouting ===');
-// The button lives in the bus popup, which nobody who has not tapped a bus
-// knows exists. The whole discoverability budget is one muted line under the
-// chips, drawn only when there is somebody to thank — the same rule as the
-// count itself: nothing is shown when there is nothing to act on.
-check(/id="chipNote"/.test(html) && /class="hint hidden" id="chipNote"/.test(html),
-  'the hint exists and ships hidden, so an empty map stays as bare as before');
+// The button lives in the bus popup, which every way of tapping a bus opens.
+// It used to have one muted line under the chips as well, "Tap any bus to see
+// it up close and say salamat", which went in October 2026 with the rest of
+// what the screen said twice (the maintainer: fewer words). The map's tour
+// says it now, on the popup itself, and nothing on the tracker asks for it.
+check(!/id="chipNote"/.test(html) && !/Tap any bus to see it up close/.test(html),
+  'no line under the chips asks for a tap');
 {
-  const noteText = (html.match(/id="chipNote"[^>]*>([^<]*)</) || [])[1] || '';
-  check(/salamat/i.test(noteText) && /tap/i.test(noteText),
-    'and it says what to do, not just that a feature exists', noteText.slice(0, 60));
-  check(!/(min|score|rank|rate)/i.test(noteText), 'without promising anything the system does not do');
+  const walks = html.slice(html.indexOf('const WALKS = {'), html.indexOf('const WALK_ALT'));
+  check(/id:'popup'[^}]*<b>Say salamat<\/b>/.test(walks), 'the map\'s tour says it, on the popup itself');
 }
-check(/note\.classList\.toggle\('hidden', !shown\.some\(function\(b\)\{ return !b\.self; \}\)\)/.test(html),
-  'it appears only when a live bus is somebody else\'s — nobody is invited to thank themselves');
+check(/onclick="focusBus\(\\''\+b\.id\+'\\'\)"/.test(html.slice(html.indexOf('function renderBuses'))),
+  'and a chip opens its bus\'s popup, as the badge on the map does');
 // The other road to the popup: the tracker's strip pills are buttons that
 // focus their bus. Guarded properly in test-boot section 9 with a real DOM;
 // this only pins that the wiring is the popup, not a second salamat control.
@@ -426,9 +425,12 @@ console.log('\n=== 16. the album adds up nothing that ranks anybody ===');
     'the album only ever draws a flower for it, one ticket at a time', tyUses.join('|'));
   check(/n \? '×' \+ n : 'not yet'/.test(render) && !/×0/.test(render),
     'a stamp not collected yet says so, never ×0');
+  // The row on the sharing tab is its name and nothing else (October 2026):
+  // the counts are inside, so there is no number on the tab to be a zero.
   const sync = fn('syncAlbumRow');
-  check(/row\.classList\.remove\('hidden'\);/.test(sync) && /if \(!list\.length && !dec\)\{\s*document\.getElementById\('albumRowVal'\)\.textContent = '[^'0-9]+';\s*return;/.test(sync),
-    'My tickets is always offered, so what there is to collect can be found, and with nothing yet it says so without a number');
+  check(/row\.classList\.remove\('hidden'\);/.test(sync) && !/textContent|innerHTML/.test(sync) &&
+        /<span class="lbl">My tickets<\/span>/.test(html),
+    'My tickets is always offered, so what there is to collect can be found, by its name alone: no number on the tab to be a zero');
   // The kept tickets still add up none of these. The totals and the streak
   // the maintainer asked for belong to the bus (section 19), not to them.
   const albumOnly = ['albumEntry', 'albumClean', 'albumPlaces', 'albumStats'].map(fn).join('');

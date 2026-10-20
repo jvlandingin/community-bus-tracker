@@ -798,6 +798,12 @@ function run(page, include, label, configText, setup) {
       // than that waits out of sight, and comes into view as the bus nears.
       const seenKm = ok.w.eval('SV_SEEN'), long = ok.w.eval('STOPVIEW.from - STOPVIEW.to'), far = g => v - at(g) > seenKm;
       const exact = onRoad.length > 20 && onRoad.every(g => far(g) ? g.style.display === 'none' : g.style.display === '' && g.style.transform === ok.w.svOnRoad(v, at(g)));
+      // and what is painted on it, the middle line, the joints and the
+      // grass, drawn again for the bus halfway.
+      const painted = [['.sv-dashes', 'svDashes'], ['.sv-joints', 'svJoints'], ['.sv-tufts', 'svTufts']].every(([sel, fn]) => {
+        const path = tripBox.querySelector('.sv-road ' + sel);
+        return !!path && path.getAttribute('d') === ok.w[fn](v) && path.getAttribute('d') !== ok.w[fn](ok.w.eval('STOPVIEW.to'));
+      });
       const waiting = onRoad.filter(far).length, end = ok.w.eval('STOPVIEW.to');
       ok.w.ridePlace(ok.w.eval('STOPVIEW.at + STOPVIEW.span'));
       const arrived = onRoad.every(g => g.style.display === '' && g.style.transform === ok.w.svOnRoad(end, at(g)));
@@ -807,9 +813,9 @@ function run(page, include, label, configText, setup) {
       const folded = !ok.w.ridePlace(ok.w.eval('STOPVIEW.at + STOPVIEW.span / 2')) &&
         [...tripBox.querySelectorAll('.sv-road .sv-k')].map(g => g.style.transform).join('|') === before;
       ok.w.switchTab('track');
-      check(placed && exact && folded,
-        'and the card moves the open road frame by frame, each thing where the picture\'s own sum puts it, and leaves a folded one be',
-        [placed, exact, folded].join(',') + (exact ? '' : ' ' + (onRoad[0] ? onRoad[0].style.transform + ' vs ' + ok.w.svOnRoad(v, at(onRoad[0])) : 'nothing on the road')));
+      check(placed && exact && painted && folded,
+        'and the card moves the open road frame by frame, each thing where the picture\'s own sum puts it, its paint drawn again, and leaves a folded one be',
+        [placed, exact, painted, folded].join(',') + (exact ? '' : ' ' + (onRoad[0] ? onRoad[0].style.transform + ' vs ' + ok.w.svOnRoad(v, at(onRoad[0])) : 'nothing on the road')));
       check(long > seenKm && waiting > 5 && arrived,
         'and on a way longer than the eye reaches, what is further off waits out of sight until the bus nears it',
         long.toFixed(3) + ' km, ' + waiting + ' of ' + onRoad.length + ' things waiting halfway, ' + (arrived ? 'all in place at the end' : 'not all in place at the end'));

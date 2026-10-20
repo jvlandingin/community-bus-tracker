@@ -25,6 +25,22 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-20: The road seen from the front seat
+
+With the road at one steady speed, the maintainer found the ride still
+looked slow, and asked for it to look faster, with the dashes further
+apart: a sign at a time was fine, and none for a few seconds too. The pace
+had to stay the bus's, since the picture is behind the bus and never ahead,
+so the eye moved instead. It had seen as a long lens does, as if from 22 m
+behind the front, and a pole took ten seconds at 30 km/h to grow from a
+quarter of its size to full; from the front seat, seeing wide, it takes two
+and a half, and the near things sweep out of the glass. About 150 m is in
+sight instead of 260. The middle line went from a dash every 12 m to 4 m of
+paint every 20 m, drawn on the ground so it stretches as it nears, and the
+near road got joints across the concrete every 4.5 m and grass on the
+verges, which stream past at the foot of the glass. Measured, it costs what
+the long lens did.
+
 ## 2026-10-20: The trip screen comes to rest
 
 The maintainer asked how the green dots on the sharing tab compared with the

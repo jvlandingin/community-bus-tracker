@@ -823,15 +823,22 @@ go only where the screen would be empty still holds everywhere else.
   is linear in k, so interpolating the transform is the right path in
   depth. A stop the bus has just passed fades as it goes by (`stopgone`, on
   the glide's clock).
-- **On board, the road at its own length, seen close** (changed October
-  2026, below). The picture works in km: how far your stop still is
-  (`info.km`) and how far back from it every stop before it is
-  (`stopsBack()`), so the posts stand as far apart as the stops do, a thing
-  g km up the road at depth z + 35 g. The dashes down the middle are on the
-  road like the posts, every 12 m, and every 100 m a green sign says how
-  many km are still to go (`svKmSign()`, its figures drawn in strokes), so
-  the road, the signs and the stops go by together and a stop the bus
-  passes goes by the glass. Across the road a power pole stands every 25 m
+- **On board, the road at its own length, seen wide from the front seat**
+  (changed October 2026, below). The picture works in km: how far your
+  stop still is (`info.km`) and how far back from it every stop before it
+  is (`stopsBack()`), so the posts stand as far apart as the stops do, a
+  thing g km up the road at depth z + 143 g: the eye 3.5 m behind the
+  front, the road showing over the dashboard from 3.5 m ahead, so what is
+  close rushes past as it does from a bus. The middle line is painted on
+  the road, 4 m of paint every 20 m (`svDashes()`), each dash a strip of
+  the ground (`svStrip()`), long close by and short far off; close by, the
+  joints across the concrete every 4.5 m (`svJoints()`) and grass on both
+  verges (`svTufts()`) stream past under and beside the bus. The card draws
+  those three again for each frame, one path each, rather than moving a
+  group per dash. Every 100 m a green sign says how many km are still to
+  go (`svKmSign()`, its figures drawn in strokes), so the road, the signs
+  and the stops go by together and a stop the bus passes goes by the
+  glass. Across the road a power pole stands every 25 m
   (`svPole()`), on wires that run along the road and so stand still
   (`svWires()`): lines from the vanishing point through every crossarm,
   however near. At every stop a second green sign gives your stop's name
@@ -841,8 +848,10 @@ go only where the screen would be empty still holds everywhere else.
   strokes, but a place's name cannot be, and the maintainer asked for it
   (October 2026), so the poles and the stops would give the road something
   going by at town speeds, where the km signs alone left it bare for long
-  stretches. About 260 m is in sight (`SV_SEEN`); further is
-  over the horizon, and your stop, until it is in sight, is its pin there
+  stretches. About 150 m is in sight (`SV_SEEN`), so a sign at a time and
+  sometimes none, which the maintainer took for a road that looks as fast
+  as it goes; further is over the horizon, and your stop, until it is in
+  sight, is its pin there
   (`svPinMark()`), kept to a size that can be seen (`SV_PIN`) until the
   sign's own pin is as big.
 - **On board, it moves while the bus does, at its pace.** The view shows
@@ -877,7 +886,7 @@ go only where the screen would be empty still holds everywhere else.
   back is the GPS and moves nothing (`RIDE_STILL_KM`, `RIDE_BACK_KM`), and a
   jump back, or further on from where the view has the bus than a bus at
   110 km/h goes in the glide's time (`svReach()`, never less than the
-  260 m in sight), starts the view again where the bus is, drawn at once.
+  150 m in sight), starts the view again where the bus is, drawn at once.
   Fed every 18 seconds, a bus on the highway goes further than can be seen
   between positions, and until that reach it is driven there rather than
   jumping each time. The picture draws everything on the way, and the card
@@ -947,6 +956,20 @@ up the road. With them the eye moved close, 260 m in sight instead of
 1.2 km, so at 30 km/h a dash goes by every second and a half and a sign
 every twelve, and things come on in perspective rather than at one pace
 down the screen.
+
+It still looked slow, and the maintainer asked for it to look faster, even
+if that meant a sign at a time or none for a few seconds. The pace stayed
+the bus's; the eye changed. It had seen as a long lens does, as if from
+22 m behind the front, so a pole took 86 m of road to grow from a quarter
+of its size at the dashboard to full, ten seconds at 30 km/h. From the
+front seat, 3.5 m back and seeing wide, it takes 21 m, two and a half
+seconds, and what is close sweeps out of the glass as it does from a real
+bus. With less road in sight the dashes went from every 12 m to 4 m of
+paint every 20 m, the maintainer's ask, drawn on the ground so they
+stretch as they come near, and the near road got the concrete's joints and
+the verges' grass, the things a passenger sees stream past. Drawn as three
+paths redrawn each frame instead of a group moved per dash, it costs what
+the long lens did.
 
 **What it costs to keep moving** (measured October 2026 in headless
 Chromium at a phone's size, with no graphics chip, so in proportion rather

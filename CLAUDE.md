@@ -214,9 +214,13 @@ depth by `stopsAway()`, so forty stops off is a speck at the end of a long
 road and never looks like six, and the bus glides only when a position
 arrives and never creeps between them, because a picture that moved on its
 own would be a guess at an arrival. On board the road is drawn at its real
-length (`stopsBack()`, in km) and seen close, about 260 m of it: a green sign
-every 100 m with the km still to go, a power pole every 25 m across the road,
-at every stop a sign with your stop's name and the km still to go from there
+length (`stopsBack()`, in km) and seen wide from the front seat, about 150 m
+of it, so what is close rushes past (the maintainer's ask, October 2026,
+even at a sign at a time or none): a green sign every 100 m with the km
+still to go, a power pole every 25 m across the road, the middle line 4 m of
+paint every 20 m and, close by, the concrete's joints and the verges' grass,
+painted on the ground (`svDashes()`, `svJoints()`, `svTufts()`), at every
+stop a sign with your stop's name and the km still to go from there
 (the only words in the picture, the maintainer's ask), your stop a pin on the
 horizon until it is in sight, and the dashes, the signs, the poles and the
 posts going by together, moved by the card itself 30 times a second on a

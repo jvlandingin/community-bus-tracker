@@ -689,5 +689,27 @@ console.log('\n=== 9. the saved stop\'s picture ===');
     'and both stop for a bus standing still');
 }
 
+console.log('\n=== 10. the trip\'s first window ===');
+// A picture for each of the two things it says (openTripNote()): the coach
+// pulling in at your stop's sign, and the phone, its screen on for a browser
+// or locked for the app. Each on its own sky, so the window's theme and trip
+// mode never change it, and with no ids, since it is drawn into the page.
+{
+  const kinds = ['stop', 'screen', 'locked'], pics = kinds.map(k => S.tripNoteSvg(k));
+  check(pics.every(p => /^<svg class="tripsvg" viewBox="0 0 96 96" aria-hidden="true" focusable="false"/.test(p) && /<\/svg>$/.test(p)),
+    'three pictures, square, hidden from screen readers: the words beside them say it');
+  check(pics.every(p => /^<svg[^>]*>\s*<rect width="96" height="96" fill="#[0-9a-f]{6}"\/>/.test(p)),
+    'each starts with its own sky, so the window\'s colours never change it');
+  check(pics.every(p => !/\bid="|var\(--(?!c-)/.test(p)), 'no ids to collide, and no colour from the page\'s theme');
+  check(pics[0].includes(S.COACH_SIDE) && /fill="#4f46b8"/.test(pics[0]) && pics[0].includes(S.SCENE_TIMES.day.coach),
+    'the stop: the coach every picture uses, in daylight, at a sign in your stop\'s colour');
+  check(/<rect x="33" y="19" width="30" height="58" rx="2.5" fill="#fff8de"\/>/.test(pics[1]) && !/a4\.5 4\.5 0 0 1 9 0/.test(pics[1]),
+    'the screen: on, with the trip on it, and no lock');
+  check(/fill="#1d2a36"/.test(pics[2]) && /a4\.5 4\.5 0 0 1 9 0/.test(pics[2]) && /#3ddc97/.test(pics[2]),
+    'locked: dark, a padlock, and the sharing notification still lit');
+  check(S.tripNoteSvg('nope') === '' && S.tripNoteSvg() === '', 'a kind it does not know draws nothing');
+  check(!/<animate|class="[^"]*(?:sv-rock|sv-swing)/.test(pics.join('')), 'and nothing in them moves: the window is read, not watched');
+}
+
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);

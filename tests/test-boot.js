@@ -957,8 +957,10 @@ function run(page, include, label, configText, setup) {
     w.syncAlbumRow();
     w.localStorage.removeItem('wt-bus');
     w.syncAlbumRow();
-    check(!hidden(row) && /first trip starts them/.test(row.textContent) && !/\b0\b/.test(row.textContent),
-      'with nothing kept or earned, the sharing tab still offers My tickets, saying what starts it, with no zero', row.textContent.replace(/\s+/g, ' ').trim());
+    // Its name and nothing else (October 2026): the counts are inside, so
+    // there is no number on the tab to be a zero.
+    check(!hidden(row) && row.textContent.replace(/\s+/g, ' ').trim() === 'My tickets',
+      'with nothing kept or earned, the sharing tab still offers My tickets, by its name alone', row.textContent.replace(/\s+/g, ' ').trim());
     w.openAlbum();
     const empty = d.getElementById('albumBody');
     check(/starts with your first trip/.test(empty.textContent) && empty.querySelectorAll('.alb-trophies li').length === 23 &&
@@ -1020,7 +1022,7 @@ function run(page, include, label, configText, setup) {
     check(!hidden(keepBtn) && hidden(dropBtn), 'and Keep under it, not Remove');
     check(w.localStorage.getItem('wt-tickets') === null, 'showing it keeps nothing');
     w.closeTicket();
-    check(w.localStorage.getItem('wt-tickets') === null && /first trip starts them/.test(row.textContent), 'and closing it without Keep leaves nothing behind');
+    check(w.localStorage.getItem('wt-tickets') === null, 'and closing it without Keep leaves nothing behind');
 
     w.showTicket(trip(), end);
     keepBtn.click();
@@ -1031,8 +1033,8 @@ function run(page, include, label, configText, setup) {
     check(kept.length === 1 && kept[0].from === first[1] && kept[0].to === last[1] && kept[0].dir === 'n' && kept[0].st.includes('full') && kept[0].ty === true,
       'the ends it was punched for, the direction, its stamps and the flower');
     check(!!raw && !/98019|\d:\d\d|171|"3"|:3[,}]/.test(raw), 'and not the bus number, a clock time, the minutes or the count', raw);
-    check(/Kept/.test(keepBtn.textContent) && !hidden(row) && /1 ticket\b/.test(row.textContent),
-      'the button says so, and the sharing tab now offers My tickets', row.textContent.replace(/\s+/g, ' ').trim());
+    check(/Kept/.test(keepBtn.textContent) && !hidden(row) && row.textContent.replace(/\s+/g, ' ').trim() === 'My tickets',
+      'the button says so, and the sharing tab offers My tickets, still with no count beside it', row.textContent.replace(/\s+/g, ' ').trim());
     keepBtn.click();
     check(hidden(modal) && !hidden(album), 'tapped again, the button opens the album');
     const minis = d.querySelectorAll('#albumBody .tktmini');
@@ -1048,7 +1050,7 @@ function run(page, include, label, configText, setup) {
     check(w.localStorage.getItem('wt-tickets') !== null && /again/.test(dropBtn.textContent), 'Remove asks twice');
     dropBtn.click();
     check(w.localStorage.getItem('wt-tickets') === null, 'and the second tap removes it, leaving no key behind');
-    check(/first trip starts them/.test(row.textContent) && /No tickets yet/.test(d.getElementById('albumBody').textContent) && hidden(modal),
+    check(/No tickets yet/.test(d.getElementById('albumBody').textContent) && hidden(modal),
       'with the album back to what there is still to collect');
     w.closeModal('albumModal');
   }
@@ -1187,8 +1189,17 @@ function run(page, include, label, configText, setup) {
   // runs. Stand in for that bridge and check the page hands the trip's GPS
   // to the background service instead of the browser, and that in a plain
   // browser nothing about sharing has changed.
-  const browserHint = ok.d.getElementById('gpsSetupHint').textContent;
-  check(/Keep the screen on/.test(browserHint), 'in a browser, the sharer is still told to keep the screen on', browserHint);
+  // Said once a trip is on, in its first window, since October 2026: never
+  // before Start, where it was a line nobody had a reason to read yet.
+  check(!ok.d.getElementById('gpsSetupHint') && !ok.d.getElementById('publicNote'),
+    'nothing is said about the screen or the map before Start');
+  ok.w.openTripNote(null);
+  const browserHint = ok.d.getElementById('tripScreenTitle').textContent + '. ' + ok.d.getElementById('tripScreenWords').textContent;
+  check(!ok.d.getElementById('tripModal').classList.contains('hidden') &&
+        /^Keep the screen on\. Locking it or closing the browser stops sharing\.$/.test(browserHint) &&
+        !!ok.d.querySelector('#tripArtScreen svg.tripsvg'),
+    'in a browser, the trip\'s first window tells the sharer to keep the screen on, with its picture', browserHint);
+  ok.w.closeModal('tripModal');
 
   const native = { watchers: [], removed: [], notePerms: 0, browserWatch: 0, wakeLocks: 0,
                    listeners: {}, minimized: 0, files: [], sheets: [] };
@@ -1228,8 +1239,6 @@ function run(page, include, label, configText, setup) {
       request(){ native.wakeLocks++; return Promise.resolve({ addEventListener(){}, release(){} }); }
     } });
   });
-  check(/Keeps sharing with the screen locked/.test(inApp.d.getElementById('gpsSetupHint').textContent),
-    'the setup hint says the screen can lock');
   // Android empties sessionStorage whenever it closes the app, and in the
   // app the group chat's link opens the browser, so the app keeps the key.
   check(inApp.w.localStorage.getItem('wt-key') === 'TESTKEY' && ok.w.localStorage.getItem('wt-key') === null,
@@ -1247,6 +1256,14 @@ function run(page, include, label, configText, setup) {
   check(native.browserWatch === 0, 'and does not also start the browser\'s watchPosition');
   check(native.wakeLocks === 0, 'no screen wake lock is taken: keeping the screen on is what the app saves');
   check(native.notePerms === 1, 'notification permission is asked for, or Android 13 hides the sharing notification');
+  check(!inApp.d.getElementById('tripModal').classList.contains('hidden') &&
+        /^Lock the screen anytime\. Swiping the app away stops sharing\.$/.test(inApp.d.getElementById('tripScreenTitle').textContent + '. ' + inApp.d.getElementById('tripScreenWords').textContent) &&
+        !!inApp.d.querySelector('#tripArtScreen svg.tripsvg') && /a4\.5 4\.5 0 0 1 9 0/.test(inApp.d.getElementById('tripArtScreen').innerHTML),
+    'the trip\'s first window says the screen can lock, with the locked phone', inApp.d.getElementById('tripScreenTitle').textContent);
+  check(inApp.d.getElementById('gpsAppLine').classList.contains('hidden'), 'and offers no app inside the app');
+  native.listeners.backButton();
+  check(inApp.d.getElementById('tripModal').classList.contains('hidden') && native.minimized === 0,
+    'back closes the window, and only the window');
   check(inApp.w.sessionStorage.getItem('wt-gps') === 'w1', 'the watcher is noted for the visit, in case the page goes mid-trip');
   const w0 = native.watchers[0] && native.watchers[0].opts;
   check(!!w0 && typeof w0.backgroundMessage === 'string' && w0.backgroundMessage.length > 0,
@@ -1444,6 +1461,65 @@ function run(page, include, label, configText, setup) {
     check(!!second && second.args.p_session !== trip1,
       'so the next trip is a different session, and a different bus on the map');
     await w.stopSharing();
+
+    // The trip's first window (October 2026): what were two lines under
+    // Start, said once a trip is on, with a picture each, for a sharer's
+    // first few trips. Its first line is true because of the saved stop's
+    // guard: arriving at the stop asks, and sharing stops there.
+    {
+      const stopWords = () => d.getElementById('tripStopWords').textContent;
+      w.localStorage.removeItem('wt-bus');
+      await startTrip();
+      check(!isHidden('tripModal') && /^Tap Stop when you get off/.test(d.querySelector('#tripModal .triptxt').textContent.trim()) &&
+            /^Or set your stop, and sharing stops there by itself\.$/.test(stopWords()) && !isHidden('tripStopBtn') &&
+            !!d.querySelector('#tripArtStop svg.tripsvg') && !!d.querySelector('#tripArtScreen svg.tripsvg'),
+        'a new sharer\'s trip opens a window: tap Stop, or set your stop and sharing stops there, a picture each', stopWords());
+      d.getElementById('tripStopBtn').click();
+      check(isHidden('tripModal') && !isHidden('stopModal') && /Where do you get off\?/.test(d.getElementById('stopTitle').textContent),
+        'its button opens the stop picker, which asks where you get off', d.getElementById('stopTitle').textContent);
+      w.closeModal('stopModal');
+      await w.stopSharing();
+      check(/Where do you wait\?/.test((w.openStopPicker(), d.getElementById('stopTitle').textContent)),
+        'and off the bus it asks where you wait again');
+      w.closeModal('stopModal');
+
+      // Monterey is 1.4 km up the road from here, northbound: well ahead.
+      w.setMyStop('Monterey', 14.3040, 120.9100);
+      await startTrip();
+      check(!isHidden('tripModal') && stopWords() === 'Or sharing stops by itself at Monterey.' && isHidden('tripStopBtn'),
+        'with a saved stop ahead, it says where sharing stops by itself, and asks for nothing', stopWords());
+      w.closeModal('tripModal');
+      const gps = sim.watches[sim.watches.length - 1];
+      gps.onPos(here);
+      check(isHidden('askModal'), 'nothing is asked on the way');
+      gps.onPos({ coords: { latitude: 14.3040, longitude: 120.9100, speed: 0, accuracy: 8 } });
+      check(!isHidden('askModal') && /^Getting off here\?$/.test(d.getElementById('askTitle').textContent) &&
+            /^At Monterey\. Sharing stops in a minute\.$/.test(d.getElementById('askBody').textContent),
+        'arriving at it asks, and says sharing stops in a minute', d.getElementById('askBody').textContent);
+      const clears = of('clear_bus_position').length;
+      w.askYes();
+      await waitFor(() => of('clear_bus_position').length > clears);
+      check(!w.eval('sharing') && watchesOpen() === 0 && isHidden('askModal'), 'and Stop sharing in it ends the trip there');
+      w.clearMyStop();
+
+      // A regular's Start goes straight to the road.
+      w.localStorage.setItem('wt-bus', JSON.stringify({ n: 3 }));
+      await startTrip();
+      check(isHidden('tripModal') && w.eval('sharing') === true, 'from the fourth trip that counted, no window: Start is all it takes');
+      await w.stopSharing();
+      w.localStorage.removeItem('wt-bus');
+
+      // Going for the app from the window ends this page's trip, so the app's
+      // own trip is not a second bus beside it.
+      const app = await startTrip();
+      const gone = of('clear_bus_position').length;
+      w.leaveForApp();
+      await waitFor(() => of('clear_bus_position').length > gone && /Start it in the app/.test(status()));
+      check(!w.eval('sharing') && isHidden('tripModal') && of('clear_bus_position').slice(gone).some(c => c.args.p_session === app.args.p_session) &&
+            /^Not sharing here\. Start it in the app\.$/.test(status()),
+        'going for the app ends this page\'s trip and takes its bus off the map, and says where to start it', status());
+      w.closeTicket();
+    }
 
     // Outside the route area the server keeps the bus for this phone alone
     // and answers 'private' (sql/14-off-route-private.sql). That is not a
@@ -1739,6 +1815,7 @@ function run(page, include, label, configText, setup) {
       const resumed = of('set_keyed_position')[before];
       check(!!resumed && resumed.args.p_session === rec.session && w.eval('TRIP.start') === rec.trip.start,
         'Keep sharing goes on as the same trip, on the same bus', resumed && resumed.args.p_session);
+      check(isHidden('tripModal'), 'and opens no window: it is not a new trip');
       check(w.eval('TRIP.writes') === 41 && w.eval('TRIP.maxThanks') === 2, 'with everything it had counted so far');
       await w.stopSharing();
       check(!isHidden('tktModal') && /map for\s*30 min/.test(d.getElementById('tktCard').textContent),
@@ -1748,8 +1825,8 @@ function run(page, include, label, configText, setup) {
       const bus = () => JSON.parse(w.localStorage.getItem('wt-bus') || 'null');
       check(!!bus() && bus().n === 1 && /New on your bus: Sampaguita/.test(d.getElementById('tktCard').textContent),
         'the first trip that went somewhere counts on your bus, and the ticket shows the garland it earned', JSON.stringify(bus()));
-      check(!!d.querySelector('#tktCard .tkt-new svg.mybus') && !isHidden('albumRow') && /1 decoration on your bus/.test(d.getElementById('albumRowVal').textContent),
-        'with the bus drawn beside it, and My tickets offered for it though nothing was kept', d.getElementById('albumRowVal').textContent);
+      check(!!d.querySelector('#tktCard .tkt-new svg.mybus') && !isHidden('albumRow'),
+        'with the bus drawn beside it, and My tickets offered for it though nothing was kept');
       w.closeTicket();
 
       // I got off: the bus comes off the map, and the ticket is the trip as
@@ -2007,37 +2084,64 @@ function run(page, include, label, configText, setup) {
   }
 
   console.log('\n=== 15. the app on Google Play: the line that offers it, and the privacy policy ===');
-  // The sharing tab offers the Android app in the line that says keep the
+  // The trip's first window offers the Android app where it says keep the
   // screen on, and only where it helps: an Android phone, in a browser, once
   // config.txt says where the app is. Each run below takes one of those away.
+  // Since October 2026 it is offered once a trip is on, never before Start,
+  // with Google's own badge, and going for it ends this page's trip.
   {
     const PLAY = 'https://play.google.com/store/apps/details?id=org.communitybustracker.app';
+    const TESTERS = 'https://community-bus-tracker.netlify.app/testers.html';
     const ANDROID = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36';
     const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1';
     const withApp = url => CONFIG + '\nANDROID_APP_URL = ' + url + '\n';
     const as = ua => window => { Object.defineProperty(window.navigator, 'userAgent', { value: ua }); };
     const lineOf = r => r.d.getElementById('gpsAppLine');
     const offered = r => !!lineOf(r) && !lineOf(r).classList.contains('hidden');
+    const sha = b => require('crypto').createHash('sha256').update(Buffer.from(b, 'base64')).digest('hex');
+    const GOOGLE = 'f72611e2df8e88204009fd896d05d5e8e83c77009c63943bbffa169559934849';
 
     const droid = await run('/index.html', () => true, 'android', withApp(PLAY), as(ANDROID));
-    const a = lineOf(droid) && lineOf(droid).querySelector('a');
+    const a = lineOf(droid) && lineOf(droid).querySelector('a.playbadge');
+    const img = a && a.querySelector('img');
     check(offered(droid) && !!a && a.getAttribute('href') === PLAY,
-      'on an Android phone, in a browser, the sharing tab offers the app config.txt names', a && a.getAttribute('href'));
-    check(/^Keep the screen on, or get the app and lock it\.$/.test(droid.d.getElementById('gpsSetupHint').textContent.trim()),
-      'in the line that says keep the screen on', droid.d.getElementById('gpsSetupHint').textContent.trim());
+      'on an Android phone, in a browser, the app config.txt names is offered', a && a.getAttribute('href'));
+    check(!!img && img.getAttribute('alt') === 'Get it on Google Play' && img.getAttribute('width') === '646' && img.getAttribute('height') === '250' &&
+          sha((img.getAttribute('src') || '').replace(/^data:image\/png;base64,/, '')) === GOOGLE,
+      'as Google\'s own badge, byte for byte, the bare Google Play logo never');
+    check(/Google Play and the Google Play logo are trademarks of Google LLC\./.test(lineOf(droid).textContent),
+      'with Google\'s attribution line under it');
+    check(/^Get the app to share with the screen locked\.$/.test(lineOf(droid).querySelector('.gpsay').textContent.trim()),
+      'and one line saying why', lineOf(droid).querySelector('.gpsay').textContent.trim());
     check(!!a && a.target === '_blank' && /noopener/.test(a.rel),
       'opening in a new tab, so the tracker stays open behind it');
-    check(droid.d.getElementById('onbusView').contains(lineOf(droid)),
-      'on the sharing tab only: watching never needs the app');
+    check(droid.d.getElementById('tripModal').contains(lineOf(droid)) && !droid.d.getElementById('trackView').contains(lineOf(droid)),
+      'in the trip\'s first window only: watching never needs the app');
     droid.w.switchTab('share');
+    check(droid.d.getElementById('tripModal').classList.contains('hidden'), 'and nothing offers it before Start');
+    droid.w.pickDir('north');
     droid.w.eval('sharing = true');
-    droid.w.syncTripMode();
-    check(droid.w.getComputedStyle(lineOf(droid)).display === 'none',
-      'and never during a trip, when the app would be a second bus beside this one');
+    droid.w.openTripNote(null);
+    check(!droid.d.getElementById('tripModal').classList.contains('hidden') && droid.w.getComputedStyle(lineOf(droid)).display !== 'none',
+      'it comes with the trip, in its first window');
+    check(/leaveForApp\(\)/.test(a.getAttribute('onclick') || ''), 'and going for it ends this page\'s trip (section 14 drives that)');
     droid.w.eval('sharing = false');
-    droid.w.syncTripMode();
-    check(droid.w.getComputedStyle(lineOf(droid)).display !== 'none', 'back once the trip is over');
+    droid.w.closeModal('tripModal');
     droid.w.close();
+
+    // While the closed test runs, config.txt names the tester page, whose
+    // last step is the badge to the listing; the badge here goes there.
+    const test = await run('/index.html', () => true, 'android, closed test', withApp(TESTERS), as(ANDROID));
+    const ta = lineOf(test) && lineOf(test).querySelector('a.playbadge');
+    check(offered(test) && !!ta && ta.getAttribute('href') === TESTERS, 'during the closed test, the badge goes to the tester page', ta && ta.getAttribute('href'));
+    test.w.close();
+    // Any other address is not Google Play, so it gets no badge: words only.
+    const apk = await run('/index.html', () => true, 'android, an APK', withApp('https://example.org/bus-tracker.apk'), as(ANDROID));
+    const words = lineOf(apk);
+    check(offered(apk) && !words.querySelector('.playbadge') && !/Google Play/.test(words.textContent) &&
+          !!words.querySelector('a[href="https://example.org/bus-tracker.apk"]') && /^Get the app to share with the screen locked\.$/.test(words.textContent.trim()),
+      'an address that is not on Google Play gets the words as a link and no badge', words && words.textContent.trim());
+    apk.w.close();
 
     const none = await run('/index.html', () => true, 'android, no app', null, as(ANDROID));
     check(!offered(none), 'with ANDROID_APP_URL blank, as the template ships it, nothing is offered');
@@ -2056,9 +2160,10 @@ function run(page, include, label, configText, setup) {
       window.Capacitor = { isNativePlatform: () => true, Plugins: { BackgroundGeolocation: {
         addWatcher(){ return 'w1'; }, removeWatcher(){ return Promise.resolve(); } } } };
     });
-    check(!offered(inside) && /^Keeps sharing with the screen locked\.$/.test(inside.d.getElementById('gpsSetupHint').textContent.trim()),
-      'inside the app itself nothing is offered, and the hint says the screen can lock',
-      inside.d.getElementById('gpsSetupHint').textContent.trim());
+    inside.w.openTripNote(null);
+    check(!offered(inside) && /^Lock the screen anytime$/.test(inside.d.getElementById('tripScreenTitle').textContent),
+      'inside the app itself nothing is offered, and the window says the screen can lock',
+      inside.d.getElementById('tripScreenTitle').textContent);
     inside.w.close();
 
     // The guide reads the same line, so it can never send anyone elsewhere.

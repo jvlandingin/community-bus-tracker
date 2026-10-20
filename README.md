@@ -26,8 +26,10 @@ company's name or initials, for the same reason.
   one is. No key, no sign-up, no location permission needed.
 - **Share:** a driver, conductor, or volunteer rider taps "I'm on the bus" and
   shares the vehicle's position for that trip. Needs a community key. Stop
-  anytime. In a browser the screen has to stay on; the Android app in
-  `mobile/` keeps sharing with it locked.
+  anytime, or save the stop you get off at and sharing stops there by itself.
+  In a browser the screen has to stay on; the Android app in `mobile/` keeps
+  sharing with it locked. The trip's first window says both, with a picture
+  each, for a sharer's first few trips.
 - **Your own stop:** save the stop you wait at and the card under the map
   draws the next bus coming down the road to your stop, with a post for every
   stop still between them, or on board your stop coming up to the windscreen —
@@ -82,9 +84,9 @@ company's name or initials, for the same reason.
   moderation, and key rotation. Needs a separate admin key.
 - **A tour:** two one-minute practice runs on the real page, one for watching
   and one for sharing, with a practice bus standing in for the real ones and
-  nothing sent or kept. Opened from the guide, from a button at the foot of
-  each tab, from a link ending `#tour` or `#tour=share`, and once from a
-  "New here?" note on a first visit.
+  nothing sent or kept. Opened from the guide, from the Tutorial button at the
+  foot of each tab, from a link ending `#tour` or `#tour=share`, and once from
+  a "New here?" note on a first visit.
 - **How-to page:** `how-to.html`, reached from the ⓘ in the header. Explains
   watching and sharing, a line and a picture per idea with the fine print
   folded away, and opens the tour. Its figures are drawn in HTML and CSS from the same

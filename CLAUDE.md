@@ -20,11 +20,11 @@ The ten dependency-free JavaScript suites, run from the repository root:
 node tests/test-hours.js      # split operating hours, the en-route allowance, the hours card, the parol season
 node tests/test-guard.js      # wrong-direction detection on simulated trips
 node tests/test-strip.js      # progress strip position and wording, the town lines in the popup
-node tests/test-prompts.js    # idle, end-of-trip and direction prompts
-node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
+node tests/test-prompts.js    # idle, end-of-trip, your-stop and direction prompts
+node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card, where sharing stops
 node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its luck, your bus; spare parts, the shop, the look, backups
 node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the icon and the mark
-node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride, the saved stop's picture
+node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride, the saved stop's picture, the trip's first window
 node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
 node tests/test-tour.js       # the tour: steps and words, the practice scene, the bubble's place, what a run may never do
 ```
@@ -163,12 +163,13 @@ off at the maintainer's word. It loads nothing and runs no script at all.
 **Google's "Get it on Google Play" badge** stands under its first line and is
 step 3's button, and sits in the flyer's and the poster's app cards: Google's own PNG, unaltered
 and inlined, linking to the app's listing, with Google's attribution line in
-the page's footer. `test-boot.js` section 8 holds every badge to the bytes
-Google publishes. Never the bare Google Play logo: Google keeps that for its
+the page's footer; the trip's first window in `index.html` carries it too,
+with that line under it. `test-boot.js` sections 8 and 15 hold every badge to
+the bytes Google publishes. Never the bare Google Play logo: Google keeps that for its
 own lockups and asks for the badge wherever people are sent to download. Each step shows Google's own screen with the tap ringed, inlined as a
 data URI, with the maintainer's name, photo and email blurred or cut out;
-those pictures go stale when Google redesigns, so retake them then. While the test runs, `ANDROID_APP_URL` names it, so the sharing
-tab's app line and the guide send Android sharers there rather than to a Play
+those pictures go stale when Google redesigns, so retake them then. While the test runs, `ANDROID_APP_URL` names it, so the trip
+window's app line and the guide send Android sharers there rather than to a Play
 page that says "App not available"; the group's name and the package in its
 links are this deployment's, so a fork edits them.
 `test-boot.js` section 8 checks its Play links name the app's package.
@@ -275,7 +276,11 @@ never minutes: an ETA needs travel-time history this system does not keep,
 and `test-mystop.js` fails if the wording drifts towards implying one. **On board, the card follows your own bus** to the stop
 you get off at instead of the nearest one coming: a sharer's is the row the
 server flags `is_self`, anyone else's is picked with "I'm on this bus" in the
-popup and kept in `sessionStorage` only. While sharing, the card shows on the
+popup and kept in `sessionStorage` only. **And a sharer's trip stops there**
+(October 2026, so the trip's first window could say so): arriving at the saved
+stop asks "Getting off here?", and sharing stops a minute later with no
+answer (`stopGuardUpdate()`), only once the stop has been well ahead of the
+bus that trip, so boarding at it never counts. While sharing, the card shows on the
 sharing tab too, with the road folded away until "Show the road" is
 tapped, for that visit only (`wt-road` in `sessionStorage`), and that tab
 carries a live dot so leaving it never looks like stopping. Everything that
@@ -448,7 +453,16 @@ attached ("Location is off. Turn it on, then tap Start.", "Show customized bus
 to riders?"); the reasons live in the guide's "More" folds, in the privacy
 panel and in these docs. The privacy panel is the one place that stays long,
 because it is opened on purpose and it is the promise. A new feature's words
-get the same treatment before they ship.
+get the same treatment before they ship. A second round (October 2026, "the
+app looks unnecessarily too wordy"): the sharing tab before a trip is its
+labels and nothing else ("Direction", "Bus number (optional)", Start,
+"Tutorial", "My tickets"), and what a sharer needs once a trip is on is said
+then, in **the trip's first window** (`openTripNote()`): a picture and a line
+for tapping Stop, or the saved stop that stops it, and for the screen, or the
+app with Google's badge; for a sharer's first three trips only, counted by
+`wt-bus`, never a resumed one. The empty map's card is its line and its
+button, and "No buses live" has nothing under it inside hours unless a
+sighting places a bus. `docs/ARCHITECTURE.md`, "The trip's first window".
 
 **The guide says it in a line and shows it in a picture** (October 2026).
 `how-to.html` was paragraphs; it is now a line, a drawing and a "More" fold per
@@ -487,8 +501,9 @@ in settings, absent means on). It hangs between the two tabs, which part for it.
 
 **Pictures only where the screen would be empty.** The working screens stay
 quiet; illustration is for when there is nothing else to show. The saved
-stop's card is the one exception, by the maintainer's decision (October
-2026, above). Closed, the
+stop's card is one exception, by the maintainer's decision (October
+2026, above), and the trip's first window the other (`tripNoteSvg()`), by
+the same ("Add art if needed"). Closed, the
 empty map's card is a scene — a generic provincial coach (no operator's livery
 or lettering) parked above Taal Lake at night, dawn or midday — from
 `sceneSvg()` in the tested PICTURES block, chosen by `mapNoteKind()`. The same
@@ -521,10 +536,13 @@ file, shares, vibrates or opens a link is tried in the app before it ships.
 **It goes out through Google Play** (October 2026). Play keeps the app's
 signing key and the repository's secrets hold only the upload key, which
 `android-release.yml`, run by hand, checks before it builds the bundle; no
-copy is handed out as an APK. The site offers it in one line only, `renderAppLine()` on the sharing
-tab: in an Android browser, before a trip, once `ANDROID_APP_URL` in
-`config.txt` names it, and never inside the app, on an iPhone or on the
-tracking tab. `#privacy` opens the privacy panel, which is Play's privacy
+copy is handed out as an APK. The site offers it in one place only, `renderAppLine()` in the trip's
+first window: in an Android browser, once a trip is on (the maintainer's call,
+October 2026; going for it ends the page's trip first, `leaveForApp()`, so the
+app's trip is not a second bus beside it), once `ANDROID_APP_URL` in
+`config.txt` names it, with Google's badge where that is on Google Play or the
+tester page and words alone anywhere else, and never inside the app, on an
+iPhone or on the tracking tab. `#privacy` opens the privacy panel, which is Play's privacy
 policy for the site and the app alike, naming the app as Play lists it
 ("Fibi: Bus Tracker PH"; "Fibi" under the icon). `test-boot.js` section 15
 holds both; `docs/ARCHITECTURE.md`, "The Android app", has why Play and not an

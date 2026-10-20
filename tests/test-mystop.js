@@ -20,7 +20,8 @@ new Function('S', hav + prog + mine +
   'S.buildRouteChain=buildRouteChain;S.routeProgressKm=routeProgressKm;' +
   'S.stopChainKms=stopChainKms;S.approachInfo=approachInfo;S.myStopWords=myStopWords;' +
   'S.haversineKm=haversineKm;S.namedStopKms=namedStopKms;S.stopsBetween=stopsBetween;S.rideState=rideState;' +
-  'S.aboardBus=aboardBus;S.aboardInfo=aboardInfo;S.aboardWords=aboardWords;S.stopsAway=stopsAway;S.stopsBack=stopsBack;')(S);
+  'S.aboardBus=aboardBus;S.aboardInfo=aboardInfo;S.aboardWords=aboardWords;S.stopsAway=stopsAway;S.stopsBack=stopsBack;' +
+  'S.makeStopGuard=makeStopGuard;S.stopGuardUpdate=stopGuardUpdate;S.STOP_ARM_KM=STOP_ARM_KM;S.STOP_REACHED_KM=STOP_REACHED_KM;S.AT_STOP_KM=AT_STOP_KM;')(S);
 
 const txt = fs.readFileSync(path.join(ROOT, 'config-template.txt'), 'utf8').split(/\r?\n/);
 const CP = txt.filter(l => l.trim().startsWith('CHECKPOINT =')).map(l => {
@@ -356,6 +357,43 @@ console.log('\n=== 11. where the picture puts the bus ===');
     'southbound, back is the other way along the chain, and counts the same', `${sb.stops} stops`);
   check(S.stopsBack(null, me, KMS).length === 0 && S.stopsBack({ direction: 'north' }, null, KMS).length === 0,
     'no bus or no stop: nothing, never a throw');
+}
+
+console.log('\n=== 12. sharing stops at the stop you get off at ===');
+// stopGuardUpdate() decides when a sharer's bus has come to their saved
+// stop; checkTripGuards() then asks, and stops sharing if nobody answers
+// (test-prompts.js drives that). A trip where the stop was never well ahead
+// never arrives, so boarding at it is not getting off at it.
+{
+  const me = kmOf('SM City General Trias');
+  const feed = (dir, kms, apart) => {
+    const g = S.makeStopGuard(), out = [];
+    kms.forEach(k => out.push(S.stopGuardUpdate(g, k, me, dir, apart === undefined ? Math.abs(me - k) : apart)));
+    return { g, at: out.indexOf(true), hits: out.filter(Boolean).length };
+  };
+  const steps = (a, b, d) => { const o = []; for (let k = a; d > 0 ? k <= b + 1e-9 : k >= b - 1e-9; k += d) o.push(+k.toFixed(3)); return o; };
+  const north = feed('north', steps(me - 6, me + 2, .05));
+  check(north.hits === 1 && Math.abs(steps(me - 6, me + 2, .05)[north.at] - me) <= S.STOP_REACHED_KM + 1e-9,
+    'northbound: true once, at the first fix within ' + S.STOP_REACHED_KM * 1000 + ' m of it', `${north.hits} hit`);
+  const south = feed('south', steps(me + 6, me - 2, -.05));
+  check(south.hits === 1, 'southbound, coming down the chain: the same, once', `${south.hits} hit`);
+  check(feed('north', steps(me - 6, me - .2, .05)).hits === 0, 'not while the bus is still more than that short of it');
+  check(feed('north', steps(me, me + 5, .05)).hits === 0 && !feed('north', steps(me, me + 5, .05)).g.armed,
+    'boarding at it and riding away: never armed, never arriving');
+  check(feed('north', steps(me - .45, me + .5, .05)).hits === 0,
+    'boarding just short of it (450 m) is not arriving either: it was never well ahead');
+  check(feed('north', [me - 3, me - 2, me + .31]).hits === 0 && feed('north', [me - 3, me - 2, me + .29]).hits === 1,
+    'a first fix up to ' + S.AT_STOP_KM * 1000 + ' m past it is still at it; further past, the sharer stayed on');
+  check(feed('north', steps(me - 6, me + 2, .05), .2).hits === 0,
+    'far along the chain but near as the crow flies is never armed: the Tagaytay hook is no way to arrive');
+  const g = S.makeStopGuard();
+  check(S.stopGuardUpdate(g, me - 3, me, 'north', 3) === false && g.armed &&
+        S.stopGuardUpdate(g, me, me, 'north', 0) === true && S.stopGuardUpdate(g, me, me, 'north', 0) === false,
+    'armed while well ahead, true on arriving, and never again that trip');
+  check(S.stopGuardUpdate(null, me, me, 'north', 0) === false && S.stopGuardUpdate(S.makeStopGuard(), null, me, 'north', 1) === false &&
+        S.stopGuardUpdate(S.makeStopGuard(), me, NaN, 'north', 1) === false,
+    'no guard, no bus on the chain or no stop: false, never a throw');
+  check(!/Date|\bnow\b|speed|minute/.test(S.stopGuardUpdate.toString()), 'it reads places along the road and nothing about time');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

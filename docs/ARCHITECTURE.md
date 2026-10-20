@@ -338,8 +338,8 @@ reintroduce CDN links.
 
 ## Client-side guards
 
-Three ways a sharer can broadcast wrong information without meaning to. All
-three ask rather than decide.
+Four ways a sharer can broadcast wrong information without meaning to. All
+four ask rather than decide.
 
 **Wrong direction.** The sharer picks a direction by hand, and picking the wrong
 one is the most damaging mistake the tool allows, because commuters then wait
@@ -363,8 +363,26 @@ that long.
 
 **Trip finished.** Within 500 m of the destination checkpoint and stationary for
 5 minutes, the app asks, and stops by itself after 5 more minutes with no
-answer. This is the only automatic stop, because a bus parked at its own
-destination has finished by definition.
+answer, because a bus parked at its own destination has finished by
+definition.
+
+**Your stop** (October 2026). A sharer who saved the stop they get off at is
+asked "Getting off here?" as their bus comes to it, and sharing stops by
+itself a minute later with no answer. A sharer stepping off has the phone in
+a hand or a pocket, not on the screen, and their walk on from the stop is not
+a bus; a minute is long enough to say "Not yet" to a question that came early.
+`stopGuardUpdate()` decides it from the chain, the way the card does: the bus
+is at the stop from 100 m short of it to 300 m past (`AT_STOP_KM`, the card's
+own "at your stop"), and only once the stop has been well ahead of it this
+trip, more than 500 m along the chain and as the crow flies. So boarding at
+the saved stop, a commuter's morning, is never arriving at it, and neither is
+the Tagaytay hook, where a stop far along the road can be near across it. A
+bus first seen further past means the sharer stayed on, and nothing is asked.
+Once a trip, at most; a stop changed mid-trip, or a direction switched by the
+guard above, starts it again. This and the end of the route are the only
+automatic stops. It was built because the maintainer asked for the trip's
+first window to say "set your stop so it stops sharing once you arrive", and
+until then that would not have been true.
 
 ## Order on the tracking tab
 
@@ -473,10 +491,11 @@ October 2026. Nobody sharing is what most visitors see, and a blank map reads
 as a broken one. `renderMapNote()` lays one card over the map whenever no bus
 is live, in one of four voices, decided from the operating hours alone:
 
-- **inside operating hours**: nobody is sharing right now, with the last
-  trips possibly still on the road if the window has just closed, and a
-  button to the sharing tab — the empty map is also the best moment to ask
-  someone on a bus to be the first;
+- **inside operating hours**: nobody is sharing right now, and a button to
+  the sharing tab — the empty map is also the best moment to ask someone on
+  a bus to be the first. Nothing between the two since October 2026 (the
+  maintainer: fewer words), where it used to add that the last trips may
+  still be on the road; the hours card under the map still says so;
 - **closed in the middle of the day**: "No buses until 3:20 PM", the earlier
   of the two directions' next departures, with both listed under it;
 - **closed at night**: *Tulog pa ang bus* — the bus is asleep — with the
@@ -1063,7 +1082,8 @@ after Stop pointing at a trip the phone is not on. A fix up to 300 m past
 the stop still counts as at it (`AT_STOP_KM`), because phones wobble and
 buses pull in beyond the sign; further than that the card says the stop is
 behind the bus and asks for the one being got off at, which is also what a
-sharer riding away from their home stop sees.
+sharer riding away from their home stop sees. Since October 2026 a sharer's
+trip stops at it, too ("Your stop", under "Client-side guards").
 
 **A sharer can watch, and the page now says so.** GPS never stopped when a
 sharer switched to the map — the watch is not tied to the tab, and the
@@ -1448,10 +1468,13 @@ for a reason:
 
 - *Findable before the first trip.* My tickets, the row at the foot of the
   sharing tab, used to appear only once a ticket was kept, so a new sharer
-  had no way to see what there was to earn. It is always there now. With
-  nothing yet it says "Your first trip starts them", and opened it shows the
-  plain bus with every decoration, and every place, stamp and sight, faint
-  with "not yet": what is possible, shown without a single zero. Each
+  had no way to see what there was to earn. It is always there now, and
+  since October 2026 it says only "My tickets": the counts, the places and
+  the spare parts that stood beside it were too much for the tab, the
+  maintainer found, and every one of them is inside. Opened with nothing
+  yet, it shows the plain bus with every decoration, and every place, stamp
+  and sight, faint with "not yet": what is possible, shown without a single
+  zero. Each
   decoration's card shows it on its own part of the bus (`decorTile()`, cut
   by `DECOR_BOX`): in colour once earned, and until then as a dashed outline
   over a faded coach, so a sharer can see what is coming.
@@ -1740,6 +1763,55 @@ the foot of each tab and two buttons at the top of the guide.
 filter lists carry cosmetic rules for onboarding libraries (intro.js, Shepherd,
 Joyride and the generic tour and tooltip names), and a blocked bubble over a
 dimmed page is a page with no way out. `test-tour.js` scans for those names.
+
+Its two buttons, one at the foot of each tab, say "Tutorial" since October
+2026, and the first visit's note "New here?" with a Tutorial button: they
+were "New here? Take the 1-minute tour" and "First time? Try a practice run.
+Nothing is shared", which the maintainer found too long for a button.
+
+## The trip's first window, and nothing before Start
+
+October 2026. The maintainer, from three screenshots of a phone: "The app
+looks unnecessarily too wordy", and a list. The sharing tab before a trip is
+now its labels and nothing else: "Direction", "Bus number (optional)", Start,
+Tutorial, My tickets. The two lines that stood under Start went: "Your bus
+shows on the public map until you tap Stop." and "Anyone on the bus can
+share. Keep the screen on, or get the app and lock it." What they said is
+needed once a trip is on, not before, so that is where it is said: in the
+trip's first window (`openTripNote()`), two things, a picture and a line
+each.
+
+- **Tap Stop when you get off.** Or set your stop, and sharing stops there by
+  itself, with a button that opens the stop picker ("Where do you get off?"
+  on a bus). With a saved stop well ahead of the bus, by the rule the guard
+  arms on, it says where instead: "Or sharing stops by itself at Imus."
+  That sentence is the maintainer's, and it is true because of the guard
+  built with it ("Your stop", under "Client-side guards").
+- **Keep the screen on.** Locking it or closing the browser stops sharing.
+  In an Android browser, "Get the app to share with the screen locked." and
+  Google's badge ("Getting it", under "The Android app"). Inside the app it
+  is "Lock the screen anytime" and "Swiping the app away stops sharing."
+
+Only for a new trip, never one carried over from a page that closed, never
+in a tour, and only for a sharer's first three trips, counted by the bus the
+phone already keeps (`wt-bus`, so nothing new is stored): a window at every
+Start would be one more tap between a regular and the road. A trip that ends
+while it is open closes it. It sits before the trip questions in the page,
+so a question asked while it is open draws over it.
+
+Its pictures (`tripNoteSvg()`, in the tested PICTURES block) are the second
+exception to "pictures only where the screen would be empty", by the
+maintainer's word ("Add art if needed"), after the saved stop's card: the
+coach pulling in at the sign of your stop, and a phone, its screen on, or
+locked with the sharing notification still lit. Each carries its own sky, so
+the window's theme and the dark trip screen never change it, and nothing in
+them moves: the window is read, not watched.
+
+On the tracking tab the same round took the empty map's card to its line and
+its button ("Nobody is sharing right now", I'm on the bus), and the line
+under "No buses live" inside hours to nothing, unless a sighting places a
+bus, which the card does not say. "Nobody is sharing right now. Seen one?
+Post it below." was the card's sentence again, and an ask.
 
 ## The name, the icons and the link preview
 
@@ -2102,7 +2174,9 @@ Mobile Notifications List, the one behind Brave's blocking of "open in app"
 prompts and part of Fanboy's Annoyance List, hides "get our app" banners by
 name: `.mobile-app-banner`, `.open-app-banner`, `#bannerInstallApp`,
 `.headerGetApp` and about forty more, each an exact name. So the line is
-`#gpsAppLine`, named for the hint it sits in, and its link has no name at all.
+`#gpsAppLine`, named for the hint it first sat in (it is in the trip's first
+window now), and its links are `.playbadge`, the name the static pages give
+Google's badge, or have no name at all.
 The scan in `test-boot.js` section 8 asks for something broader than any one
 rule: no name that puts "app" next to banner, install, download, get, open or
 promo. In October 2026 that caught 38 of the list's 41 such names, and nothing
@@ -2230,16 +2304,35 @@ the link preview", above), and none of it reaches a phone until a new bundle
 goes through Play, unlike everything the site draws.
 
 **Getting it** (October 2026). The app goes out through Google Play, and the
-website offers it in one place: on the sharing tab, "Keep the screen on"
-becomes "Keep the screen on, or get the app and lock it" (`renderAppLine()`).
-Only in an Android browser, because an iPhone has no app and inside the app
-the line would be offering itself. Only before a trip (`.trip-on` hides it),
-because an app started mid-trip is a second bus beside the page's own until
-that one goes stale. Never on the tracking tab: watching never needs the app,
-and the flyer's promise is that there is nothing to download. The address is
-`ANDROID_APP_URL` in `config.txt`, blank in the template, so a fork with no
-app offers nothing; the guide's notes on sharing read the same line, and say
-to ask the organizer without it.
+website offers it in one place: in the trip's first window, under "Keep the
+screen on", as "Get the app to share with the screen locked." and Google's
+own badge (`renderAppLine()`). Only in an Android browser, because an iPhone
+has no app and inside the app the line would be offering itself. Never on
+the tracking tab: watching never needs the app, and the flyer's promise is
+that there is nothing to download. The address is `ANDROID_APP_URL` in
+`config.txt`, blank in the template, so a fork with no app offers nothing;
+the guide's notes on sharing read the same line, and say to ask the
+organizer without it.
+
+It was offered before a trip, under Start, until the maintainer asked for
+the words there to go and to come once sharing has started, with Google
+Play's logo, "making it more official". Before a trip it had been kept on
+purpose, because an app started mid-trip is a second bus beside the page's
+own until that one goes stale, and the app's own Start, finding the page's
+bus nearby, asks whether it is the same bus, where "yes" shares nothing.
+So going for it now ends the page's trip first (`leaveForApp()`): the bus
+comes off the map, and the status line says to start it in the app. The
+window comes at the start of a trip, where a trip has no ticket to lose yet.
+
+The badge is Google's "Get it on Google Play" PNG, unaltered, as the tester
+page, the flyer and the poster carry it, with Google's attribution line
+under it; Google keeps its bare logo for its own lockups. It goes where
+`ANDROID_APP_URL` says: while the closed test runs that is the tester page,
+whose last step is the badge to the listing, because the listing says "App
+not available" to anyone not in the test yet. An address on neither Google
+Play nor a tester page, a fork's APK, gets the words as a link and no badge,
+which would say Google Play about a file that is not from it.
+`test-boot.js` section 15 holds the bytes, the line and every case.
 
 Play, rather than an APK linked from the site, for three reasons. An APK from
 a link in a chat is the shape of the scam apps riders here are rightly warned
@@ -2344,8 +2437,20 @@ And two that Google Play asks for. Sightings lost their typing box, because
 text anyone can post and everyone can read is user-generated content, which
 Play requires posting rules, reporting and moderation for; the board now
 draws each post from its picked parts and never shows what was sent. And a
-line under Start says the bus shows on the public map until Stop, where Play
-wants an app to say what it does with a location before it asks for one.
+line under Start said the bus shows on the public map until Stop, so that
+the app said what it does with a location before it asked for one.
+
+That line went in October 2026, at the maintainer's word: no words before
+Start but the labels. What is shared is still said before the location is
+asked for, in the button's own words, "Start sharing my location", on the
+tab called "I'm on the bus" of a live bus map; who sees it and until when
+are said once the trip is on, where they matter: the trip's first window
+(tap Stop when you get off), the welcome line ("Your bus is on everyone's
+map now") and the strip's EVERYONE CAN SEE THIS. Play asks for a disclosure
+of its own before the prompt where a use of location is outside what the
+user would expect, and asks most of background location, which the app does
+not request. If a review asks for it anyway, it goes back as a line under
+Start, or into the button's words ("Share my location on the public map").
 
 **The website is the app**, which is the habit with the widest reach: a merge
 to `main` reaches every installed copy with no review by Play. The answers
@@ -2363,9 +2468,11 @@ deploy folder:
   index.html by comment markers and run it, so a passing
   test cannot drift from the app. Since October 2026 they also hold the hours
   card and the parol season (`test-hours`), the stop-by-stop card and its two
-  louder states (`test-mystop`), the town lines (`test-strip`), the
+  louder states (`test-mystop`), where sharing stops by itself
+  (`test-mystop`, `test-prompts`), the town lines (`test-strip`), the
   ticket's rules and the album's, its luck and your bus (`test-thanks`), and
-  the ticket's picture, its sights and the decorated bus (`test-pictures`); every one of those checks was watched
+  the ticket's picture, its sights, the decorated bus and the trip's first
+  window (`test-pictures`); every one of those checks was watched
   failing against a deliberately broken copy of the page before it was
   trusted. They need Node, plus config-template.txt one
   level up. `test-tokens.js` runs no app code: it reads every page's styles

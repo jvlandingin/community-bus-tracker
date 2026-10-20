@@ -426,9 +426,12 @@ console.log('\n=== 16. the album adds up nothing that ranks anybody ===');
     'the album only ever draws a flower for it, one ticket at a time', tyUses.join('|'));
   check(/n \? '×' \+ n : 'not yet'/.test(render) && !/×0/.test(render),
     'a stamp not collected yet says so, never ×0');
+  // The row on the sharing tab is its name and nothing else (October 2026):
+  // the counts are inside, so there is no number on the tab to be a zero.
   const sync = fn('syncAlbumRow');
-  check(/row\.classList\.remove\('hidden'\);/.test(sync) && /if \(!list\.length && !dec\)\{\s*document\.getElementById\('albumRowVal'\)\.textContent = '[^'0-9]+';\s*return;/.test(sync),
-    'My tickets is always offered, so what there is to collect can be found, and with nothing yet it says so without a number');
+  check(/row\.classList\.remove\('hidden'\);/.test(sync) && !/textContent|innerHTML/.test(sync) &&
+        /<span class="lbl">My tickets<\/span>/.test(html),
+    'My tickets is always offered, so what there is to collect can be found, by its name alone: no number on the tab to be a zero');
   // The kept tickets still add up none of these. The totals and the streak
   // the maintainer asked for belong to the bus (section 19), not to them.
   const albumOnly = ['albumEntry', 'albumClean', 'albumPlaces', 'albumStats'].map(fn).join('');

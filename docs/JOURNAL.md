@@ -41,6 +41,11 @@ near road got joints across the concrete every 4.5 m and grass on the
 verges, which stream past at the foot of the glass. Measured, it costs what
 the long lens did.
 
+The maintainer liked it, but the sign at each stop with their stop's name
+went by too fast to read. Keeping the speed, it became three times the
+size, on two legs by the road, readable from about 25 m off, two and a half
+seconds at 30 km/h, where before it could be read for a third of one.
+
 ## 2026-10-20: The trip screen comes to rest
 
 The maintainer asked how the green dots on the sharing tab compared with the

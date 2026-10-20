@@ -3628,22 +3628,25 @@ function svPlace(name){
   }
   return best;
 }
-// At each stop on the way, a green sign as a road's would say it: your
-// stop's name and how many km it still is from there, on its own post
-// beside the stop's.
-function svStopKm(x, ground, w, place){
-  const n = svNum, lines = svPlace(place);
+// At each stop on the way, a big green sign as a road's would say it: your
+// stop's name and how many km it still is from there, on two legs at the
+// roadside from left, by the stop's post. Drawn SV_SIGN times the size of
+// the km signs' lettering, so it can be read as it comes on, which seen
+// wide from the front seat is fast.
+const SV_SIGN = 3;
+function svStopKm(left, ground, w, place){
+  const n = svNum, lines = svPlace(place), z = SV_SIGN;
   if (!lines.length) return '';
   const esc = function(t){ return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
-  const most = 52, wide = function(t, size){ return t.length * size * .5; };
-  const inner = Math.min(most, Math.max.apply(null, lines.map(function(l){ return wide(l, 7); }).concat([wide(w.toFixed(1) + ' km', 9)])));
-  const W = inner + 8, H = 6 + lines.length * 7.5 + 10, left = x, mid = x + W / 2, top = ground - 30 - H;
-  const fit = function(t, size){ return wide(t, size) > most ? ' textLength="' + most + '" lengthAdjust="spacingAndGlyphs"' : ''; };
-  let s = '<rect x="' + n(mid - 1.1) + '" y="' + n(top + H) + '" width="2.2" height="30" fill="#7d7168"/>' +
-    '<rect x="' + n(left) + '" y="' + n(top) + '" width="' + n(W) + '" height="' + n(H) + '" rx="2.8" fill="#2e6b45" stroke="#fbf4e4" stroke-width="1.1"/>' +
+  const most = 52 * z, wide = function(t, size){ return t.length * size * .5; };
+  const inner = Math.min(most, Math.max.apply(null, lines.map(function(l){ return wide(l, 7 * z); }).concat([wide(w.toFixed(1) + ' km', 9 * z)])));
+  const W = inner + 8 * z, H = (16 + lines.length * 7.5) * z, legs = 34, mid = left + W / 2, top = ground - legs - H;
+  const fit = function(t, size){ return wide(t, size) > most ? ' textLength="' + n(most) + '" lengthAdjust="spacingAndGlyphs"' : ''; };
+  let s = '<path d="M' + n(left + W * .2) + ' ' + n(top + H) + 'v' + legs + 'M' + n(left + W * .8) + ' ' + n(top + H) + 'v' + legs + '" stroke="#7d7168" stroke-width="3.2"/>' +
+    '<rect x="' + n(left) + '" y="' + n(top) + '" width="' + n(W) + '" height="' + n(H) + '" rx="' + n(2.8 * z) + '" fill="#2e6b45" stroke="#fbf4e4" stroke-width="' + n(1.1 * z) + '"/>' +
     '<g fill="#fbf4e4" font-family="Barlow Semi Condensed,sans-serif" font-weight="700" text-anchor="middle">';
-  lines.forEach(function(l, i){ s += '<text x="' + n(mid) + '" y="' + n(top + 9.5 + i * 7.5) + '" font-size="7"' + fit(l, 7) + '>' + esc(l) + '</text>'; });
-  return s + '<text x="' + n(mid) + '" y="' + n(top + H - 4) + '" font-size="9">' + w.toFixed(1) + ' km</text></g>';
+  lines.forEach(function(l, i){ s += '<text x="' + n(mid) + '" y="' + n(top + (9.5 + i * 7.5) * z) + '" font-size="' + n(7 * z) + '"' + fit(l, 7 * z) + '>' + esc(l) + '</text>'; });
+  return s + '<text x="' + n(mid) + '" y="' + n(top + H - 4 * z) + '" font-size="' + n(9 * z) + '">' + w.toFixed(1) + ' km</text></g>';
 }
 function stopViewSvg(t){
   t = t || {};
@@ -3727,7 +3730,7 @@ function stopViewSvg(t){
   // to go, from the far end in; one the bus passes goes by the glass.
   const next = function(v){ let x = null; stops.forEach(function(w){ if (w < v) x = w; }); return x; };
   const nx = next(km), nx0 = next(f0), things = [];
-  stops.forEach(function(w){ if (seen(w)) things.push([w, svPost(1.3 * P.k, P.k, 24, w === (w < km ? nx : nx0)) + svStopKm(1.3 * P.k + 6, P.k, w, t.place)]); });
+  stops.forEach(function(w){ if (seen(w)) things.push([w, svPost(1.3 * P.k, P.k, 24, w === (w < km ? nx : nx0)) + svStopKm(1.08 * P.k, P.k, w, t.place)]); });
   for (let j = Math.ceil((Math.min(km, f0) - SV_SEEN) / SV_MARK); j <= Math.ceil(Math.max(km, f0) / SV_MARK); j++){
     const w = Math.round(j * SV_MARK * 1000) / 1000;
     if (w > 0 && seen(w)) things.push([w, svKmSign(1.12 * P.k, P.k, w)]);

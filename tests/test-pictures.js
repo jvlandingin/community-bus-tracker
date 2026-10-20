@@ -617,12 +617,20 @@ console.log('\n=== 9. the saved stop\'s picture ===');
     const signs = [...named.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map(m => m[1]);
     check(JSON.stringify(signs) === JSON.stringify(['One Ayala', 'Terminal', '2.5 km']) && named.split('<text').length - 1 === 3,
       'at each stop in sight a sign with your stop\'s name and the km still to go from there', signs.join(' / '));
+    // Seen wide from the front seat it comes on fast, so it is big, the
+    // maintainer's ask: its name's letters 6 px from 20 m off. It stands
+    // by the road, left of the stop's post, so it stays in the glass until
+    // it is close.
+    const letters = +(/<text[^>]*font-size="([\d.]+)"/.exec(S.svStopKm(0, 70, 1.2, 'One Ayala Terminal')) || [])[1];
+    check(S.SV_SIGN >= 2.5 && letters === 7 * S.SV_SIGN && letters * (1 / (P.z + P.dz * .02)) >= 6 && /^<path d="M[\d.]+ [\d.-]+v\d+M[\d.]+ [\d.-]+v\d+"/.test(S.svStopKm(0, 70, 1.2, 'PITX')) &&
+          named.includes(S.svStopKm(1.08 * P.k, P.k, 2.548, 'One Ayala Terminal')),
+      'and the sign is big, on two legs by the road, to be read as it comes on', (letters * (1 / (P.z + P.dz * .02))).toFixed(1) + ' px letters from 20 m');
     check(JSON.stringify(S.svPlace('One Ayala Terminal')) === '["One Ayala","Terminal"]' && JSON.stringify(S.svPlace('New Imus City Hall')) === '["New Imus","City Hall"]' &&
           JSON.stringify(S.svPlace('LRT Buendia (Gil Puyat)')) === '["LRT Buendia"]' && JSON.stringify(S.svPlace('Magallanes Square / Hiraya')) === '["Magallanes","Square"]' &&
           JSON.stringify(S.svPlace('PITX')) === '["PITX"]' && S.svPlace('').length === 0,
       'the name as a sign has room for it: before any bracket or slash, in two even lines past 13 letters');
     check(/&lt;b&gt;/.test(S.svStopKm(0, 70, 1.2, '<b>')) && !/<b>/.test(S.svStopKm(0, 70, 1.2, '<b>')) && S.svStopKm(0, 70, 1.2, '') === '' &&
-          /textLength="52"/.test(S.svStopKm(0, 70, 1.2, 'Supercalifragilistic')),
+          new RegExp('textLength="' + 52 * S.SV_SIGN + '"').test(S.svStopKm(0, 70, 1.2, 'Supercalifragilistic')),
       'written as text, never as markup, nothing without a name, and a word too long for the sign squeezed to fit');
     check(!/<text/.test(view(2.9)) && !/<text/.test(S.stopViewSvg({ f: 2.5, place: 'One Ayala Terminal' })),
       'and no words at all without a name, nor on the waiting picture');

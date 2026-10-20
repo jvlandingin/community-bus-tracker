@@ -220,8 +220,9 @@ even at a sign at a time or none): a green sign every 100 m with the km
 still to go, a power pole every 25 m across the road, the middle line 4 m of
 paint every 20 m and, close by, the concrete's joints and the verges' grass,
 painted on the ground (`svDashes()`, `svJoints()`, `svTufts()`), at every
-stop a sign with your stop's name and the km still to go from there
-(the only words in the picture, the maintainer's ask), your stop a pin on the
+stop a big sign with your stop's name and the km still to go from there, big
+so it can be read as it comes on (the only words in the picture, the
+maintainer's ask), your stop a pin on the
 horizon until it is in sight, and the dashes, the signs, the poles and the
 posts going by together, moved by the card itself 30 times a second on a
 timer (`rideFrame()`) in true perspective (`svOnRoad()`), at one steady

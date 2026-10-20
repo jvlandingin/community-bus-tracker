@@ -841,9 +841,12 @@ go only where the screen would be empty still holds everywhere else.
   glass. Across the road a power pole stands every 25 m
   (`svPole()`), on wires that run along the road and so stand still
   (`svWires()`): lines from the vanishing point through every crossarm,
-  however near. At every stop a second green sign gives your stop's name
-  and the km still to go from there (`svStopKm()`, the name cut and broken
-  to fit by `svPlace()`). Those are the only words in any picture besides
+  however near. At every stop a big green sign on two legs gives your
+  stop's name and the km still to go from there (`svStopKm()`, the name
+  cut and broken to fit by `svPlace()`), its lettering `SV_SIGN` times the
+  size it was, the maintainer's ask once the front-seat view made it pass
+  too fast to read: big, it can be read from 25 m off, two seconds and
+  more at town speed. Those are the only words in any picture besides
   the night's z z Z: everything else is drawn, the km signs' figures in
   strokes, but a place's name cannot be, and the maintainer asked for it
   (October 2026), so the poles and the stops would give the road something

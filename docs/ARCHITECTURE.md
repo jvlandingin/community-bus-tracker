@@ -42,6 +42,8 @@ community-bus-tracker/
   how-to.html         <- the guide
   flyer.html          <- the rider flyer, also the printable poster
   for-operators.html  <- the briefing for the bus company
+  testers.html        <- the Android app's closed test, three taps to join
+  poster.html         <- the showcase poster: four pictures, two QR codes
   config.txt          <- your route's own, holds no secrets, safe to commit
   assets/vendor/      <- leaflet.js, leaflet.css, supabase.js, images/
   assets/fonts/       <- Barlow, five cut-down woff2 files and their licence
@@ -336,8 +338,8 @@ reintroduce CDN links.
 
 ## Client-side guards
 
-Three ways a sharer can broadcast wrong information without meaning to. All
-three ask rather than decide.
+Four ways a sharer can broadcast wrong information without meaning to. All
+four ask rather than decide.
 
 **Wrong direction.** The sharer picks a direction by hand, and picking the wrong
 one is the most damaging mistake the tool allows, because commuters then wait
@@ -361,8 +363,26 @@ that long.
 
 **Trip finished.** Within 500 m of the destination checkpoint and stationary for
 5 minutes, the app asks, and stops by itself after 5 more minutes with no
-answer. This is the only automatic stop, because a bus parked at its own
-destination has finished by definition.
+answer, because a bus parked at its own destination has finished by
+definition.
+
+**Your stop** (October 2026). A sharer who saved the stop they get off at is
+asked "Getting off here?" as their bus comes to it, and sharing stops by
+itself a minute later with no answer. A sharer stepping off has the phone in
+a hand or a pocket, not on the screen, and their walk on from the stop is not
+a bus; a minute is long enough to say "Not yet" to a question that came early.
+`stopGuardUpdate()` decides it from the chain, the way the card does: the bus
+is at the stop from 100 m short of it to 300 m past (`AT_STOP_KM`, the card's
+own "at your stop"), and only once the stop has been well ahead of it this
+trip, more than 500 m along the chain and as the crow flies. So boarding at
+the saved stop, a commuter's morning, is never arriving at it, and neither is
+the Tagaytay hook, where a stop far along the road can be near across it. A
+bus first seen further past means the sharer stayed on, and nothing is asked.
+Once a trip, at most; a stop changed mid-trip, or a direction switched by the
+guard above, starts it again. This and the end of the route are the only
+automatic stops. It was built because the maintainer asked for the trip's
+first window to say "set your stop so it stops sharing once you arrive", and
+until then that would not have been true.
 
 ## Order on the tracking tab
 
@@ -471,10 +491,16 @@ October 2026. Nobody sharing is what most visitors see, and a blank map reads
 as a broken one. `renderMapNote()` lays one card over the map whenever no bus
 is live, in one of four voices, decided from the operating hours alone:
 
-- **inside operating hours**: nobody is sharing right now, with the last
-  trips possibly still on the road if the window has just closed, and a
-  button to the sharing tab — the empty map is also the best moment to ask
-  someone on a bus to be the first;
+- **inside operating hours**: "Nobody is sharing right now", and since
+  October 2026 nothing else (the maintainer: fewer words), in a pill beside
+  the grey dot the sharing tab shows by "Not sharing", the app's own sign
+  for this. It used to add that the last trips may still be on the road,
+  which the hours card under the map still says, and to carry an I'm on the
+  bus button, on the reasoning that an empty map is the best moment to ask
+  someone on a bus to be the first; the tab of that name at the top of the
+  page is the way in. Its icon was the map's bus glyph, which the
+  maintainer questioned: on a map where a bus means a live one, it said the
+  opposite of the sentence beside it;
 - **closed in the middle of the day**: "No buses until 3:20 PM", the earlier
   of the two directions' next departures, with both listed under it;
 - **closed at night**: *Tulog pa ang bus* — the bus is asleep — with the
@@ -492,7 +518,7 @@ under a moon with a street lamp on, its lights coming on at dawn, parked in the
 sun through the midday break. The words sit on the picture's own sky. One
 drawing, three sets of colours, made by `sceneSvg()` in the tested PICTURES
 block; `mapNoteKind()` decides which from the clock and is tested at its
-edges. Inside operating hours the card stays the plain one with the button,
+edges. Inside operating hours the card stays a plain pill, its line alone,
 because then the map underneath is still worth seeing. The coach is generic on
 purpose, cream with the app's maroon and gold and no lettering, because a copy
 of an operator's livery would make the tool look official. The scene is this
@@ -797,29 +823,115 @@ the right, the side the bus pulls in on, with the posts before it. It is the
 one working screen with a picture, by that decision: the rule that pictures
 go only where the screen would be empty still holds everywhere else.
 
-- **Six stops, one step each.** The picture holds the last six stops
-  (`STOP_VIEW_STOPS`); further than that the bus is at the horizon, or the
-  sign is. `stopProgress()`, in the MY STOP block, says where: an even step
-  per stop, the step being the card's own count (`test-mystop.js` section
-  11), and inside a step by the road, so every position that arrives moves
-  it, which the dots never did. The posts are the counted stops, as the dots
+- **Waiting, every stop, one step of depth each** (changed October 2026,
+  below). A post stands for every stop still between, however many, so the
+  picture and the count agree: `stopsAway()`, in the MY STOP block, says how
+  many stops away the bus is, just over n with n stops between and up to
+  n + 1, the step being the card's own count (`test-mystop.js` section 11),
+  and inside a step by the road, so every position that arrives moves it,
+  which the dots never did. A thing g stops up the road is drawn at depth
+  z + 0.6 g, so the posts recede as posts along a real road do: two stops
+  away the bus is close, six and it is small, forty and it is a speck at the
+  end of a long line of them. The posts are the counted stops, as the dots
   were (`test-pictures.js` section 9).
-- **It moves when a position does, and only then.** The bus glides from
-  where it was drawn to its new place in a second (`STOP_GLIDE_MS`, the
+- **Waiting, it moves when a position does, and only then.** The bus glides
+  from where it was drawn to its new place in a second (`STOP_GLIDE_MS`, the
   `stopglide` animation) and stands there until the next position. It never
   creeps between them: a picture that moved on its own would be a guess at
-  when the bus arrives, which the card has never made. The card is redrawn
-  every few seconds, so a redraw on the way carries the glide on with a
-  negative delay rather than restarting it, and a position that lands
-  mid-glide starts from where the bus is drawn at that moment. The
-  perspective is built so that CSS can glide it: everything on the road is
-  drawn once at depth 1 and placed by `translate(vanishing point) scale(k)`,
-  and a thing's place on the screen is linear in k, so interpolating the
-  transform is the right path in depth.
-- **The road on board goes by** at the popup's decorative pace (`STOP_ROAD_S`,
-  about 60 km/h to the eye) and what hangs from the mirror sways. Both stop
+  when the bus arrives, which the card has never made, and one that moved
+  at the bus's pace would show riders how fast a bus they are not on is
+  going. The card is redrawn every few seconds, so a redraw on the way
+  carries the glide on with a negative delay rather than restarting it, and
+  a position that lands mid-glide starts from where the bus is drawn at
+  that moment. The perspective is built so that CSS can glide it:
+  everything on the road is drawn once at depth 1 and placed by
+  `translate(vanishing point) scale(k)`, and a thing's place on the screen
+  is linear in k, so interpolating the transform is the right path in
+  depth. A stop the bus has just passed fades as it goes by (`stopgone`, on
+  the glide's clock).
+- **On board, the road at its own length, seen wide from the front seat**
+  (changed October 2026, below). The picture works in km: how far your
+  stop still is (`info.km`) and how far back from it every stop before it
+  is (`stopsBack()`), so the posts stand as far apart as the stops do, a
+  thing g km up the road at depth z + 143 g: the eye 3.5 m behind the
+  front, the road showing over the dashboard from 3.5 m ahead, so what is
+  close rushes past as it does from a bus. The middle line is painted on
+  the road, 4 m of paint every 20 m (`svDashes()`), each dash a strip of
+  the ground (`svStrip()`), long close by and short far off; close by, the
+  joints across the concrete every 4.5 m (`svJoints()`) and grass on both
+  verges (`svTufts()`) stream past under and beside the bus. The card draws
+  those three again for each frame, one path each, rather than moving a
+  group per dash. Every 100 m a green sign says how many km are still to
+  go (`svKmSign()`, its figures drawn in strokes), so the road, the signs
+  and the stops go by together and a stop the bus passes goes by the
+  glass. Across the road a power pole stands every 25 m
+  (`svPole()`), on wires that run along the road and so stand still
+  (`svWires()`): lines from the vanishing point through every crossarm,
+  however near. At every stop a big green sign on two legs gives your
+  stop's name and the km still to go from there (`svStopKm()`, the name
+  cut and broken to fit by `svPlace()`), its lettering `SV_SIGN` times the
+  size it was, the maintainer's ask once the front-seat view made it pass
+  too fast to read: big, it can be read from 25 m off, two seconds and
+  more at town speed. Those are the only words in any picture besides
+  the night's z z Z: everything else is drawn, the km signs' figures in
+  strokes, but a place's name cannot be, and the maintainer asked for it
+  (October 2026), so the poles and the stops would give the road something
+  going by at town speeds, where the km signs alone left it bare for long
+  stretches. About 150 m is in sight (`SV_SEEN`), so a sign at a time and
+  sometimes none, which the maintainer took for a road that looks as fast
+  as it goes; further is over the horizon, and your stop, until it is in
+  sight, is its pin there
+  (`svPinMark()`), kept to a size that can be seen (`SV_PIN`) until the
+  sign's own pin is as big.
+- **On board, it moves while the bus does, at its pace.** The view shows
+  the bus a lag behind, the feed and a poll more: 12 seconds on the
+  tracker, 24 on the sharing tab, which is fed every 18 seconds
+  (`SLOW_FEED_MS`, `slowFeed()`), and reaches each new position that long
+  after the bus was there by its report's own time, the phone's clock held
+  against the server's by the smallest gap seen between a report's time
+  and its drawing (`STOPVIEW.off`). So the next position always comes
+  before the view gets to the last, and it goes at the bus's own pace
+  however late each report and each poll falls: a report drawn late makes
+  a shorter glide, not a faster one. The card moves the road itself, 30
+  times a second on a timer (`rideFrame()`, `RIDE_FPS`): each time, every
+  thing on it is put from how far your stop then is by the picture's own
+  sum (`svOnRoad()`, `svPinAt()`), so each is where perspective has it at
+  that moment, slowly far off and fast close by, at one speed along the
+  road. Nothing runs while the bus stands, or for a road folded away or on
+  the other tab. Until October 2026 a stylesheet glide moved each thing
+  straight between four points of its way, and over the sharing tab's long
+  glides the road lunged and stalled, its speed on the screen swinging
+  between about 20 and 60 km/h every six seconds for a bus going 30; before
+  that it took six seconds there and stood for twelve. Three other ways to
+  move it exactly were measured and dropped: one number animated for the
+  stylesheet to place everything from cost five times what the glide did,
+  the browser's own animations sampled finely three times, and a script on
+  every frame the screen draws a quarter more. On a timer at 30 frames it
+  costs what the glide did. It is on the move while positions keep coming
+  and still when they stop, behind the bus and never ahead of it, so it
+  guesses nothing. Its pace is therefore the
+  bus's, which the waiting card and the popup never show; on board the one
+  looking is on that bus, and feels its speed anyway. A few metres on or
+  back is the GPS and moves nothing (`RIDE_STILL_KM`, `RIDE_BACK_KM`), and a
+  jump back, or further on from where the view has the bus than a bus at
+  110 km/h goes in the glide's time (`svReach()`, never less than the
+  150 m in sight), starts the view again where the bus is, drawn at once.
+  Fed every 18 seconds, a bus on the highway goes further than can be seen
+  between positions, and until that reach it is driven there rather than
+  jumping each time. The picture draws everything on the way, and the card
+  keeps what is still further up the road than the eye reaches out of
+  sight until the bus comes within it, so the road comes into view a thing
+  at a time and never runs out; until October 2026 only what was in sight
+  at either end was drawn, and above about 40 km/h on the sharing tab the
+  road went bare halfway. Setting off, the first glide starts from where
+  the bus stood, a feed behind rather than the lag, so the view comes up
+  to the bus's pace over a few positions, as a bus pulling away does; and
+  going from the sharing tab to the map, it makes up the 12 seconds
+  between their lags in one glide at about twice the pace, or at once
+  above about 50 km/h.
+  What hangs from the mirror sways, and stops
   when the bus stands still or has gone quiet, by the signal the popup uses
-  (`rideStand()`, `freshness()`). Neither says how fast the bus is going.
+  (`rideStand()`, `freshness()`).
 - **Dressed as the popup dresses it** (`busLookOf()`, shared with
   `popupRide()`): a coming bus as its sharer dressed it only if they chose to
   show it, a sharer's own bus as they dressed it, plain otherwise. Waiting it
@@ -835,6 +947,92 @@ go only where the screen would be empty still holds everywhere else.
 The cost is height: the card went from about 230 px to about 290 px on a
 phone. On a wide screen the picture is cut rather than grown past 200 px,
 from the sky down waiting and at both edges on board.
+
+**Then it drew every stop** (October 2026). The maintainer found two things
+wrong with the picture as first shipped. It held the last six stops only, so
+a bus 47 stops away was drawn at the horizon behind five posts, the same
+picture as a bus six away, and waiting or on board the card said "about 47
+stops" under a bus that looked a few stops off. And on board the road's
+dashes ran past at the popup's decorative pace while the posts beside them
+stood still until the next position, as though the stops were riding along.
+Both came from the first version's choices: six steps spaced evenly down
+the screen, and a road that moved on its own. Waiting, every stop between is
+now a post and each is one step of depth, so the line of them is as long as
+the count; far off, the bus is a speck at the end of the road. Every post is
+drawn, up to `STOP_VIEW_MOST` (80, more than the route has), which is about
+16 KB of picture at 47 stops, and beyond about twenty they run together into
+a fine line at the horizon, as they would along a real road.
+
+On board it took a second round. Putting the dashes on the road with the
+posts, one stop to a step, made the two agree, but a bus covers about a
+twentieth of a stop between polls, so the view barely moved while the bus
+did. The maintainer's idea was to set the posts further apart, keep two or
+three in sight with the rest over the horizon, and show your stop as its pin
+there. That is the road at its real length: the stops as far apart as they
+are, the dashes on the same road, so a far stop barely moves and
+a near one comes up and goes by, as from a real bus. To move while the bus
+moves without guessing, the view follows the positions a poll behind,
+which gives it the bus's pace; the rule against a picture moving with the
+bus's speed is kept for every rider who is not on that bus (see "Rules
+revisited"). The waiting card keeps its stop-per-step picture: its camera
+stands still, so it never had the problem, and at real length a bus forty
+stops off would be nothing at all.
+
+Seen from 1.2 km off, a bus's real pace barely moved the road, and the
+maintainer found it far too slow. Their answer was signs: one every 100 m
+saying how many km are still to go, so there is always something coming
+up the road. With them the eye moved close, 260 m in sight instead of
+1.2 km, so at 30 km/h a dash goes by every second and a half and a sign
+every twelve, and things come on in perspective rather than at one pace
+down the screen.
+
+It still looked slow, and the maintainer asked for it to look faster, even
+if that meant a sign at a time or none for a few seconds. The pace stayed
+the bus's; the eye changed. It had seen as a long lens does, as if from
+22 m behind the front, so a pole took 86 m of road to grow from a quarter
+of its size at the dashboard to full, ten seconds at 30 km/h. From the
+front seat, 3.5 m back and seeing wide, it takes 21 m, two and a half
+seconds, and what is close sweeps out of the glass as it does from a real
+bus. With less road in sight the dashes went from every 12 m to 4 m of
+paint every 20 m, the maintainer's ask, drawn on the ground so they
+stretch as they come near, and the near road got the concrete's joints and
+the verges' grass, the things a passenger sees stream past. Drawn as three
+paths redrawn each frame instead of a group moved per dash, it costs what
+the long lens did.
+
+**What it costs to keep moving** (measured October 2026 in headless
+Chromium at a phone's size, with no graphics chip, so in proportion rather
+than in watts: a phone draws all of it for less). The trip screen a sharer
+keeps open costs about 1% of a CPU core with nothing moving. Anything that
+moves is a repaint for every frame it moves, however slowly it goes, so
+what a moving thing costs is how long it moves, not how fast, and one thing
+moving costs most of what several do. The two green dots breathing for a
+whole trip were 20%, more than the rest of the screen together. Breathing
+slower cost exactly the same, and one breath every twelve seconds still
+half, because the browser keeps the frames coming for a loop that is only
+resting. So everything that loops on the sharing tab rests after half a
+minute. The dots breathe when they come into view, then hold still, green:
+the status dot when the trip starts and again when the sharing tab or the
+GPS comes back, the tab's dot only while the sharer is on the other tab,
+where it is the one saying the trip goes on. The strip's pills rock and
+breathe as long when the tab comes into view; its sighting glows, drawn
+again at every poll, and the parol, in the header, which never leaves the
+screen to start it again, hold still there from the start. And the road on
+the card is folded away until "Show the road" is tapped, for that visit
+(`toggleRoad()`, `wt-road` in `sessionStorage`), because it moves for as
+long as the bus does: about 20% with its poles and signs, moved 30 times a
+second (above), 6% back when it drove for a third of each wait. Folding it
+alone saved only a third; the rest went when nothing else on the screen
+moved either. In parol season, with another bus on the strip and a bus
+moving all the while, the trip screen a minute into a trip went from 46% to
+2%, and to 20% with the road open. A script that moves anything does it on
+a timer at the rate it needs, not on every frame the screen draws: woken
+sixty times a second, the road's script cost a fifth more even on the
+frames it drew nothing. A blurred veil
+behind an open modal (`backdrop-filter`) makes every frame cost a whole
+core. To measure it again, fake the GPS in the page
+rather than through the browser: Chromium's emulated GPS reports a short
+loss every time it is moved, which wakes the status dot each time.
 
 It speaks up twice, and only twice: **Malapit na!** at two stops or fewer,
 and **Sakay na!** when yours is the next stop and the bus is inside 2 km
@@ -889,7 +1087,8 @@ after Stop pointing at a trip the phone is not on. A fix up to 300 m past
 the stop still counts as at it (`AT_STOP_KM`), because phones wobble and
 buses pull in beyond the sign; further than that the card says the stop is
 behind the bus and asks for the one being got off at, which is also what a
-sharer riding away from their home stop sees.
+sharer riding away from their home stop sees. Since October 2026 a sharer's
+trip stops at it, too ("Your stop", under "Client-side guards").
 
 **A sharer can watch, and the page now says so.** GPS never stopped when a
 sharer switched to the map — the watch is not tied to the tab, and the
@@ -919,7 +1118,7 @@ filming the showcase video; `test-boot.js` section 14 holds it.
 
 ## Following one bus, and the town lines
 
-October 2026. **Send a link to this bus**, in a bus's popup, hands over a
+October 2026. **Send a link**, in a bus's popup, hands over a
 `#b=` link that opens the map following that bus: centred on it, a chip
 saying which bus, re-centred on every poll, and a Stop that clears the hash.
 It is for "nasa bus na ako" to whoever is fetching you. The link carries the
@@ -1274,10 +1473,13 @@ for a reason:
 
 - *Findable before the first trip.* My tickets, the row at the foot of the
   sharing tab, used to appear only once a ticket was kept, so a new sharer
-  had no way to see what there was to earn. It is always there now. With
-  nothing yet it says "Your first trip starts them", and opened it shows the
-  plain bus with every decoration, and every place, stamp and sight, faint
-  with "not yet": what is possible, shown without a single zero. Each
+  had no way to see what there was to earn. It is always there now, and
+  since October 2026 it says only "My tickets": the counts, the places and
+  the spare parts that stood beside it were too much for the tab, the
+  maintainer found, and every one of them is inside. Opened with nothing
+  yet, it shows the plain bus with every decoration, and every place, stamp
+  and sight, faint with "not yet": what is possible, shown without a single
+  zero. Each
   decoration's card shows it on its own part of the bus (`decorTile()`, cut
   by `DECOR_BOX`): in colour once earned, and until then as a dashed outline
   over a faded coach, so a sharer can see what is coming.
@@ -1503,7 +1705,8 @@ would unlock. What changed, and what was kept and why:
   ETA in minutes (it needs the travel-time history the first invariant
   forbids); a decorated bus on the map only by its sharer's choice, off until
   they make it, and only from fixed lists; no picture that moves with the
-  bus's speed.
+  bus's speed, except the saved stop's on board (October 2026), which follows
+  the positions of the bus its viewer is riding.
 
 ## The guide and the tour
 
@@ -1565,6 +1768,99 @@ the foot of each tab and two buttons at the top of the guide.
 filter lists carry cosmetic rules for onboarding libraries (intro.js, Shepherd,
 Joyride and the generic tour and tooltip names), and a blocked bubble over a
 dimmed page is a page with no way out. `test-tour.js` scans for those names.
+
+Its two buttons, one at the foot of each tab, say "Tutorial" since October
+2026, and the first visit's note "New here?" with a Tutorial button: they
+were "New here? Take the 1-minute tour" and "First time? Try a practice run.
+Nothing is shared", which the maintainer found too long for a button.
+
+## The trip's first window, and nothing before Start
+
+October 2026. The maintainer, from three screenshots of a phone: "The app
+looks unnecessarily too wordy", and a list. The sharing tab before a trip is
+now its labels and nothing else: "Direction", "Bus number (optional)", Start,
+Tutorial, My tickets. The two lines that stood under Start went: "Your bus
+shows on the public map until you tap Stop." and "Anyone on the bus can
+share. Keep the screen on, or get the app and lock it." What they said is
+needed once a trip is on, not before, so that is where it is said: in the
+trip's first window (`openTripNote()`), two things, a picture and a line
+each.
+
+- **Tap Stop when you get off.** Or set your stop, and sharing stops there by
+  itself, with a button that opens the stop picker ("Where do you get off?"
+  on a bus). With a saved stop well ahead of the bus, by the rule the guard
+  arms on, it says where instead: "Or sharing stops by itself at Imus."
+  That sentence is the maintainer's, and it is true because of the guard
+  built with it ("Your stop", under "Client-side guards").
+- **Keep the screen on.** Locking it or closing the browser stops sharing.
+  In an Android browser, "Get the app to share with the screen locked." and
+  Google's badge ("Getting it", under "The Android app"). Inside the app it
+  is "Lock the screen anytime" and "Swiping the app away stops sharing."
+
+Only for a new trip, never one carried over from a page that closed, never
+in a tour, and only for a sharer's first three trips, counted by the bus the
+phone already keeps (`wt-bus`, so nothing new is stored): a window at every
+Start would be one more tap between a regular and the road. A trip that ends
+while it is open closes it. It sits before the trip questions in the page,
+so a question asked while it is open draws over it.
+
+Its pictures (`tripNoteSvg()`, in the tested PICTURES block) are the second
+exception to "pictures only where the screen would be empty", by the
+maintainer's word ("Add art if needed"), after the saved stop's card: the
+coach pulling in at the sign of your stop, and a phone, its screen on, or
+locked with the sharing notification still lit. Each carries its own sky, so
+the window's theme and the dark trip screen never change it, and nothing in
+them moves: the window is read, not watched.
+
+On the tracking tab the same round took the empty map's card to its line
+alone, "Nobody is sharing right now" (its I'm on the bus button went in a
+second pass), and the line under "No buses live" inside hours to nothing,
+unless a sighting places a bus, which the card does not say. "Nobody is sharing right now. Seen one?
+Post it below." was the card's sentence again, and an ask.
+
+**A third pass, from a look at every screen** (October 2026). The maintainer
+asked whether the app now looked right in this spirit; rendered with made-up
+buses, mostly it did, and five things did not, all changed at their word:
+
+- *The Tutorial buttons hide while a trip is on* (`syncTripMode()`). The one
+  on the sharing tab sat right under Stop sharing, and mid-trip both could
+  only say "Stop sharing first", since a tour cannot run over a live share.
+- *A bus's popup was the busiest thing in the app, and broken on narrow
+  phones.* It is 240 px of words in a 29 px frame, and its autopan keeps 66
+  px clear on the left for the zoom and locate buttons, which sit above
+  popups, and 18 on the right: 353 px, where a 360 px phone's map is 298
+  wide. So it ran 38 px off the map, cutting "Not a real bus?" and the
+  buttons, and 8 px off at 390. `popupWidth()` makes it what the map leaves:
+  184 px of words at 360, 214 at 390, 240 from about 400 on, measured as
+  fitting at all three. Salamat stays its one big button, and "I'm on this
+  bus" and "Send a link" (it was "Send a link to this bus") are a row of
+  words under it, wrapping to two rows where it is narrow, instead of two
+  more full-width dashed buttons.
+- *With buses live, the line under the headline is for screen readers only.*
+  It said where the freshest bus was and how fresh, right above chips saying
+  the same for every bus, and how often trips leave, which the hours card
+  says. It stays the live region that announces the buses moving, which the
+  chips are not, so it is hidden from sight (`.vh`), not deleted. The muted
+  "Tap any bus to see it up close and say salamat." under the chips went
+  too: salamat is the popup's one big button, which every way of tapping a
+  bus opens, and the map's tour shows it there.
+- *On board, the stop card's line is the next stop alone*, where it repeated
+  the direction, the bus and the age that the strip and the status line
+  carry. Waiting, it keeps them, since there they say which bus is coming.
+  "Yours has the green ring." under the trip screen's strip went: the ring
+  says it, and the legend says it in words.
+- *Two labels:* the sightings card says "Seen a bus? Post it" (it was "Bus
+  spotted but nobody sharing? Post it here"), and the organizers' link at
+  the foot of both tabs says "Admin".
+
+The flyer and the briefing drew the headline with its line, so they lost it
+too, and their PDFs and the chat image were rendered again; the chat image
+is 1807 points tall now, to end where it did. The guide's map figure lost the
+line as well, which moved the five numbered dots: measured again, and the
+figure is now the same height at every width. Left with the maintainer: the
+header's second line, "WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER ·
+UNOFFICIAL", which wraps on every screen. UNOFFICIAL stays; whether the bus
+company's name does is the question open since 17 October.
 
 ## The name, the icons and the link preview
 
@@ -1749,8 +2045,11 @@ and stopped twice a second. The sharing phone sends its position at most
 every five seconds, so on board the card stood still and then jumped to
 Bababa na!. The maintainer asked for both to move smoothly, for
 presentation. So the copy of `index.html` the film is served (`filmPage()`
-in `render.js`) glides for one poll at an even pace, and lets the phone
-send a little oftener than the film polls. Nothing else in the page
+in `render.js`) glides for one poll at an even pace, on the sharing tab
+too, whose slower feed the film's poll stands in for, and lets the phone
+send a little oftener than the film polls. The sharer opens the road on
+the card in the trip's interlude, off camera, since on the sharing tab it
+starts folded. Nothing else in the page
 differs from the commit, and the render stops if those lines change in
 `index.html`, rather than quietly filming the stutter again.
 
@@ -1981,7 +2280,9 @@ Mobile Notifications List, the one behind Brave's blocking of "open in app"
 prompts and part of Fanboy's Annoyance List, hides "get our app" banners by
 name: `.mobile-app-banner`, `.open-app-banner`, `#bannerInstallApp`,
 `.headerGetApp` and about forty more, each an exact name. So the line is
-`#gpsAppLine`, named for the hint it sits in, and its link has no name at all.
+`#gpsAppLine`, named for the hint it first sat in (it is in the trip's first
+window now), and its links are `.playbadge`, the name the static pages give
+Google's badge, or have no name at all.
 The scan in `test-boot.js` section 8 asks for something broader than any one
 rule: no name that puts "app" next to banner, install, download, get, open or
 promo. In October 2026 that caught 38 of the list's 41 such names, and nothing
@@ -2109,16 +2410,35 @@ the link preview", above), and none of it reaches a phone until a new bundle
 goes through Play, unlike everything the site draws.
 
 **Getting it** (October 2026). The app goes out through Google Play, and the
-website offers it in one place: on the sharing tab, "Keep the screen on"
-becomes "Keep the screen on, or get the app and lock it" (`renderAppLine()`).
-Only in an Android browser, because an iPhone has no app and inside the app
-the line would be offering itself. Only before a trip (`.trip-on` hides it),
-because an app started mid-trip is a second bus beside the page's own until
-that one goes stale. Never on the tracking tab: watching never needs the app,
-and the flyer's promise is that there is nothing to download. The address is
-`ANDROID_APP_URL` in `config.txt`, blank in the template, so a fork with no
-app offers nothing; the guide's notes on sharing read the same line, and say
-to ask the organizer without it.
+website offers it in one place: in the trip's first window, under "Keep the
+screen on", as "Get the app to share with the screen locked." and Google's
+own badge (`renderAppLine()`). Only in an Android browser, because an iPhone
+has no app and inside the app the line would be offering itself. Never on
+the tracking tab: watching never needs the app, and the flyer's promise is
+that there is nothing to download. The address is `ANDROID_APP_URL` in
+`config.txt`, blank in the template, so a fork with no app offers nothing;
+the guide's notes on sharing read the same line, and say to ask the
+organizer without it.
+
+It was offered before a trip, under Start, until the maintainer asked for
+the words there to go and to come once sharing has started, with Google
+Play's logo, "making it more official". Before a trip it had been kept on
+purpose, because an app started mid-trip is a second bus beside the page's
+own until that one goes stale, and the app's own Start, finding the page's
+bus nearby, asks whether it is the same bus, where "yes" shares nothing.
+So going for it now ends the page's trip first (`leaveForApp()`): the bus
+comes off the map, and the status line says to start it in the app. The
+window comes at the start of a trip, where a trip has no ticket to lose yet.
+
+The badge is Google's "Get it on Google Play" PNG, unaltered, as the tester
+page, the flyer and the poster carry it, with Google's attribution line
+under it; Google keeps its bare logo for its own lockups. It goes where
+`ANDROID_APP_URL` says: while the closed test runs that is the tester page,
+whose last step is the badge to the listing, because the listing says "App
+not available" to anyone not in the test yet. An address on neither Google
+Play nor a tester page, a fork's APK, gets the words as a link and no badge,
+which would say Google Play about a file that is not from it.
+`test-boot.js` section 15 holds the bytes, the line and every case.
 
 Play, rather than an APK linked from the site, for three reasons. An APK from
 a link in a chat is the shape of the scam apps riders here are rightly warned
@@ -2162,9 +2482,21 @@ and the organizer adds nobody by hand. The group's posts are for members only,
 so Google tells everyone else they have no permission, and Play says "App not
 available" to an account not in the group yet: the page says both are normal
 where they happen, because each is where a tester decides it is broken and
-stops. It asks for riding, not installing. Like the guide it loads nothing;
+stops. Each step shows Google's own screen, cropped, with the tap ringed in
+gold and the maintainer's name, photo and email blurred or cut out: a rider
+matches a picture faster than a sentence, and Google's screens are the ones
+they have never seen. They are inlined WebP, so the page still loads nothing,
+and they are the one part of it that goes stale by itself, when Google
+redesigns a screen. It asked for riding, not installing, in a card of its own
+until October 2026; the group's welcome post asks now. Google's own badge
+marks the app as on Google Play, under the first line and as the last step's
+button, linking to the listing with Google's attribution line in the footer,
+because a rider trusts the badge they know more than a link they don't. Like the guide it loads nothing;
 unlike it, it runs no script, so a blocker or an old phone cannot leave three
-buttons that do nothing. Nothing links to it until the test opens.
+buttons that do nothing. The showcase poster carries it too, as the second of
+its two QR codes. Nothing linked to it until the test opened; while it
+runs, `ANDROID_APP_URL` in `config.txt` names it, so the sharing tab and the
+guide offer the test, not a Play page that would say "App not available".
 
 The background-geolocation plugin takes its fixes from Google Play services'
 fused location provider, so a phone without Play services, like most Huawei
@@ -2211,8 +2543,20 @@ And two that Google Play asks for. Sightings lost their typing box, because
 text anyone can post and everyone can read is user-generated content, which
 Play requires posting rules, reporting and moderation for; the board now
 draws each post from its picked parts and never shows what was sent. And a
-line under Start says the bus shows on the public map until Stop, where Play
-wants an app to say what it does with a location before it asks for one.
+line under Start said the bus shows on the public map until Stop, so that
+the app said what it does with a location before it asked for one.
+
+That line went in October 2026, at the maintainer's word: no words before
+Start but the labels. What is shared is still said before the location is
+asked for, in the button's own words, "Start sharing my location", on the
+tab called "I'm on the bus" of a live bus map; who sees it and until when
+are said once the trip is on, where they matter: the trip's first window
+(tap Stop when you get off), the welcome line ("Your bus is on everyone's
+map now") and the strip's EVERYONE CAN SEE THIS. Play asks for a disclosure
+of its own before the prompt where a use of location is outside what the
+user would expect, and asks most of background location, which the app does
+not request. If a review asks for it anyway, it goes back as a line under
+Start, or into the button's words ("Share my location on the public map").
 
 **The website is the app**, which is the habit with the widest reach: a merge
 to `main` reaches every installed copy with no review by Play. The answers
@@ -2230,9 +2574,11 @@ deploy folder:
   index.html by comment markers and run it, so a passing
   test cannot drift from the app. Since October 2026 they also hold the hours
   card and the parol season (`test-hours`), the stop-by-stop card and its two
-  louder states (`test-mystop`), the town lines (`test-strip`), the
+  louder states (`test-mystop`), where sharing stops by itself
+  (`test-mystop`, `test-prompts`), the town lines (`test-strip`), the
   ticket's rules and the album's, its luck and your bus (`test-thanks`), and
-  the ticket's picture, its sights and the decorated bus (`test-pictures`); every one of those checks was watched
+  the ticket's picture, its sights, the decorated bus and the trip's first
+  window (`test-pictures`); every one of those checks was watched
   failing against a deliberately broken copy of the page before it was
   trusted. They need Node, plus config-template.txt one
   level up. `test-tokens.js` runs no app code: it reads every page's styles

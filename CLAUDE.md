@@ -20,11 +20,11 @@ The ten dependency-free JavaScript suites, run from the repository root:
 node tests/test-hours.js      # split operating hours, the en-route allowance, the hours card, the parol season
 node tests/test-guard.js      # wrong-direction detection on simulated trips
 node tests/test-strip.js      # progress strip position and wording, the town lines in the popup
-node tests/test-prompts.js    # idle, end-of-trip and direction prompts
-node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
+node tests/test-prompts.js    # idle, end-of-trip, your-stop and direction prompts
+node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card, where sharing stops
 node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its luck, your bus; spare parts, the shop, the look, backups
 node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the icon and the mark
-node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride, the saved stop's picture
+node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride, the saved stop's picture, the trip's first window
 node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
 node tests/test-tour.js       # the tour: steps and words, the practice scene, the bubble's place, what a run may never do
 ```
@@ -72,21 +72,22 @@ deploy time and both need only a Chromium; they prefer `chrome-headless-shell`,
 because full Chrome's headless screenshots leave the bottom 87 px unpainted:
 
 ```
-sh tools/render-flyer.sh     # assets/flyer: poster PDF, briefing PDF, chat image
+sh tools/render-flyer.sh     # assets/flyer: flyer PDF, briefing PDF, showcase poster PDF, chat image
 sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview picture; mobile/store: Play's icon and feature graphic; the Android app's launcher icons and splash
 ```
 
 Two more rewrite committed text. `node tools/embed-fonts.js` copies the font
-files in `assets/fonts/` into the four static pages as data URIs; run it after
+files in `assets/fonts/` into the five static pages as data URIs; run it after
 replacing a font file. `node tools/make-pictures.js` draws the dot-matrix route
-board into the guide, the flyer, the briefing, the tester page and
+board into the guide, the flyer, the briefing, the tester page, the poster and
 `tools/app-icons.html`, from the words beside each board, the scenes that cover
-those four pages, and the picture on the guide's ticket, with `index.html`'s
+those five pages, and the picture on the guide's ticket, with `index.html`'s
 own code; run it after changing those words or the drawings. It also draws the
 guide's pictures of your bus, from the decorations and paint named in each
 `<!-- mybus keys=… paint=… -->` marker, the bus on the road in its popup, from
 `<!-- ride views=… sky=… -->`, and the saved stop's picture in the guide, the
-flyer and the briefing, from `<!-- stopview p=… sky=… -->`. And it draws the
+flyer, the briefing and the poster, from `<!-- stopview f=… sky=… -->` (or, on board,
+`stop=… at=…`, measured from `config.txt`). And it draws the
 icon into `tools/app-icons.html`, from `<!-- appicon id=… -->`, and the small
 mark into every page's favicon and the Android app's status-bar and themed
 icons. `test-tokens.js`, `test-signboard.js` and `test-pictures.js` fail until
@@ -105,10 +106,11 @@ CARTO_API_KEY=... sh tools/render-video.sh video-out --ending testers # the app'
 
 ## Architecture
 
-**Six pages, one config file.** `index.html` is the tracker (watch + share),
+**Seven pages, one config file.** `index.html` is the tracker (watch + share),
 `admin.html` the operator page, `how-to.html` a static guide, `flyer.html` the
 adoption flyer handed to riders, `for-operators.html` a briefing written for
-the bus company, and `testers.html` the Android app's closed test.
+the bus company, `testers.html` the Android app's closed test, and
+`poster.html` a one-sheet showcase with a QR code for each.
 `config.txt` holds the Supabase URL, anon key, route slug, source URL, the
 Android app's address, checkpoints and stops — no secrets, which is why it is
 committed and why a fork deploys straight from git.
@@ -122,13 +124,55 @@ chat-sized PNG, and `tools/make-qr.js` regenerates the flyer's QR code as an
 inline path when the deployment URL changes. Neither tool runs at deploy time
 and neither needs anything installed.
 
+**The flyer says each thing in a line** (October 2026, the maintainer's
+"too wordy"): the app's English with its Tagalog, as the poster, steps of one
+line each, and the five reassurances as chips with their reasons folded under
+"Why". The "To be fair" box of caveats was then taken off too, at the
+maintainer's word; the footer still says it is not an official schedule and
+not the bus company's, and the app says the rest where it matters. On screen it also moves and
+can be tried: a card opens the tracker's two tours (`#tour`, `#tour=share`),
+and it animates only what the app animates, with the app's keyframes, which
+`test-boot.js` section 8 compares: the one example bus under 45 seconds old
+breathes and rocks on the strip and the map, and the saved stop's road runs.
+Every frame is a picture the app could show, because the chat image is a
+screenshot taken mid-loop; nothing moves on paper or for reduced motion.
+Under its steps a second, smaller QR code offers the Android app to whoever
+shares, the same code as the poster's and held to `ANDROID_APP_URL` by the
+same test; watching still needs nothing installed.
+
+**`poster.html` is the showcase poster** (October 2026): one portrait A4
+sheet, `assets/flyer/poster-a4.pdf`, that shows rather than explains. The
+flyer argues, with an example screen, steps and fine print; the poster is read
+from across a terminal: the headline, four pictures with a line each (the
+map, cropped from the flyer's screenshot, then three of the tracker's own
+drawings: the saved stop, a sharer's ticket, your bus), and two QR codes, the tracker for everyone and the Android app for
+whoever shares. The app's code is for `ANDROID_APP_URL`, the tester page while
+the closed test runs, and `test-boot.js` section 8 fails while the two
+disagree or either code is not what `tools/make-qr.js` draws for the address
+its label names. It loads nothing and runs no script, like the flyer. Its
+words are the app's: English, with the Tagalog the app itself uses, never
+all Tagalog (the maintainer's call: "Dress your bus", not "Bihisan ang bus
+mo").
+
 **`testers.html` signs riders up for the closed test** (October 2026), in
 three taps on their own phone: join the Google Group that is the test's tester
 list, become a tester on Play, install. Nobody sends anybody an email address.
 Its ask is riding, not installing, because Google refuses production when
-testers installed and never used the app. It loads nothing and runs no script
-at all, and nothing links to it until the closed test opens; the group's name
-and the package in its links are this deployment's, so a fork edits them.
+testers installed and never used the app; since October 2026 the group's
+welcome post makes that ask, the page's own "What I need from you" card taken
+off at the maintainer's word. It loads nothing and runs no script at all.
+**Google's "Get it on Google Play" badge** stands under its first line and is
+step 3's button, and sits in the flyer's and the poster's app cards: Google's own PNG, unaltered
+and inlined, linking to the app's listing, with Google's attribution line in
+the page's footer; the trip's first window in `index.html` carries it too,
+with that line under it. `test-boot.js` sections 8 and 15 hold every badge to
+the bytes Google publishes. Never the bare Google Play logo: Google keeps that for its
+own lockups and asks for the badge wherever people are sent to download. Each step shows Google's own screen with the tap ringed, inlined as a
+data URI, with the maintainer's name, photo and email blurred or cut out;
+those pictures go stale when Google redesigns, so retake them then. While the test runs, `ANDROID_APP_URL` names it, so the trip
+window's app line and the guide send Android sharers there rather than to a Play
+page that says "App not available"; the group's name and the package in its
+links are this deployment's, so a fork edits them.
 `test-boot.js` section 8 checks its Play links name the app's package.
 
 **It is called Bus Tracker**, never by the bus company's initials: a link
@@ -203,19 +247,49 @@ between are counted by projecting them onto the chain, never by `config.txt`
 order, which is merged from two posters and is not route order. **The card
 draws the bus coming** (October 2026, the maintainer's choice over a line of
 dots that looked the same however near the bus was): down the road to the
-shed you wait at, or on board your stop's sign coming up to the windscreen,
-a post for each stop between (`stopViewSvg()`), placed one even step a stop
-by `stopProgress()` and dressed by `busLookOf()`, the popup's rule. It glides
-only when a position arrives and never creeps between them, because a
-picture that moved on its own would be a guess at an arrival. It is the one
-working screen with a picture. It reports distance and stop counts only,
+shed you wait at, or on board your stop's sign coming up to the windscreen
+(`stopViewSvg()`), dressed by `busLookOf()`, the popup's rule. Waiting, a
+post stands for every stop between, however many, each one even step of
+depth by `stopsAway()`, so forty stops off is a speck at the end of a long
+road and never looks like six, and the bus glides only when a position
+arrives and never creeps between them, because a picture that moved on its
+own would be a guess at an arrival. On board the road is drawn at its real
+length (`stopsBack()`, in km) and seen wide from the front seat, about 150 m
+of it, so what is close rushes past (the maintainer's ask, October 2026,
+even at a sign at a time or none): a green sign every 100 m with the km
+still to go, a power pole every 25 m across the road, the middle line 4 m of
+paint every 20 m and, close by, the concrete's joints and the verges' grass,
+painted on the ground (`svDashes()`, `svJoints()`, `svTufts()`), at every
+stop a big sign with your stop's name and the km still to go from there, big
+so it can be read as it comes on (the only words in the picture, the
+maintainer's ask), your stop a pin on the
+horizon until it is in sight, and the dashes, the signs, the poles and the
+posts going by together, moved by the card itself 30 times a second on a
+timer (`rideFrame()`) in true perspective (`svOnRoad()`), at one steady
+speed: the view runs the feed and a poll behind the bus (12 s on the map
+tab, 24 s on the sharing tab), reaching each position that long after its
+report's own time, so it keeps the bus's pace however the reports fall and
+never runs ahead. A stylesheet glide in four straight steps made it lunge
+and stall. That is the one picture that moves at a bus's pace
+(October 2026), because its viewer is on that bus. It is the one working
+screen with a picture. It reports distance and stop counts only,
 never minutes: an ETA needs travel-time history this system does not keep,
 and `test-mystop.js` fails if the wording drifts towards implying one. **On board, the card follows your own bus** to the stop
 you get off at instead of the nearest one coming: a sharer's is the row the
 server flags `is_self`, anyone else's is picked with "I'm on this bus" in the
-popup and kept in `sessionStorage` only. While sharing, the card shows on the
-sharing tab too, and that tab carries a live dot so leaving it never looks
-like stopping.
+popup and kept in `sessionStorage` only. **And a sharer's trip stops there**
+(October 2026, so the trip's first window could say so): arriving at the saved
+stop asks "Getting off here?", and sharing stops a minute later with no
+answer (`stopGuardUpdate()`), only once the stop has been well ahead of the
+bus that trip, so boarding at it never counts. While sharing, the card shows on the
+sharing tab too, with the road folded away until "Show the road" is
+tapped, for that visit only (`wt-road` in `sessionStorage`), and that tab
+carries a live dot so leaving it never looks like stopping. Everything that
+loops on that tab rests after half a minute: the live dots, the strip's
+pills, its sighting glows and the parol. A sharer's screen stays on all
+trip, and any one thing moving keeps it redrawing; a dot breathing all trip
+cost more battery than the rest of the screen together
+(`docs/ARCHITECTURE.md`, "What it costs to keep moving").
 
 **A reader can thank a sharer**, once per bus, from the bus's popup on the
 map. Deliberately narrow, and each narrowing is load-bearing: the count belongs
@@ -355,10 +429,12 @@ a file the sharer holds, never another stored key. Adding one means editing that
 commit — the panel is the promise, not the code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
 `localStorage` keys the app writes stops matching the set the panel names.
 Per-visit switches go in `sessionStorage` for exactly this reason — the
-location dot, and the saved-stop card's "buzz once" switch.
+location dot, the saved-stop card's "buzz once" switch, and its road shown
+on the sharing tab.
 
 **There is a tour, one per tab** (October 2026): a minute each, on the real
-page, opened from the guide, from a quiet button at the foot of each tab, from
+page, opened from the guide, from a quiet button at the foot of each tab
+(hidden while a trip is on, when a tour cannot run), from
 `#tour` or `#tour=share`, and once from a "New here?" note on a first visit.
 The WALK block in `index.html` dims everything but one control, says one short
 thing about it, and draws a practice bus and a practice stop in place of the
@@ -379,7 +455,27 @@ attached ("Location is off. Turn it on, then tap Start.", "Show customized bus
 to riders?"); the reasons live in the guide's "More" folds, in the privacy
 panel and in these docs. The privacy panel is the one place that stays long,
 because it is opened on purpose and it is the promise. A new feature's words
-get the same treatment before they ship.
+get the same treatment before they ship. A second round (October 2026, "the
+app looks unnecessarily too wordy"): the sharing tab before a trip is its
+labels and nothing else ("Direction", "Bus number (optional)", Start,
+"Tutorial", "My tickets"), and what a sharer needs once a trip is on is said
+then, in **the trip's first window** (`openTripNote()`): a picture and a line
+for tapping Stop, or the saved stop that stops it, and for the screen, or the
+app with Google's badge; for a sharer's first three trips only, counted by
+`wt-bus`, never a resumed one. A third pass, from a look at every screen:
+the Tutorial buttons hide while a trip is on (a tour cannot run over one); a
+bus's popup has one big button, salamat, with "I'm on this bus" and "Send a
+link" as a row of words under it, and is as wide as the map leaves beside
+the zoom buttons (`popupWidth()`: a fixed 240 px ran 38 px off a 360 px
+phone's map); with buses live the line under the headline is for screen
+readers only, and nothing under the chips asks for a tap; on board the stop
+card's line is the next stop alone; the sightings card says "Seen a bus? Post
+it" and the organizers' link "Admin". The empty map's card inside hours is a pill
+with its line alone, "Nobody is sharing right now", beside the sharing tab's
+grey "Not sharing" dot: its I'm on the bus button went too, and the bus glyph
+it had, which on a map where a bus means a live one said the opposite. "No
+buses live" has nothing under it inside hours unless a sighting places a
+bus. `docs/ARCHITECTURE.md`, "The trip's first window".
 
 **The guide says it in a line and shows it in a picture** (October 2026).
 `how-to.html` was paragraphs; it is now a line, a drawing and a "More" fold per
@@ -396,8 +492,8 @@ wherever it is placed. The cost is that "No buses live" — which carries the
 operating hours and the next departures — is now below the fold on a phone, so
 an empty map explains itself a scroll later than it used to. Most of that is
 bought back by `renderMapNote()`, which says why the map is empty on the map
-itself: next trips, the bus asleep (*tulog pa*) or waking, or nobody sharing
-inside hours with a button to be the first.
+itself: next trips, the bus asleep (*tulog pa*) or waking, or, inside hours,
+that nobody is sharing right now.
 
 **The map is this route's, not a map with pins on it.** CARTO's basemap is
 split into its `nolabels` and `only_labels` layers with the stop marks
@@ -418,8 +514,9 @@ in settings, absent means on). It hangs between the two tabs, which part for it.
 
 **Pictures only where the screen would be empty.** The working screens stay
 quiet; illustration is for when there is nothing else to show. The saved
-stop's card is the one exception, by the maintainer's decision (October
-2026, above). Closed, the
+stop's card is one exception, by the maintainer's decision (October
+2026, above), and the trip's first window the other (`tripNoteSvg()`), by
+the same ("Add art if needed"). Closed, the
 empty map's card is a scene — a generic provincial coach (no operator's livery
 or lettering) parked above Taal Lake at night, dawn or midday — from
 `sceneSvg()` in the tested PICTURES block, chosen by `mapNoteKind()`. The same
@@ -452,10 +549,13 @@ file, shares, vibrates or opens a link is tried in the app before it ships.
 **It goes out through Google Play** (October 2026). Play keeps the app's
 signing key and the repository's secrets hold only the upload key, which
 `android-release.yml`, run by hand, checks before it builds the bundle; no
-copy is handed out as an APK. The site offers it in one line only, `renderAppLine()` on the sharing
-tab: in an Android browser, before a trip, once `ANDROID_APP_URL` in
-`config.txt` names it, and never inside the app, on an iPhone or on the
-tracking tab. `#privacy` opens the privacy panel, which is Play's privacy
+copy is handed out as an APK. The site offers it in one place only, `renderAppLine()` in the trip's
+first window: in an Android browser, once a trip is on (the maintainer's call,
+October 2026; going for it ends the page's trip first, `leaveForApp()`, so the
+app's trip is not a second bus beside it), once `ANDROID_APP_URL` in
+`config.txt` names it, with Google's badge where that is on Google Play or the
+tester page and words alone anywhere else, and never inside the app, on an
+iPhone or on the tracking tab. `#privacy` opens the privacy panel, which is Play's privacy
 policy for the site and the app alike, naming the app as Play lists it
 ("Fibi: Bus Tracker PH"; "Fibi" under the icon). `test-boot.js` section 15
 holds both; `docs/ARCHITECTURE.md`, "The Android app", has why Play and not an
@@ -470,7 +570,7 @@ does.
 background with white or near-black text on it; the second is the same colour
 used as text. They are nearly identical in the light theme and completely
 different in dark, so pick by what the colour is doing — painting a shape, or
-spelling a word. All six pages carry their own copy of the token block and
+spelling a word. All seven pages carry their own copy of the token block and
 `test-boot.js` fails if they drift.
 
 **Everything else is a token too** (October 2026): seven text sizes, three
@@ -480,7 +580,7 @@ uses a literal size, corner, shadow, speed or typeface anywhere, including in
 strings a script builds markup from; a deliberate exception goes in its list
 with the reason. The type is Barlow Semi Condensed for labels, buttons, names
 and numbers and Barlow for sentences, self-hosted in `assets/fonts/` and
-inlined into the four static pages. The icons are one drawn family in a sprite
+inlined into the five static pages. The icons are one drawn family in a sprite
 at the top of `index.html`'s body; no emoji is drawn by the interface, and a
 page that needs an icon copies its `<symbol>` (the test fails if a copy
 differs). `tools/styleguide.html` draws all of it from `index.html`'s own
@@ -618,9 +718,10 @@ locked."), so the video never shows one and sends the viewer to the other.
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`
 each redraw the tracker's screen the same way, showing four buses live because
 an empty map is what the tool looks like when nobody has heard of it. Every
-string in those drawings is one the app would really print — the headline and
-subtitle come from `renderBuses()`, the chip labels from `busPlace()`, the
-checkpoints and distances off `config.txt`. Change either function and all
+string in those drawings is one the app would really print — the headline
+comes from `renderBuses()` (the line under it is for screen readers only
+while buses are live, so the drawings leave it out), the chip labels from
+`busPlace()`, the checkpoints and distances off `config.txt`. Change either function and all
 three recreations are wrong. Both drawings carry a visible "example screen"
 label: a mock that could be mistaken for live data is the one thing this
 project's own rules would not forgive.
@@ -646,6 +747,10 @@ single bus placed by interpolating along the Tagaytay–Amadeo leg from
 sized to the image rather than to the figure box, because that box's shape
 changes with the viewport and the image's does not. Every other figure on the
 guide is still drawn, and the guide still loads nothing over the network.
+
+`poster.html` carries a third crop of the flyer's screenshot, around Kawit and
+Imus with the flyer's two buses there, in a tile of the crop's own shape, and
+labelled an example like the flyer's screen. A fork recrops it too.
 
 `tools/make-route-figure.js` still generates a fully portable, geography-
 agnostic vector version of the same figure — not used by any shipped page

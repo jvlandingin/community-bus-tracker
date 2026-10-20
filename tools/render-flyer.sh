@@ -1,9 +1,9 @@
 #!/bin/sh
-# Renders the printable and postable versions of the two adoption pages.
+# Renders the printable and postable versions of the adoption pages.
 #
 #   sh tools/render-flyer.sh [output-directory]   (default: assets/flyer)
 #
-# flyer.html and for-operators.html are the sources. Everything this script
+# flyer.html, for-operators.html and poster.html are the sources. Everything this script
 # writes is derived from them, so a change to a page is picked up by re-running
 # it — nothing here is edited by hand.
 #
@@ -16,16 +16,24 @@
 # Outputs:
 #   flyer-a4.pdf         the poster: one LANDSCAPE A4 sheet, three columns,
 #                        for printing and putting up at terminals
-#   flyer-chat.png       1080x3440, sized for a Messenger feed
+#   flyer-chat.png       1080x3614, sized for a Messenger feed
 #   for-operators.pdf    the briefing, for attaching to an email
+#   poster-a4.pdf        the showcase poster: one PORTRAIT A4 sheet, four
+#                        pictures and two QR codes, the tracker and the app
 #
 # The PNGs capture the top of the flyer rather than the whole scroll, which is
 # why the route name, the headline, the example screen and the link all sit in
 # the first screenful of flyer.html. If that stops being true, these images
 # quietly start cutting off the thing they exist to show. It did once: the
 # cover over the headline pushed the link and its QR code off the foot, which
-# is why the picture is 1720 points tall rather than 1560. Measure the bottom
-# of .passiton at 540 wide after changing anything above it.
+# is why the picture is 1720 points tall rather than 1560. It did again when
+# the saved stop joined the example screen, and the image shipped ending at the
+# top edge of the link's card until October 2026, so it was 1826: the line
+# under the card, .passiton, ended at 1812 and the tour card started at 1829.
+# The example screen's headline then lost the line under it, which moved both
+# up 19 points, so it is 1807 now (.passiton at 1793, the tour card at 1810).
+# Measure them in a real capture at 540 wide after changing anything above;
+# a probe script reads them some 25 points high.
 
 set -eu
 
@@ -62,10 +70,10 @@ FLAGS="--headless --disable-gpu --no-sandbox --hide-scrollbars --force-color-pro
 
 echo "Chromium: $CHROME"
 
-# --- The two PDFs. Page size and margins come from each page's @page rule. ---
+# --- The three PDFs. Page size and margins come from each page's @page rule. ---
 # --no-pdf-header-footer suppresses Chromium's own URL and date furniture,
 # which otherwise prints across the top of a poster.
-for job in "flyer:flyer-a4" "for-operators:for-operators"; do
+for job in "flyer:flyer-a4" "for-operators:for-operators" "poster:poster-a4"; do
   src=${job%%:*}; dst=${job##*:}
   # shellcheck disable=SC2086
   "$CHROME" $FLAGS --no-pdf-header-footer \
@@ -76,8 +84,8 @@ done
 # --- The image. Rendered at half the target size with a 2x device scale,
 #     so text is laid out at phone widths and comes out at retina density. ---
 # shellcheck disable=SC2086
-"$CHROME" $FLAGS --force-device-scale-factor=2 --window-size=540,1720 \
+"$CHROME" $FLAGS --force-device-scale-factor=2 --window-size=540,1807 \
   --screenshot="$OUT/flyer-chat.png" "file://$ROOT/flyer.html" 2>/dev/null
-echo "  wrote $OUT/flyer-chat.png (1080x3440)"
+echo "  wrote $OUT/flyer-chat.png (1080x3614)"
 
 echo "Done."

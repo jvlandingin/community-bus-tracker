@@ -350,7 +350,10 @@ function cues(A, B, stage, world, browser, heard){
   press(A, '#onbusStartBtn', START);
   at(START + .8, centre(A, '#onbusStripCard', .4));
   at(START + 1.25, v => cam(A, '#onbusStripCard', v, { width:1000, cy:1170 }));
-  // trip: off camera, the card under the strip in the middle of the screen.
+  // trip: off camera, the road opened on the card, as the sharer would (it
+  // starts folded on the sharing tab), and the card under the strip in the
+  // middle of the screen.
+  at(T.trip + .5, () => A.run(() => { if (!ROAD) toggleRoad(); }));
   at(T.trip + 1.05, centre(A, '#tripStop', .3));
   at(T.trip + 1.6, v => cam(A, '#tripStop', v - .6, { width:1010, cy:960 }));
   // getoff: the stop's sign comes up the road by itself. Then the camera

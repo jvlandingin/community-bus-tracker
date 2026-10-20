@@ -16,11 +16,11 @@ Needs Node. Run from this folder with `index.html`, `admin.html` and
 node test-hours.js      # split operating hours, the en-route allowance, the hours card, the parol season
 node test-guard.js      # wrong-direction detection on simulated trips
 node test-strip.js      # progress strip position and wording, the town lines in the popup
-node test-prompts.js    # idle, end-of-trip and direction prompts
-node test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card
+node test-prompts.js    # idle, end-of-trip, your-stop and direction prompts
+node test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card, where sharing stops
 node test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album
 node test-signboard.js  # the dot-matrix route board: its letters, the boards drawn into other pages, the mark
-node test-pictures.js   # the coach and the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture
+node test-pictures.js   # the coach and the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture, the trip's first window
 node test-tokens.js     # the design system: every size, corner, shadow and speed a token; the copied fonts and icons
 node test-tour.js       # the tour: its steps and words, the practice scene, where the bubble goes, what a run may never do
 node test-boot.js       # loads both pages in a real DOM (needs jsdom)

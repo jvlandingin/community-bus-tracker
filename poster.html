@@ -129,18 +129,18 @@
   /* ---- The hero: the headline on the dawn sky of the empty map's scene */
   .hero{
     position:relative; overflow:hidden; margin:16px 24px 0; border-radius:var(--r-l);
-    background:linear-gradient(180deg,#f2a96a,#fbe1c0); text-align:center; padding-top:18px;
+    background:linear-gradient(180deg,#f2a96a,#fbe1c0); text-align:center; padding-top:14px;
   }
-  .hero h1{font-size:46px; line-height:1; margin:0; font-weight:800; letter-spacing:-.02em; color:#2b2320;}
+  .hero h1{font-size:44px; line-height:1; margin:0; font-weight:800; letter-spacing:-.02em; color:#2b2320;}
   .hero h1 em{font-style:normal; color:#7a1f2b;}
   .lede{font-size:var(--fs-body); font-weight:600; color:#4a3b33; margin:8px auto 0; max-width:520px; line-height:1.35;}
-  .hero svg.scene{display:block; width:100%; height:auto; margin:-14px 0 -30px;}
+  .hero svg.scene{display:block; width:100%; height:auto; margin:-20px 0 -38px;}
 
   /* ---- What it does: four of the tracker's own pictures ------------- */
   .what{
     display:flex; align-items:center; gap:10px; justify-content:center;
     font-size:var(--fs-label); font-weight:800; letter-spacing:.14em; text-transform:uppercase;
-    color:var(--brand-ink); margin:14px 24px 8px;
+    color:var(--brand-ink); margin:12px 24px 6px;
   }
   .what::before, .what::after{content:''; height:1px; background:var(--maroon-line); flex:1; max-width:150px;}
   .feats{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:0 24px;}
@@ -198,12 +198,12 @@
   .demo-badge.sb .sign{fill:#ffb22e;}
   .rideart .rv{opacity:0;}
   .rideart .rv.on{opacity:1;}
-  .feat figcaption{padding:8px 12px 9px;}
+  .feat figcaption{padding:7px 12px 8px;}
   .feat figcaption b{display:block; font-size:var(--fs-title); font-weight:800; line-height:1.1; text-transform:uppercase; letter-spacing:.01em;}
   .feat figcaption span{display:block; font-size:var(--fs-small); color:var(--muted); margin-top:3px; line-height:1.35;}
 
   /* ---- Two ways in, each with its QR code --------------------------- */
-  .qrs{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 24px 0;}
+  .qrs{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 24px 0;}
   .qrcard{
     display:flex; gap:14px; align-items:center; padding:12px; border-radius:var(--r-l);
     background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); color:#fff;
@@ -219,8 +219,13 @@
   .qrcard .url a{color:inherit; text-decoration:none;}
   .qrcard .note{font-size:var(--fs-small); line-height:1.35; margin-top:5px; opacity:.9;}
   .qrcard.droid .note{color:var(--muted); opacity:1;}
+  /* Google's badge: its clear space is the PNG's own transparent margin.
+     12mm of PNG is 8mm of badge, over Google's 7.6mm print minimum. */
+  .playbadge{display:inline-block; line-height:0; margin:2px 0 0 -2.2mm;}
+  .playbadge img{display:block; height:12mm; width:auto;}
+  .qrcard.droid .playbadge + .note{margin-top:0;}
 
-  footer{margin:14px 24px 0; font-size:var(--fs-cap); color:var(--muted); text-align:center; line-height:1.45;}
+  footer{margin:10px 24px 0; font-size:var(--fs-cap); color:var(--muted); text-align:center; line-height:1.45;}
   footer b{color:var(--ink);}
 
   @media (max-width:600px){
@@ -235,7 +240,7 @@
     :root{--paper:#ffffff; --surface:#ffffff; --ink:#2b2320; --muted:#5b524b; --sh-1:none;}
     body{background:#fff;}
     .sheet{max-width:none; padding:0;}
-    header, .hero, .qrcard, .feat .pic, .qr{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    header, .hero, .qrcard, .feat .pic, .qr, .playbadge{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
     /* A poster is read from across the room and then walked up to. Nothing
        on it may split across a page break, and it must stay one sheet. */
     .feat, .qrcard, .hero{break-inside:avoid;}
@@ -327,16 +332,21 @@
     <div class="words">
       <div class="kicker"><svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg> Android · early access</div>
       <div class="big">Share with your phone locked</div>
+      <!-- Google's own badge, unaltered, linking to the listing, as on the
+           flyer; the attribution line is in the footer. Testers only until
+           the app is public, so the line under it sends everyone else to
+           join first, which is where the QR code goes. -->
+      <a class="playbadge" href="https://play.google.com/store/apps/details?id=org.communitybustracker.app"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoYAAAD6CAMAAAALK3bYAAAB3VBMVEVHcExXV1deXl5mZmZubm5hYWF4eHiUlJSmpqaNjY1zc3NcXFydnZ2EhISSkpJoaGhJSUkqKioVFRUAAAAfHx9zc3OcnJw0NDR9fX2Hh4c+Pj5TU1NZWVlqamoKCgp9fX1eXl4gICBAQEBwcHAQEBCAgIBgYGAwMDBQUFAHFQoXSiQdXy8nfj4kdDkaVCoQNRqzs7Pm5ubq6ur////i4uKRkZHd3d3y8vLFxcXs7Oz4+Pjj4+Pu7u7Z2dkqiUQ0qFMxnk4DCwXR0dHz8/Ofn5/V1dXv7+/39/eIiIgKIBAulEkNKhVra2utra25ubn19fX29vbAwMDp6el6enr09PQUPx/g4ODw8PAhaTSXl5ckXWPl5eW7u7syZLg6ja/x8fE6ddZChfQ9krfNzc04pE7JrxNuUwI6pU7WuBP7vATcpQQ/LwE7pk6tggMfGAE9p05+XgIQDADssQReRwI/qU69jgOddgNAqU5POwGOagKQkJCgoKDNmQOwsLDQ0NA8qFQvIwE1ply5sDdMgenFeEvKT1nqQzXwcSPobiGwMig5GArOOy9JFRHcPzJ1IhuTKiEPBAM7EQ1YGRSiLiUdCAdLgem/NytJgOhnHReEJh4sDQpIgOhHgOhFf+dGRnWH0GEdAAAAIHRSTlMAOq/Z78f6////9pD//v//////////////////aub//U59rgoAABDaSURBVHgB7NhVYutAEEXBkUk3McqCMOx/k48ZQ+OvqjWcge4CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD+gmc0XX8By1pSTW67a/ATOztflhJpFG/iDdl5OZb4J/EU7K6fQbPPJbn/oumMPHwxddxinfHLelOrWbT7adz384uIyH5011Svc5IPx2MMfdFf5oF2foMLpuoe/uKl/HzZtkmno4a+6KclZqWirQv5rmJKcl2rmKuQJLvLBrFTSbJJc9zyB/+G2VLJIMvbwX7uK12Gb5NjDf3X1rsNlkn0PT3CV5LbUsErS9fAE10nuar3Jux6e4j7JQ6mg8SbzdFfJplQwS3Lo4UkekzSVdtddD09yU2lls5AhT9fJEBmCDJEhyBAZggyRIbxn376WWtehMI7fnvv1BBJyoaN8NJ9o43SH3nuH93+HgxmQo8TE7Bm8TtP/zoxmaZcfLVLe8gy/TEg5I6WikQI3SSSD8SQVhW/PVLHIFsk4lJKc8rXh2EBBPHmGs3PzCwuLS8v0tyVXdAN5q3rk/13DaY1oDeMFVLQObNC0RTa5qRMA+FM3Q0XOhkaS7RewIYkjz3B5K/2otdSmvyPRMSjq9pRl9dsMzXcYRv0ERSYeHQA0HYaGg6Fn2F5IR2rNEX9hArd+VCvDcACnwYrjPhtyM/QMt1up284uMbe3AQANHby1ot8fkoKVLBJEQr63D2DfftBlWLWI/nhXn/wKgpngQGcADtfVqPtE8DL0DGdb6USLs8RZeATArIjPxybQjRxWk60BWCM3u75i0V6ucNCz+xkAOLYDcpYdz5CX4VZaFuePiOIEQDcmm1rJIqqPYZTAtaXWAWycfg7QCXAWe4acDM/T8lrnxFUHwCByZVKNDPP9Tpz91EX+IfXJcJgBRnmGjAx30q9a2CWWhAEuT8mtRoaRATZmSr4gDz8GNFQTQM8z5GO4nE7pqk0MXQNIiI9hr2y/IQBtB0iT4/MM2RjepNNqLVH9rQM4ZWSogcOJ/cQtcCvsgDsATc+QjeH9Qzq1nWWquxMgiaYxDGzyJxiulu5ngEzaAeoRyIaeIRfDp+cKh+nCLNVbA9ClZ8jhxMvXwQ8wtPu59fPxxYDTSyARniETw+fnSofpfJvqzIyy2EDRSS0M3f2cX5+HIwNylh0+hp7h80taUWuO7auhQZH+G78aUjQAzmI+hp5htcN0a5fpZ8NskqGRNsH0s2Fe7xAwio+hZ1jtMD/fY/lNWX4UN4CTv+035TylAfQYGXqG1Q7t+R7T64ZhBvz62143fC8e5AJ5GHqG33e4c853itIBcM1+iuIOOAbQ7DMy9Axzh9UtbDOdKc9cAkbwniknwg4obGbgY+gZVju053sMN2wo3ABwzHvD5nI4MeD0EjjjY+gZft9ha6n2+4bieJA/i/ruGw5K7hu+lgy4AMDL0DOsdmgvZ9d5+/paNwCgG1kVQZH8EYbF7eu3NnUGAOuqZEA0YGfoGboOWc/3wgRu5ov3ovwAw7L3opwdq9IBvUN2hp6h65D1fM99Z15jRVGtDMffmRd+MUAZfoaeYblDnsvZct/cIk/ra0Gfmd9nmFUzzJMHpe9TNs4AijeAjJmhZ+g65D7fE1LGUioHi5so1tonp0hKSVWLisXx6HK74fizItY8Q9dhRVezf7FzF0YMAzEABItQBz+UvoJmpu7DjJrIwbsa1vAo1EswfNzh+654+OVgqHdovzmbYKh3aL++RzDUO+xpfY9gqHQ4Gk/EMoKh3uF05nl+IGYRDPUOw4XCRVEsNhEM9Q6TmbcpzYSMg+HCoUbhorwQsgqGCoflzDusCoRsg+HCoU7hopovs0UwVDhsZt5ZeSpkGgwXDpUKF/mtkGUwXDjUKlxUxUKGwXDhUK1wUZcZ7D0cLC/1cg4lMLzs8LLCw/Kn1vfcnL37SHMet9YAvIizApAInGMlmACTe21PnHO2iZ907PDnnMNWnSp9pA6kwyrqeQolfhO7u6H8CoE6QPXBXyVmq+m0szFEh7xCPveue/FG5eR3MnR0G6Lg5MXlMVysK7ZTG0PGoUQh5s90jTTB84m3AWLjzxLoOvF80mD5ds3GkHOICiX5Ay2NGnw5QdXOsJhoN4Zih6jwKA7b5PcltbUzLGd0G0ORQ1QozaJLiHrwh5J1/QxLsRtDsUNUKMhPligc/eGM+s4y9HZjKHaICgWRF9245CcJvbFNZ0xIHtPdXYbebgylDlGhID8nYdRE29BpANon/KTuLkPvNoYyh6hQlOuMyFnRNNokUFg9Q+SluwxTjo2hyOFfUKEofyVRArNmxOgBFdbPEKNGfxG7MRQ4/Nvff7w0st9SWugKiY/lFdbLEJL9eeLG8HD+8c8fH4eh84LJn7N0VxnSCLPDjeEBhV99/c2PjzIoB16hPHUzhO9hvzE8rPDr5Q5JkM7Dp3CCDGFYDhtDgcLFDu+RINHDh3CKDOGbuDEUKFzs8AcLPluf1Mky1BtDscLlDn8jqcIe/HkMnSxD2hiKFS53+Cviw3YESW8MN4YChUsd/p4EsSusT5Ttw38zmIb2xLVnzXLrqBzdmfDfmE7M0LWZv4mUoSszhJc4ep/gNZ4KQ16h2OE9wZAM124VXS/ajv4qKReIaROhWezV4T0IyWiicJaeYcjcceqVmCFz/T4W2tngISmri9uF8yiaJ5xnqJ8hr1Do8PcChbBOHul6aZOkTFubJCle1NlPkjoCeSzD+R0nI2XIvAkD286Nfp5eT3tRUxxkcv0MeYUSh/LjG242JqvRM2lpFoc9IRibpUt+HltmWHr8US9laC4fjWtnPZPoJlf+Y/EnAVU/Q16hwKH8MJvmRpWELonKtK3nY/ihkQvPkH/8US1j2PiLaKZd79kkh69s/vYpfN71M0SFcoe//ytJ0+wZqhpTykWD5AsZBQrnI1bvxQwZhZhRyxliH5yZdtyTB4c4nHOvpamdIa9Q4FB+ig2OR+X/xqThFfDArC+n5ZvJGOpYbi1mqLK/jNptp5Lf+1Vr+cE34WBdO0NUKHX4Gzj29bgMJwoGY0w/csDwg0z/bZbxdg1T5uNjNsaEgwwHXHnbpusjDvdFhtlcZvqUe4YrIA3GWJPTtBxJJ25ubbFJ7QxRodThH35BdHyGdjqIJqPPLQW/89Ng2N0O3I1X/07Pi618OKepTZnhdEqXLJ3FJnx0nmExI9drtpejrpo/ho/oNHELlKTrZwgKBQ7hvNfjMzQ4C/ej5obWvPMvNHfXZt7MMCsglmHAx5/fIi9mGDU/eHfzynM94rpEMR2fwv61coaoUOZQfvo1w0YtZZg5hTi4qmkvl/nHTbMyH8usxFmGDT5++fVIGY6qOIdUfRoIoiMqG+BJzRcoqnqGqFDmsDwplK+U5Qw19iKYdtIVOHSEyRN3HY+VujLDzAx8LsNEbxHDQe9bymjNPit8UmguwoupmyGvkHd4k7+MokDWormhLfrFS7rljkEnvNQxoClMKDJMO4vt6a+KSxjG7vCKujMmhGysg8ee9Pd5rtQ3tTOUKASH8nPkih/OILluOF69vxkn9nwP5vAzKiJPaMrwd8YwdDO4qk9+EidmGK2m/QyViZPfwwMytPOv0ABvTdUMeYVsvr3JqZo40dcLGjdXvtryL7R27y9oCry48mQqcQzB5wDrCKDSallvGINBryxDlf0sCRlSgtfLLFqqZShRCA5vdMZwu+RNg7cfEJWKdgxMnGg30LV25f5jKDA0ME01UXIqqGioZNrZ5EuZ9uvj9B8jVcoQFMpz/wHdILCGkLeNRFpwoScjHA7YJSRTnhmYAwy7JnsI1HqtxLD35cwqh91kMDDVMlyu8OEjumGifELdo68yQ6iK2cfQ7DI0coYX+KKfJFiCrMDQ+D2Zdf95MjXWlTJcrvDxExJGMCqPYrH2FjH0TM3tigwbL2CoUN4AJmtkuFzh02d08+jElwmWeXl9rEE5LxuUmWXJ2gwD3P3ZDZt2nDKEVi2QdFUyXK7w/nNaI/CBOpnXgVZdonREttwhZyHDDLrWY+jYE5ebOHtV3dWkuYXnWC1DucKHL2il6CTbnDdM1tRx2QUbt/eCTVOeT8XiBRtINIroGAwNf6OEDPElN5f/r6uYoVjh4yfPaLW05XrR8rlXq12+9vjRW/7HRoahgmVJR5BVGQbm6XN9vPVnGRp4k2plKFb48hWtGJwAubJCpHKsH/Mi3wUzDCmWarqUXp9hx78Xu68GZom1MnwtVPjmOa0blQ791QkdpiVX65Y2AGrDd4YMw76wDUSPsVmdYcM+KV/cwZB0tQyFCh+/oNXTHdjfacGpQ0cIjC/0irJCr7S40EvNnxH0n71emWHLPilgqJg9EFUyFCpcc1KIKsqLTm0jc15+qew1LS97nf6LVlr2mucOoduOzToMmWoyeFJ+0rtjVK0MZQrvv6LjxHpMzPbso9VNO3hMz41DyepzmoNoE0ATdmueI7MJIPl9DFWab0LAb0G/AkN4WyK3MwEZNh4yUKUM30oUPnxOR4v1kuRpETLudbKFLVEuIW/TmZ7dEoUf49gba4Z0aEtUix+8aac3yasw1Anqu4wxg5+EIAFfVaUMJQofv6NjpkueC98XrrVB1EiKbEsMafDFjHoFhgefVeF7HKlOhhKF75/RceNGvz/JzuXKFAi3y+fFDPUoU3gDhjoKGeK0wtbJUKDw/gc6fowX/JVNTHOzw0N6miQvZUg6FBWuw5Dv8ofAMTR4taZChh+/kpVzHT+qLCEZ+VFKZoer7Cglu/goJeoL34J1GPIOR80y1Alefn0MP321QjnXehATj1DLD5Zz3MFyIisqLDxYDlfduKhdkSHpYWcTH8tQ+fOo6hiCQlk51/Gj7TA3mDsqR7ejpNJFmSgpkW4GfFxNE4YOztzEm8jqXsN5HGEk7fARxo6I+nCWQlFwdQy/BwrF5VzHT9P24SyDsY4ORbV9EJz669osOJtY2/7MWofHvGUSnFMcequO9d00/HHJzJjc1Mfw/z9/JS/nOsXoav5MgYF+uzaGX76Sl3OdZBq4Gn6Lg1WWFTJ8JC/nOoE0gy7twmrolsfCpevqGNJDWTnXCUS30fu+1MdU0xmaKhm+KJdznVRcTtxmgba2P+fndZUM6U25nOuUktjiQZcqmRrCboE6Gb56zJdznViMZxy6BH3MLQ5euq6UIX14zJdznVSwosqoizO6oATidgf+IHOtDOnZfb6c61TC7EOYHY6equkMu9oYYl682a4UUvbF2FqmFJHqY4j58O7p/fsvn3CFNJvDXM2Moq2TIWZLrlQhnve6Maw/hi9erObSdU93geEWF5jixWo6Q682hvWHKR4cGqognTmLpTvDcIvuzBD+k2yaf7dbVwmOAzEQQDvgcU3YMQzD/S+5zEydpfcOoC9JVf3/wRpiDcEaYg3BGv4HrOHi29cQbiqt4fzZ3EPPN+Exyaz8erMk+/6bwFWyKTW0ya7/FnCf5KHUcPat5RCuk9yVGppvTWW4SnJbqmiTHPuvgi7JttSxTDL2XwW7JPNSx2yT5Lr/CrhJsi21LJJMQ/9FcJFn5qWa7Vf3EIYpyarUM2u/sofQTUnOS03rTZLpuv8C9MKcz0r9Pcx47D8Buqs8065LZes2z+27Hj5wcZn6v/Cl2TYv7PaHrjv28MzQdYdxygurWTmFxSbwGe28nMhs2QY+oV2UU2rO2sB7zlfrcnKz+WIJrzTzWQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3noK1lrK6lVlJMwAAAAASUVORK5CYII=" width="646" height="250" alt="Get it on Google Play"></a>
+      <div class="note">Testers only. Join first:</div>
       <div class="url"><a href="testers.html">community-bus-tracker.netlify.app<wbr>/testers.html</a></div>
-      <div class="note">Join the test on Google Play. 3 taps.</div>
     </div>
   </section>
 </div>
 
 <footer>
   <b>Hindi ito opisyal.</b> Not affiliated with, run by, or endorsed by Wonderful Transport.
-  Community-run, free, and open source. Positions come from people on board who choose to share,
-  and no trip history is kept.
+  Community-run, free and open source; no trip history is kept.
+  Google Play and the Google Play logo are trademarks of Google LLC.
 </footer>
 </div>
 </body>

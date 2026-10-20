@@ -385,6 +385,27 @@ function run(page, include, label, configText, setup) {
         `${page}: one for the tracker and one for the app, where config.txt says the app is`, appUrl || 'no app in config.txt');
     }
 
+    // Google's "Get it on Google Play" badge, wherever a page carries one, is
+    // Google's own artwork byte for byte (en_badge_web_generic.png, from the
+    // badge page play.google.com/intl/en_us/badges redirects to), linking to
+    // the app's listing, with Google's attribution line on the same page:
+    // the badge is Google's to change, never this repository's, and the bare
+    // Google Play logo is not for sending people to download at all.
+    {
+      const shown = (src.match(/alt="Get it on Google Play"/g) || []).length;
+      if (shown) {
+        const pkg = JSON.parse(fs.readFileSync(path.join(APP, 'mobile', 'capacitor.config.json'), 'utf8')).appId;
+        const badges = [...src.matchAll(/<a class="playbadge[^"]*" href="([^"]+)"><img src="data:image\/png;base64,([A-Za-z0-9+/=]+)" width="646" height="250" alt="Get it on Google Play"><\/a>/g)];
+        const sha = b => require('crypto').createHash('sha256').update(Buffer.from(b, 'base64')).digest('hex');
+        const ok = badges.filter(m => sha(m[2]) === 'f72611e2df8e88204009fd896d05d5e8e83c77009c63943bbffa169559934849' &&
+          m[1] === 'https://play.google.com/store/apps/details?id=' + pkg);
+        check(badges.length === shown && ok.length === shown, `${page}: Google's badge, unaltered, linking to the app's listing`,
+          shown + ' shown, ' + ok.length + ' as Google made it and linked');
+        check(src.includes('Google Play and the Google Play logo are trademarks of Google LLC.'),
+          `${page}: and Google's attribution line beside it`);
+      }
+    }
+
     // The tester page is three buttons a rider taps in order. It runs no
     // script, so nothing a blocker or an old phone does to one can leave a
     // page of buttons that do nothing. And Play opens the test only for the

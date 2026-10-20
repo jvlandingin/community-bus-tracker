@@ -491,11 +491,12 @@ October 2026. Nobody sharing is what most visitors see, and a blank map reads
 as a broken one. `renderMapNote()` lays one card over the map whenever no bus
 is live, in one of four voices, decided from the operating hours alone:
 
-- **inside operating hours**: nobody is sharing right now, and a button to
-  the sharing tab — the empty map is also the best moment to ask someone on
-  a bus to be the first. Nothing between the two since October 2026 (the
-  maintainer: fewer words), where it used to add that the last trips may
-  still be on the road; the hours card under the map still says so;
+- **inside operating hours**: "Nobody is sharing right now", and since
+  October 2026 nothing else (the maintainer: fewer words). It used to add
+  that the last trips may still be on the road, which the hours card under
+  the map still says, and to carry an I'm on the bus button, on the
+  reasoning that an empty map is the best moment to ask someone on a bus to
+  be the first; the tab of that name at the top of the page is the way in;
 - **closed in the middle of the day**: "No buses until 3:20 PM", the earlier
   of the two directions' next departures, with both listed under it;
 - **closed at night**: *Tulog pa ang bus* — the bus is asleep — with the
@@ -513,7 +514,7 @@ under a moon with a street lamp on, its lights coming on at dawn, parked in the
 sun through the midday break. The words sit on the picture's own sky. One
 drawing, three sets of colours, made by `sceneSvg()` in the tested PICTURES
 block; `mapNoteKind()` decides which from the clock and is tested at its
-edges. Inside operating hours the card stays the plain one with the button,
+edges. Inside operating hours the card stays a plain one, its line alone,
 because then the map underneath is still worth seeing. The coach is generic on
 purpose, cream with the app's maroon and gold and no lettering, because a copy
 of an operator's livery would make the tool look official. The scene is this
@@ -1807,10 +1808,10 @@ locked with the sharing notification still lit. Each carries its own sky, so
 the window's theme and the dark trip screen never change it, and nothing in
 them moves: the window is read, not watched.
 
-On the tracking tab the same round took the empty map's card to its line and
-its button ("Nobody is sharing right now", I'm on the bus), and the line
-under "No buses live" inside hours to nothing, unless a sighting places a
-bus, which the card does not say. "Nobody is sharing right now. Seen one?
+On the tracking tab the same round took the empty map's card to its line
+alone, "Nobody is sharing right now" (its I'm on the bus button went in a
+second pass), and the line under "No buses live" inside hours to nothing,
+unless a sighting places a bus, which the card does not say. "Nobody is sharing right now. Seen one?
 Post it below." was the card's sentence again, and an ask.
 
 ## The name, the icons and the link preview

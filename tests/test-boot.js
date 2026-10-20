@@ -1417,6 +1417,16 @@ function run(page, include, label, configText, setup) {
       await pause(60);
     };
 
+    // An empty map inside hours says that and nothing else (October 2026):
+    // its I'm on the bus button went, as its second line had before it.
+    await waitFor(() => w.eval('positionsLoaded') === true);
+    w.renderBuses();
+    const emptyNote = d.getElementById('mapNote');
+    check(!isHidden('mapNote') && emptyNote.textContent.replace(/\s+/g, ' ').trim() === 'Nobody is sharing right now' &&
+          !emptyNote.querySelector('button, .s') && !emptyNote.classList.contains('scene'),
+      'an empty map inside hours says only that nobody is sharing right now: no button, no second line',
+      emptyNote.textContent.replace(/\s+/g, ' ').trim());
+
     w.pickDir('north');
     w.switchTab('share');
     const first = await startTrip();

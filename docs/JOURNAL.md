@@ -72,6 +72,11 @@ phone already keeps, and never for a trip carried over: at every Start it
 would be one more tap between a regular and the road. That is a call made
 with the change, not one the maintainer made, and easy to change.
 
+Looking at the result, the maintainer took the empty map's I'm on the bus
+button off too: the card says "Nobody is sharing right now" and nothing
+else. It had been there to ask whoever is on a bus to be the first; the tab
+of that name, at the top of the page, is the way in.
+
 ## 2026-10-20: The road seen from the front seat
 
 With the road at one steady speed, the maintainer found the ride still

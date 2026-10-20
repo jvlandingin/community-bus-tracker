@@ -85,7 +85,7 @@ check(S.mapNoteKind(M(3), 'closed', first(60)) === 'dawn', 'an hour before: gisi
 check(S.mapNoteKind(M(13), 'closed', first(160)) === 'midday', '1 in the afternoon, between the windows: the midday break');
 check(S.mapNoteKind(M(15, 10), 'closed', first(30)) === 'midday', 'and half an hour before the afternoon trips it is still day, not dawn');
 check(S.mapNoteKind(M(18, 30), 'closed', first(570)) === 'night', 'half past six in the evening: night');
-check(S.mapNoteKind(M(9), 'open', null) === 'open' && S.mapNoteKind(M(21), 'enroute', null) === 'open', 'inside hours, or buses still out: the plain card with a way to share');
+check(S.mapNoteKind(M(9), 'open', null) === 'open' && S.mapNoteKind(M(21), 'enroute', null) === 'open', 'inside hours, or buses still out: the plain card, its line alone');
 check(S.mapNoteKind(M(23), 'closed', null) === 'night', 'no hours set anywhere: it does not claim a dawn');
 const note = slice('function renderMapNote(', '// ---- Follow my bus');
 check(/sceneSvg\(time, 'mapscene'\)/.test(note) && /kind === 'midday' \? 'day' : kind/.test(note), 'and the map draws the scene for it');

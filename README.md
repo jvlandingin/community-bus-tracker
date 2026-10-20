@@ -65,8 +65,8 @@ company's name or initials, for the same reason.
   It carries only the bus's public ID and dies with the trip. The popup also
   has a line about the town the bus is passing.
 - **An empty map says when:** with nobody sharing, the map says when the next
-  trips leave, or that the bus is still asleep, or asks someone on a bus to be
-  the first. The hours card shows the day as a band with a mark at now.
+  trips leave, or that the bus is still asleep, or that nobody is sharing right
+  now. The hours card shows the day as a band with a mark at now.
 - **Light and dark:** follows the device by default, with a ☀/☾/◐ control in
   the header to override it either way. The map's tiles follow too, and the
   sharing tab goes dark during a trip so a phone on a dashboard is easy to

@@ -723,8 +723,8 @@
      the headline that says why sits below the fold since the strip and the
      map moved to the top (docs/ARCHITECTURE.md calls that the cost of the
      reorder). It floats over the bottom of the map: above the tiles and the
-     marks, below a bus popup and Leaflet's controls, and it lets taps
-     through to the map everywhere except its own button. */
+     marks, below a bus popup and Leaflet's controls, and it lets every tap
+     through to the map: it has nothing of its own to press. */
   .mapnote{
     position:absolute; left:10px; right:10px; bottom:24px; z-index:650; pointer-events:none;
     display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:var(--r-m);
@@ -743,13 +743,6 @@
   .mapnote .t{font-size:var(--fs-body); font-weight:800; letter-spacing:-.01em; line-height:1.2;}
   .mapnote .s{margin-top:3px; font-size:var(--fs-small); font-weight:600; color:var(--muted); line-height:1.4;}
   .mapnote .s b{color:var(--ink);}
-  .mapnote .go{
-    pointer-events:auto; display:inline-flex; align-items:center; gap:6px; margin-top:8px;
-    min-height:36px; padding:0 12px; border:0; border-radius:var(--r-m); cursor:pointer;
-    background:linear-gradient(180deg,var(--maroon),var(--maroon-deep)); color:#fff;
-    font-family:inherit; font-size:var(--fs-small); font-weight:800;
-  }
-  .mapnote .go svg{width:15px; height:15px; fill:#fff;}
   /* Closed hours: the card is a picture of the start of the line at that
      time of day, its words on the picture's own sky (see renderMapNote). It
      is the same in both themes, like the signboard: a picture of a place.
@@ -6998,7 +6991,7 @@ function focusBus(id){
 //  - closed in the middle of the day: when the next trips leave;
 //  - closed at night: the bus is asleep (tulog pa), with the first trips;
 //  - closed within the hour before the first trip: the bus is waking up;
-//  - inside operating hours: nobody is sharing, and a way to be the first.
+//  - inside operating hours: nobody is sharing right now.
 // It is not drawn until the first positions answer has landed, so a page
 // that is still loading never claims the map is empty.
 // Which of the four it is, from the clock alone, so it can be tested: the
@@ -7014,7 +7007,7 @@ function mapNoteKind(m, st, first){
 // Closed, the card is a picture of the start of the line at that time of
 // day (sceneSvg) with its words on the picture's own sky: asleep at night,
 // lights on before the first trip, parked in the sun through the midday
-// break. Open, it is the plain card with a way to be the first to share.
+// break. Open, it is the plain card, its line and nothing else.
 function renderMapNote(anyBus){
   const el = document.getElementById('mapNote');
   if (!el) return;
@@ -7034,10 +7027,11 @@ function renderMapNote(anyBus){
     html = '<div class="t">No buses until ' + escapeHtml(first ? first.label : 'the next trip') + '</div>' +
            '<div class="s">Next trips ' + times + '</div>';
   } else {
-    // The line and the button, nothing between them: the button says what
-    // to do about it (the maintainer, October 2026).
-    html = '<div class="ic">' + BUS_GLYPH.replace('<svg ', '<svg fill="currentColor" ') + '</div><div><div class="t">Nobody is sharing right now</div>' +
-           '<button type="button" class="go" onclick="switchTab(\'share\')">' + BUS_GLYPH + ' I’m on the bus</button></div>';
+    // The line alone (the maintainer, October 2026). It had an I'm on the
+    // bus button under it, to ask whoever is on one to be the first, and
+    // before that a second line; the tab of that name, at the top of the
+    // page, is the way in.
+    html = '<div class="ic">' + BUS_GLYPH.replace('<svg ', '<svg fill="currentColor" ') + '</div><div class="t">Nobody is sharing right now</div>';
   }
   if (kind !== 'open') html = '<div class="tx">' + html + '</div>' + sceneSvg(time, 'mapscene');
   el.innerHTML = html;

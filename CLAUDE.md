@@ -460,8 +460,9 @@ labels and nothing else ("Direction", "Bus number (optional)", Start,
 then, in **the trip's first window** (`openTripNote()`): a picture and a line
 for tapping Stop, or the saved stop that stops it, and for the screen, or the
 app with Google's badge; for a sharer's first three trips only, counted by
-`wt-bus`, never a resumed one. The empty map's card is its line and its
-button, and "No buses live" has nothing under it inside hours unless a
+`wt-bus`, never a resumed one. The empty map's card inside hours is its
+line alone, "Nobody is sharing right now", its I'm on the bus button gone
+too, and "No buses live" has nothing under it inside hours unless a
 sighting places a bus. `docs/ARCHITECTURE.md`, "The trip's first window".
 
 **The guide says it in a line and shows it in a picture** (October 2026).
@@ -479,8 +480,8 @@ wherever it is placed. The cost is that "No buses live" — which carries the
 operating hours and the next departures — is now below the fold on a phone, so
 an empty map explains itself a scroll later than it used to. Most of that is
 bought back by `renderMapNote()`, which says why the map is empty on the map
-itself: next trips, the bus asleep (*tulog pa*) or waking, or nobody sharing
-inside hours with a button to be the first.
+itself: next trips, the bus asleep (*tulog pa*) or waking, or, inside hours,
+that nobody is sharing right now.
 
 **The map is this route's, not a map with pins on it.** CARTO's basemap is
 split into its `nolabels` and `only_labels` layers with the stop marks

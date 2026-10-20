@@ -611,14 +611,16 @@
      (stopglide, STOP_GLIDE_MS in the PICTURES block), and a stop it has
      passed fades on the same clock (stopgone). On board the road and the
      stops go from one position to the next at an even pace over a poll
-     (sv-ride, STOP_RIDE_MS). The coach idles and what hangs from the mirror
-     sways, both stopped while the bus stands still. Under the reduced-motion
-     blanket below every move lands at once, and the coach and the swing
-     stand still. */
+     (sv-ride, STOP_RIDE_MS), or over the sharing tab's slower feed, whose
+     length the picture then carries as --ride. The coach idles and what
+     hangs from the mirror sways, both stopped while the bus stands still.
+     Under the reduced-motion blanket below every move lands at once, and
+     the coach and the swing stand still. */
   .ride-art{position:relative; margin:10px 0 0; border-radius:var(--r-s); overflow:hidden; line-height:0; background:var(--line);}
   .stopview{display:block; width:100%; height:auto; max-height:200px;}
   .stopview .sv-glide{animation:stopglide 1s var(--ease-move) both;}
   .stopview .sv-ride{animation:stopride 6s linear both;}
+  .stopview.slow .sv-ride{animation-duration:var(--ride);}
   .stopview .sv-gone{animation:stopgone 1s var(--ease-move) both;}
   .stopview .sv-rock{animation:riderock .8s ease-in-out infinite;}
   .stopview .sv-swing{transform-origin:165px 26px; animation:stopswing 1.8s ease-in-out infinite alternate;}
@@ -1622,9 +1624,16 @@
   .modal-scroll::-webkit-scrollbar-thumb{background:var(--line); border-radius:999px;}
   .modal-scroll::-webkit-scrollbar-track{background:transparent;}
 
-  /* The sharing tab's status dot breathes while live: "this is happening
-     now" is the page's whole claim, and a static dot does not make it. */
-  .statusdot.live, .tab.live .tablive{animation:breathe 2.6s ease-in-out infinite;}
+  /* The sharing tab's status dot breathes when it goes live: "this is
+     happening now" is the page's whole claim, and a static dot does not
+     make it. For half a minute, then it holds still, green: breathing all
+     trip kept the phone repainting for all of it, and cost more than
+     everything else on the screen together. Slower would not have helped;
+     anything moving, however slowly, is a repaint every frame. It breathes
+     again when the sharing tab or the GPS comes back. The tab's dot
+     breathes only while the sharer is on the other tab, where it is the
+     one saying the trip goes on. */
+  .statusdot.live, :root:not(.trip-on) .tab.live .tablive{animation:breathe 2.6s ease-in-out 12;}
   @keyframes breathe{0%,100%{box-shadow:0 0 0 4px rgba(29,138,95,.15);} 50%{box-shadow:0 0 0 9px rgba(29,138,95,.04);}}
 
   /* A bus arriving on the page. .arrive is added only to chips and badges
@@ -3308,11 +3317,14 @@ function rideStand(was, b){
 // The eye is close to the road, about 260 m of it in sight (SV_SEEN), so
 // things come on fast when the bus does; further is over the horizon, and
 // your stop is a pin there until it comes into sight. The view moves from
-// the last position to the new one over a poll's length (STOP_RIDE_MS), so
-// it is on the move while the bus is and still when it is not, a poll
-// behind the bus and never ahead of it. Its pace is the bus's, which the
-// waiting card and the popup never show; on board the one looking is on
-// the bus.
+// the last position to the new one over the time until the next comes,
+// span: a poll's length (STOP_RIDE_MS), or longer on the sharing tab, whose
+// feed is slower and which before October 2026 left it driving for six
+// seconds and standing for twelve. So it is on the move while the bus is
+// and still when it is not, a position behind the bus and never ahead of
+// it, and drives as far as a bus could in that time (svReach()). Its pace
+// is the bus's, which the waiting card and the popup never show; on board
+// the one looking is on the bus.
 //
 // from is where the picture was drawn last and ago how long since it began
 // heading here, which carries a glide on through a redraw rather than
@@ -3324,13 +3336,19 @@ function rideStand(was, b){
 // across the road in road units, 0 under the vanishing point, and a thing
 // g up the road (stops waiting, km on board) is at depth z + dz g, so
 // k = 1 / (z + dz g).
-// t: { aboard, f, km, stops, from, ago, here, sky, worn, paint, still }. No ids.
+// t: { aboard, f, km, stops, from, ago, span, here, sky, worn, paint, still }. No ids.
 const STOP_VIEW_MOST = 80, STOP_GLIDE_MS = 1000, STOP_RIDE_MS = 6000;
 const SV_WAIT = { vx:214, h:58, k:70, z:.926, dz:.6, glide:'sv-glide' }, SV_ABOARD = { vx:150, h:62, k:70, z:.78, dz:35, glide:'sv-ride' };
 // On board, in km: as far as the road can be seen, a dash every 12 m and a
 // sign with the km still to go every 100 m, and where a thing the bus has
 // passed goes: off the glass. Your stop's pin is never smaller than SV_PIN.
 const SV_SEEN = .26, SV_DASH = .012, SV_MARK = .1, SV_GONE = 3.2, SV_PIN = 4.5;
+// How far one glide may drive: as far as can be seen, or as far as a bus at
+// SV_FASTEST km/h goes in the glide's span, which on the sharing tab's
+// slower feed is further. A longer move is a gap in the positions, drawn at
+// once rather than driven at a speed no bus goes.
+const SV_FASTEST = 110;
+function svReach(span){ return Math.max(SV_SEEN, SV_FASTEST * span / 3600000); }
 function svNum(n){ return Math.round(n * 1000) / 1000; }
 // A thing at depth k, gliding there from depth k0 if it was elsewhere. cls
 // is a moment of its own, run on the same clock as the glide.
@@ -3536,10 +3554,11 @@ function stopViewSvg(t){
   const P = SV_ABOARD, has = function(k){ return worn.indexOf(k) >= 0; };
   const band = BUS_PAINTS[hasOwn(BUS_PAINTS, t.paint) ? t.paint : 'klasiko'][3];
   const km = away(t.km);
+  const span = +t.span > 0 ? +t.span : STOP_RIDE_MS;
   let from = t.from === null || t.from === undefined || isNaN(+t.from) ? null : away(t.from);
-  // A jump further than can be seen is drawn at once, not driven.
-  if (from !== null && Math.abs(from - km) > SV_SEEN) from = null;
-  const ago = Math.max(0, Math.min(STOP_RIDE_MS, +t.ago || 0)), f0 = from === null ? km : from;
+  // A jump further than a glide may drive is drawn at once.
+  if (from !== null && Math.abs(from - km) > svReach(span)) from = null;
+  const ago = Math.max(0, Math.min(span, +t.ago || 0)), f0 = from === null ? km : from;
   const stops = (Array.isArray(t.stops) ? t.stops : []).map(Number).filter(function(w){ return w > 0 && isFinite(w); }).sort(function(a, b){ return a - b; });
   s += svLand(c, sky, P, [256, 36]) + svRoad(P, c, -2.1, 1.05);
   // Seen from the bus with v km to go, a thing w km back from your stop is
@@ -3601,7 +3620,10 @@ function stopViewSvg(t){
   if (has('horse')) s += '<path d="M90 134q0-9 6-11l3-6 2 6q5 1 5 11z" fill="#dfe5ea" stroke="#8a949b" stroke-width=".8"/>';
   if (has('rooster')) s += '<path d="M240 132q0-12 8-14l2-5 3 4q6 1 6 8l6-6q2 8-4 13z" fill="#c4432e"/><path d="M244 118l-4-2 2 4z" fill="#e3b23c"/>';
   if (has('placard')) s += '<rect x="268" y="116" width="44" height="15" rx="2" fill="#fbf4e4" stroke="#6d1a25"/><path d="M273 121.4h14M290 121.4h17M273 126.4h9M285 126.4h22" stroke="#6d1a25" stroke-width="1.8"/>';
-  return '<svg class="stopview' + (t.still ? ' still' : '') + '" viewBox="0 0 330 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' + s + '</svg>';
+  // A glide longer than a poll's says how long once, on the picture, and the
+  // stylesheet gives that to every moving part (.stopview.slow).
+  const slow = span !== STOP_RIDE_MS ? ' slow" style="--ride:' + (span / 1000).toFixed(2) + 's' : '';
+  return '<svg class="stopview' + (t.still ? ' still' : '') + slow + '" viewBox="0 0 330 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' + s + '</svg>';
 }
 // ---- END PICTURES ---------------------------------------------------------
 
@@ -5989,7 +6011,7 @@ function quietStopCard(text, offBtn){
 // Where the card's picture last put a bus, and when it began gliding
 // there, so a redraw between positions carries the glide on, and the next
 // position glides from where this one left it.
-let STOPVIEW = { id:'', from:0, to:0, at:0 };
+let STOPVIEW = { id:'', from:0, to:0, at:0, span:0 };
 // On board, how far on a position must be to move the view, and how far
 // back to start it again where the bus is: less than either is the GPS.
 const RIDE_STILL_KM = .005, RIDE_BACK_KM = .1;
@@ -6013,23 +6035,28 @@ function rideCardHtml(info, riding, bus){
   // Where the picture has the bus: how many stops away waiting, and on
   // board how many km your stop still is, the road drawn at its length.
   const at = riding ? info.km : stopsAway(info, MYSTOP_KM, STOP_KMS);
-  const span = riding ? STOP_RIDE_MS : STOP_GLIDE_MS;
   const now = Date.now();
-  // On board, a long way back or further on than can be seen starts the
-  // view again where the bus is, drawn at once rather than driven.
-  if (STOPVIEW.id !== id || (riding && (at > STOPVIEW.to + RIDE_BACK_KM || at < STOPVIEW.to - SV_SEEN))) STOPVIEW = { id:id, from:at, to:at, at:0 };
+  // How long the view takes to reach a new position. On board it goes on
+  // until the next comes, or it would stand for two thirds of every wait
+  // on the sharing tab: a poll, or there the slower feed and a poll more,
+  // since after a fetch out of turn the next is up to a poll later
+  // (shouldPoll() waits for a tick).
+  const span = !riding ? STOP_GLIDE_MS : slowFeed() ? SLOW_FEED_MS + STOP_RIDE_MS : STOP_RIDE_MS;
+  // On board, a long way back or further on than a glide may drive starts
+  // the view again where the bus is, drawn at once rather than driven.
+  if (STOPVIEW.id !== id || (riding && (at > STOPVIEW.to + RIDE_BACK_KM || at < STOPVIEW.to - svReach(span)))) STOPVIEW = { id:id, from:at, to:at, at:0, span:0 };
   // On board, a few metres on or back is the GPS, not the bus: the view holds.
   else if (riding ? at < STOPVIEW.to - RIDE_STILL_KM : Math.abs(STOPVIEW.to - at) > .0005){
     // From where the picture has the bus now, which mid-glide is part of
     // the way there: on board at an even pace, and waiting near enough
     // the glide's own curve (smoothstep).
-    const u = STOPVIEW.at ? Math.min(1, (now - STOPVIEW.at) / span) : 1;
-    STOPVIEW = { id:id, from:STOPVIEW.from + (STOPVIEW.to - STOPVIEW.from) * (riding ? u : u * u * (3 - 2 * u)), to:at, at:now };
+    const u = STOPVIEW.at ? Math.min(1, (now - STOPVIEW.at) / STOPVIEW.span) : 1;
+    STOPVIEW = { id:id, from:STOPVIEW.from + (STOPVIEW.to - STOPVIEW.from) * (riding ? u : u * u * (3 - 2 * u)), to:at, at:now, span:span };
   }
-  const gliding = STOPVIEW.at > 0 && now - STOPVIEW.at < span;
+  const gliding = STOPVIEW.at > 0 && now - STOPVIEW.at < STOPVIEW.span;
   const look = busLookOf(bus);
   const art = stopViewSvg({ aboard:riding, f:STOPVIEW.to, km:STOPVIEW.to, stops: riding ? stopsBack(info, MYSTOP_KM, STOP_KMS) : null,
-    from: gliding ? STOPVIEW.from : null, ago: gliding ? now - STOPVIEW.at : 0,
+    from: gliding ? STOPVIEW.from : null, ago: gliding ? now - STOPVIEW.at : 0, span: STOPVIEW.span,
     here: state === 'here', sky:skyNow(), worn: look ? look.worn : [], paint: look ? look.paint : 'klasiko',
     still: freshness(info.ts) === 'delayed' || !!(bus && bus.standing) });
   const km = info.km < 0.5 ? 'under 500 m' : info.km < 10 ? info.km.toFixed(1) + ' km' : Math.round(info.km) + ' km';
@@ -6738,10 +6765,14 @@ function showToast(msg){
 //    of the saving. Callers pass their own last-fetch time so each feed is
 //    throttled against itself.
 const SLOW_FEED_MS = 18000;
+// Whether this page is on the slower feed, which the stop card's picture
+// on board glides over too.
+function slowFeed(){
+  return !!sharing && !document.getElementById('onbusView').classList.contains('hidden');
+}
 function shouldPoll(lastAt){
   if (document.hidden) return false;
-  const shareVisible = !document.getElementById('onbusView').classList.contains('hidden');
-  if (sharing && shareVisible) return Date.now() - (lastAt||0) >= SLOW_FEED_MS;
+  if (slowFeed()) return Date.now() - (lastAt||0) >= SLOW_FEED_MS;
   return true;
 }
 

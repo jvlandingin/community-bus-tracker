@@ -836,18 +836,30 @@ go only where the screen would be empty still holds everywhere else.
   (`svPinMark()`), kept to a size that can be seen (`SV_PIN`) until the
   sign's own pin is as big.
 - **On board, it moves while the bus does.** The view goes from the last
-  position to the new one over a poll's length (`STOP_RIDE_MS`, 6 seconds),
-  the road at an even pace and each thing on it drawn in perspective: the
+  position to the new one over the time until the next comes: a poll's
+  length (`STOP_RIDE_MS`, 6 seconds), or on the sharing tab, which is fed
+  every 18 seconds (`SLOW_FEED_MS`, `slowFeed()`), that and a poll more,
+  because after a fetch out of turn the next waits for a poll's tick and
+  comes up to six seconds late. That length is carried on the picture as
+  `--ride`. Until October 2026 it took six seconds there too, and then
+  stood for twelve while the bus went on. The road goes at an
+  even pace and each thing on it is drawn in perspective: the
   `stopride` keyframes put it where it is a quarter, a half and three
   quarters of the way (`svRide()`), so it comes on slowly far off and fast
   close by. It is on the move while positions keep coming and still when
-  they stop: a poll behind the bus, never ahead of it, so it guesses
+  they stop: a position behind the bus, never ahead of it, so it guesses
   nothing. Its pace is therefore the
   bus's, which the waiting card and the popup never show; on board the one
   looking is on that bus, and feels its speed anyway. A few metres on or
   back is the GPS and moves nothing (`RIDE_STILL_KM`, `RIDE_BACK_KM`), and a
-  jump further than the dashes reach, or back, starts the view again where
-  the bus is, drawn at once. What hangs from the mirror sways, and stops
+  jump back, or further on than a bus at 110 km/h goes in the glide's
+  time (`svReach()`, never less than the 260 m in sight), starts the view
+  again where the bus is, drawn at once. Fed every 18 seconds, a bus on
+  the highway goes further than can be seen between positions, and until
+  that reach it is driven there rather than jumping each time. Switching
+  from the sharing tab to the map at speed still jumps once, since the
+  first poll there brings 18 seconds of road for a six-second glide.
+  What hangs from the mirror sways, and stops
   when the bus stands still or has gone quiet, by the signal the popup uses
   (`rideStand()`, `freshness()`).
 - **Dressed as the popup dresses it** (`busLookOf()`, shared with
@@ -904,16 +916,29 @@ up the road. With them the eye moved close, 260 m in sight instead of
 every twelve, and things come on in perspective rather than at one pace
 down the screen.
 
-**What it costs to keep moving** (measured October 2026, headless Chromium
-at a phone's size, so in proportion rather than in watts). With nothing
-animating, the trip screen a sharer keeps open costs under 1% of a CPU
-core; the riding picture moving on its own adds about 2%. The breathing
-dots on the sharing tab, which never stop, cost about 20%: while anything
-on the page loops, the browser repaints the page for every frame, and a
-page that never rests keeps the phone from resting either. `main` before
-this change, with its running road, was about the same. A blurred veil
-behind an open modal (`backdrop-filter`) makes every such frame cost a
-whole core.
+**What it costs to keep moving** (measured October 2026 in headless
+Chromium at a phone's size, with no graphics chip, so in proportion rather
+than in watts: a phone draws all of it for less). The trip screen a sharer
+keeps open costs about 1% of a CPU core with nothing moving. Anything that
+moves is a repaint for every frame it moves, however slowly it goes, so
+what a moving thing costs is how long it moves, not how fast. The two green
+dots breathing for a whole trip were 20%, more than the rest of the screen
+together. Breathing slower cost exactly the same, and one breath every
+twelve seconds still half, because the browser keeps the frames coming for
+a loop that is only resting. So they breathe for half a minute when they
+come into view, then hold still, green: the status dot when the trip
+starts and again when the sharing tab or the GPS comes back, the tab's dot
+only while the sharer is on the other tab, where it is the one saying the
+trip goes on. The riding picture costs about 12% on its own now that it
+moves for as long as the bus does (6% when it drove for a third of each
+wait, above). Still looping on a trip are the coach rocking on the strip,
+about 7%, and whatever hangs from the mirror once the sharer has one, about
+6%. With a bus moving all the while, the trip screen went from 35% to 16%,
+its picture moving the whole time instead of a third of it. A blurred veil
+behind an open modal (`backdrop-filter`) makes every frame cost a whole
+core. To measure it again, fake the GPS in the page
+rather than through the browser: Chromium's emulated GPS reports a short
+loss every time it is moved, which wakes the status dot each time.
 
 It speaks up twice, and only twice: **Malapit na!** at two stops or fewer,
 and **Sakay na!** when yours is the next stop and the bus is inside 2 km
@@ -1810,7 +1835,8 @@ and stopped twice a second. The sharing phone sends its position at most
 every five seconds, so on board the card stood still and then jumped to
 Bababa na!. The maintainer asked for both to move smoothly, for
 presentation. So the copy of `index.html` the film is served (`filmPage()`
-in `render.js`) glides for one poll at an even pace, and lets the phone
+in `render.js`) glides for one poll at an even pace, on the sharing tab
+too, whose slower feed the film's poll stands in for, and lets the phone
 send a little oftener than the film polls. Nothing else in the page
 differs from the commit, and the render stops if those lines change in
 `index.html`, rather than quietly filming the stutter again.

@@ -707,11 +707,46 @@ function run(page, include, label, configText, setup) {
     ok.w.setShareUI('on', 'Sharing live');
     check(tab.className.includes('live') && /sharing now/.test(tab.textContent),
       'while sharing, the tab says so from the tracker, in a dot and in words for screen readers');
+    // The dots say live by breathing, for half a minute and then held still:
+    // breathing all trip kept the phone repainting for all of it, the most a
+    // sharer's screen cost, and slower would have cost the same.
+    {
+      const css = [...ok.d.querySelectorAll('style')].map(st => st.textContent).join('\n').replace(/\/\*[\s\S]*?\*\//g, '');
+      const dots = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(m => /statusdot|tablive/.test(m[1]) && /animation/.test(m[2]));
+      const breath = dots.map(m => /animation:breathe ([\d.]+)s ease-in-out (\d+);/.exec(m[2])).filter(Boolean);
+      check(dots.length === 1 && breath.length === 1 && +breath[0][1] * +breath[0][2] <= 32 &&
+            /:root:not\(\.trip-on\) \.tab\.live \.tablive/.test(dots[0][1]),
+        'the live dots breathe for half a minute and then hold still, the tab\'s only while the sharer is on the other tab',
+        dots.map(m => m[1].trim() + '{' + m[2] + '}').join(' | '));
+    }
     check(ok.w.sessionStorage.getItem('wt-aboard') === null,
       'and a bus picked from a popup is superseded, so it cannot come back after Stop');
     ok.w.renderMyStop([near, { ...mineBus, self: true }]);
     check(/on your bus/.test(stopBar.textContent) && !tripBox.className.includes('hidden') && /on your bus/.test(tripBox.textContent),
       'the sharer\'s own bus drives the card, on the tracker and on the sharing tab both');
+    // Positions come every poll on the tracker but every SLOW_FEED_MS on the
+    // sharing tab, and on either the view goes on until the next one comes:
+    // driving for a poll and then standing was two thirds of every wait.
+    {
+      const mine = f => ({ ...mineBus, self: true, lat: busCp.lat + (myCp.lat - busCp.lat) * f, lng: busCp.lng + (myCp.lng - busCp.lng) * f });
+      const length = () => {
+        const svg = tripBox.querySelector('.ride-art svg.stopview');
+        return !svg || !svg.querySelector('.sv-ride') ? 'still' : svg.classList.contains('slow') ? (/--ride:([\d.]+s)/.exec(svg.getAttribute('style') || '') || [])[1] : 'a poll';
+      };
+      ok.w.renderMyStop([near, mine(.3)]);
+      ok.w.renderMyStop([near, mine(.303)]);
+      const tracker = length();
+      ok.w.switchTab('share');
+      ok.w.renderMyStop([near, mine(.306)]);
+      const shareTab = length();
+      ok.w.switchTab('track');
+      const slowMs = +((/const SLOW_FEED_MS = (\d+);/.exec(fs.readFileSync(path.join(APP, 'index.html'), 'utf8')) || [])[1]);
+      // There, the slower feed and a poll more: after a fetch out of turn
+      // the next waits for the poll's tick, up to a poll later.
+      check(tracker === 'a poll' && slowMs > 6000 && shareTab === ((slowMs + 6000) / 1000).toFixed(2) + 's',
+        'on board the view goes on until the next position comes: a poll on the tracker, the slower feed on the sharing tab', tracker + ', ' + shareTab);
+      ok.w.renderMyStop([near, { ...mineBus, self: true }]);
+    }
     check(!/I got off/.test(tripBox.textContent), 'with no "I got off": a sharer gets off by tapping Stop');
     check(!/on this bus/.test(pop(near).textContent), 'and no "I\'m on this bus" on any popup while sharing');
     check(ok.d.querySelectorAll('[id="buzzBox"]').length === 0,

@@ -25,6 +25,39 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-20: The live dots breathe for half a minute
+
+The maintainer asked how the green dots on the sharing tab compared with the
+picture of the bus driving, for a sharer who has to keep the page open.
+Measured again in Chromium at a phone's size, each on its own, over whole
+feeds with a bus moving all the while: the screen at rest about 1% of a CPU
+core, the picture about 6%, the two dots breathing all trip about 20%.
+
+The measuring found something else. The sharing tab is fed every 18 seconds,
+not every 6, and the picture took six seconds to reach each position, so on
+the screen sharers watch most it drove for six seconds and stood for twelve:
+the stillness the maintainer had already asked about. It now goes on until
+the next position comes, which doubles its cost and leaves it well under the
+dots'. Behind that was a second fault: fed every 18 seconds, a bus faster
+than about 50 km/h goes further than the 260 m in sight between positions,
+and every such move was drawn at once, so on the highway the picture jumped
+instead of driving. A glide now drives as far as a bus at 110 km/h goes in
+its time.
+
+The maintainer suggested the dots breathe less often, or only for the first
+30 seconds and then stop or go slower. Measured: slower cost exactly the
+same, since anything moving is a repaint every frame however slowly it
+moves; one breath every twelve seconds still half; half a minute and then
+still, nothing at all after it. So they breathe for half a minute and hold
+still, green, and breathe again when that means something: the status dot
+when the sharing tab or the GPS comes back, the tab's dot each time the
+sharer goes to watch the map. With a bus moving all the while, the trip
+screen went from 35% of a core to 16%, its picture moving the whole time.
+
+Still looping on a trip are the coach rocking on the strip, about 7%, and
+the sampaguita a sharer has from their first trip on, swinging from the
+mirror, about 6%.
+
 ## 2026-10-19: The saved stop's picture draws every stop
 
 Looking at the card on a phone, the maintainer saw "about 47 stops before

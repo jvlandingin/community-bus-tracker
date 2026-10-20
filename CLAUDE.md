@@ -217,8 +217,9 @@ own would be a guess at an arrival. On board the road is drawn at its real
 length (`stopsBack()`, in km) and seen close, about 260 m of it: a green sign
 every 100 m with the km still to go, your stop a pin on the horizon until it
 is in sight, and the dashes, the signs and the posts going by together, in
-perspective, from one position to the next over a poll (`STOP_RIDE_MS`), a
-poll behind the bus and never ahead. That is the one picture that moves at a bus's pace
+perspective, from one position to the next over the time until the next
+comes (a poll, `STOP_RIDE_MS`, or on the sharing tab its 18 s feed and a
+poll more), a position behind the bus and never ahead. That is the one picture that moves at a bus's pace
 (October 2026), because its viewer is on that bus. It is the one working
 screen with a picture. It reports distance and stop counts only,
 never minutes: an ETA needs travel-time history this system does not keep,
@@ -227,7 +228,9 @@ you get off at instead of the nearest one coming: a sharer's is the row the
 server flags `is_self`, anyone else's is picked with "I'm on this bus" in the
 popup and kept in `sessionStorage` only. While sharing, the card shows on the
 sharing tab too, and that tab carries a live dot so leaving it never looks
-like stopping.
+like stopping. The live dots breathe for half a minute, then hold still: a
+dot breathing all trip cost a sharer more battery than the rest of the
+screen together (`docs/ARCHITECTURE.md`, "What it costs to keep moving").
 
 **A reader can thank a sharer**, once per bus, from the bus's popup on the
 map. Deliberately narrow, and each narrowing is load-bearing: the count belongs

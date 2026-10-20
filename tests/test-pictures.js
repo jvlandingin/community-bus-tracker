@@ -516,8 +516,26 @@ console.log('\n=== 9. the saved stop\'s picture ===');
       'a stop the bus passes goes by the glass rather than vanishing');
     check(/animation-delay:-1\.50s/.test(ride) && /animation-delay:-6\.00s/.test(view(.15, { from: .2, ago: 99999 })),
       'and a redraw carries the move on, never longer than a poll');
-    check(!/sv-ride/.test(view(.1, { from: .9, ago: 100 })),
-      'a jump further than can be seen is drawn at once, not driven');
+    // On the sharing tab the next position is a slower feed away, and the
+    // view goes on until it comes rather than driving for a poll and then
+    // standing: the picture says that length once, and a poll's is the
+    // stylesheet's own.
+    const slowRide = view(.15, { from: .2, ago: 9000, span: 18000 });
+    check(/^<svg class="stopview slow" style="--ride:18\.00s"/.test(slowRide) && /animation-delay:-9\.00s/.test(slowRide) &&
+          /animation-delay:-18\.00s/.test(view(.15, { from: .2, ago: 99999, span: 18000 })) &&
+          !/slow|--ride/.test(ride) && !/slow|--ride/.test(view(.15, { from: .2, ago: 1500, span: S.STOP_RIDE_MS })),
+      'over a slower feed the view goes on until the next position, its length said once on the picture',
+      (/^<svg[^>]*>/.exec(slowRide) || [''])[0].slice(0, 60));
+    check(!/sv-ride/.test(view(.1, { from: .9, ago: 100 })) && !/sv-ride/.test(view(.1, { from: .9, ago: 100, span: 24000 })),
+      'a jump further than a glide may drive is drawn at once, not driven');
+    // Fed every 18 seconds, a bus on the highway goes further than can be
+    // seen between positions, and is driven there all the same, as far as
+    // a bus goes in the glide's time: never less than can be seen, and on
+    // a poll's glide no more.
+    check(S.svReach(S.STOP_RIDE_MS) === S.SV_SEEN && Math.abs(S.svReach(24000) - S.SV_FASTEST * 24 / 3600) < 1e-9 && S.SV_FASTEST >= 100 && S.SV_FASTEST <= 120 &&
+          /sv-ride/.test(view(.1, { from: .6, ago: 100, span: 24000 })) && !/sv-ride/.test(view(.1, { from: .6, ago: 100 })),
+      'and a longer glide drives as far as a bus could in it, so a fast bus on the sharing tab still goes by',
+      S.svReach(24000).toFixed(3) + ' km in 24 s');
     // Perspective, not an even pace down the screen: a quarter of the way
     // through, a thing coming close has moved less than a quarter of its
     // way on the screen, and three quarters through, more.
@@ -569,8 +587,9 @@ console.log('\n=== 9. the saved stop\'s picture ===');
   const rideKf = (/@keyframes stopride\{([^@]*?)\}\}/.exec(html) || [])[1] || '';
   const goneS = +((/animation:stopgone ([\d.]+)s/.exec(rule('sv-gone')) || [])[1]);
   check(glideS * 1000 === S.STOP_GLIDE_MS && goneS * 1000 === S.STOP_GLIDE_MS && rideS * 1000 === S.STOP_RIDE_MS && /setInterval\(pollPositions, 6000\)/.test(html) && S.STOP_RIDE_MS === 6000 &&
+        /\.stopview\.slow \.sv-ride\{animation-duration:var\(--ride\);\}/.test(html) &&
         /0%\{transform:var\(--from\);\} 25%\{transform:var\(--q1\);\} 50%\{transform:var\(--q2\);\} 75%\{transform:var\(--q3\);/.test(rideKf),
-    'waiting glides in a second, and on board the road goes from one position to the next over a poll\'s length, in perspective', `glide ${glideS}s, ride ${rideS}s, fade ${goneS}s`);
+    'waiting glides in a second, and on board the road goes from one position to the next over a poll\'s length, or the length the picture says, in perspective', `glide ${glideS}s, ride ${rideS}s, fade ${goneS}s`);
   // Nothing on the road runs on its own: what loops is the coach idling
   // and the charm swinging from the mirror.
   const loops = [...html.matchAll(/\.stopview \.([\w-]+)\{[^}]*infinite/g)].map(m => m[1]).sort();

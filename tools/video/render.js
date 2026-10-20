@@ -203,9 +203,10 @@ function serveRepo(route, url){
 // move in small steps; two things in the page are paced for the slower feed
 // and would stutter at the film's:
 //   - The saved stop's picture glides to each new position in a second,
-//     eased, and on board over a whole poll: twice a second the first would
-//     start and stop and the second fall behind. Here both glide for one of
-//     the film's polls at an even pace, so each ends where the next begins.
+//     eased, and on board over a whole poll, or the sharing tab's slower
+//     feed: twice a second the first would start and stop and the others
+//     fall behind. Here all glide for one of the film's polls at an even
+//     pace, so each ends where the next begins.
 //   - The sharing phone sends its position at most every five seconds, so on
 //     board the card would stand still and then jump. Here it sends a little
 //     oftener than the film polls, so its own bus comes on with the others.
@@ -216,6 +217,7 @@ const POLL_FRAMES = 15, GLIDE_MS = Math.round(POLL_FRAMES / FPS * 1000), WRITE_M
 function filmPage(html){
   const swaps = [['STOP_GLIDE_MS = 1000', 'STOP_GLIDE_MS = ' + GLIDE_MS],
                  ['STOP_RIDE_MS = 6000', 'STOP_RIDE_MS = ' + GLIDE_MS],
+                 ['const SLOW_FEED_MS = 18000;', 'const SLOW_FEED_MS = ' + GLIDE_MS + ';'],
                  ['animation:stopglide 1s var(--ease-move) both', 'animation:stopglide ' + GLIDE_MS / 1000 + 's linear both'],
                  ['animation:stopride 6s linear both', 'animation:stopride ' + GLIDE_MS / 1000 + 's linear both'],
                  ['riding ? u : u * u * (3 - 2 * u)', 'riding ? u : u'],

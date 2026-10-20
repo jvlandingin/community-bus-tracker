@@ -215,8 +215,10 @@ function serveRepo(route, url){
 //     eased, and on board a feed and a poll behind the bus: twice a second
 //     the first would start and stop and the other lag the film's buses by
 //     seconds. Here both are paced by the film's polls, waiting at an even
-//     pace, and on board the road is moved on every frame of the film
-//     rather than RIDE_FPS times a second.
+//     pace, and on board the road is put in place every millisecond of the
+//     phone's clock, so for the very moment each frame is taken: the clock
+//     goes on 33 or 34 ms a frame, and 30 times a second (every 33.3 ms)
+//     missed every third frame, so the road went on in steps.
 //   - The sharing phone sends its position at most every five seconds, so on
 //     board the card would stand still and then jump. Here it sends a little
 //     oftener than the film polls, so its own bus comes on with the others.
@@ -229,7 +231,7 @@ function filmPage(html){
                  ['STOP_RIDE_MS = 6000', 'STOP_RIDE_MS = ' + GLIDE_MS],
                  ['const SLOW_FEED_MS = 18000;', 'const SLOW_FEED_MS = ' + GLIDE_MS + ';'],
                  ['animation:stopglide 1s var(--ease-move) both', 'animation:stopglide ' + GLIDE_MS / 1000 + 's linear both'],
-                 ['const RIDE_FPS = 30;', 'const RIDE_FPS = ' + FPS + ';'],
+                 ['const RIDE_FPS = 30;', 'const RIDE_FPS = 1000;'],
                  ['riding ? u : u * u * (3 - 2 * u)', 'riding ? u : u'],
                  ['if (Date.now()-lastWrite<5000) return;', 'if (Date.now()-lastWrite<' + WRITE_MS + ') return;']];
   swaps.forEach(function(s){

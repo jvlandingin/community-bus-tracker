@@ -734,12 +734,12 @@
     .mapnote{background:transparent; -webkit-backdrop-filter:blur(10px) saturate(1.2); backdrop-filter:blur(10px) saturate(1.2);}
     .mapnote::before{content:''; position:absolute; inset:0; border-radius:inherit; background:var(--surface); opacity:.86; z-index:-1;}
   }
-  .mapnote .ic{
-    flex:0 0 auto; width:44px; height:44px; border-radius:var(--r-m);
-    display:flex; align-items:center; justify-content:center;
-    background:var(--gold-soft); color:var(--gold-deep);
-  }
-  .mapnote .ic svg{width:24px; height:24px;}
+  /* Inside hours it is a pill: the sharing tab's own grey Not sharing dot
+     and one line, the least that says it, so the map under it stays the
+     thing to look at. Centred by its own width between the insets. */
+  .mapnote.idle{width:fit-content; margin:0 auto; padding:8px 14px; gap:8px; border-radius:999px;}
+  .mapnote.idle .t{font-size:var(--fs-small);}
+  .mapnote .statusdot{margin-top:0;}
   .mapnote .t{font-size:var(--fs-body); font-weight:800; letter-spacing:-.01em; line-height:1.2;}
   .mapnote .s{margin-top:3px; font-size:var(--fs-small); font-weight:600; color:var(--muted); line-height:1.4;}
   .mapnote .s b{color:var(--ink);}
@@ -7027,14 +7027,17 @@ function renderMapNote(anyBus){
     html = '<div class="t">No buses until ' + escapeHtml(first ? first.label : 'the next trip') + '</div>' +
            '<div class="s">Next trips ' + times + '</div>';
   } else {
-    // The line alone (the maintainer, October 2026). It had an I'm on the
-    // bus button under it, to ask whoever is on one to be the first, and
-    // before that a second line; the tab of that name, at the top of the
-    // page, is the way in.
-    html = '<div class="ic">' + BUS_GLYPH.replace('<svg ', '<svg fill="currentColor" ') + '</div><div class="t">Nobody is sharing right now</div>';
+    // The line alone (the maintainer, October 2026), beside the grey dot
+    // the sharing tab shows by "Not sharing": the app's own sign for this.
+    // It had the map's bus glyph, which on a map where a bus means a live
+    // one said the opposite; an I'm on the bus button, to ask whoever is
+    // on one to be the first (the tab of that name, at the top of the
+    // page, is the way in); and before that a second line.
+    html = '<span class="statusdot" aria-hidden="true"></span><span class="t">Nobody is sharing right now</span>';
   }
   if (kind !== 'open') html = '<div class="tx">' + html + '</div>' + sceneSvg(time, 'mapscene');
   el.innerHTML = html;
+  el.classList.toggle('idle', kind === 'open');
   ['scene', 'night', 'dawn', 'day'].forEach(function(c){
     el.classList.toggle(c, kind !== 'open' && (c === 'scene' || c === time));
   });

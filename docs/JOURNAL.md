@@ -75,7 +75,12 @@ with the change, not one the maintainer made, and easy to change.
 Looking at the result, the maintainer took the empty map's I'm on the bus
 button off too: the card says "Nobody is sharing right now" and nothing
 else. It had been there to ask whoever is on a bus to be the first; the tab
-of that name, at the top of the page, is the way in.
+of that name, at the top of the page, is the way in. Then they asked whether
+the bus icon left beside the line was the most appropriate. It was not: it
+was the map's own bus glyph, kept from when the card had a button, and on a
+map where a bus means a live one it said the opposite of the line. The card
+is now a pill with the grey dot the sharing tab shows by "Not sharing", the
+app's own sign for exactly this, and it covers less of the map.
 
 ## 2026-10-20: The road seen from the front seat
 

@@ -460,10 +460,12 @@ labels and nothing else ("Direction", "Bus number (optional)", Start,
 then, in **the trip's first window** (`openTripNote()`): a picture and a line
 for tapping Stop, or the saved stop that stops it, and for the screen, or the
 app with Google's badge; for a sharer's first three trips only, counted by
-`wt-bus`, never a resumed one. The empty map's card inside hours is its
-line alone, "Nobody is sharing right now", its I'm on the bus button gone
-too, and "No buses live" has nothing under it inside hours unless a
-sighting places a bus. `docs/ARCHITECTURE.md`, "The trip's first window".
+`wt-bus`, never a resumed one. The empty map's card inside hours is a pill
+with its line alone, "Nobody is sharing right now", beside the sharing tab's
+grey "Not sharing" dot: its I'm on the bus button went too, and the bus glyph
+it had, which on a map where a bus means a live one said the opposite. "No
+buses live" has nothing under it inside hours unless a sighting places a
+bus. `docs/ARCHITECTURE.md`, "The trip's first window".
 
 **The guide says it in a line and shows it in a picture** (October 2026).
 `how-to.html` was paragraphs; it is now a line, a drawing and a "More" fold per

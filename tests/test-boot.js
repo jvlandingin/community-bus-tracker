@@ -1426,6 +1426,10 @@ function run(page, include, label, configText, setup) {
           !emptyNote.querySelector('button, .s') && !emptyNote.classList.contains('scene'),
       'an empty map inside hours says only that nobody is sharing right now: no button, no second line',
       emptyNote.textContent.replace(/\s+/g, ' ').trim());
+    // Marked with the sharing tab's grey Not sharing dot, never a bus: on
+    // the map a bus means a live one.
+    check(emptyNote.classList.contains('idle') && !!emptyNote.querySelector('.statusdot:not(.live)') && !emptyNote.querySelector('svg'),
+      'beside the grey dot the sharing tab shows for Not sharing, and no bus drawn');
 
     w.pickDir('north');
     w.switchTab('share');

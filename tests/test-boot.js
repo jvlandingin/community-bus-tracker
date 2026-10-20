@@ -365,13 +365,13 @@ function run(page, include, label, configText, setup) {
         `${page}: the QR code is still an inline path, not a loaded image`);
     }
 
-    // The poster's two QR codes are its whole point and nobody can read one
-    // by eye, so each must be exactly what tools/make-qr.js draws for the
-    // address its label names: the tracker, and the Android app where
-    // config.txt says it is. When ANDROID_APP_URL moves from the tester page
-    // to the Play listing, this fails until the poster's second code moves
-    // with it.
-    if (page === 'poster.html') {
+    // The poster's two QR codes are its whole point, and the flyer carries
+    // the same two, and nobody can read one by eye, so each must be exactly
+    // what tools/make-qr.js draws for the address its label names: the
+    // tracker, and the Android app where config.txt says it is. When
+    // ANDROID_APP_URL moves from the tester page to the Play listing, this
+    // fails until both pages' second code moves with it.
+    if (page === 'poster.html' || page === 'flyer.html') {
       const codes = [...src.matchAll(/<svg viewBox="0 0 \d+ \d+" role="img" aria-label="QR code for ([^"]+)">\s*<rect[^>]*\/>\s*<path fill="#000" d="([^"]+)"\/>/g)]
         .map(m => ({ label: m[1], d: m[2] }));
       const drawn = codes.filter(c => {

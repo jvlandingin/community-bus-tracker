@@ -532,6 +532,20 @@
   }
   .qr svg{display:block; width:100%; height:100%;}
 
+  /* The Android app's card: second to the tracker's, so white with the
+     gold the tester page wears, where the tracker's is maroon. */
+  .droid{
+    margin-top:12px; display:flex; gap:14px; align-items:center; padding:13px 15px;
+    border-radius:var(--r-l); background:var(--surface); border:2px solid var(--gold);
+  }
+  .droid .words{flex:1; min-width:0;}
+  .droid .kicker{font-size:9px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--gold-deep); margin-bottom:4px;}
+  .droid .big{font-size:var(--fs-body); font-weight:800; line-height:1.2;}
+  .droid .url{font-size:11px; font-weight:800; margin-top:5px; overflow-wrap:anywhere; line-height:1.3;}
+  .droid .url a{color:var(--brand-ink); text-decoration:none;}
+  .droid .note{font-family:var(--font-text); font-size:11px; color:var(--muted); font-weight:600; margin-top:4px;}
+  .droid .qr{border:1px solid var(--line);}
+
   /* Print-only column groups. display:contents means they generate no box
      at all on screen — the page below is laid out exactly as if these divs
      were not here, which is why adding them changed nothing about the
@@ -720,6 +734,12 @@
     .steps li{padding:5px 10px;}
     .steps .tx{font-size:10pt;}
     .steps .tx b{font-size:11pt;}
+    .droid{margin-top:8px; padding:7pt 9pt; gap:8pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; break-inside:avoid;}
+    .droid .qr{flex-basis:92px; width:92px; height:92px;}
+    .droid .big{font-size:11pt;}
+    .droid .kicker{font-size:6.5pt;}
+    .droid .url{font-size:7.5pt;}
+    .droid .note{font-size:7.5pt;}
     /* The caveats run in as one dense paragraph on paper rather than four
        bulleted lines. Every caveat survives — this is the section that must
        not be cut, only shortened, each to one line as in October 2026 — but
@@ -951,6 +971,26 @@
       <span>Pick your direction. Stop any time.</span></span>
     </li>
   </ol>
+  <!-- The Android app, for whoever shares from the bus: it keeps sharing
+       with the screen locked. Watching still needs nothing installed. While
+       the closed test runs this is its tester page, as ANDROID_APP_URL in
+       config.txt says, and test-boot.js fails while the two disagree; when
+       the app is public, regenerate it for the Play listing with
+       node tools/make-qr.js <url> and change the address under it. -->
+  <div class="droid">
+    <div class="qr">
+      <svg viewBox="0 0 37 37" role="img" aria-label="QR code for community-bus-tracker.netlify.app/testers.html">
+        <rect width="37" height="37" fill="#fff"/>
+        <path fill="#000" d="M2 2h7v1h-7zM10 2h1v1h-1zM14 2h1v1h-1zM16 2h1v1h-1zM18 2h1v1h-1zM20 2h1v1h-1zM22 2h3v1h-3zM28 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM10 3h2v1h-2zM13 3h2v1h-2zM21 3h1v1h-1zM23 3h1v1h-1zM28 3h1v1h-1zM34 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM10 4h2v1h-2zM13 4h2v1h-2zM18 4h1v1h-1zM23 4h1v1h-1zM28 4h1v1h-1zM30 4h3v1h-3zM34 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM13 5h2v1h-2zM19 5h1v1h-1zM22 5h2v1h-2zM28 5h1v1h-1zM30 5h3v1h-3zM34 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM10 6h4v1h-4zM15 6h3v1h-3zM20 6h2v1h-2zM24 6h1v1h-1zM28 6h1v1h-1zM30 6h3v1h-3zM34 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM11 7h1v1h-1zM13 7h4v1h-4zM19 7h1v1h-1zM23 7h1v1h-1zM25 7h1v1h-1zM28 7h1v1h-1zM34 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h1v1h-1zM26 8h1v1h-1zM28 8h7v1h-7zM11 9h1v1h-1zM14 9h3v1h-3zM21 9h1v1h-1zM2 10h1v1h-1zM5 10h6v1h-6zM12 10h1v1h-1zM14 10h1v1h-1zM16 10h2v1h-2zM19 10h1v1h-1zM21 10h2v1h-2zM27 10h1v1h-1zM30 10h1v1h-1zM32 10h3v1h-3zM2 11h3v1h-3zM6 11h1v1h-1zM11 11h4v1h-4zM16 11h2v1h-2zM19 11h1v1h-1zM21 11h1v1h-1zM24 11h2v1h-2zM30 11h3v1h-3zM2 12h1v1h-1zM6 12h1v1h-1zM8 12h2v1h-2zM12 12h2v1h-2zM16 12h4v1h-4zM23 12h3v1h-3zM28 12h1v1h-1zM30 12h5v1h-5zM2 13h1v1h-1zM5 13h2v1h-2zM9 13h4v1h-4zM14 13h1v1h-1zM16 13h1v1h-1zM19 13h2v1h-2zM22 13h1v1h-1zM24 13h2v1h-2zM27 13h1v1h-1zM29 13h1v1h-1zM32 13h1v1h-1zM6 14h1v1h-1zM8 14h4v1h-4zM13 14h9v1h-9zM26 14h1v1h-1zM28 14h2v1h-2zM34 14h1v1h-1zM2 15h1v1h-1zM4 15h1v1h-1zM6 15h2v1h-2zM9 15h1v1h-1zM12 15h4v1h-4zM18 15h1v1h-1zM20 15h1v1h-1zM23 15h1v1h-1zM25 15h1v1h-1zM29 15h1v1h-1zM31 15h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM10 16h5v1h-5zM18 16h1v1h-1zM21 16h1v1h-1zM23 16h2v1h-2zM26 16h1v1h-1zM28 16h2v1h-2zM32 16h1v1h-1zM3 17h1v1h-1zM6 17h1v1h-1zM9 17h1v1h-1zM11 17h1v1h-1zM13 17h1v1h-1zM16 17h2v1h-2zM20 17h1v1h-1zM22 17h1v1h-1zM27 17h1v1h-1zM29 17h1v1h-1zM31 17h2v1h-2zM34 17h1v1h-1zM2 18h1v1h-1zM4 18h5v1h-5zM10 18h7v1h-7zM21 18h1v1h-1zM24 18h8v1h-8zM2 19h2v1h-2zM9 19h2v1h-2zM12 19h1v1h-1zM15 19h1v1h-1zM17 19h1v1h-1zM21 19h2v1h-2zM28 19h1v1h-1zM30 19h1v1h-1zM32 19h3v1h-3zM5 20h1v1h-1zM8 20h4v1h-4zM17 20h1v1h-1zM21 20h3v1h-3zM25 20h1v1h-1zM27 20h3v1h-3zM31 20h2v1h-2zM34 20h1v1h-1zM3 21h2v1h-2zM6 21h2v1h-2zM9 21h3v1h-3zM14 21h1v1h-1zM17 21h1v1h-1zM19 21h2v1h-2zM22 21h1v1h-1zM24 21h1v1h-1zM27 21h2v1h-2zM30 21h3v1h-3zM34 21h1v1h-1zM3 22h1v1h-1zM7 22h2v1h-2zM10 22h1v1h-1zM15 22h1v1h-1zM21 22h1v1h-1zM25 22h1v1h-1zM29 22h1v1h-1zM31 22h1v1h-1zM2 23h1v1h-1zM4 23h1v1h-1zM11 23h2v1h-2zM16 23h1v1h-1zM18 23h1v1h-1zM20 23h2v1h-2zM25 23h1v1h-1zM27 23h1v1h-1zM30 23h1v1h-1zM2 24h1v1h-1zM6 24h1v1h-1zM8 24h2v1h-2zM11 24h1v1h-1zM15 24h4v1h-4zM20 24h1v1h-1zM22 24h4v1h-4zM28 24h1v1h-1zM32 24h3v1h-3zM2 25h1v1h-1zM4 25h2v1h-2zM7 25h1v1h-1zM10 25h6v1h-6zM18 25h5v1h-5zM24 25h1v1h-1zM27 25h2v1h-2zM32 25h1v1h-1zM34 25h1v1h-1zM2 26h2v1h-2zM5 26h2v1h-2zM8 26h2v1h-2zM11 26h1v1h-1zM16 26h3v1h-3zM22 26h1v1h-1zM26 26h6v1h-6zM34 26h1v1h-1zM10 27h2v1h-2zM16 27h3v1h-3zM20 27h1v1h-1zM24 27h1v1h-1zM26 27h1v1h-1zM30 27h1v1h-1zM32 27h2v1h-2zM2 28h7v1h-7zM10 28h1v1h-1zM12 28h1v1h-1zM15 28h3v1h-3zM20 28h3v1h-3zM24 28h3v1h-3zM28 28h1v1h-1zM30 28h1v1h-1zM32 28h1v1h-1zM2 29h1v1h-1zM8 29h1v1h-1zM10 29h1v1h-1zM14 29h1v1h-1zM16 29h3v1h-3zM24 29h3v1h-3zM30 29h3v1h-3zM2 30h1v1h-1zM4 30h3v1h-3zM8 30h1v1h-1zM10 30h3v1h-3zM15 30h1v1h-1zM17 30h1v1h-1zM19 30h4v1h-4zM24 30h7v1h-7zM33 30h1v1h-1zM2 31h1v1h-1zM4 31h3v1h-3zM8 31h1v1h-1zM10 31h1v1h-1zM14 31h2v1h-2zM19 31h1v1h-1zM21 31h1v1h-1zM23 31h1v1h-1zM27 31h1v1h-1zM29 31h1v1h-1zM32 31h3v1h-3zM2 32h1v1h-1zM4 32h3v1h-3zM8 32h1v1h-1zM11 32h4v1h-4zM18 32h4v1h-4zM23 32h2v1h-2zM27 32h1v1h-1zM29 32h3v1h-3zM33 32h2v1h-2zM2 33h1v1h-1zM8 33h1v1h-1zM12 33h3v1h-3zM16 33h3v1h-3zM22 33h1v1h-1zM24 33h1v1h-1zM27 33h8v1h-8zM2 34h7v1h-7zM10 34h1v1h-1zM14 34h1v1h-1zM16 34h1v1h-1zM18 34h2v1h-2zM21 34h1v1h-1zM24 34h1v1h-1zM26 34h2v1h-2zM29 34h3v1h-3z"/>
+      </svg>
+    </div>
+    <div class="words">
+      <div class="kicker">Android app · early access</div>
+      <div class="big">Share with your phone locked</div>
+      <div class="url"><a href="testers.html">community-bus-tracker.netlify.app<wbr>/testers.html</a></div>
+      <div class="note">For sharing from the bus. Join the test on Google Play.</div>
+    </div>
+  </div>
   </div><!-- /pgroup act -->
 
   <!-- Print-only column group: the fine print. display:contents on screen,

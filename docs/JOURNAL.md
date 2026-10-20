@@ -41,6 +41,10 @@ link's card since the saved stop joined the example screen, so the picture
 meant to carry the link and its QR code carried neither. It is 1826 points
 tall now and ends under the "post it in your group chat" line.
 
+Then the tester page's QR code joined it too, as the poster carries it: a
+smaller white card under the steps, "Share with your phone locked", for
+whoever shares from the bus. The tracker's code stays first and maroon.
+
 ## 2026-10-20: A poster that shows, with two ways in
 
 Asked for: a PDF poster that is a quick showcase of what the tracker does,

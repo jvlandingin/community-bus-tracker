@@ -132,6 +132,9 @@ and it animates only what the app animates, with the app's keyframes, which
 breathes and rocks on the strip and the map, and the saved stop's road runs.
 Every frame is a picture the app could show, because the chat image is a
 screenshot taken mid-loop; nothing moves on paper or for reduced motion.
+Under its steps a second, smaller QR code offers the Android app to whoever
+shares, the same code as the poster's and held to `ANDROID_APP_URL` by the
+same test; watching still needs nothing installed.
 
 **`poster.html` is the showcase poster** (October 2026): one portrait A4
 sheet, `assets/flyer/poster-a4.pdf`, that shows rather than explains. The

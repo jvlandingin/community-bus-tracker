@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// Copies the app's typeface into the four pages that load nothing.
+// Copies the app's typeface into the five pages that load nothing.
 //
-// The guide, the flyer, the operator briefing and the tester page are built
-// to stand on their own: opened from a saved file, printed to PDF, or served
+// The guide, the flyer, the operator briefing, the tester page and the poster
+// are built to stand on their own: opened from a saved file, printed to PDF, or served
 // from a deploy that lost assets/, each still has to look like the app it
 // describes. They load no file of any kind (test-boot.js fails if a src comes
 // back), so the tracker's font files cannot simply be linked from them.
@@ -24,7 +24,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const PAGES = ['how-to.html', 'flyer.html', 'for-operators.html', 'testers.html'];
+const PAGES = ['how-to.html', 'flyer.html', 'for-operators.html', 'testers.html', 'poster.html'];
 const FACES = [
   ['Barlow Semi Condensed', 500, 'barlow-semi-condensed-500.v1.woff2'],
   ['Barlow Semi Condensed', 600, 'barlow-semi-condensed-600.v1.woff2'],

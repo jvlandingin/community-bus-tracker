@@ -42,6 +42,8 @@ community-bus-tracker/
   how-to.html         <- the guide
   flyer.html          <- the rider flyer, also the printable poster
   for-operators.html  <- the briefing for the bus company
+  testers.html        <- the Android app's closed test, three taps to join
+  poster.html         <- the showcase poster: four pictures, two QR codes
   config.txt          <- your route's own, holds no secrets, safe to commit
   assets/vendor/      <- leaflet.js, leaflet.css, supabase.js, images/
   assets/fonts/       <- Barlow, five cut-down woff2 files and their licence
@@ -2286,9 +2288,14 @@ gold and the maintainer's name, photo and email blurred or cut out: a rider
 matches a picture faster than a sentence, and Google's screens are the ones
 they have never seen. They are inlined WebP, so the page still loads nothing,
 and they are the one part of it that goes stale by itself, when Google
-redesigns a screen. It asks for riding, not installing. Like the guide it loads nothing;
+redesigns a screen. It asked for riding, not installing, in a card of its own
+until October 2026; the group's welcome post asks now. Google's own badge
+marks the app as on Google Play, under the first line and as the last step's
+button, linking to the listing with Google's attribution line in the footer,
+because a rider trusts the badge they know more than a link they don't. Like the guide it loads nothing;
 unlike it, it runs no script, so a blocker or an old phone cannot leave three
-buttons that do nothing. Nothing linked to it until the test opened; while it
+buttons that do nothing. The showcase poster carries it too, as the second of
+its two QR codes. Nothing linked to it until the test opened; while it
 runs, `ANDROID_APP_URL` in `config.txt` names it, so the sharing tab and the
 guide offer the test, not a Play page that would say "App not available".
 

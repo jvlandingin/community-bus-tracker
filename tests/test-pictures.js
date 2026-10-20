@@ -243,7 +243,7 @@ console.log('\n=== 6b. a ticket\'s luck, drawn ===');
 }
 
 console.log('\n=== 7. the copies in other pages are current ===');
-const expect = { 'how-to.html': 1, 'flyer.html': 1, 'for-operators.html': 1, 'testers.html': 1, 'tools/app-icons.html': 0 };
+const expect = { 'how-to.html': 1, 'flyer.html': 1, 'for-operators.html': 1, 'testers.html': 1, 'poster.html': 1, 'tools/app-icons.html': 0 };
 for (const f of tool.FILES) {
   const src = read(f);
   const sc = tool.scenes(src, S);
@@ -304,6 +304,17 @@ check(views['how-to.html'].length === 2 && views['flyer.html'].length === 1 && v
 check(views['how-to.html'].map(v => v.aboard).join(',') === 'false,true' && views['flyer.html'][0].f === views['for-operators.html'][0].f &&
       !views['flyer.html'][0].aboard && !views['for-operators.html'][0].aboard,
   'the guide draws it waiting and on board, and the poster and the briefing the same moment');
+
+// Three of the showcase poster's four pictures are the tracker's own too: the
+// saved stop, a ticket and your bus, each as the tool draws it now. The
+// fourth is the map, a crop of the flyer's screenshot.
+{
+  const poster = read('poster.html');
+  const kinds = [tool.stopviews, tool.arts, tool.buses].map(f => f(poster, S));
+  check(kinds.every(k => k.length === 1) && tool.redraw(poster, S) === poster,
+    'poster.html: its three drawings are drawn by the tracker\'s own code, as it is now',
+    kinds.some(k => k.length !== 1) ? kinds.map(k => k.length).join(' ') + ' pictures' : tool.redraw(poster, S) === poster ? 'current' : 'stale (run node tools/make-pictures.js)');
+}
 
 console.log('\n=== 8. the ride ===');
 // The ride's moving parts, as the stylesheet runs them. The page works out

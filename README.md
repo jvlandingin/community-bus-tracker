@@ -91,8 +91,10 @@ company's name or initials, for the same reason.
   design tokens as the app, so it loads nothing over the network. The one
   exception is the map inside the first figure, a real cropped screenshot of
   this route embedded inline — a fork recrops that, and nothing else.
-- **Adoption flyer:** `flyer.html`, a one-page pitch for riders in the mix of
-  Tagalog and English the group chat actually uses. It shows an example of the
+- **Adoption flyer:** `flyer.html`, a one-page pitch for riders in the app's
+  own mix of English and Tagalog, a line per idea with the reasons folded, a
+  card that opens the tracker's two one-minute tours, and a second QR code for
+  the Android app's tester page, for whoever shares from the bus. It shows an example of the
   tracker with four buses live, labelled as an example, and prints as a single
   landscape A4 poster for a terminal wall — three columns: headline and
   caveats, the example screen, then the link with its QR and the three steps.
@@ -107,6 +109,11 @@ company's name or initials, for the same reason.
   Play. Three taps on the rider's own phone: join the tester group, become a
   tester, install. It names this deployment's Google Group and the app's
   package, so a fork running its own test edits both.
+- **Showcase poster:** `poster.html`, one portrait A4 sheet
+  (`assets/flyer/poster-a4.pdf`): what the tracker does in four pictures (the
+  map and three of the tracker's own drawings), and two QR codes, one for the tracker and one for the Android app
+  (its closed test's tester page, while the test runs). A fork regenerates
+  both codes with `node tools/make-qr.js <url>`.
 - **Showcase video:** `sh tools/render-video.sh` makes a one-minute vertical
   video for Facebook, TikTok and Reels: the real tracker on a phone, with
   made-up buses, waiting for a bus, sharing it, getting off, the ticket, My
@@ -181,7 +188,8 @@ migration.
    it publishes on every push to `main`. However you host it, the site must
    contain `index.html`, `admin.html`, `how-to.html`, `flyer.html`,
    `for-operators.html`, `config.txt`, `manifest.webmanifest` and
-   `assets/` (and `testers.html` while the Android app is in a closed test).
+   `assets/` (and `testers.html` while the Android app is in a closed test,
+   and `poster.html` if you print the poster from the site).
 6. **Open `/admin.html`**, sign in with your admin key, and set your operating
    hours. Use the Generate button to make a share key, and post the link it
    gives you in your group chat. That link is the tracker with the key in the

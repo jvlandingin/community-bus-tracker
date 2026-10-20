@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Draws the tracker's pictures into the pages that cannot draw their own: the
 // dot-matrix route board, the view from the ridge that covers the guide, the
-// flyer, the briefing and the tester page, the picture on the guide's salamat
-// ticket, the guide's pictures of your bus, standing and on the road, the
-// saved stop's picture in the guide, the flyer and the briefing, and the
-// app's icon and small mark wherever they appear.
+// flyer, the briefing, the tester page and the poster, the picture on the
+// guide's salamat ticket, the guide's pictures of your bus, standing and on
+// the road, the saved stop's picture in the guide, the flyer and the
+// briefing, three of the poster's four pictures, and the app's icon and small mark
+// wherever they appear.
 //
 // The tracker draws its board at load (drawSignboard in index.html) and its
 // scenes on the empty map (renderMapNote). The guide, the flyer and the
@@ -73,7 +74,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const FILES = ['how-to.html', 'flyer.html', 'for-operators.html', 'testers.html', 'tools/app-icons.html'];
+const FILES = ['how-to.html', 'flyer.html', 'for-operators.html', 'testers.html', 'poster.html', 'tools/app-icons.html'];
 
 function block(html, start, end) {
   const a = html.indexOf(start), b = html.indexOf(end);
@@ -482,7 +483,7 @@ function markTileSvg(tile) {
     "<path d='" + tidy(bitten(MARK.x, MARK.y, MARK.w, MARK.h, MARK.bite, MARK.bites, MARK.band), 3) + "' fill='" + TKT.gold + "'/></g></svg>";
 }
 const faviconHref = tile => 'data:image/svg+xml,' + markTileSvg(tile).replace(/%/g, '%25').replace(/#/g, '%23').replace(/</g, '%3C').replace(/>/g, '%3E');
-const FAVICONS = { 'index.html': 'coral', 'how-to.html': 'coral', 'flyer.html': 'coral', 'for-operators.html': 'coral', 'testers.html': 'coral', 'admin.html': 'ink' };
+const FAVICONS = { 'index.html': 'coral', 'how-to.html': 'coral', 'flyer.html': 'coral', 'for-operators.html': 'coral', 'testers.html': 'coral', 'poster.html': 'coral', 'admin.html': 'ink' };
 
 // The Android app's two drawings of the mark, written whole: the status
 // bar's while a bus is shared, upright and in white, as Android wants a

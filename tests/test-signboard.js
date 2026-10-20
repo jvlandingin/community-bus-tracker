@@ -85,7 +85,7 @@ console.log('\n=== 5. the boards drawn into other pages are current ===');
 // beside a board change, or the renderer does, the picture is out of date
 // until the tool is run again.
 // The icon page's two are the link preview's and Google Play's feature graphic's.
-const expect = { 'how-to.html': 1, 'flyer.html': 2, 'for-operators.html': 1, 'testers.html': 1, 'tools/app-icons.html': 2 };
+const expect = { 'how-to.html': 1, 'flyer.html': 2, 'for-operators.html': 1, 'testers.html': 1, 'poster.html': 1, 'tools/app-icons.html': 2 };
 for (const f of tool.FILES) {
   const src = read(f);
   const bs = tool.boards(src, S);

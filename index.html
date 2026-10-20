@@ -926,18 +926,20 @@
     display:flex; align-items:flex-start; gap:8px;}
   .buspop .kw .mark{flex:0 0 auto; width:28px; height:28px; margin-top:1px; color:var(--gold-deep);}
   .buspop .kw b{display:block; margin-bottom:1px; font-size:var(--fs-cap); font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-deep);}
-  /* A link that opens the map following this bus, for whoever is fetching
-     you. Dashed and quieter than the salamat button: it is the second thing
-     in the popup, not the first. Named for what it does, never "share". */
+  /* "I'm on this bus" and "Send a link", a link that opens the map
+     following this bus for whoever is fetching you: the popup's second
+     things, so one row of words under the salamat button rather than two
+     more buttons, wrapping to two rows where the popup is narrow. Named for
+     what they do, never "share". */
+  .buspop .pacts{display:flex; flex-wrap:wrap; justify-content:center; gap:0 18px; margin-top:4px;}
   .buspop .buslink{
-    display:flex; align-items:center; justify-content:center; gap:6px; width:100%; margin-top:6px;
-    min-height:34px; padding:6px 10px; border-radius:var(--r-s); cursor:pointer;
-    border:1.5px dashed var(--line); background:transparent; color:var(--brand-ink);
+    display:inline-flex; align-items:center; gap:6px; min-height:34px; padding:6px 2px; cursor:pointer;
+    border:0; background:transparent; color:var(--brand-ink);
     font:inherit; font-size:var(--fs-small); font-weight:800;
   }
   /* "I'm on this bus", and once tapped "I got off": the card's own colour,
      because it is about the reader's stop, not about the bus. */
-  .buspop .buslink.onit{border-style:solid; border-color:var(--mine); color:var(--mine-ink);}
+  .buspop .buslink.onit{color:var(--mine-ink);}
   /* "Not a real bus?" and the board's "Wrong?": a word to the organizers,
      so the quietest thing in the popup and on the board, a plain link at
      the end of a line that is there anyway. The padding is taken back by
@@ -1953,7 +1955,7 @@
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
       <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number. On our side it never adds up across trips: <b>no running total is kept for any driver or any bus on the server.</b> The sharer's own phone adds theirs up for their bus in My tickets, and that never leaves it.</p>
       <p>And one more, also only if you tap it: <b>Not a real bus?</b>, on a bus, or <b>Wrong?</b>, on a sighting, to tell the organizer something on the map looks wrong. It is stored the same scrambled way as Salamat, so it can't be traced back to you and a second tap isn't counted twice. <b>Only the organizer sees how many</b>, not the sharer and not other riders, and it is deleted when that trip ends or the sighting expires. Nothing happens on its own: the organizer looks and decides.</p>
-      <p>“Send a link to this bus”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do.</p>
+      <p>“Send a link”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do.</p>
 
       <h4 class="ok">If you share from the bus</h4>
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip, plus, only if you switched on “Show customized bus to riders”, a short code for how your bus is painted and dressed. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map, and if you saved the stop you get off at, sharing stops there: your phone checks its own position against your stop, and sends nothing for it. Outside the route area, the bus shows on your own phone only, never on anyone else's map.</p>
@@ -2242,12 +2244,6 @@
            A sibling of the real list, not inside it: renderBuses() rewrites
            #busList's innerHTML and would wipe them mid-animation. -->
       <div id="bootGhosts" aria-hidden="true"><span></span><span></span><span></span></div>
-      <!-- The whole discoverability budget for saying salamat: one muted
-           line, and only while there is a live bus that is somebody else's —
-           on an empty map it is not drawn at all, and nobody is invited to
-           thank themselves. The popup is where the button lives; this only
-           says the popup exists. -->
-      <div class="hint hidden" id="chipNote">Tap any bus to see it up close and say salamat.</div>
 
       <details class="note">
         <summary><svg class="gi" aria-hidden="true"><use href="#i-info"/></svg>What the colours mean</summary>
@@ -2302,7 +2298,7 @@
       <summary>
         <span class="lbl">
           <span class="cap">Sightings</span>
-          <span class="val" id="sightSummary">Bus spotted but nobody sharing? Post it here</span>
+          <span class="val" id="sightSummary">Seen a bus? Post it</span>
         </span>
         <span class="chev" aria-hidden="true"><svg class="gi"><use href="#i-chev"/></svg></span>
       </summary>
@@ -2425,7 +2421,6 @@
         <div class="track sb"><div class="rail"></div><div class="pills sb"></div></div>
         <div class="dirlabel sb">← SOUTHBOUND · TO MENDEZ</div>
       </div>
-      <div class="hint">Yours has the green ring.</div>
       <!-- Drawn only once somebody has tapped, never as a zero. See
            thanksWords(). aria-live so it is announced when it arrives
            rather than only found by someone who goes looking. -->
@@ -2449,7 +2444,8 @@
     </button>
   </div>
 
-  <div class="adminFoot"><a href="admin.html">Operating this route? Admin panel →</a></div>
+  <!-- For the handful of organizers, so a word in small print. -->
+  <div class="adminFoot"><a href="admin.html">Admin</a></div>
 </div>
 
 <!-- The tour. Drawn over the real page by the WALK block; hidden until a
@@ -5398,7 +5394,7 @@ function aboardControl(b, linkable){
   if (b.self || sharing || !linkable) return '';
   const on = ABOARD && (b.id === ABOARD || (b.members && b.members.indexOf(ABOARD) >= 0));
   return on
-    ? '<button type="button" class="buslink onit" onclick="leaveBus()">'+COACH_GLYPH+'I got off this bus</button>'
+    ? '<button type="button" class="buslink onit" onclick="leaveBus()">'+COACH_GLYPH+'I got off</button>'
     : '<button type="button" class="buslink" onclick="boardBus(\''+b.id+'\')">'+COACH_GLYPH+'I’m on this bus</button>';
 }
 const COACH_GLYPH = '<svg class="gi coachgi" aria-hidden="true"><use href="#i-coach"/></svg>';
@@ -5444,8 +5440,11 @@ function busPopupHtml(b){
     '<div class="pwhere"><span>'+escapeHtml(pl ? pl.label : 'position unclear')+'</span>'+wrongControl(b, linkable)+'</div>'+
     (story ? '<div class="kw">'+markSvg(story.mark)+'<span><b>'+story.lead+'</b>'+escapeHtml(story.name+', '+story.about)+'</span></div>' : '')+
     thanksControl(b.id, b.self, thanksDone(b))+
-    aboardControl(b, linkable)+
-    (linkable ? '<button type="button" class="buslink" onclick="sendBusLink(\''+b.id+'\')">'+LINK_GLYPH+'Send a link to this bus</button>' : '')+
+    // The second things, one quiet row of words under salamat (they wrap
+    // where the popup is narrow), never two more big buttons: the popup was
+    // the busiest thing in the app (the maintainer, October 2026).
+    (linkable ? '<div class="pacts">'+aboardControl(b, linkable)+
+      '<button type="button" class="buslink" onclick="sendBusLink(\''+b.id+'\')">'+LINK_GLYPH+'Send a link</button></div>' : '')+
     '</div>';
 }
 
@@ -6411,7 +6410,7 @@ function rideCardHtml(info, riding, bus){
     still: freshness(info.ts) === 'delayed' || !!(bus && bus.standing) });
   const km = info.km < 0.5 ? 'under 500 m' : info.km < 10 ? info.km.toFixed(1) + ' km' : Math.round(info.km) + ' km';
   const dirWords = info.direction === 'south' ? '▼ Southbound' : '▲ Northbound';
-  const which = riding ? 'your bus' + (info.label ? ' ' + escapeHtml(info.label) : '') : info.label ? 'bus ' + escapeHtml(info.label) : '';
+  const which = info.label ? 'bus ' + escapeHtml(info.label) : '';
   const big = state === 'here'
     ? '<span class="num">Next stop is yours.</span><span class="unit">' +
       (riding ? 'Get ready to get off.' : 'Get ready to wave it down.') + '</span>'
@@ -6430,9 +6429,12 @@ function rideCardHtml(info, riding, bus){
       '<div class="ride-art">' + art + (state ? '<div class="ride-flag' + (fresh ? ' fresh' : '') + '">' + flag + '</div>' : '') +
         '<button type="button" class="ride-fold" onclick="toggleRoad()" aria-expanded="' + ROAD + '"><span class="rf-show">Show the road</span><span class="rf-hide">Hide</span></button></div>' +
       '<div class="ride-big" aria-hidden="true">' + big + '</div>' +
-      '<div class="ride-sub" aria-hidden="true">' + dirWords + (which ? ' · ' + which : '') +
+      // On board only the next stop: the way, the bus and how fresh are the
+      // strip's and the status line's already (the maintainer, October 2026).
+      (riding ? (between.length ? '<div class="ride-sub" aria-hidden="true">Next stop <b>' + escapeHtml(between[0].name) + '</b></div>' : '')
+      : '<div class="ride-sub" aria-hidden="true">' + dirWords + (which ? ' · ' + which : '') +
         (between.length ? ' · next stop <b>' + escapeHtml(between[0].name) + '</b>' : '') +
-        ' · updated ' + timeAgo(info.ts) + ' ago</div>' +
+        ' · updated ' + timeAgo(info.ts) + ' ago</div>') +
       // The sentence the card has always printed, now for screen readers: it
       // says all of the above in the order a person would.
       '<span class="vh">' + escapeHtml(words) + ' · updated ' + timeAgo(info.ts) + ' ago</span>' +
@@ -6646,6 +6648,15 @@ function clusterBuses(list){
 // recency in an open popup goes stale as fast as the chips do, so the map is
 // redrawn here rather than only when a fetch lands. Switching the direction
 // filter used to leave the wrong markers on the map until the next poll.
+// A bus's popup is as wide as the map leaves room for beside the zoom and
+// locate buttons (autoPanPaddingTopLeft's 66 px) and the right edge (18 px),
+// less its own 30 px of frame: 240 px of words on a wide phone, 184 on a
+// 360 px one, where a fixed 240 ran 38 px off the map and cut off its buttons
+// and "Not a real bus?".
+function popupWidth(){
+  const w = map ? map.getSize().x : 0;
+  return Math.max(160, Math.min(240, w - 66 - 18 - 30));
+}
 function syncBusMarkers(all) {
   if (!map) return;
   const seen={};
@@ -6657,18 +6668,20 @@ function syncBusMarkers(all) {
     if (m) {
       m.setLatLng([b.lat,b.lng]);
       m.setIcon(icon);
+      // Again on every redraw, for a phone turned on its side.
+      const pop = m.getPopup();
+      if (pop) pop.options.maxWidth = popupWidth();
       m.setPopupContent(busPopupHtml(b));
       if (!show) map.removeLayer(m);
       else if (!map.hasLayer(m)) m.addTo(map);
     } else if (show) {
       m = L.marker([b.lat,b.lng],{icon:icon, title:'Show bus details'});
-      // The popup can carry a line about the place and a second button now,
-      // so it is as wide as the map's free width allows. The extra padding
-      // on the left keeps it clear of the zoom and locate buttons, which sit
-      // above popups: without it, a bus near the middle of the map opened a
-      // popup whose first words were under the controls.
+      // The extra padding on the left keeps the popup clear of the zoom and
+      // locate buttons, which sit above popups: without it, a bus near the
+      // middle of the map opened a popup whose first words were under the
+      // controls. Its width is what the map leaves beside them (popupWidth()).
       m.bindPopup(busPopupHtml(b),
-        { closeButton:false, className:'buspop', maxWidth:240,
+        { closeButton:false, className:'buspop', maxWidth:popupWidth(),
           autoPanPaddingTopLeft:[66,18], autoPanPaddingBottomRight:[18,18] });
       busMarkers[b.id] = m.addTo(map);
       // Fade a genuinely new badge in. Added here, at creation, because the
@@ -6915,9 +6928,6 @@ function renderBuses() {
   renderMyThanks();
   renderMapNote(all.length > 0);
   renderFollow(all);
-  // Someone else's bus is the only thing the hint's advice applies to.
-  const note = document.getElementById('chipNote');
-  if (note) note.classList.toggle('hidden', !shown.some(function(b){ return !b.self; }));
 
   // headline
   const text=document.getElementById('statusText'), sub=document.getElementById('statusSub');
@@ -6925,10 +6935,16 @@ function renderBuses() {
     const freshest = shown.reduce(function(a,b){ return b.ts>a.ts?b:a; });
     const pl = busPlace(freshest, CHECKPOINTS, ROUTE_CHAIN);
     setHeadline(text, shown.length + (shown.length===1?' bus live':' buses live'));
+    // Said for screen readers only (the maintainer, October 2026): on screen
+    // the chips right under it say where each bus is and how fresh, and the
+    // hours card says how often trips leave. This line is still the live
+    // region that announces the buses moving, which the chips are not.
     sub.textContent = (freshest.direction==='north'?'Northbound':'Southbound')+
       (pl ? ' '+pl.sentence : '')+' · updated '+timeAgo(freshest.ts)+
       ' ago · trips every '+headwayAt(freshest.direction, nowMins())+' mins';
+    sub.classList.add('vh');
   } else {
+    sub.classList.remove('vh');
     const dirsOpen = withinHours('north')||withinHours('south');
     setHeadline(text, 'No buses live');
     // Inside hours the map's own card already says nobody is sharing, so the
@@ -7045,7 +7061,7 @@ function renderMapNote(anyBus){
 }
 
 // ---- Follow my bus ---------------------------------------------------
-// "Send a link to this bus" in a popup hands over a link that opens the map
+// "Send a link" in a bus's popup hands over a link that opens the map
 // following that bus: #b= and the bus's public id, the same id every map
 // already has (sql/04: it is not the session id and cannot be turned back
 // into one). Nothing about the sender is in it. It is for "nasa bus na ako"
@@ -7365,7 +7381,7 @@ async function pollSightings() {
   // The folded card has to say whether opening it is worth the tap.
   document.getElementById('sightSummary').textContent = n
     ? (n===1 ? '1 recent sighting posted' : n+' recent sightings posted')
-    : 'Bus spotted but nobody sharing? Post it here';
+    : 'Seen a bus? Post it';
 }
 // The board, from the last poll's posts. Its own function so that "Wrong?"
 // can redraw it at once instead of waiting fifteen seconds for the next poll.
@@ -9400,6 +9416,9 @@ function syncTripMode(){
   // tab is on screen, and before this nothing on the tracker said so.
   const tab = document.getElementById('tabOnbus');
   if (tab) tab.classList.toggle('live', !!sharing);
+  // And neither tab offers the Tutorial while one is: a tour cannot run over
+  // a live share (startWalk()), so mid-trip the button could only say so.
+  document.querySelectorAll('.walklink').forEach(function(b){ b.classList.toggle('hidden', !!sharing); });
 }
 
 // ---- Pasko -----------------------------------------------------------

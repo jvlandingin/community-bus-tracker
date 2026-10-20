@@ -60,7 +60,7 @@ company's name or initials, for the same reason.
   stopwatch: the day, the places, the stamps and a flower if anyone said
   salamat, with no times, no bus number and no count, so no pile of them can
   time a trip or rank a driver.
-- **Follow one bus:** "Send a link to this bus", in a bus's popup, sends a
+- **Follow one bus:** "Send a link", in a bus's popup, sends a
   link that opens the map following that bus — for whoever is fetching you.
   It carries only the bus's public ID and dies with the trip. The popup also
   has a line about the town the bus is passing.

@@ -432,7 +432,8 @@ location dot, the saved-stop card's "buzz once" switch, and its road shown
 on the sharing tab.
 
 **There is a tour, one per tab** (October 2026): a minute each, on the real
-page, opened from the guide, from a quiet button at the foot of each tab, from
+page, opened from the guide, from a quiet button at the foot of each tab
+(hidden while a trip is on, when a tour cannot run), from
 `#tour` or `#tour=share`, and once from a "New here?" note on a first visit.
 The WALK block in `index.html` dims everything but one control, says one short
 thing about it, and draws a practice bus and a practice stop in place of the
@@ -460,7 +461,15 @@ labels and nothing else ("Direction", "Bus number (optional)", Start,
 then, in **the trip's first window** (`openTripNote()`): a picture and a line
 for tapping Stop, or the saved stop that stops it, and for the screen, or the
 app with Google's badge; for a sharer's first three trips only, counted by
-`wt-bus`, never a resumed one. The empty map's card inside hours is a pill
+`wt-bus`, never a resumed one. A third pass, from a look at every screen:
+the Tutorial buttons hide while a trip is on (a tour cannot run over one); a
+bus's popup has one big button, salamat, with "I'm on this bus" and "Send a
+link" as a row of words under it, and is as wide as the map leaves beside
+the zoom buttons (`popupWidth()`: a fixed 240 px ran 38 px off a 360 px
+phone's map); with buses live the line under the headline is for screen
+readers only, and nothing under the chips asks for a tap; on board the stop
+card's line is the next stop alone; the sightings card says "Seen a bus? Post
+it" and the organizers' link "Admin". The empty map's card inside hours is a pill
 with its line alone, "Nobody is sharing right now", beside the sharing tab's
 grey "Not sharing" dot: its I'm on the bus button went too, and the bus glyph
 it had, which on a map where a bus means a live one said the opposite. "No
@@ -697,9 +706,10 @@ showcase video".
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`
 each redraw the tracker's screen the same way, showing four buses live because
 an empty map is what the tool looks like when nobody has heard of it. Every
-string in those drawings is one the app would really print — the headline and
-subtitle come from `renderBuses()`, the chip labels from `busPlace()`, the
-checkpoints and distances off `config.txt`. Change either function and all
+string in those drawings is one the app would really print — the headline
+comes from `renderBuses()` (the line under it is for screen readers only
+while buses are live, so the drawings leave it out), the chip labels from
+`busPlace()`, the checkpoints and distances off `config.txt`. Change either function and all
 three recreations are wrong. Both drawings carry a visible "example screen"
 label: a mock that could be mistaken for live data is the one thing this
 project's own rules would not forgive.

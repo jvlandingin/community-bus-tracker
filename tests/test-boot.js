@@ -697,6 +697,21 @@ function run(page, include, label, configText, setup) {
     const offer = [...pop(mineBus).querySelectorAll('button')].find(b => /on this bus/.test(b.textContent));
     check(!!offer && (offer.getAttribute('onclick') || '').includes("boardBus('bbb222')"),
       'a bus\'s popup offers "I\'m on this bus"', offer && offer.textContent);
+    // Salamat is the popup's one big button; the second things are one quiet
+    // row of words under it (October 2026: the popup was the busiest thing in
+    // the app, and at a fixed 240 px it ran off a 360 px phone's map).
+    {
+      const p0 = pop(mineBus), row = p0.querySelector('.pacts');
+      check(p0.querySelectorAll('.tybtn').length === 1 && !!row &&
+            [...row.querySelectorAll('button.buslink')].map(b => b.textContent.trim()).join(' | ') === 'I’m on this bus | Send a link',
+        'salamat is its one big button, and "I\'m on this bus" and "Send a link" one row of words under it',
+        row && row.textContent.trim());
+      ok.w.eval('window.__m = map');
+      const widths = [298, 328, 350, 400].map(x => { ok.w.eval('map = { getSize: function(){ return { x:' + x + ', y:400 }; } }'); return ok.w.popupWidth(); });
+      ok.w.eval('map = window.__m; delete window.__m');
+      check(widths.join(',') === '184,214,236,240',
+        'and it is as wide as the map leaves beside the zoom buttons: 184 px of words on a 360 px phone, 240 at most', widths.join(','));
+    }
     check(![...pop({ ...mineBus, self: true }).querySelectorAll('button')].some(b => /on this bus/.test(b.textContent)),
       'but not on the bus this phone is sharing, which is already known to be theirs');
     check(![...pop({ ...mineBus, id: 'x\'); alert(1); (\'' }).querySelectorAll('button')].some(b => /on this bus/.test(b.textContent)),
@@ -727,9 +742,14 @@ function run(page, include, label, configText, setup) {
       'tapping it keeps the bus\'s public id for this visit, in sessionStorage');
     ok.w.renderMyStop([near, mineBus]);
     const said = stopBar.textContent.replace(/\s+/g, ' ');
-    check(/on your bus · [\d.]+ km to go/.test(said) && /· your bus 98018 ·/.test(said) && !!stopBar.querySelector('.ride-art svg.stopview .sv-swing'),
+    check(/on your bus · [\d.]+ km to go/.test(said) && !!stopBar.querySelector('.ride-art svg.stopview .sv-swing'),
       'and the card now follows that bus, not the one nearer the stop, seen from inside it', said.slice(0, 90));
-    check(/I got off this bus/.test(pop(mineBus).textContent), 'its popup now offers "I got off this bus" instead');
+    // On board the line under the count is the next stop and nothing else:
+    // the way, the bus and how fresh are the strip's and the status line's.
+    const subOn = stopBar.querySelector('.ride-sub');
+    check(!subOn || /^Next stop [^·]+$/.test(subOn.textContent.trim()),
+      'its line under the count is only the next stop', subOn ? subOn.textContent.trim() : 'none: the next stop is yours');
+    check(/I got off/.test(pop(mineBus).textContent), 'its popup now offers "I got off" instead');
     // On board the view keeps to the road: a few metres either way is the
     // GPS and moves nothing, a real move goes by over a poll, and a long way
     // back starts the view again where the bus is, drawn at once.
@@ -1431,6 +1451,29 @@ function run(page, include, label, configText, setup) {
     check(emptyNote.classList.contains('idle') && !!emptyNote.querySelector('.statusdot:not(.live)') && !emptyNote.querySelector('svg'),
       'beside the grey dot the sharing tab shows for Not sharing, and no bus drawn');
 
+    check(d.getElementById('sightSummary').textContent === 'Seen a bus? Post it' &&
+          d.querySelector('.adminFoot a').textContent.trim() === 'Admin',
+      'the sightings card asks in four words, and the organizers\' link is one',
+      d.getElementById('sightSummary').textContent + ' | ' + d.querySelector('.adminFoot a').textContent.trim());
+
+    // With a bus live, the line under the headline is for screen readers only
+    // (October 2026): on screen the chips right under it say where each bus
+    // is and how fresh. It is still the live region that announces them.
+    sim.reply.get_positions = () => ({ data: [{ pub_id: 'ef'.repeat(16), lat: 14.4505, lng: 120.938, direction: 'north', bus_label: '98018',
+      updated_at: new Date().toISOString(), is_self: false, thanks: 0, look: null }] });
+    w.eval('lastPositionsAt = 0');
+    await w.pollPositions();
+    const subLine = d.getElementById('statusSub');
+    check(/^1 bus live$/i.test(d.getElementById('statusText').textContent.trim()) && subLine.classList.contains('vh') &&
+          /^Northbound .+ · updated .+ ago · trips every \d+ mins$/.test(subLine.textContent) && subLine.getAttribute('aria-live') === 'polite',
+      'with a bus live, the line under the headline is for screen readers only, still announcing where it is', subLine.textContent);
+    check(!d.getElementById('chipNote') && !/Tap any bus/.test(d.getElementById('trackView').textContent),
+      'and nothing under the chips asks for a tap');
+    sim.reply.get_positions = () => ({ data: [] });
+    w.eval('lastPositionsAt = 0');
+    await w.pollPositions();
+    check(!subLine.classList.contains('vh'), 'with none, the line is back on screen for what only it says');
+
     w.pickDir('north');
     w.switchTab('share');
     const first = await startTrip();
@@ -1482,8 +1525,13 @@ function run(page, include, label, configText, setup) {
     // guard: arriving at the stop asks, and sharing stops there.
     {
       const stopWords = () => d.getElementById('tripStopWords').textContent;
+      const tutorials = () => [...d.querySelectorAll('.walklink')];
       w.localStorage.removeItem('wt-bus');
+      check(tutorials().length === 2 && tutorials().every(b => !b.classList.contains('hidden')), 'before a trip, each tab offers the Tutorial');
       await startTrip();
+      check(tutorials().every(b => b.classList.contains('hidden')),
+        'while a trip is on, neither does: a tour cannot run over a live share, so the button could only say so');
+      check(!/green ring/i.test(d.getElementById('onbusStripCard').textContent), 'and the strip on the trip screen carries no line about its ring');
       check(!isHidden('tripModal') && /^Tap Stop when you get off/.test(d.querySelector('#tripModal .triptxt').textContent.trim()) &&
             /^Or set your stop, and sharing stops there by itself\.$/.test(stopWords()) && !isHidden('tripStopBtn') &&
             !!d.querySelector('#tripArtStop svg.tripsvg') && !!d.querySelector('#tripArtScreen svg.tripsvg'),
@@ -1493,6 +1541,7 @@ function run(page, include, label, configText, setup) {
         'its button opens the stop picker, which asks where you get off', d.getElementById('stopTitle').textContent);
       w.closeModal('stopModal');
       await w.stopSharing();
+      check(tutorials().every(b => !b.classList.contains('hidden')), 'and both come back when it ends');
       check(/Where do you wait\?/.test((w.openStopPicker(), d.getElementById('stopTitle').textContent)),
         'and off the bus it asks where you wait again');
       w.closeModal('stopModal');

@@ -25,6 +25,33 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-20: A look at every screen
+
+After the words came off, the maintainer asked whether the app now looked
+right in that spirit. Every screen was rendered with made-up buses to answer
+it: the map with buses on it, a bus's popup, a trip, the ticket, My tickets.
+The screens a rider meets first were calm, and the ticket and My tickets were
+the best of it, pictures with labels. Five things were not, and the
+maintainer said to do all five.
+
+The Tutorial button sat under Stop sharing all trip, where it could only say
+"Stop sharing first"; it hides while a trip is on now, on both tabs. A bus's
+popup had become the busiest thing in the app, and on a 360 px phone, common
+among the budget Androids riders here carry, it ran 38 px off the map and cut
+off "Not a real bus?" and its buttons; it had for as long as it had been 240
+px wide. It now takes the width the map leaves, with salamat its one big
+button and "I'm on this bus" and "Send a link" a row of words under it. With
+buses live, the line under the headline said again what the chips under it
+say, so it is for screen readers only now, still announcing the buses as they
+move, and the hint under the chips asking for a tap went. On board, the stop
+card's line is just the next stop. And two labels: "Seen a bus? Post it", and
+"Admin" for the organizers' link.
+
+The flyer, the briefing and the guide drew the headline's line too, so they
+lost it, the flyer's PDFs and chat image were rendered again, and the guide's
+numbered dots were measured again. Still open, for the maintainer: whether
+the header keeps the bus company's name, the question from 17 October.
+
 ## 2026-10-20: Fewer words, and the trip's first window
 
 The maintainer, from three screenshots of a phone: "The app looks

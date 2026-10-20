@@ -1118,7 +1118,7 @@ filming the showcase video; `test-boot.js` section 14 holds it.
 
 ## Following one bus, and the town lines
 
-October 2026. **Send a link to this bus**, in a bus's popup, hands over a
+October 2026. **Send a link**, in a bus's popup, hands over a
 `#b=` link that opens the map following that bus: centred on it, a chip
 saying which bus, re-centred on every poll, and a Stop that clears the hash.
 It is for "nasa bus na ako" to whoever is fetching you. The link carries the
@@ -1817,6 +1817,50 @@ alone, "Nobody is sharing right now" (its I'm on the bus button went in a
 second pass), and the line under "No buses live" inside hours to nothing,
 unless a sighting places a bus, which the card does not say. "Nobody is sharing right now. Seen one?
 Post it below." was the card's sentence again, and an ask.
+
+**A third pass, from a look at every screen** (October 2026). The maintainer
+asked whether the app now looked right in this spirit; rendered with made-up
+buses, mostly it did, and five things did not, all changed at their word:
+
+- *The Tutorial buttons hide while a trip is on* (`syncTripMode()`). The one
+  on the sharing tab sat right under Stop sharing, and mid-trip both could
+  only say "Stop sharing first", since a tour cannot run over a live share.
+- *A bus's popup was the busiest thing in the app, and broken on narrow
+  phones.* It is 240 px of words in a 29 px frame, and its autopan keeps 66
+  px clear on the left for the zoom and locate buttons, which sit above
+  popups, and 18 on the right: 353 px, where a 360 px phone's map is 298
+  wide. So it ran 38 px off the map, cutting "Not a real bus?" and the
+  buttons, and 8 px off at 390. `popupWidth()` makes it what the map leaves:
+  184 px of words at 360, 214 at 390, 240 from about 400 on, measured as
+  fitting at all three. Salamat stays its one big button, and "I'm on this
+  bus" and "Send a link" (it was "Send a link to this bus") are a row of
+  words under it, wrapping to two rows where it is narrow, instead of two
+  more full-width dashed buttons.
+- *With buses live, the line under the headline is for screen readers only.*
+  It said where the freshest bus was and how fresh, right above chips saying
+  the same for every bus, and how often trips leave, which the hours card
+  says. It stays the live region that announces the buses moving, which the
+  chips are not, so it is hidden from sight (`.vh`), not deleted. The muted
+  "Tap any bus to see it up close and say salamat." under the chips went
+  too: salamat is the popup's one big button, which every way of tapping a
+  bus opens, and the map's tour shows it there.
+- *On board, the stop card's line is the next stop alone*, where it repeated
+  the direction, the bus and the age that the strip and the status line
+  carry. Waiting, it keeps them, since there they say which bus is coming.
+  "Yours has the green ring." under the trip screen's strip went: the ring
+  says it, and the legend says it in words.
+- *Two labels:* the sightings card says "Seen a bus? Post it" (it was "Bus
+  spotted but nobody sharing? Post it here"), and the organizers' link at
+  the foot of both tabs says "Admin".
+
+The flyer and the briefing drew the headline with its line, so they lost it
+too, and their PDFs and the chat image were rendered again; the chat image
+is 1807 points tall now, to end where it did. The guide's map figure lost the
+line as well, which moved the five numbered dots: measured again, and the
+figure is now the same height at every width. Left with the maintainer: the
+header's second line, "WONDERFUL TRANSPORT · COMMUNITY LIVE TRACKER ·
+UNOFFICIAL", which wraps on every screen. UNOFFICIAL stays; whether the bus
+company's name does is the question open since 17 October.
 
 ## The name, the icons and the link preview
 

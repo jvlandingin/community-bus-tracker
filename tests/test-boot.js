@@ -214,7 +214,7 @@ function run(page, include, label, configText, setup) {
   // whole purpose is one call to action, and a filter list that hides it
   // leaves a poster-shaped page with no way to reach the tracker. Same silent
   // failure as the start button, with nobody on the page to report it.
-  for (const page of ['index.html', 'admin.html', 'flyer.html', 'for-operators.html', 'testers.html']) {
+  for (const page of ['index.html', 'admin.html', 'flyer.html', 'for-operators.html', 'testers.html', 'poster.html']) {
     const found = (fs.readFileSync(path.join(APP, page), 'utf8')
       .match(/(?:id|class)="[^"]*share[^"]*"/gi) || []);
     check(found.length === 0, `${page}: none in the source either, including markup built in JS`,
@@ -312,8 +312,9 @@ function run(page, include, label, configText, setup) {
   // printed. Everything the guide is held to above, they are held to too:
   // load nothing, link back to the map, and stay in step with the app.
   // The closed test's tester page draws no screen, but it is built the same
-  // way for the same reasons, so it is held to the same three.
-  for (const page of ['flyer.html', 'for-operators.html', 'testers.html']) {
+  // way for the same reasons, so it is held to the same three, and so is the
+  // showcase poster.
+  for (const page of ['flyer.html', 'for-operators.html', 'testers.html', 'poster.html']) {
     const p = path.join(APP, page);
     check(fs.existsSync(p), `${page} is in the repository`);
     if (!fs.existsSync(p)) continue;
@@ -337,6 +338,24 @@ function run(page, include, label, configText, setup) {
         ? dr.map(k => `${k}: app ${appTokens[k]} vs page ${t[k]}`).join('; ')
         : 'in step');
 
+    // The flyer moves only as the app moves: every animation it declares is
+    // one index.html declares, with the same keyframes, copied like its icons.
+    if (page === 'flyer.html') {
+      const frames = text => {
+        const out = {};
+        for (const m of text.matchAll(/@keyframes ([\w-]+)\s*\{/g)) {
+          let depth = 1, i = m.index + m[0].length;
+          while (depth && i < text.length) { if (text[i] === '{') depth++; else if (text[i] === '}') depth--; i++; }
+          out[m[1]] = text.slice(m.index + m[0].length, i - 1).replace(/\s+/g, '');
+        }
+        return out;
+      };
+      const mine = frames(src), app = frames(fs.readFileSync(path.join(APP, 'index.html'), 'utf8'));
+      const odd = Object.keys(mine).filter(k => mine[k] !== app[k]);
+      check(Object.keys(mine).length > 0 && !odd.length, `${page}: its motion is the app's, keyframe for keyframe`,
+        odd.length ? 'differs or unknown: ' + odd.join(' ') : Object.keys(mine).join(' '));
+    }
+
     // The flyer's QR code is the one thing on a printed poster that cannot be
     // typed around if it is wrong, and nothing about it is readable by eye.
     // It is drawn as an inline path, so at least assert it is still drawn
@@ -344,6 +363,26 @@ function run(page, include, label, configText, setup) {
     if (page === 'flyer.html') {
       check(/aria-label="QR code[^"]*"/.test(src) && /<path fill="#000" d="M[\d ]/.test(src),
         `${page}: the QR code is still an inline path, not a loaded image`);
+    }
+
+    // The poster's two QR codes are its whole point, and the flyer carries
+    // the same two, and nobody can read one by eye, so each must be exactly
+    // what tools/make-qr.js draws for the address its label names: the
+    // tracker, and the Android app where config.txt says it is. When
+    // ANDROID_APP_URL moves from the tester page to the Play listing, this
+    // fails until both pages' second code moves with it.
+    if (page === 'poster.html' || page === 'flyer.html') {
+      const codes = [...src.matchAll(/<svg viewBox="0 0 \d+ \d+" role="img" aria-label="QR code for ([^"]+)">\s*<rect[^>]*\/>\s*<path fill="#000" d="([^"]+)"\/>/g)]
+        .map(m => ({ label: m[1], d: m[2] }));
+      const drawn = codes.filter(c => {
+        const out = require('child_process').execFileSync(process.execPath, [path.join(APP, 'tools', 'make-qr.js'), 'https://' + c.label], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+        return out.includes(' d="' + c.d + '"');
+      });
+      check(codes.length === 2 && drawn.length === 2, `${page}: two QR codes, each the one make-qr.js draws for the address it names`,
+        codes.map(c => c.label + (drawn.includes(c) ? '' : ' (STALE)')).join(', '));
+      const appUrl = (/^ANDROID_APP_URL\s*=\s*(\S*)/m.exec(fs.readFileSync(path.join(APP, 'config.txt'), 'utf8')) || [])[1] || '';
+      check(codes.some(c => !c.label.includes('/')) && (!appUrl || codes.some(c => 'https://' + c.label === appUrl)),
+        `${page}: one for the tracker and one for the app, where config.txt says the app is`, appUrl || 'no app in config.txt');
     }
 
     // The tester page is three buttons a rider taps in order. It runs no
@@ -398,7 +437,7 @@ function run(page, include, label, configText, setup) {
   check(!/<script[^>]+src=/i.test(guideSrc),
     'and it asks about the setting with fetch, not by loading a library');
 
-  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html']) {
+  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html', 'poster.html']) {
     const copies = darkCopies(fs.readFileSync(path.join(APP, page), 'utf8'));
     check(copies.length === 2 && copies[0] === copies[1] && copies[0].length > 0,
       `${page}: both statements of the dark palette are identical`,
@@ -408,7 +447,7 @@ function run(page, include, label, configText, setup) {
 
   // Section 7's lesson, a different filter list: blockers hide live-chat and
   // help widgets by name too, so the link must not be named like one.
-  for (const page of ['index.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html']) {
+  for (const page of ['index.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html', 'poster.html']) {
     const found = (fs.readFileSync(path.join(APP, page), 'utf8')
       .match(/(?:id|class)="[^"]*(?:help|support|chat|widget)[^"]*"/gi) || []);
     check(found.length === 0, `${page}: nothing reads as a help or chat widget`,
@@ -425,7 +464,7 @@ function run(page, include, label, configText, setup) {
   // page is full of, and a scan that cries wolf on onbusStartBtn is a scan
   // somebody eventually deletes. Filter rules for it are written against
   // star-rating widgets, which nothing here will ever be.
-  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html']) {
+  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html', 'poster.html']) {
     const found = (fs.readFileSync(path.join(APP, page), 'utf8')
       .match(/(?:id|class|onclick)="[^"]*(?:like|fav|thumb|heart|vote|social|clap)[^"]*"/gi) || []);
     check(found.length === 0, `${page}: nothing reads as a like or social widget`,
@@ -440,7 +479,7 @@ function run(page, include, label, configText, setup) {
   // 38 of the 41 such names on the list, and nothing on these pages. The line
   // itself is #gpsAppLine, named for the hint it sits in, and its link has no
   // name at all.
-  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html']) {
+  for (const page of ['index.html', 'admin.html', 'how-to.html', 'flyer.html', 'for-operators.html', 'testers.html', 'poster.html']) {
     const found = (fs.readFileSync(path.join(APP, page), 'utf8')
       .match(/(?:id|class|onclick)="[^"]*(?:app[\w-]*(?:banner|bnr|install|instl|download|down|open|promo|cta)|(?:banner|bnr|install|instl|download|promo|get|open|link|webto)[\w-]{0,4}app|smart[-_]?(?:banner|bnr))[^"]*"/gi) || []);
     check(found.length === 0, `${page}: nothing reads as a "get our app" banner`,

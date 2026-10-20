@@ -25,6 +25,48 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-20: The flyer, in fewer words
+
+The maintainer found the flyer wordy and asked for some motion or something
+to try. Its words are now the app's English with its Tagalog, as the poster's:
+each step is a line, the five reassurances are chips with their reasons folded
+under "Why", and the four caveats stay, a line each. It now has a card with
+the guide's two buttons into the tracker's own one-minute tours, and the
+example screen moves as the app does: the one bus fresh enough to be live
+breathes and rocks, and the saved stop's road runs, with the app's keyframes,
+which a test now holds to index.html's.
+
+Re-rendering it showed the chat image had been ending at the top edge of the
+link's card since the saved stop joined the example screen, so the picture
+meant to carry the link and its QR code carried neither. It is 1826 points
+tall now and ends under the "post it in your group chat" line.
+
+The "To be fair" box went next, at the maintainer's word: four caveats were
+still four more lines than a flyer is read for. The footer keeps "not an
+official schedule" beside the not-affiliated statement, and the app's own
+data statement says the rest.
+
+Then the tester page's QR code joined it too, as the poster carries it: a
+smaller white card under the steps, "Share with your phone locked", for
+whoever shares from the bus. The tracker's code stays first and maroon.
+
+## 2026-10-20: A poster that shows, with two ways in
+
+Asked for: a PDF poster that is a quick showcase of what the tracker does,
+with the addresses, as QR codes, of both the tracker and the tester page, for
+riders who would rather share from the Play app. The flyer already carries
+the tracker's QR code, but it is the long argument: an example screen, the
+steps, the fine print, in three columns on a landscape sheet. So the poster is
+its own page, `poster.html`, one portrait sheet read from across a terminal:
+the headline, four pictures with a line each (the map, then three of the
+tracker's own drawings: two for whoever waits, two for whoever shares), and
+the two codes side by side. The first draft was all Tagalog, like the flyer,
+and had the bus on the road where the map is now; the maintainer asked for
+the app's own mix instead ("Dress your bus", not "Bihisan ang bus mo") and for
+the map itself. The second code follows `ANDROID_APP_URL`,
+and a test fails when the two part, so when the app goes public the poster
+cannot keep sending riders to a closed test.
+
 ## 2026-10-19: The tester page is linked
 
 The app is in internal testing and the closed test is open. `testers.html`

@@ -72,16 +72,16 @@ deploy time and both need only a Chromium; they prefer `chrome-headless-shell`,
 because full Chrome's headless screenshots leave the bottom 87 px unpainted:
 
 ```
-sh tools/render-flyer.sh     # assets/flyer: poster PDF, briefing PDF, chat image
+sh tools/render-flyer.sh     # assets/flyer: flyer PDF, briefing PDF, showcase poster PDF, chat image
 sh tools/render-icons.sh     # assets/icons: home-screen icons, link-preview picture; mobile/store: Play's icon and feature graphic; the Android app's launcher icons and splash
 ```
 
 Two more rewrite committed text. `node tools/embed-fonts.js` copies the font
-files in `assets/fonts/` into the four static pages as data URIs; run it after
+files in `assets/fonts/` into the five static pages as data URIs; run it after
 replacing a font file. `node tools/make-pictures.js` draws the dot-matrix route
-board into the guide, the flyer, the briefing, the tester page and
+board into the guide, the flyer, the briefing, the tester page, the poster and
 `tools/app-icons.html`, from the words beside each board, the scenes that cover
-those four pages, and the picture on the guide's ticket, with `index.html`'s
+those five pages, and the picture on the guide's ticket, with `index.html`'s
 own code; run it after changing those words or the drawings. It also draws the
 guide's pictures of your bus, from the decorations and paint named in each
 `<!-- mybus keys=… paint=… -->` marker, the bus on the road in its popup, from
@@ -104,10 +104,11 @@ CARTO_API_KEY=... sh tools/render-video.sh
 
 ## Architecture
 
-**Six pages, one config file.** `index.html` is the tracker (watch + share),
+**Seven pages, one config file.** `index.html` is the tracker (watch + share),
 `admin.html` the operator page, `how-to.html` a static guide, `flyer.html` the
 adoption flyer handed to riders, `for-operators.html` a briefing written for
-the bus company, and `testers.html` the Android app's closed test.
+the bus company, `testers.html` the Android app's closed test, and
+`poster.html` a one-sheet showcase with a QR code for each.
 `config.txt` holds the Supabase URL, anon key, route slug, source URL, the
 Android app's address, checkpoints and stops — no secrets, which is why it is
 committed and why a fork deploys straight from git.
@@ -120,6 +121,36 @@ nobody knows it is there. Both are self-contained, load nothing, and print:
 chat-sized PNG, and `tools/make-qr.js` regenerates the flyer's QR code as an
 inline path when the deployment URL changes. Neither tool runs at deploy time
 and neither needs anything installed.
+
+**The flyer says each thing in a line** (October 2026, the maintainer's
+"too wordy"): the app's English with its Tagalog, as the poster, steps of one
+line each, and the five reassurances as chips with their reasons folded under
+"Why". The "To be fair" box of caveats was then taken off too, at the
+maintainer's word; the footer still says it is not an official schedule and
+not the bus company's, and the app says the rest where it matters. On screen it also moves and
+can be tried: a card opens the tracker's two tours (`#tour`, `#tour=share`),
+and it animates only what the app animates, with the app's keyframes, which
+`test-boot.js` section 8 compares: the one example bus under 45 seconds old
+breathes and rocks on the strip and the map, and the saved stop's road runs.
+Every frame is a picture the app could show, because the chat image is a
+screenshot taken mid-loop; nothing moves on paper or for reduced motion.
+Under its steps a second, smaller QR code offers the Android app to whoever
+shares, the same code as the poster's and held to `ANDROID_APP_URL` by the
+same test; watching still needs nothing installed.
+
+**`poster.html` is the showcase poster** (October 2026): one portrait A4
+sheet, `assets/flyer/poster-a4.pdf`, that shows rather than explains. The
+flyer argues, with an example screen, steps and fine print; the poster is read
+from across a terminal: the headline, four pictures with a line each (the
+map, cropped from the flyer's screenshot, then three of the tracker's own
+drawings: the saved stop, a sharer's ticket, your bus), and two QR codes, the tracker for everyone and the Android app for
+whoever shares. The app's code is for `ANDROID_APP_URL`, the tester page while
+the closed test runs, and `test-boot.js` section 8 fails while the two
+disagree or either code is not what `tools/make-qr.js` draws for the address
+its label names. It loads nothing and runs no script, like the flyer. Its
+words are the app's: English, with the Tagalog the app itself uses, never
+all Tagalog (the maintainer's call: "Dress your bus", not "Bihisan ang bus
+mo").
 
 **`testers.html` signs riders up for the closed test** (October 2026), in
 three taps on their own phone: join the Google Group that is the test's tester
@@ -473,7 +504,7 @@ does.
 background with white or near-black text on it; the second is the same colour
 used as text. They are nearly identical in the light theme and completely
 different in dark, so pick by what the colour is doing — painting a shape, or
-spelling a word. All six pages carry their own copy of the token block and
+spelling a word. All seven pages carry their own copy of the token block and
 `test-boot.js` fails if they drift.
 
 **Everything else is a token too** (October 2026): seven text sizes, three
@@ -483,7 +514,7 @@ uses a literal size, corner, shadow, speed or typeface anywhere, including in
 strings a script builds markup from; a deliberate exception goes in its list
 with the reason. The type is Barlow Semi Condensed for labels, buttons, names
 and numbers and Barlow for sentences, self-hosted in `assets/fonts/` and
-inlined into the four static pages. The icons are one drawn family in a sprite
+inlined into the five static pages. The icons are one drawn family in a sprite
 at the top of `index.html`'s body; no emoji is drawn by the interface, and a
 page that needs an icon copies its `<symbol>` (the test fails if a copy
 differs). `tools/styleguide.html` draws all of it from `index.html`'s own
@@ -638,6 +669,10 @@ single bus placed by interpolating along the Tagaytay–Amadeo leg from
 sized to the image rather than to the figure box, because that box's shape
 changes with the viewport and the image's does not. Every other figure on the
 guide is still drawn, and the guide still loads nothing over the network.
+
+`poster.html` carries a third crop of the flyer's screenshot, around Kawit and
+Imus with the flyer's two buses there, in a tile of the crop's own shape, and
+labelled an example like the flyer's screen. A fork recrops it too.
 
 `tools/make-route-figure.js` still generates a fully portable, geography-
 agnostic vector version of the same figure — not used by any shipped page

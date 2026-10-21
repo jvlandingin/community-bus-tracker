@@ -724,8 +724,8 @@ pin coming down on the stop, the bus sighted and the way to the pin drawn
 with a dot per stop, each going as the card counts it off; the bus going
 out to other riders' phones; stars for salamat; a marker and a tick at the
 stop on board; parts flying into a purse; a stroke of paint for each new
-look. How the stop hands over to the ticket is `--handoff` (print, stamp or
-zoom), three ways put to the maintainer. **Waiting, the map is on screen with
+look; and the trip's ticket printed out of the top of the phone, the
+maintainer's pick of three ways from the stop to it. **Waiting, the map is on screen with
 the card**, a step in, so the bus is seen coming to the pin as well as
 counted down: nobody waits on the pin itself (the maintainer's point).
 **The trip ends with the bus pulling in**: the road comes up to the stop at

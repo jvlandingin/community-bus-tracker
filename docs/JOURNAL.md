@@ -39,6 +39,7 @@ the stop on board, parts flying into a purse, a stroke of paint for each
 new look, the camera going in from My tickets to the bus. For the ticket
 they asked for options: printed out of the phone, a stamp's ink, or the
 camera through the stop and a flash, each rendered for them to choose.
+They chose the print, and the other two went.
 
 ## 2026-10-21: A promo, not a tutorial
 

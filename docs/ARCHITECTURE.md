@@ -2027,17 +2027,17 @@ My tickets each new look comes with a stroke of its paint across the bus
 and sparkles. A swipe between moments blurs the way a camera's would.
 Only the pictures move; the page under them is the app's, untouched.
 
-**From the stop to the ticket, three ways put to the maintainer** (October
-2026, who found the swipe there awkward). `--handoff` picks one: `print`,
-the camera back to the whole phone, the ticket coming up out of its top in
-feeds as a printer feeds paper while the phone drops away under it, and
-forward into the frame (the page's own ticket, pictured with what is
-around it hidden, `Phone.picture()`, while the phone's own picture is held
-on the stop); `stamp`, a rubber stamp coming down on the road with a jolt,
-its mark's ink filling the frame, and going back out from the middle onto
-the ticket; `zoom`, the camera into the stop on the road, a white flash,
-and out from the ticket's picture to the whole ticket. Stop is tapped
-under each, where nobody sees it.
+**The ticket comes off the phone** (October 2026). The maintainer found the
+swipe from the stop to the ticket awkward and asked for ways to fix it;
+three were rendered side by side, the ticket printed out of the phone, a
+rubber stamp whose ink filled the frame and opened onto the ticket, and the
+camera through the stop and a white flash, and they chose the print. The
+camera goes back to the whole phone, the phone's picture is held on the
+stop, and Stop is tapped under it; the page's own ticket is pictured with
+what is around it hidden (`Phone.picture()`) and comes up out of the top
+of the phone in feeds, as a printer feeds paper, while the phone drops away
+under it, and then forward into the frame, where its parts fly into the
+purse.
 
 **Real screens, not a drawing of them.** The guide, the flyer and the
 briefing redraw the tracker by hand and go stale when it changes. The video

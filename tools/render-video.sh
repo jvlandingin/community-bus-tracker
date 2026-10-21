@@ -14,8 +14,6 @@
 # Options, after the directory: --from S --to S renders only that part
 # (the phones still run from the start, so they are in the right state);
 # --no-key renders without the map key, watermarked, for a quick look;
-# --handoff print|stamp|zoom picks how the trip hands over to its ticket
-# (tools/video/film.js, HANDOFF), print if none;
 # --motion renders the animated cut instead (tools/video/motion.js): drawn
 # scenes and kinetic type and no screens, about 42 seconds, as
 # bus-tracker-motion.mp4. It draws no map, so it needs no key.

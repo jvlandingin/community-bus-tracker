@@ -2091,7 +2091,7 @@ closer camera enlarges the capture, and at 2.4 times the map blurred.
 **The bus is seen coming on the map, not only on the card** (the
 maintainer's ask, October 2026). The card's picture says how many stops,
 but there are no official stops and nobody waits exactly on the pin, so
-how near the bus really is is on the map. After the pin, the map goes in a
+the map is where to see how near the bus really is. After the pin, the map goes in a
 step with its own +, as a rider looking for their own end of the route
 would, which puts the bus and the pin twice as far apart and still shows
 the whole route; then the camera goes out to the whole phone with the page

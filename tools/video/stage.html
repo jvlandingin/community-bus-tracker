@@ -5,18 +5,19 @@
 
   The phone's screen is a screenshot of the real index.html, taken a moment
   before by the same script, and everything else here is the frame around
-  it: the caption, the camera, the tap rings, the buzz,
-  and the drawn interludes, which are index.html's own pictures (its
-  SIGNBOARD and PICTURES blocks, run by render.js the way
-  tools/make-pictures.js runs them).
+  it: the caption, the camera, the tap rings and the ring that closes in on
+  a button just before each, the buzz, and the drawn interludes, which are
+  index.html's own pictures (its SIGNBOARD and PICTURES blocks, run by
+  render.js the way tools/make-pictures.js runs them).
 
   index.html's own stylesheet is put in where the marker below is, so the
   pictures carry their real colours and animations and the type is the
   app's. The rules after it are this page's, and are all under #v.
 
   Nothing here keeps time of its own. render.js calls V.render(t) with the
-  video's time in seconds, and every position below is worked out from t,
-  so a frame is the same however long it took to draw.
+  video's time in seconds (and, in a film of the app, the phone's clock for
+  its status bar), and every position below is worked out from t, so a
+  frame is the same however long it took to draw.
 -->
 <html lang="en">
 <head>
@@ -24,10 +25,13 @@
 <title>Bus Tracker video stage</title>
 <!--APP-STYLES-->
 <style>
-  html, body{margin:0; padding:0; width:1080px; height:1920px; overflow:hidden; background:#4a1119;}
+  html, body{margin:0; padding:0; width:1080px; height:1920px; overflow:hidden; background:#e4876a;}
   body{max-width:none; min-height:0;}
+  /* The frame is the app icon's morning coral, as Play's feature graphic
+     and the link preview have it (tools/app-icons.html), and its words are
+     the deep maroon the coral needs: white on it is too faint. */
   #v{position:relative; width:1080px; height:1920px; overflow:hidden; font-family:var(--font-ui);
-     background:radial-gradient(120% 70% at 50% 34%, #84222f 0%, #6a1a25 46%, #3f0e15 100%); color:#fff;}
+     background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%); color:#4a1119;}
   #v *{box-sizing:border-box;}
 
   /* The phone. Its screen is 860 pixels across for the page's 390, so one
@@ -43,17 +47,26 @@
   #v-bar{height:56px; display:flex; align-items:center; justify-content:center; gap:10px;
          background:#7a1f2b; color:#f6e7d8; font:500 27px/1 var(--font-ui); letter-spacing:.2px;}
   #v-bar svg{width:20px; height:20px; fill:none; stroke:#f6e7d8; stroke-width:2.4; stroke-linecap:round;}
+  /* On a phone filmed as the app, the sharer's, Android's status bar
+     instead: the phone's clock, and signal, wifi and battery, on the app's
+     colorPrimaryDark. */
+  #v-status{height:56px; display:none; align-items:center; justify-content:space-between; padding:0 36px 0 44px;
+            background:#5c161f; color:#fff; font:600 28px/1 var(--font-ui);}
+  #v-status .icons{display:flex; gap:12px; align-items:center;}
+  #v-status .icons svg{width:24px; height:24px; fill:#fff; stroke:none;}
+  #v-glass.app #v-bar{display:none;}
+  #v-glass.app #v-status{display:flex;}
   #v-screen{display:block; width:860px; height:1455px; background:#f4eee3;}
 
   /* The caption: one short sentence, big, at the top, over a band of the
      background so the phone can be zoomed under it without the words
-     losing their ground. */
+     losing their ground. The band comes and goes with the caption. */
   #v-band{position:absolute; left:0; top:0; width:1080px; height:420px; pointer-events:none;
-          background:linear-gradient(#5a141e 0%, #5a141e 81%, rgba(90,20,30,0) 100%); opacity:0;}
+          background:linear-gradient(#e4876a 0%, #e78f6f 81%, rgba(231,143,111,0) 100%); opacity:0;}
   #v-cap{position:absolute; left:50px; right:50px; top:64px; height:240px; display:flex; align-items:center; justify-content:center;}
   #v-cap .c{position:absolute; left:0; right:0; text-align:center; font:700 92px/1.04 var(--font-ui); text-wrap:balance;
-            letter-spacing:-.5px; color:#fff; text-shadow:0 3px 14px rgba(40,6,12,.45); opacity:0;}
-  #v-cap .c b{color:#ffc24a; font-weight:700;}
+            letter-spacing:-.5px; color:#4a1119; opacity:0;}
+  #v-cap .c b{color:#a3232f; font-weight:700;}
   #v-cap.on-sky .c{color:#5a1520; text-shadow:none;}
   #v-cap.on-sky .c b{color:#b35a00;}
 
@@ -61,7 +74,12 @@
   #v-fx{position:absolute; inset:0; pointer-events:none;}
   .v-tap{position:absolute; width:120px; height:120px; margin:-60px 0 0 -60px; border-radius:50%;
          border:7px solid rgba(255,255,255,.95); background:rgba(255,255,255,.28); box-shadow:0 0 0 3px rgba(0,0,0,.18);}
-  .v-wave{position:absolute; width:40px; height:150px; border:7px solid #ffc24a; border-left:0; border-top-color:transparent; border-bottom-color:transparent; border-radius:50%;}
+  /* The finger on its way: an empty ring closing in on the button, so the
+     eye is there before the tap lands. White edged with dark, because the
+     page under it is cream by day and nearly black on a trip. */
+  .v-point{position:absolute; width:120px; height:120px; margin:-60px 0 0 -60px; border-radius:50%;
+           border:7px solid #fff; box-shadow:0 0 0 4px rgba(58,12,20,.7), inset 0 0 0 4px rgba(58,12,20,.7);}
+  .v-wave{position:absolute; width:40px; height:150px; border:7px solid #7a1f2b; border-left:0; border-top-color:transparent; border-bottom-color:transparent; border-radius:50%;}
   .v-wave.l{transform:scaleX(-1);}
   /* A place on the page pointed out (the saved stop's pin as it lands):
      rings in the app's own colour for the reader's stop, going out from it. */
@@ -83,13 +101,14 @@
   /* The outer picture only: a coach is a nested <svg> of its own. */
   .v-scene > svg{display:block; width:100%; height:100%;}
 
-  /* The title: dawn over the ridge. */
-  #i-title{background:linear-gradient(#f2a96a 0%, #f7c48f 38%, #fbe1c0 70%);}
+  /* The title: the route's board and the question on the coral, the ridge
+     at dawn below. */
+  #i-title{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%);}
   /* The view is 640 wide with the coach left of middle and Taal right of
      it; this keeps both in a tall frame. */
   #i-title .v-scene{bottom:0; height:446px;}
   #i-title .v-scene > svg{position:absolute; left:-150px; bottom:0; width:1500px; height:auto;}
-  #i-title .hook{position:absolute; left:0; right:0; top:820px; text-align:center; font:700 110px/1 var(--font-ui); color:#5a1520; letter-spacing:-1px;}
+  #i-title .hook{position:absolute; left:0; right:0; top:820px; text-align:center; font:700 110px/1 var(--font-ui); color:#4a1119; letter-spacing:-1px;}
 
   /* The trip: the bus on the road through the places it passes. */
   /* The road picture is cut 200 by 80 and drawn the frame's width, low down
@@ -100,32 +119,145 @@
   #i-trip .v-ground{position:absolute; left:0; right:0; top:1668px; bottom:0;}
   #i-trip .v-board{top:600px;}
 
-  /* The end: where to find it, and what it is not. */
-  #i-end{background:radial-gradient(120% 70% at 50% 30%, #84222f 0%, #6a1a25 46%, #3f0e15 100%); text-align:center;}
-  #i-end .v-board{top:110px; padding:20px 24px;}
-  #i-end .name{position:absolute; left:0; right:0; top:340px; font:700 132px/1 var(--font-ui); color:#fff; letter-spacing:-1px;}
-  #i-end .lede{position:absolute; left:0; right:0; top:500px; font:600 50px/1.15 var(--font-ui); color:#ffd27a;}
-  #i-end .v-scene{top:600px; height:520px; border-top:6px solid #e39a1c; border-bottom:6px solid #e39a1c;}
-  #i-end .qr{position:absolute; left:50%; top:1180px; width:330px; height:330px; transform:translateX(-50%);
-             background:#fbf6ee; border-radius:30px; padding:22px;}
-  #i-end .qr svg{display:block; width:100%; height:100%;}
-  #i-end .url{position:absolute; left:0; right:0; top:1548px; font:700 60px/1 var(--font-ui); color:#fff;}
-  #i-end .fine{position:absolute; left:50px; right:50px; top:1650px; font:500 38px/1.4 var(--font-text); color:#f2dccb;}
+  /* The end: the poster's two ways in, each with its QR code, and what it
+     is not. In the app's own colours (its :root, above): the tracker on
+     maroon, the app on white ringed in gold. Its classes are its own (e-),
+     since the app's stylesheet, which the stage carries, has a .big, a
+     .badge and a .note of its own. */
+  #i-end{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%); text-align:center;}
+  #i-end .v-board{top:70px; padding:20px 24px;}
+  #i-end .e-name{position:absolute; left:0; right:0; top:236px; font:700 120px/1 var(--font-ui); color:#4a1119; letter-spacing:-1px;}
+  #i-end .e-lede{position:absolute; left:0; right:0; top:372px; font:600 46px/1.15 var(--font-ui); color:#7a1f2b;}
+  #i-end .v-scene{top:446px; height:350px; border-top:6px solid #fbf4e4; border-bottom:6px solid #fbf4e4;}
+  #i-end .e-way{position:absolute; left:50px; right:50px; box-sizing:border-box; padding:0 36px; border-radius:40px;
+                display:flex; align-items:center; gap:36px; text-align:left;}
+  #i-end .e-watch{top:842px; height:340px; background:linear-gradient(180deg, var(--maroon), var(--maroon-deep)); color:#fff;}
+  #i-end .e-watch.e-only{top:1000px;}
+  #i-end .e-droid{top:1210px; height:400px; background:var(--surface); color:var(--ink); box-shadow:inset 0 0 0 5px var(--gold);}
+  #i-end .e-qr{flex:0 0 290px; height:290px; box-sizing:border-box; padding:16px; background:#fff; border-radius:26px;}
+  #i-end .e-qr svg{display:block; width:100%; height:100%;}
+  #i-end .e-words{min-width:0;}
+  #i-end .e-kicker{font:800 28px/1 var(--font-ui); letter-spacing:.12em; text-transform:uppercase; opacity:.9;}
+  #i-end .e-droid .e-kicker{display:flex; align-items:center; gap:14px; color:var(--gold-deep); opacity:1;}
+  #i-end .e-icon{width:52px; height:52px; border-radius:13px;}
+  #i-end .e-big{font:700 56px/1.02 var(--font-ui); letter-spacing:-.5px; margin-top:12px;}
+  #i-end .e-url{font:700 31px/1.2 var(--font-ui); margin-top:18px;}
+  #i-end .e-note{font:500 29px/1.3 var(--font-text); margin-top:6px; opacity:.85;}
+  #i-end .e-droid .e-note{color:var(--muted); opacity:1;}
+  /* Google's badge: its own PNG, unaltered, its clear space the PNG's own
+     transparent margin, so it sits that much left of the words. */
+  #i-end .e-badge{display:block; height:96px; width:auto; margin:8px 0 0 -12px;}
+  #i-end .e-fine{position:absolute; left:50px; right:50px; top:1652px; font:500 34px/1.4 var(--font-text); color:rgba(74,17,25,.85);}
+  #i-end .e-fine small{display:block; margin-top:8px; font-size:24px;}
+
+  /* ---- The animated film (motion.js): drawn scenes and kinetic type -----
+     Each scene is an interlude like the ones above, its pictures the app's
+     own, drawn by its PICTURES block (put in below the page, render.js) and
+     drawn again every frame where something in them moves. */
+  .kt{position:absolute; left:30px; right:30px; text-align:center; font:800 128px/1.04 var(--font-ui); letter-spacing:-1.5px; color:#4a1119;}
+  .kt .ln{display:block; white-space:nowrap;}
+  .kt .w{display:inline-block; margin:0 .1em; transform-origin:50% 90%; opacity:0;}
+  .kt .w.hi{color:#a3232f;}
+  .m-bg{position:absolute; inset:0;}
+  /* A picture on a card, the way the app frames its own. */
+  .m-card{position:absolute; left:60px; width:960px; border-radius:44px; overflow:hidden; background:#fbf4e4;
+          box-shadow:0 34px 70px -24px rgba(74,17,25,.6), 0 0 0 6px #fbf4e4;}
+  .m-card > svg{display:block; width:100%; height:100%; max-height:none; overflow:hidden;}
+  .m-pill{position:absolute; padding:16px 34px; border-radius:999px; font:800 50px/1 var(--font-ui); letter-spacing:.06em;
+          text-transform:uppercase; box-shadow:0 12px 28px -10px rgba(0,0,0,.45); opacity:0;}
+  .m-pill.near{background:#e39a1c; color:#2b1a05;}
+  .m-pill.here{background:#4f46b8; color:#fff;}
+  .m-say{position:absolute; left:40px; right:40px; text-align:center; font:700 58px/1.2 var(--font-ui); color:#4a1119; opacity:0;}
+  .m-say b{font-size:128px; vertical-align:-18px; margin:0 12px; color:#a3232f;}
+
+  #i-m-hook .m-bg{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%);}
+  #i-m-hook .kt{top:470px; font-size:176px;}
+  #i-m-hook .m-road{position:absolute; left:0; width:1080px; top:1150px; height:770px; transform-origin:30% 100%;}
+  #i-m-hook .m-road > svg{display:block; width:100%; height:100%; max-height:none;}
+  /* The picture's sky into the background's coral, so the road comes out of it. */
+  #i-m-hook .m-road::before{content:""; position:absolute; left:0; right:0; top:0; height:300px; z-index:1;
+                            background:linear-gradient(#eea67c, rgba(238,166,124,0));}
+
+  #i-m-route .m-bg{background:#fbf4e4;}
+  #i-m-route .v-board{top:130px;}
+  #i-m-route .kt{top:420px; font-size:124px;}
+  #i-m-route .m-strip{position:absolute; left:40px; width:1000px; top:1060px; height:640px;}
+  #i-m-route .m-strip > svg{display:block; width:100%; height:100%; overflow:visible;}
+  #i-m-route .m-strip text{font:800 34px/1 var(--font-ui); letter-spacing:.05em; fill:#4a1119;}
+  #i-m-route .m-strip text.dir{font-size:26px; letter-spacing:.14em; fill:#7a1f2b; opacity:.8;}
+
+  #i-m-near .m-bg{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%);}
+  #i-m-near .kt{top:290px;}
+  #i-m-near .m-card{top:830px; height:466px;}
+  #i-m-near .m-pill{left:96px; top:864px;}
+  #i-m-near .m-say{top:1376px;}
+
+  #i-m-share .m-bg{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%);}
+  #i-m-share .kt{top:290px; font-size:140px;}
+  #i-m-share .m-card{top:920px; height:472px;}
+  #i-m-share .m-pin{position:absolute; left:540px; top:1060px; width:0; height:0; opacity:0;}
+  #i-m-share .m-pin > svg{position:absolute; left:-90px; top:-90px; width:180px; height:180px; overflow:visible;}
+  #i-m-share .m-ring{position:absolute; left:540px; top:1048px; width:120px; height:120px; margin:-60px 0 0 -60px; border-radius:50%;
+                     border:8px solid #4f46b8; opacity:0;}
+  #i-m-share .m-ty{position:absolute; padding:18px 30px; border-radius:999px; background:#fbf4e4; color:#4a1119;
+                   font:800 48px/1 var(--font-ui); box-shadow:0 14px 30px -12px rgba(74,17,25,.55); opacity:0; white-space:nowrap;}
+  #i-m-share .m-ty i{font-style:normal; color:#e39a1c; margin-right:12px;}
+  #i-m-share .m-say{top:1480px; font-size:54px;}
+
+  #i-m-ticket .m-bg{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%);}
+  #i-m-ticket .kt{top:250px; font-size:118px;}
+  #i-m-ticket .m-card{top:800px; height:466px;}
+  #i-m-ticket .m-pill{left:96px; top:834px;}
+  #i-m-ticket .m-tkt{position:absolute; left:110px; width:860px; top:740px; padding:34px 40px 40px; box-sizing:border-box;
+                     background:#fbf4e4; border-radius:26px; color:#4a1119; transform-origin:50% 100%;
+                     box-shadow:0 40px 80px -24px rgba(74,17,25,.65); text-align:left;}
+  #i-m-ticket .m-tkt::before, #i-m-ticket .m-tkt::after{content:""; position:absolute; top:360px; width:44px; height:44px; border-radius:50%; background:#eda27a;}
+  #i-m-ticket .m-tkt::before{left:-22px;} #i-m-ticket .m-tkt::after{right:-22px;}
+  #i-m-ticket .m-tkt .hd{display:flex; justify-content:space-between; font:800 34px/1 var(--font-ui); letter-spacing:.12em;}
+  #i-m-ticket .m-tkt .sub{font:500 26px/1.3 var(--font-text); color:#7a1f2b; margin-top:8px;}
+  #i-m-ticket .m-tkt .dir{font:800 30px/1 var(--font-ui); letter-spacing:.1em; margin-top:22px;}
+  #i-m-ticket .m-tkt .art{margin-top:16px; border-radius:16px; overflow:hidden; border:4px solid #4a1119;}
+  #i-m-ticket .m-tkt .art > svg{display:block; width:100%; height:auto;}
+  #i-m-ticket .m-tkt .ends{font:800 58px/1 var(--font-ui); margin-top:24px; letter-spacing:.02em;}
+  #i-m-ticket .m-tkt .ty{font:600 34px/1.2 var(--font-ui); margin-top:16px; color:#7a1f2b;}
+  #i-m-ticket .m-stamp{position:absolute; left:560px; top:1250px; padding:14px 28px; border:8px solid #c4432e; border-radius:18px;
+                       color:#c4432e; font:800 64px/1 var(--font-ui); letter-spacing:.08em; opacity:0; transform-origin:50% 50%;}
+
+  #i-m-dress .m-bg{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%);}
+  #i-m-dress .kt{top:270px; font-size:120px;}
+  #i-m-dress .m-card{top:840px; height:408px;}
+  #i-m-dress .m-tiles{position:absolute; left:60px; right:60px; top:1340px; display:flex; justify-content:center; gap:26px;}
+  #i-m-dress .m-tile{width:210px; height:150px; border-radius:30px; background:#fbf4e4; display:flex; align-items:center; justify-content:center;
+                     box-shadow:0 16px 30px -14px rgba(74,17,25,.55); opacity:0;}
+  #i-m-dress .m-tile > svg{width:170px; height:auto;}
+
+  /* ---- The film's motion graphics: drawn over the phone (#v-g) and
+     behind it (#v-gback), from what the page is showing (see G below). */
+  #v-g, #v-gback{position:absolute; left:0; top:0; width:1080px; height:1920px; overflow:visible; pointer-events:none;}
+  #v-g text, #v-gback text{font-family:var(--font-ui); font-weight:700;}
 </style>
 </head>
 <body>
 <div id="v">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="v-mb" x="-30%" y="-10%" width="160%" height="120%">
+    <feGaussianBlur id="v-mbg" stdDeviation="0 0"/></filter></svg>
+  <svg id="v-gback" viewBox="0 0 1080 1920"><defs><filter id="v-soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="22"/></filter>
+    <filter id="v-soft-s" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="10"/></filter></defs>
+    <g id="v-gb"></g><g id="v-gp" style="display:none"></g></svg>
   <div id="v-world">
     <div id="v-phone"><div id="v-glass">
       <div id="v-bar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>community-bus-tracker.netlify.app</div>
+      <div id="v-status"><span class="clock"></span><span class="icons"><svg viewBox="0 0 24 24"><path d="M3 21h18V3z"/></svg><svg viewBox="0 0 24 24"><path d="M12 21 1.5 8.5a15.5 15.5 0 0 1 21 0z"/></svg><svg viewBox="0 0 24 24"><rect x="7" y="3.5" width="10" height="18" rx="2"/><rect x="10" y="1.5" width="4" height="3" rx="1"/></svg></span></div>
       <img id="v-screen" alt="">
     </div></div>
   </div>
+  <svg id="v-g" viewBox="0 0 1080 1920"></svg>
   <div id="v-band"></div>
   <div id="v-cap"></div>
   <div id="v-fx"></div>
   <div id="v-ints"></div>
 </div>
+<!--APP-PICTURES-->
 <script>
 'use strict';
 // ---- Seeking the animations ------------------------------------------------
@@ -144,15 +276,25 @@
 
 const V = (function(){
   // Where the screen sits on the stage, and how many stage pixels make one
-  // of the page's: kept the same as SCREEN in render.js.
-  const SX = 110, SY = 421, K = 860 / 390;
+  // of the page's: kept the same as VIEW in render.js. The glass is 860 by
+  // 1511 from (SX, TOP), the bar BAR high across its top, above the screen.
+  const SX = 110, SY = 421, K = 860 / 390, BAR = 56, TOP = SY - BAR;
+  // The least a close-up can be for the glass to be as wide as the frame,
+  // and as tall.
+  const WIDE = 1080 / 860, TALL = 1920 / 1511;
+  // The caption's band, as #v-band draws it: BAND high, solid down to SOLID
+  // and fading out below.
+  const BAND = 420, SOLID = .81 * BAND;
   const clamp = function(x, a, b){ return x < a ? a : x > b ? b : x; };
   const ease = function(p){ p = clamp(p, 0, 1); return p < .5 ? 4*p*p*p : 1 - Math.pow(-2*p + 2, 3) / 2; };
   const easeOut = function(p){ p = clamp(p, 0, 1); return 1 - Math.pow(1 - p, 3); };
   const $ = function(id){ return document.getElementById(id); };
 
   let plan = { captions:[], phone:[], ints:[] };
-  const cams = [], taps = [], buzzes = [], marks = [];
+  const cams = [], taps = [], points = [], buzzes = [], marks = [], gaps = [], gfx = [];
+  // Where the page's things are now, measured on the phone each frame by
+  // render.js (LIVE in film.js), in the page's own pixels.
+  let live = {};
 
   function init(p){
     plan = p;
@@ -166,7 +308,9 @@ const V = (function(){
   // asked for by the script, each with the time it starts.
   function event(e){
     if (e.type === 'camera') cams.push(e);
+    else if (e.type === 'g') gfx.push(e);
     else if (e.type === 'tap') taps.push(e);
+    else if (e.type === 'point') points.push(e);
     else if (e.type === 'mark') marks.push(e);
     else if (e.type === 'buzz') buzzes.push(e);
   }
@@ -182,23 +326,41 @@ const V = (function(){
   // The camera: a scale and a shift of the whole phone, from where the last
   // move ended to where the next one goes. A move names a rectangle of the
   // page (in the page's pixels) to fill a width of the stage, or null to go
-  // back to the whole phone.
+  // back to the whole phone. moving while it goes; close once it is there,
+  // if it went to a close-up.
   function camAt(t){
     let from = { z:1, x:0, y:0 }, cur = from;
     cams.forEach(function(c){
       if (c.at > t) return;
-      const to = c.rect ? frameFor(c.rect, c.width || 1000, c.cy || 1080, c.topAt, c.maxZ) : { z:1, x:0, y:0 };
-      const p = ease((t - c.at) / (c.dur || .6));
-      cur = { z: from.z + (to.z - from.z) * p, x: from.x + (to.x - from.x) * p, y: from.y + (to.y - from.y) * p };
+      const dur = c.dur || .6;
+      const to = c.rect ? frameFor(c.rect, c.width || 1000, c.cy || 1080, c.topAt, c.maxZ, captioned(c.at + dur))
+        : c.z ? { z:c.z, x:540 - (SX + 430) * c.z, y:(c.cy || 1000) - (TOP + 1511 / 2) * c.z } : { z:1, x:0, y:0 };
+      const p = ease((t - c.at) / dur);
+      cur = { z: from.z + (to.z - from.z) * p, x: from.x + (to.x - from.x) * p, y: from.y + (to.y - from.y) * p,
+              moving: p < 1, close: p >= 1 && !!c.rect };
       from = p >= 1 ? to : cur;
     });
     return cur;
   }
-  function frameFor(r, width, cy, topAt, maxZ){
+  function captioned(t){ return plan.captions.some(function(c){ return t >= c.from && t < c.to; }); }
+  // A close-up fills the frame with the glass, but for the top of the frame
+  // where a caption's band is over it once the camera is there (capped): as
+  // near as that needs, moved only as far as the glass goes, and the bar
+  // across the top of the glass whole or out of sight (under a caption,
+  // under the band's solid part). Framed only by where the element was, a
+  // close-up could leave the top of the frame to a band that was not there,
+  // or bring the foot of the phone into sight, and the backdrop showed.
+  function frameFor(r, width, cy, topAt, maxZ, capped){
     const w = r.w * K, cx = SX + (r.x + r.w / 2) * K, y = SY + (r.y + r.h / 2) * K;
-    const z = clamp(width / w, 1, maxZ || 1.75);
+    const z = Math.max(clamp(width / w, 1, maxZ || 1.75), WIDE, capped ? 1 : TALL);
     if (topAt) cy = topAt + r.h * K * z / 2;
-    return { z:z, x: 540 - cx * z, y: cy - y * z };
+    const f = { z:z, x: clamp(540 - cx * z, 1080 - (SX + 860) * z, -SX * z), y: cy - y * z };
+    if (capped) f.y = clamp(f.y, 1920 - (TOP + 1511) * z, SOLID - SY * z);
+    else {
+      f.y = clamp(f.y, 1920 - (TOP + 1511) * z, -TOP * z);
+      if (f.y > -SY * z) f.y = -TOP * z;
+    }
+    return f;
   }
   // A page point on the stage, through the camera.
   function toStage(x, y, cam){
@@ -219,7 +381,12 @@ const V = (function(){
     return keys[keys.length - 1][1];
   }
 
-  function render(t){
+  // clock: what the phone's status bar says now, for a phone filmed as the
+  // app; none for one filmed as a browser, which has the browser's bar.
+  function render(t, clock, lv){
+    if (lv) live = lv;
+    $('v-glass').classList.toggle('app', !!clock);
+    if (clock) $('v-status').querySelector('.clock').textContent = clock;
     // The phone: in, out, and the camera on it.
     const cam = camAt(t);
     const dy = track(plan.phone, t, 0), dx = track(plan.phoneX, t, 0);
@@ -235,27 +402,55 @@ const V = (function(){
         const a = b.strong ? 1 : .45;
         const w = Math.sin(u * 2 * Math.PI * 24);
         shake = ' translate(' + (w * 9 * a).toFixed(1) + 'px,' + (Math.cos(u * 2 * Math.PI * 19) * 3 * a).toFixed(1) + 'px) rotate(' + (w * 1.1 * a).toFixed(2) + 'deg)';
+        // In a close-up the phone also grows as it shakes, just enough that
+        // its edges stay out of the frame.
+        if (cam.close) shake += ' scale(' + (1 + .055 * a).toFixed(3) + ')';
       }
     });
     $('v-world').style.transform = 'translate(' + (cam.x + dx).toFixed(2) + 'px,' + (cam.y + dy).toFixed(2) + 'px) scale(' + cam.z.toFixed(4) + ')';
+    // A swipe this fast leaves a blur along its way, as a camera's would.
+    const bx = Math.min(28, Math.abs(dx - track(plan.phoneX, t - 1 / 30, 0)) * .22);
+    const by = Math.min(28, Math.abs(dy - track(plan.phone, t - 1 / 30, 0)) * .22);
+    if (bx > .6 || by > .6){ $('v-mbg').setAttribute('stdDeviation', bx.toFixed(1) + ' ' + by.toFixed(1)); $('v-world').style.filter = 'url(#v-mb)'; }
+    else $('v-world').style.filter = '';
     $('v-phone').style.transform = shake ? shake.trim() : '';
-    // The band behind the caption, as soon as the phone comes up under it.
-    $('v-band').style.opacity = clamp((cam.z - 1) * 8, 0, 1).toFixed(3);
 
     // The caption: in from below, out by fading.
     const cap = $('v-cap');
     cap.classList.toggle('on-sky', !!plan.captions.some(function(c){ return c.sky && t >= c.from && t < c.to; }));
+    let shown = 0;
     [].forEach.call(cap.children, function(el){
       const c = plan.captions[+el.getAttribute('data-i')];
       const pin = easeOut((t - c.from) / .32), pout = clamp((c.to - t) / .22, 0, 1);
       const o = t < c.from || t >= c.to ? 0 : Math.min(pin, pout);
+      shown = Math.max(shown, o);
       el.style.opacity = o.toFixed(3);
       el.style.transform = 'translateY(' + ((1 - pin) * 34).toFixed(1) + 'px)';
     });
+    // The band behind the caption, as soon as the phone comes up under it,
+    // and only while there is a caption: without one the close-up fills the
+    // frame.
+    const band = clamp((cam.z - 1) * 8, 0, 1) * shown;
+    $('v-band').style.opacity = band.toFixed(3);
+    // A close-up that has settled shows nothing round the glass but the
+    // band: noted when it does, and which edge, for the render to say.
+    if (cam.close && !dx && !dy && !shake){
+      const edges = [SX * cam.z + cam.x > .5 && 'left', (SX + 860) * cam.z + cam.x < 1079.5 && 'right',
+                     TOP * cam.z + cam.y > (band > .01 ? BAND : 0) + .5 && 'top', (TOP + 1511) * cam.z + cam.y < 1919.5 && 'foot'];
+      if (edges.some(Boolean)) gaps.push({ t:t, edges:edges.filter(Boolean) });
+    }
 
-    // Taps: a ring that grows a little and goes.
+    // Taps: a ring that grows a little and goes. Before each, an empty ring
+    // closes in on the place, and hands over to it as the tap lands.
     const fx = $('v-fx');
     let html = '';
+    points.forEach(function(e){
+      const u = (t - e.at) / e.dur;
+      if (u < 0 || u > 1.25) return;
+      const p = toStage(e.x, e.y, cam), k = easeOut(Math.min(u, 1));
+      const s = 1.7 - 1.15 * k, o = u <= 1 ? k : 1 - (u - 1) / .25;
+      html += '<div class="v-point" style="left:' + (p.x + dx).toFixed(1) + 'px;top:' + (p.y + dy).toFixed(1) + 'px;transform:scale(' + s.toFixed(3) + ');opacity:' + o.toFixed(3) + '"></div>';
+    });
     taps.forEach(function(e){
       const u = (t - e.at) / .5;
       if (u < 0 || u > 1) return;
@@ -296,6 +491,7 @@ const V = (function(){
       }
     });
     fx.innerHTML = html;
+    drawG(t, cam, dx, dy);
 
     // The interludes, each a page of its own: up from below as the phone
     // goes up and out of the top, and away up the same way.
@@ -314,11 +510,438 @@ const V = (function(){
     window.__vseek(t * 1000);
   }
 
+  // ---- Motion graphics ------------------------------------------------------
+  // What the film draws over the phone (#v-g) and behind it (#v-gback) to
+  // say what is happening without words: where the stop is, which bus is
+  // coming and the stops it still has to pass, the bus going out to other
+  // riders' phones, the salamat, the stop it gets off at, the ticket coming
+  // off the phone, the parts, the new paint. Each is told when it starts (an
+  // event of type 'g', with until if it ends) and reads where the page's
+  // things are from live, so one on the map stays on the map through the
+  // camera's moves. All of it is worked out from t, like the rest.
+  const PURPLE = '#4f46b8', GOLD = '#f2b233', INK = '#4a1119', MAROON = '#7a1f2b';
+  const NUT = 'M12 2.4l8.3 4.8v9.6L12 21.6l-8.3-4.8V7.2zM12 8.3a3.7 3.7 0 1 0 0 7.4a3.7 3.7 0 1 0 0-7.4z';
+  const COACH = 'M5.4 4.75C3.1 3.7 1.55 5.25 1.65 8.2H2.95C2.9 6.35 3.65 5.55 4.85 6.05Z M18.6 4.75C20.9 3.7 22.45 5.25 22.35 8.2H21.05C21.1 6.35 20.35 5.55 19.15 6.05Z' +
+    'M6.4 17h3.6v3.8h-3.6zM14 17h3.6v3.8h-3.6zM7.6 2.6h8.8q3 0 3 3v10q0 3 -3 3h-8.8q-3 0 -3 -3v-10q0 -3 3 -3zM7.6 7.1h8.8q1.3 0 1.3 1.3v3q0 1.3 -1.3 1.3h-8.8q-1.3 0 -1.3 -1.3v-3q0 -1.3 1.3 -1.3z';
+  const f1 = function(v){ return (+v).toFixed(1); };
+  const f3 = function(v){ return (+v).toFixed(3); };
+  const easeIn = function(p){ p = clamp(p, 0, 1); return p * p * p; };
+  const backOut = function(p){ p = clamp(p, 0, 1); const c = 1.70158; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+  // The same scatter every render.
+  const rnd = function(i, k){ const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); };
+  // Out over the last third of a second before until.
+  const leaving = function(g, t){ return g.until === undefined ? 1 : clamp((g.until - t) / .3, 0, 1); };
+  function starPath(r){
+    let d = '';
+    for (let i = 0; i < 10; i++){ const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * .45 : r; d += (i ? 'L' : 'M') + f1(Math.cos(a) * q) + ' ' + f1(Math.sin(a) * q); }
+    return d + 'Z';
+  }
+  function sparkPath(r){
+    const q = r * .22;
+    return 'M0 ' + f1(-r) + 'Q' + f1(q) + ' ' + f1(-q) + ' ' + f1(r) + ' 0Q' + f1(q) + ' ' + f1(q) + ' 0 ' + f1(r) + 'Q' + f1(-q) + ' ' + f1(q) + ' ' + f1(-r) + ' 0Q' + f1(-q) + ' ' + f1(-q) + ' 0 ' + f1(-r) + 'Z';
+  }
+  // A map pin h tall, its tip at 0,0: the reader's stop, with somebody
+  // waiting in its head.
+  function pinShape(h){
+    const R = h * .36, c = h - R;
+    return '<path d="M0 0C' + f1(-.2 * h) + ' ' + f1(-.25 * h) + ' ' + f1(-R) + ' ' + f1(-c + .58 * R) + ' ' + f1(-R) + ' ' + f1(-c) +
+      'A' + f1(R) + ' ' + f1(R) + ' 0 1 1 ' + f1(R) + ' ' + f1(-c) + 'C' + f1(R) + ' ' + f1(-c + .58 * R) + ' ' + f1(.2 * h) + ' ' + f1(-.25 * h) + ' 0 0Z"' +
+      ' fill="' + PURPLE + '" stroke="#fff" stroke-width="' + f1(h * .06) + '" stroke-linejoin="round"/>' +
+      '<circle cy="' + f1(-c) + '" r="' + f1(R * .6) + '" fill="#fff"/>' +
+      '<circle cy="' + f1(-c - R * .2) + '" r="' + f1(R * .17) + '" fill="' + PURPLE + '"/>' +
+      '<path d="M' + f1(-R * .31) + ' ' + f1(-c + R * .36) + 'Q' + f1(-R * .31) + ' ' + f1(-c + R * .03) + ' 0 ' + f1(-c + R * .03) +
+      'Q' + f1(R * .31) + ' ' + f1(-c + R * .03) + ' ' + f1(R * .31) + ' ' + f1(-c + R * .36) + 'Z" fill="' + PURPLE + '"/>';
+  }
+  // A name on a pill, from x along, its middle at y; k its scale.
+  function chip(x, y, text, fs, k, fill){
+    const w = text.length * fs * .52 + fs * 1.4, h = fs * 1.75;
+    return '<g transform="translate(' + f1(x) + ' ' + f1(y) + ') scale(' + f3(Math.max(0, k)) + ')">' +
+      '<rect y="' + f1(-h / 2) + '" width="' + f1(w) + '" height="' + f1(h) + '" rx="' + f1(h / 2) + '" fill="' + fill + '" stroke="#fff" stroke-width="' + f1(fs * .14) + '"/>' +
+      '<text x="' + f1(w / 2) + '" y="' + f1(fs * .35) + '" text-anchor="middle" font-size="' + f1(fs) + '" fill="#fff">' + text + '</text></g>';
+  }
+  // Another rider's phone: a small map with the road on it, and the bus
+  // turning up on it v seconds after the phone does.
+  function peer(v){
+    let s = '<rect x="-74" y="-130" width="148" height="260" rx="28" fill="#1c1411"/>' +
+            '<rect x="-64" y="-114" width="128" height="228" rx="18" fill="#efe9de"/>' +
+            '<path d="M-28 114C-34 50 34 34 14 -24S-26 -84 22 -114" fill="none" stroke="#d6ccbb" stroke-width="13" stroke-linecap="round"/>' +
+            '<path d="M-28 114C-34 50 34 34 14 -24S-26 -84 22 -114" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="9 8"/>';
+    if (v > 0){
+      const w = (v % 1.1) / 1.1;
+      s += '<circle cx="14" cy="-24" r="' + f1(24 + 46 * w) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(6 * (1 - w)) + '" opacity="' + f3(1 - w) + '"/>' +
+           '<g transform="translate(14 -24) scale(' + f3(backOut(v / .35)) + ')"><circle r="25" fill="' + GOLD + '" stroke="' + MAROON + '" stroke-width="4"/>' +
+           '<g transform="translate(-13 -13) scale(1.08)" fill="' + INK + '"><path d="' + COACH + '" fill-rule="evenodd"/></g></g>';
+    }
+    return s;
+  }
+  // Page pixels, as the camera has them now.
+  function drawG(t, cam, dx, dy){
+    const S = function(p){ return { x:(SX + p.x * K) * cam.z + cam.x + dx, y:(SY + p.y * K) * cam.z + cam.y + dy }; };
+    const L = function(n){ return n * K * cam.z; };
+    let front = '', back = '';
+    $('v-gp').style.display = 'none';
+    // Lowest first: the way under the sight under the pin under the burst.
+    gfx.slice().sort(function(a, b){ return (LAYER[a.kind] || 0) - (LAYER[b.kind] || 0); }).forEach(function(g){
+      const u = t - g.at;
+      if (u < 0 || (g.until !== undefined && t >= g.until)) return;
+      const r = G[g.kind](g, u, t, S, L, cam, dx, dy);
+      if (typeof r === 'string') front += r;
+      else if (r){ front += r.front || ''; back += r.back || ''; }
+    });
+    $('v-g').innerHTML = front;
+    $('v-gb').innerHTML = back;
+  }
+  const LAYER = { trail:1, lock:2, pin:3, burst:4, cards:5, lift:6 };
+  const G = {
+    // The saved stop: a pin comes down onto it from above, and rings go out
+    // from where it lands; its name beside it; a slow breath while it waits,
+    // and a jump when the bus gets to it (joy).
+    pin: function(g, u, t, S, L, cam){
+      if (!live.pin) return '';
+      const tip = S(live.pin), h = 66 + 30 * cam.z, fall = .36, k = clamp(u / fall, 0, 1), o = leaving(g, t);
+      let y = 0, sx = 1, sy = 1;
+      if (u < fall){ y = -(1 - easeIn(k)) * 820; sx = .9; sy = 1.12; }
+      else if (u < fall + .12){ const q = Math.sin(Math.PI * (u - fall) / .12); sx = 1 + .24 * q; sy = 1 - .22 * q; }
+      else if (u < fall + .5){ const q = (u - fall - .12) / .38; y = -Math.sin(Math.PI * q) * h * .3 * (1 - q * .3); }
+      if (g.joy !== undefined && t >= g.joy && t < g.joy + .7){ const q = (t - g.joy) / .7; y -= Math.sin(Math.PI * q) * h * .55 * (1 - q * .4); }
+      let s = '<g opacity="' + f3(o) + '">';
+      s += '<ellipse cx="' + f1(tip.x) + '" cy="' + f1(tip.y) + '" rx="' + f1(h * .3 * (.4 + .6 * k)) + '" ry="' + f1(h * .09 * (.4 + .6 * k)) + '" fill="#000" opacity="' + f3(.28 * k) + '"/>';
+      for (let i = 0; i < 2; i++){
+        const v = (u - fall - i * .16) / .75;
+        if (v > 0 && v < 1) s += '<circle cx="' + f1(tip.x) + '" cy="' + f1(tip.y) + '" r="' + f1(h * (.2 + 1.3 * easeOut(v))) + '" fill="none" stroke="' + PURPLE +
+          '" stroke-width="' + f1(h * .08 * (1 - v)) + '" opacity="' + f3(1 - v) + '"/>';
+      }
+      if (u > 1.4){
+        const v = ((u - 1.4) % 1.7) / 1.7;
+        s += '<circle cx="' + f1(tip.x) + '" cy="' + f1(tip.y) + '" r="' + f1(h * (.15 + .75 * v)) + '" fill="' + PURPLE + '" opacity="' + f3(.22 * (1 - v)) + '"/>';
+      }
+      s += '<g transform="translate(' + f1(tip.x) + ' ' + f1(tip.y + y) + ') scale(' + f3(sx) + ' ' + f3(sy) + ')">' + pinShape(h) + '</g>';
+      if (g.label){ const p = (u - fall - .1) / .4; if (p > 0) s += chip(tip.x + h * .44, tip.y + y - h * .64, g.label, h * .34, backOut(p), PURPLE); }
+      return s + '</g>';
+    },
+    // The bus coming: a sight closes on it and stays with it.
+    lock: function(g, u, t, S, L){
+      if (!live.bus) return '';
+      const c = S(live.bus), r0 = L(16), p = clamp(u / .34, 0, 1), o = clamp(u / .1, 0, 1) * leaving(g, t);
+      const r = r0 * (2.6 - 1.6 * backOut(p)), rot = 120 * (1 - ease(p));
+      let s = '<g opacity="' + f3(o) + '" transform="translate(' + f1(c.x) + ' ' + f1(c.y) + ') rotate(' + f1(rot) + ')">' +
+        '<circle r="' + f1(r) + '" fill="none" stroke="' + INK + '" stroke-width="' + f1(L(3.6)) + '" opacity=".5"/>' +
+        '<circle r="' + f1(r) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(L(2.1)) + '"/>';
+      for (let i = 0; i < 4; i++) s += '<path d="M' + f1(r + L(2.5)) + ' 0H' + f1(r + L(8.5)) + '" stroke="' + INK + '" stroke-width="' + f1(L(3.8)) + '" stroke-linecap="round" opacity=".5" transform="rotate(' + i * 90 + ')"/>' +
+        '<path d="M' + f1(r + L(2.5)) + ' 0H' + f1(r + L(8.5)) + '" stroke="' + GOLD + '" stroke-width="' + f1(L(2.2)) + '" stroke-linecap="round" transform="rotate(' + i * 90 + ')"/>';
+      s += '</g>';
+      if (u > .4){
+        const v = ((u - .4) % 1.1) / 1.1;
+        s += '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(r0 * (1 + 1.3 * v)) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(L(1.8) * (1 - v)) + '" opacity="' + f3((1 - v) * .85 * o) + '"/>';
+      }
+      return s;
+    },
+    // The way it still has to come: from the bus through the stops it has
+    // yet to pass, the card's count of them (live.n), to the pin. Drawn on,
+    // its dashes going the bus's way; each stop is a dot, and goes with a
+    // pop as the card counts it off.
+    trail: function(g, u, t, S, L){
+      const b = live.bus, pin = live.pin, all = live.dots || [];
+      if (!b || !pin) return '';
+      const n = Math.max(0, Math.min(all.length, live.n | 0)), o = leaving(g, t);
+      if (g.lastN === undefined) g.lastN = n;
+      if (n < g.lastN){ g.gone = g.gone || []; for (let k = g.lastN; k > n; k--) g.gone.push({ p:all[all.length - k], at:t }); }
+      g.lastN = n;
+      const ahead = all.slice(all.length - n), pts = [S(b)].concat(ahead.map(S), [S(pin)]);
+      let len = 0;
+      for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+      let s = '';
+      if (len > L(14)){
+        const d = pts.map(function(q, i){ return (i ? 'L' : 'M') + f1(q.x) + ' ' + f1(q.y); }).join(''), p = ease(clamp(u / .6, 0, 1));
+        s += '<defs><mask id="g-trail" maskUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1920">' +
+          '<path d="' + d + '" fill="none" stroke="#fff" stroke-width="' + f1(L(12)) + '" stroke-dasharray="' + f1(len * p) + ' ' + f1(len + 10) + '"/>' +
+          '<circle cx="' + f1(pts[0].x) + '" cy="' + f1(pts[0].y) + '" r="' + f1(L(15)) + '" fill="#000"/></mask></defs>' +
+          '<g mask="url(#g-trail)" opacity="' + f3(o) + '"><path d="' + d + '" fill="none" stroke="#fff" stroke-width="' + f1(L(5.4)) + '" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<path d="' + d + '" fill="none" stroke="' + MAROON + '" stroke-width="' + f1(L(2.6)) + '" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="' + f1(L(6)) + ' ' + f1(L(4.4)) +
+          '" stroke-dashoffset="' + f1(-t * L(16)) + '"/></g>';
+      }
+      ahead.forEach(function(q, i){
+        const k = backOut((u - .12 - i * .07) / .28);
+        if (k <= 0) return;
+        const c = S(q);
+        s += '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(L(4.4) * k) + '" fill="#fff" stroke="' + MAROON + '" stroke-width="' + f1(L(2.1)) + '" opacity="' + f3(o) + '"/>';
+      });
+      (g.gone || []).forEach(function(x){
+        const v = (t - x.at) / .5;
+        if (v < 0 || v >= 1) return;
+        const c = S(x.p);
+        s += '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(L(4.4 + 13 * easeOut(v))) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(L(2.4) * (1 - v)) + '" opacity="' + f3(1 - v) + '"/>' +
+             '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(L(4.4) * (1 - easeOut(v))) + '" fill="' + GOLD + '"/>';
+      });
+      return s;
+    },
+    // A flag on the card going off: outlines out from it, in its colour.
+    pulse: function(g, u, t, S, L){
+      const r = live[g.on];
+      if (!r || u > 1) return '';
+      const a = S({ x:r.x, y:r.y }), b = S({ x:r.x + r.w, y:r.y + r.h });
+      let s = '';
+      for (let i = 0; i < 2; i++){
+        const v = (u - i * .2) / .65;
+        if (v <= 0 || v >= 1) continue;
+        const e = L(2 + 14 * easeOut(v));
+        s += '<rect x="' + f1(a.x - e) + '" y="' + f1(a.y - e) + '" width="' + f1(b.x - a.x + 2 * e) + '" height="' + f1(b.y - a.y + 2 * e) + '" rx="' + f1((b.y - a.y) / 2 + e) +
+             '" fill="none" stroke="' + g.color + '" stroke-width="' + f1(L(3.2) * (1 - v)) + '" opacity="' + f3(1 - v) + '"/>';
+      }
+      return s;
+    },
+    // The bus at the stop: confetti from the pin, and a ring.
+    burst: function(g, u, t, S, L, cam){
+      if (!live.pin || u > 1.4) return '';
+      const c = S(live.pin), h = 66 + 30 * cam.z, cy = c.y - h * .64, v = clamp(u / .55, 0, 1);
+      let s = '<circle cx="' + f1(c.x) + '" cy="' + f1(cy) + '" r="' + f1(h * (.3 + 1.7 * easeOut(v))) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(h * .09 * (1 - v)) + '" opacity="' + f3(1 - v) + '"/>';
+      const cols = [GOLD, PURPLE, '#e4876a', '#fff', '#a3232f'];
+      for (let i = 0; i < 16; i++){
+        const a = -Math.PI / 2 + (rnd(i, 1) - .5) * 2.8, sp = h * (3.4 + 3 * rnd(i, 2));
+        const x = c.x + Math.cos(a) * sp * u, y = cy + Math.sin(a) * sp * u + 1300 * u * u * .5;
+        const o = clamp(1 - (u - .75) / .6, 0, 1);
+        s += '<rect x="-8" y="-4.5" width="16" height="9" rx="2.5" fill="' + cols[i % 5] + '" opacity="' + f3(o) + '" transform="translate(' + f1(x) + ' ' + f1(y) + ') rotate(' +
+             f1((rnd(i, 3) - .5) * 1100 * u) + ') scale(' + f3(h / 70) + ')"/>';
+      }
+      return s;
+    },
+    // Sharing: the bus going out from this phone, rings behind it, to other
+    // riders' phones around it, each with the bus turning up on its map.
+    cast: function(g, u, t, S, L, cam){
+      const c = S({ x:195, y:300 }), o = leaving(g, t);
+      let back = '';
+      for (let i = 0; i < 4; i++){
+        const v = (u - i * .3) / 1.6;
+        if (v <= 0 || v >= 1) continue;
+        back += '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(560 * cam.z + 760 * easeOut(v)) + '" fill="none" stroke="#fff" stroke-width="' + f1(20 * (1 - v)) +
+                '" opacity="' + f3(.65 * (1 - v) * o) + '"/>';
+      }
+      const spots = [[122, 700, -8], [958, 610, 7], [130, 1330, 6], [950, 1410, -7]];
+      let front = '';
+      spots.forEach(function(sp, i){
+        const at = .25 + i * .17, p = (u - at) / .42;
+        if (p <= 0) return;
+        const k = backOut(p) * o, bob = Math.sin((u - at) * 2.4 + i * 1.7) * 9;
+        front += '<g transform="translate(' + sp[0] + ' ' + f1(sp[1] + bob) + ') rotate(' + sp[2] + ') scale(' + f3(k) + ')">' + peer(u - at - .3) + '</g>';
+      });
+      return { front:front, back:back };
+    },
+    // Salamat: stars from the sharer's own bus on the strip.
+    stars: function(g, u, t, S){
+      const r = live.pill;
+      if (!r || u > 1.4) return '';
+      const c = S({ x:r.x + r.w / 2, y:r.y + r.h / 2 });
+      let s = '';
+      for (let i = 0; i < 7; i++){
+        const a = -Math.PI / 2 + (i - 3) * .4 + (rnd(i, 7) - .5) * .25, d = (150 + 150 * rnd(i, 8)) * easeOut(u / .9);
+        const x = c.x + Math.cos(a) * d, y = c.y + Math.sin(a) * d - 70 * u, z = (22 + 18 * rnd(i, 9)) * backOut(u / .3);
+        s += '<g transform="translate(' + f1(x) + ' ' + f1(y) + ') rotate(' + f1((rnd(i, 10) - .5) * 300 * u) + ')" opacity="' + f3(clamp(1 - (u - .8) / .5, 0, 1)) + '">' +
+             '<path d="' + starPath(z) + '" fill="' + GOLD + '" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></g>';
+      }
+      return s;
+    },
+    // On board: a marker over the stop they get off at, and a tick once the
+    // bus has stopped there (check).
+    here: function(g, u, t, S, L){
+      const r = live.stop;
+      if (!r) return '';
+      const a = S({ x:r.x, y:r.y }), b = S({ x:r.x + r.w, y:r.y + r.h }), cx = (a.x + b.x) / 2, o = clamp(u / .3, 0, 1) * leaving(g, t);
+      const done = g.check !== undefined && t >= g.check;
+      let s = '';
+      if (!done){
+        const y = a.y - 34 - Math.abs(Math.sin(u * 4.2)) * 26, k = backOut(u / .35);
+        s += '<g opacity="' + f3(o) + '" transform="translate(' + f1(cx) + ' ' + f1(y) + ') scale(' + f3(k) + ')">' +
+             '<path d="M-26 -30H26L0 0Z" fill="' + PURPLE + '" stroke="#fff" stroke-width="6" stroke-linejoin="round"/></g>';
+      } else {
+        const v = t - g.check, k = backOut(v / .35);
+        s += '<circle cx="' + f1(cx) + '" cy="' + f1(a.y - 60) + '" r="' + f1(46 + 90 * easeOut(v / .6)) + '" fill="none" stroke="' + PURPLE + '" stroke-width="' + f1(10 * clamp(1 - v / .6, 0, 1)) +
+             '" opacity="' + f3(clamp(1 - v / .6, 0, 1)) + '"/>' +
+             '<g opacity="' + f3(o) + '" transform="translate(' + f1(cx) + ' ' + f1(a.y - 60) + ') scale(' + f3(k) + ')"><circle r="46" fill="' + PURPLE + '" stroke="#fff" stroke-width="7"/>' +
+             '<path d="M-19 1l12 12l24 -25" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></g>';
+      }
+      return s;
+    },
+    // Parts: nuts out of the printed ticket's line for them (px, py on it),
+    // into a purse at the top, which counts them in (from, to).
+    coins: function(g, u, t, S, L, cam, dx){
+      const src = printedAt(g.px, g.py, t);
+      const pk = clamp(u / .3, 0, 1), o = leaving(g, t), px = 540 + dx, py = 170, n = 8;
+      let got = 0, s = '';
+      for (let i = 0; i < n; i++){
+        const at = .25 + i * .08, v = (u - at) / .62;
+        if (v >= 1){ got++; continue; }
+        if (v <= 0 || !src) continue;
+        const e = ease(v), cx = src.x + (px - src.x) * e, cy = src.y + (py - src.y) * e - Math.sin(Math.PI * v) * (260 + 60 * rnd(i, 4));
+        s += '<g transform="translate(' + f1(cx) + ' ' + f1(cy) + ') rotate(' + f1(v * 540 + i * 40) + ') scale(2.5)"><path d="' + NUT + '" transform="translate(-12 -12)" fill="#cfd5db" stroke="#5f6870" stroke-width="1.5" fill-rule="evenodd"/></g>';
+      }
+      const count = Math.round(g.from + (g.to - g.from) * got / n), bump = got && u - (.25 + (got - 1) * .08 + .62) < .18 ? .08 : 0;
+      s = '<g opacity="' + f3(o) + '" transform="translate(' + px + ' ' + py + ') scale(' + f3(backOut(pk) * (1 + bump)) + ')">' +
+          '<rect x="-150" y="-62" width="300" height="124" rx="62" fill="#fbf4e4" stroke="' + MAROON + '" stroke-width="6"/>' +
+          '<g transform="translate(-96 0) scale(3.4)"><path d="' + NUT + '" transform="translate(-12 -12)" fill="#cfd5db" stroke="#5f6870" stroke-width="1.5" fill-rule="evenodd"/></g>' +
+          '<text x="34" y="26" text-anchor="middle" font-size="76" fill="' + INK + '">' + count + '</text></g>' + s;
+      return s;
+    },
+    // A new paint: a stroke of it across the bus, and sparkles.
+    paint: function(g, u, t, S){
+      const r = live.coach;
+      if (!r || u > .9) return '';
+      const a = S({ x:r.x, y:r.y }), b = S({ x:r.x + r.w, y:r.y + r.h }), w = b.x - a.x, h = b.y - a.y;
+      const col = (typeof BUS_PAINTS !== 'undefined' && BUS_PAINTS[g.paint] || ['', '', '', MAROON])[3];
+      const p = clamp(u / .38, 0, 1), x = a.x - .6 * w + 2.2 * w * ease(p), bw = .42 * w, sk = .35 * h;
+      let s = '<defs><clipPath id="g-paint"><rect x="' + f1(a.x) + '" y="' + f1(a.y) + '" width="' + f1(w) + '" height="' + f1(h) + '" rx="26"/></clipPath></defs>';
+      if (p < 1) s += '<g clip-path="url(#g-paint)"><path d="M' + f1(x) + ' ' + f1(b.y) + 'L' + f1(x + sk) + ' ' + f1(a.y) + 'L' + f1(x + sk + bw) + ' ' + f1(a.y) + 'L' + f1(x + bw) + ' ' + f1(b.y) + 'Z" fill="' + col + '" opacity=".5"/>' +
+        '<path d="M' + f1(x + bw) + ' ' + f1(b.y) + 'L' + f1(x + sk + bw) + ' ' + f1(a.y) + '" stroke="#fff" stroke-width="14" opacity=".85"/></g>';
+      for (let i = 0; i < 6; i++){
+        const v = (u - .18 - i * .05) / .5;
+        if (v <= 0 || v >= 1) continue;
+        const sx = a.x + w * (.08 + .84 * rnd(i, 21)), sy = a.y + h * (.12 + .7 * rnd(i, 22)), z = (26 + 22 * rnd(i, 23)) * Math.sin(Math.PI * v);
+        s += '<g transform="translate(' + f1(sx) + ' ' + f1(sy) + ') rotate(' + f1(v * 90) + ')"><path d="' + sparkPath(z) + '" fill="#fff" stroke="' + GOLD + '" stroke-width="3"/></g>';
+      }
+      return s;
+    },
+    // Your bus off My tickets and onto another rider's map: the coach as My
+    // tickets draws it lifts off the phone while the phones swap under it,
+    // flies down onto the route, and turns into the map's badge as it lands
+    // (live.land), where the page's own badge then comes in under it.
+    lift: function(g, u, t, S, L){
+      if (!g.from){
+        const c = live.coach;
+        if (!c) return '';
+        const a = S({ x:c.x, y:c.y }), b = S({ x:c.x + c.w, y:c.y + c.h });
+        g.from = { x:(a.x + b.x) / 2, y:(a.y + b.y) / 2, w:b.x - a.x };
+      }
+      const f = g.from, lp = ease(clamp(u / .6, 0, 1));
+      let x = f.x, y = f.y - 70 * lp, w = f.w * (1 - .3 * lp), rot = -4 * lp;
+      const fp = clamp((u - .65) / .7, 0, 1);
+      if (fp > 0 && live.land){
+        const end = S(live.land), e = ease(fp), mx = (x + end.x) / 2, my = Math.min(y, end.y) - 300;
+        x = (1 - e) * (1 - e) * x + 2 * (1 - e) * e * mx + e * e * end.x;
+        y = (1 - e) * (1 - e) * y + 2 * (1 - e) * e * my + e * e * end.y;
+        w = w + (L(30) * 1.6 - w) * e; rot = rot * (1 - e) + 8 * Math.sin(Math.PI * e);
+      }
+      const morph = clamp((fp - .72) / .28, 0, 1), landed = u - 1.35;
+      let s = '';
+      if (morph < 1){
+        const h = w * 136 / 364;
+        s += '<g opacity="' + f3(1 - morph) + '" transform="rotate(' + f1(rot) + ' ' + f1(x) + ' ' + f1(y) + ')">' +
+          '<ellipse cx="' + f1(x) + '" cy="' + f1(y + h * .55) + '" rx="' + f1(w * .42) + '" ry="' + f1(h * .1) + '" fill="#000" opacity="' + f3(.22 * (1 - fp)) + '"/>' +
+          '<svg x="' + f1(x - w / 2) + '" y="' + f1(y - h / 2) + '" width="' + f1(w) + '" height="' + f1(h) + '" viewBox="0 0 364 136" overflow="visible" style="' +
+          paintStyle(g.paint, 'day') + '">' + COACH_SIDE + decorOn(g.worn) + '</svg></g>';
+      }
+      if (morph > 0 && landed < .3){
+        const r = L(15) * (landed > 0 ? 1 + .3 * Math.sin(Math.PI * clamp(landed / .25, 0, 1)) : 1), o = morph * clamp(1 - landed / .3, 0, 1);
+        s += '<g opacity="' + f3(o) + '" transform="translate(' + f1(x) + ' ' + f1(y) + ')"><circle r="' + f1(r) + '" fill="#e39a1c" stroke="#fff" stroke-width="' + f1(L(2.5)) + '"/>' +
+          '<g transform="scale(' + f3(r / 15.5) + ') translate(-9.5 -9.5) scale(.8)" fill="#fff"><path d="' + COACH + '" fill-rule="evenodd"/></g></g>';
+      }
+      if (landed > 0 && landed < .7 && live.land){
+        const c = S(live.land), v = landed / .7;
+        s += '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(L(15) * (1 + 3 * easeOut(v))) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(10 * (1 - v)) + '" opacity="' + f3(1 - v) + '"/>';
+      }
+      return s;
+    },
+    // Riders' map, each bus as its sharer dressed it: a card out of each
+    // badge, the bus in it on the road through the place it is nearest, the
+    // way that bus's own popup draws it (rideSvg), one after another up the
+    // route; the one plain, its sharer having not chosen to show theirs; and
+    // yours last, ringed in gold.
+    cards: function(g, u, t, S){
+      const at = live.fleet || [];
+      let s = '';
+      g.buses.forEach(function(b, i){
+        const p = at[i], k = backOut((u - b.at) / .42);
+        if (!p || k <= 0) return;
+        const c = S(p), right = b.side > 0, W = 384, H = 170, pad = 11;
+        const x0 = right ? c.x + 50 : c.x - 50 - W, y0 = clamp(c.y - H / 2, 30, 1890 - H), cy = clamp(c.y, y0 + 26, y0 + H - 26);
+        const ex = right ? x0 + 3 : x0 + W - 3, tip = right ? c.x + 22 : c.x - 22;
+        const ride = rideSvg({ views:[b.view], sky:g.sky, worn:b.worn, paint:b.paint, now:t * 1000, frame:'popup' })
+          .replace('<svg class="rideart', '<svg x="' + f1(x0 + pad) + '" y="' + f1(y0 + pad) + '" width="' + (W - 2 * pad) + '" height="' + (H - 2 * pad) +
+            '" preserveAspectRatio="xMidYMid slice" class="rideart')
+          .replace('style="', 'style="width:' + (W - 2 * pad) + 'px;height:' + (H - 2 * pad) + 'px;');
+        s += '<g transform="translate(' + f1(c.x) + ' ' + f1(c.y) + ') scale(' + f3(k) + ') translate(' + f1(-c.x) + ' ' + f1(-c.y) + ')">' +
+          '<defs><clipPath id="g-card-' + i + '"><rect x="' + f1(x0 + pad) + '" y="' + f1(y0 + pad) + '" width="' + (W - 2 * pad) + '" height="' + (H - 2 * pad) + '" rx="14"/></clipPath></defs>' +
+          '<rect x="' + f1(x0 + 8) + '" y="' + f1(y0 + 18) + '" width="' + (W - 16) + '" height="' + H + '" rx="22" fill="#4a1119" opacity=".3" filter="url(#v-soft-s)"/>' +
+          '<path d="M' + f1(ex) + ' ' + f1(cy - 17) + 'L' + f1(tip) + ' ' + f1(c.y) + 'L' + f1(ex) + ' ' + f1(cy + 17) + 'Z" fill="' + (b.yours ? GOLD : '#fbf4e4') + '"/>' +
+          '<rect x="' + f1(x0) + '" y="' + f1(y0) + '" width="' + W + '" height="' + H + '" rx="22" fill="#fbf4e4" stroke="' + (b.yours ? GOLD : '#fff') + '" stroke-width="' + (b.yours ? 9 : 4) + '"/>' +
+          '<g clip-path="url(#g-card-' + i + ')">' + ride + '</g></g>';
+        if (b.yours){
+          const v = ((u - b.at) % 1.2) / 1.2;
+          s += '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(34 + 60 * v) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(9 * (1 - v)) + '" opacity="' + f3(1 - v) + '"/>';
+          for (let j = 0; j < 6; j++){
+            const q = (u - b.at - .15 - j * .06) / .55;
+            if (q <= 0 || q >= 1) continue;
+            const sx = x0 + W * (.1 + .8 * rnd(j, 31)), sy = y0 + (rnd(j, 32) < .5 ? -14 : H + 14), z = (22 + 16 * rnd(j, 33)) * Math.sin(Math.PI * q);
+            s += '<g transform="translate(' + f1(sx) + ' ' + f1(sy) + ') rotate(' + f1(q * 90) + ')"><path d="' + sparkPath(z) + '" fill="#fff" stroke="' + GOLD + '" stroke-width="3"/></g>';
+          }
+        }
+      });
+      return s;
+    },
+    // The trip's ticket, printed: it comes up out of the top of the phone in
+    // feeds, as a printer feeds paper, the phone drops away under it, and it
+    // comes forward to fill the frame (the maintainer's pick of three ways
+    // from the stop to the ticket, October 2026).
+    print: function(g, u, t, S, L, cam, dx){
+      const q = printedAt(undefined, undefined, t), el = $('v-gp');
+      if (!q || !el.firstChild) return '';
+      el.setAttribute('transform', 'translate(' + f1(q.x + dx) + ' ' + f1(q.y) + ') rotate(' + f1(q.rot) + ') scale(' + f3(q.k) + ')');
+      el.style.display = '';
+      return '';
+    }
+  };
+  // Where the printed ticket is at t: its top middle (x, y), its turn and
+  // scale; or, given px and py from 0 to 1 across and down it, that point
+  // on it. 600 wide as it comes off the phone, the app's own tilt once it
+  // is in front, and as big as the frame lets it be.
+  function printedAt(px, py, t){
+    const g = gfx.filter(function(x){ return x.kind === 'print'; })[0];
+    if (!g || !printed) return null;
+    const u = t - g.at, W = 600, H = W * printed.h / printed.w;
+    // Up out of the top of the phone in five feeds, as a printer feeds paper.
+    const feeds = 5, feed = clamp(u / 1.0, 0, 1), step = Math.min(feeds, Math.floor(feed * feeds)), within = feed * feeds - step;
+    const rise = (step + ease(clamp(within / .65, 0, 1))) / feeds;
+    // Then forward, under the purse its parts go into (G.coins).
+    const f = clamp((u - .95) / .55, 0, 1), kf = Math.min(1.2, 1460 / H), y0 = 400 - rise * 720;
+    const y = y0 + (330 - y0) * ease(f), rot = -2.5 + 1.3 * ease(f), k = 1 + (kf - 1) * backOut(f);
+    if (px === undefined) return { x:540, y:y, rot:rot, k:k, w:W };
+    const lx = (px - .5) * W * k, ly = py * H * k, a = rot * Math.PI / 180;
+    return { x:540 + lx * Math.cos(a) - ly * Math.sin(a), y:y + lx * Math.sin(a) + ly * Math.cos(a) };
+  }
+
   // Each interlude's own movement, as a function of its local time u.
   const sweep = function(el, p){
     el.querySelectorAll('.lit').forEach(function(l){
       l.style.clipPath = 'inset(0 ' + ((1 - clamp(p, 0, 1)) * 100).toFixed(2) + '% 0 0)';
     });
+  };
+  // ---- The animated film's movements (motion.js) ----
+  const back = function(p){ p = clamp(p, 0, 1); const c = 1.70158; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+  // Keyframes [[u, value], ...], eased between, as motion.js reckons them.
+  const keyed = function(k, u){
+    if (u <= k[0][0]) return k[0][1];
+    for (let i = 1; i < k.length; i++) if (u <= k[i][0]){ const a = k[i - 1], b = k[i]; return a[1] + (b[1] - a[1]) * ease((u - a[0]) / (b[0] - a[0])); }
+    return k[k.length - 1][1];
+  };
+  // A picture drawn again only when it has changed.
+  const draw = function(el, html){ if (el.__h !== html){ el.__h = html; el.innerHTML = html; } };
+  // Kinetic type: each word in on its own, a beat apart, up from below with
+  // a little overshoot.
+  const kinetic = function(kt, u, at){
+    [].forEach.call(kt.querySelectorAll('.w'), function(w, i){
+      const p = (u - at - i * .09) / .5, b = back(p);
+      w.style.transform = 'translateY(' + ((1 - b) * 90).toFixed(1) + 'px) scale(' + (.75 + .25 * b).toFixed(3) + ')';
+      w.style.opacity = clamp(p * 3, 0, 1).toFixed(3);
+    });
+  };
+  // A thing popping in at `at`, to a little over its size and back.
+  const popIn = function(el, u, at){
+    const p = (u - at) / .45;
+    el.style.transform = 'scale(' + Math.max(0, back(p)).toFixed(3) + ')';
+    el.style.opacity = clamp(p * 4, 0, 1).toFixed(3);
+  };
+  // A card coming up into its place.
+  const rise = function(el, u, at){
+    el.style.transform = 'translateY(' + ((1 - easeOut((u - at) / .55)) * 160).toFixed(1) + 'px)';
+    el.style.opacity = clamp((u - at) / .25, 0, 1).toFixed(3);
   };
   const INT = {
     title: function(el, u){
@@ -335,17 +958,126 @@ const V = (function(){
     },
     end: function(el, u){
       sweep(el.querySelector('.v-board'), (u - .1) / .8);
-      ['name', 'lede', 'qr', 'url', 'fine'].forEach(function(k, j){
+      ['e-name', 'e-lede', 'e-watch', 'e-droid', 'e-fine'].forEach(function(k, j){
         const n = el.querySelector('.' + k);
         if (!n) return;
         const p = easeOut((u - .25 - j * .16) / .45);
         n.style.opacity = p.toFixed(3);
         n.style.marginTop = ((1 - p) * 30).toFixed(1) + 'px';
       });
+    },
+    // The animated film's scenes, each from its plan (x, motion.js).
+    'm-hook': function(el, u, x){
+      kinetic(el.querySelector('.kt'), u, x.kt);
+      // The question's last word swings once it has landed.
+      const ws = el.querySelectorAll('.kt .w'), q = ws[ws.length - 1], k = u - x.kt - (ws.length - 1) * .09 - .45;
+      if (k > 0 && k < 2.5) q.style.transform += ' rotate(' + (Math.sin(k * 11) * 10 * Math.exp(-k * 2)).toFixed(2) + 'deg)';
+      const road = el.querySelector('.m-road');
+      draw(road, stopViewSvg({ aboard:false, f:keyed(x.f, u), sky:x.sky, worn:[], paint:'klasiko' }).replace('xMidYMax slice', 'xMinYMax slice'));
+      road.style.transform = 'scale(' + (1 + .06 * ease(u / x.dur)).toFixed(4) + ')';
+    },
+    'm-route': function(el, u, x){
+      sweep(el.querySelector('.v-board'), (u - .15) / .8);
+      kinetic(el.querySelector('.kt'), u, x.kt);
+      // The two lines drawn in, their stations, then the buses on them,
+      // each its own way, with the ring the app's live buses breathe.
+      el.querySelectorAll('.m-rail').forEach(function(r){ r.style.strokeDashoffset = (1000 * (1 - ease((u - x.railAt) / .9))).toFixed(1); });
+      el.querySelectorAll('.m-stn').forEach(function(c, i){ c.style.opacity = clamp((u - x.railAt - .2 - i * .07) / .25, 0, 1).toFixed(3); });
+      el.querySelectorAll('.m-bus').forEach(function(g, i){
+        const b = x.buses[i], p = (u - b.at) / .45, along = clamp(b.x0 + b.v * Math.max(0, u - b.at), 0, 1);
+        const px = b.dir > 0 ? x.rail[0] + along * (x.rail[1] - x.rail[0]) : x.rail[1] - along * (x.rail[1] - x.rail[0]);
+        g.setAttribute('transform', 'translate(' + px.toFixed(1) + ' ' + b.y + ') scale(' + Math.max(0, back(p)).toFixed(3) + ')');
+        g.style.opacity = clamp(p * 4, 0, 1).toFixed(3);
+        const live = g.querySelector('.m-live'), r = (Math.max(0, u - b.at) * .8 + i * .37) % 1;
+        live.setAttribute('r', (50 + r * 56).toFixed(1));
+        live.style.opacity = (u > b.at + .3 ? (1 - r) * .6 : 0).toFixed(3);
+      });
+    },
+    'm-near': function(el, u, x){
+      kinetic(el.querySelector('.kt'), u, x.kt);
+      const card = el.querySelector('.m-card'), f = keyed(x.f, u), n = f <= 0 ? 0 : Math.ceil(f - 1e-6) - 1;
+      rise(card, u, x.cardAt);
+      draw(card, stopViewSvg({ aboard:false, f:f, sky:'day', worn:x.worn, paint:x.paint, here:n === 0 }));
+      // Two stops off, the phone buzzes: the card shakes the way the phone would.
+      const b = u - x.nearAt;
+      if (b >= 0 && b < .5){ const w = Math.sin(b * 2 * Math.PI * 22); card.style.transform += ' translateX(' + (w * 12).toFixed(1) + 'px) rotate(' + (w * 1.1).toFixed(2) + 'deg)'; }
+      const pill = el.querySelector('.m-pill'), here = u >= x.hereAt;
+      pill.className = 'm-pill ' + (here ? 'here' : 'near');
+      pill.textContent = here ? 'Sakay na!' : 'Malapit na!';
+      popIn(pill, u, here ? x.hereAt : x.nearAt);
+      const say = el.querySelector('.m-say');
+      draw(say, n === 0 ? 'Next stop is yours.' : 'about<b>' + n + '</b>' + (n === 1 ? 'stop' : 'stops') + ' before yours');
+      say.style.opacity = clamp((u - x.cardAt - .3) / .3, 0, 1).toFixed(3);
+    },
+    'm-share': function(el, u, x){
+      kinetic(el.querySelector('.kt'), u, x.kt);
+      rise(el.querySelector('.m-card'), u, x.cardAt);
+      // The bus on everyone's map: a pin over it, and rings going out.
+      const pin = el.querySelector('.m-pin');
+      popIn(pin, u, x.pinAt);
+      pin.style.transform += ' translateY(' + (Math.sin(Math.max(0, u - x.pinAt) * 3) * 8).toFixed(1) + 'px)';
+      el.querySelectorAll('.m-ring').forEach(function(r, i){
+        const k = u - x.pinAt - .2 - i * .45, p = k < 0 ? -1 : (k % 1.35) / 1.35;
+        r.style.opacity = p < 0 ? '0' : ((1 - p) * .9).toFixed(3);
+        r.style.transform = 'scale(' + (.6 + Math.max(0, p) * 2.6).toFixed(3) + ')';
+      });
+      // Salamat, from the riders: each up, and away.
+      el.querySelectorAll('.m-ty').forEach(function(b, i){
+        const at = x.tys[i], k = u - at;
+        popIn(b, u, at);
+        b.style.transform += ' translateY(' + (-Math.max(0, k) * 36).toFixed(1) + 'px)';
+        if (k > 1.9) b.style.opacity = clamp(1 - (k - 1.9) / .4, 0, 1).toFixed(3);
+      });
+      const say = el.querySelector('.m-say');
+      say.style.opacity = clamp((u - x.sayAt) / .35, 0, 1).toFixed(3);
+      say.style.transform = 'translateY(' + ((1 - easeOut((u - x.sayAt) / .35)) * 30).toFixed(1) + 'px)';
+    },
+    'm-ticket': function(el, u, x){
+      kinetic(el.querySelector('.kt'), u, x.kt);
+      const card = el.querySelector('.m-card'), km = keyed(x.km, u);
+      rise(card, u, x.cardAt);
+      draw(card, stopViewSvg({ aboard:true, f:km, km:km, stops:x.stops, place:x.place, here:true, sky:'day', worn:x.worn, paint:x.paint }));
+      popIn(el.querySelector('.m-pill'), u, x.flagAt);
+      // Stop: the ticket comes up over the road, and its stamp comes down on it.
+      const tk = el.querySelector('.m-tkt'), p = easeOut((u - x.tktAt) / .6);
+      tk.style.transform = 'translateY(' + ((1 - p) * 1400).toFixed(1) + 'px) rotate(' + (-2.5 + (1 - p) * 6).toFixed(2) + 'deg)';
+      const st = el.querySelector('.m-stamp'), q = (u - x.stampAt) / .22;
+      st.style.opacity = q < 0 ? '0' : (.92 * clamp(q, 0, 1)).toFixed(3);
+      st.style.transform = 'rotate(-14deg) scale(' + (q < 0 ? 2 : 2 - easeOut(q)).toFixed(3) + ')';
+    },
+    'm-dress': function(el, u, x){
+      kinetic(el.querySelector('.kt'), u, x.kt);
+      const card = el.querySelector('.m-card');
+      rise(card, u, x.cardAt);
+      let look = x.looks[0];
+      x.looks.forEach(function(l){ if (u >= l.at) look = l; });
+      draw(card, busSvg(look.keys, look.paint));
+      const k = u - look.at;
+      if (k >= 0 && k < .35) card.style.transform += ' scale(' + (1 + .05 * (1 - easeOut(k / .35))).toFixed(4) + ')';
+      el.querySelectorAll('.m-tile').forEach(function(tl, i){ popIn(tl, u, x.tiles[i]); });
     }
   };
 
-  return { init:init, event:event, screen:screen, render:render };
+  // The ticket as it comes off the phone (the print), a picture of the
+  // page's own, put in by render.js.
+  let printed = null;
+  function print(url, w, h){
+    printed = { url:url, w:w, h:h };
+    const W = 600, H = W * h / w;
+    return new Promise(function(res){
+      const im = new Image();
+      im.onload = function(){
+        // Drawn once, at 600 wide, its top in the middle at 0,0, with a soft
+        // shadow under it: moved and turned each frame by G.print.
+        $('v-gp').innerHTML = '<rect x="' + f1(-W / 2 + 14) + '" y="24" width="' + f1(W - 28) + '" height="' + f1(H - 30) + '" rx="22" fill="#4a1119" opacity=".28" filter="url(#v-soft)"/>' +
+          '<image href="' + url + '" x="' + f1(-W / 2) + '" y="0" width="' + W + '" height="' + f1(H) + '"/>';
+        res(true);
+      };
+      im.onerror = function(){ res(false); };
+      im.src = url;
+    });
+  }
+  return { init:init, event:event, screen:screen, render:render, print:print, gaps:function(){ return gaps; } };
 })();
 </script>
 </body>

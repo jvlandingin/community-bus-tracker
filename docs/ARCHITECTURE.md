@@ -2050,15 +2050,83 @@ preview with no picture and nothing else changes.
 
 ## The showcase video
 
-`tools/render-video.sh` makes a one-minute vertical video (1080x1920, English
+`tools/render-video.sh` makes a vertical video of about 46 seconds (1080x1920, English
 captions, the interface's own sounds) for Facebook, TikTok and Reels, where the riders who have
-never heard of the tracker are. The story is one sharer's morning: wait at a
-stop until the card says Sakay na!, get on and share the bus, riders say
-salamat, the card says Bababa na!, Stop gives a ticket, the ticket goes into
-My tickets, the bus gets a new paint, tries on five other paints and sets of
-accessories for half a second each (the maintainer's ask: show how much can
-be changed, without the taps), and "Show customized bus to riders" goes
-on; the next morning another rider taps that bus and sees it dressed.
+never heard of the tracker are. It is a promo, the moments of one sharer's
+morning one after another: the bus coming from seven stops off, on the map
+and on the stop card, until the card says Sakay na!; Start, and the bus on
+everyone's map with riders saying salamat; Bababa na! as the road comes up
+to their stop and the bus pulls in; the trip's ticket and the parts it
+brings; the camera going in from My tickets to the bus itself, the bus
+trying on five paints and sets of accessories, under half a second each
+(the maintainer's ask: show how much can be changed, without the taps);
+and that bus off My tickets and onto another rider's map, among the other
+sharers' buses, each as its sharer dressed it.
+
+**A promo, not a tutorial** (the maintainer's call, October 2026). The cut
+before it showed every step of that morning at a pace that could be
+followed: saving the stop a letter at a time, the pin landing, the map
+zoomed with its +, the buzz switch, the direction, Start, Stop, Keep, My
+tickets scrolled, a paint bought, "Show customized bus to riders" switched
+on, and another rider tapping the bus next morning. About 70 seconds, and
+it read as a tutorial. Now everything between two moments is done while
+the phone is off the screen, in the swipe between them: the stop is saved
+and its buzz on before the film starts, as a rider waiting for that bus
+would have them, the stop to get off at and the direction are set as they
+board, Stop is tapped as the phone swipes to the ticket, and My tickets is
+opened as it swipes to the bus. Start is the one tap shown, because it is
+the one thing the video asks anybody to do. The rider's morning went with
+the rest: it needs a second phone and a tap to say what the end card's
+dressed bus says anyway.
+
+**Motion graphics say what the screens do** (the maintainer's ask, October
+2026: the waiting was unclear, so much happening at once). The stage draws
+them over the phone and behind it (`G` in `stage.html`), from where the
+page has things each frame (`LIVE` in `film.js`), so one on the map stays
+on the map through the camera's moves. Waiting, the phone comes up close on
+the map, and once the caption is read a pin comes down on the stop with
+its name, a sight closes on the bus far down the map, and the way between
+is drawn, a dot for each stop the card says it still has to pass; then the
+whole phone, and each dot goes with a pop as the card counts it off, the
+card's flag sends out rings at Malapit na! and Sakay na!, and confetti
+goes up from the pin when the bus gets there. At Start the camera goes
+back past the phone, rings go out from it and four other riders' phones
+come up around it, the bus turning up on each; each salamat sends stars
+up from the sharer's bus on the strip. On board a marker bobs over the
+stop they get off at, with a tick once the bus stands there. The ticket's
+parts fly out of its line for them into a purse that counts them in. In
+My tickets each new look comes with a stroke of its paint across the bus
+and sparkles. A swipe between moments blurs the way a camera's would.
+Only the pictures move; the page under them is the app's, untouched.
+
+**The ticket comes off the phone** (October 2026). The maintainer found the
+swipe from the stop to the ticket awkward and asked for ways to fix it;
+three were rendered side by side, the ticket printed out of the phone, a
+rubber stamp whose ink filled the frame and opened onto the ticket, and the
+camera through the stop and a white flash, and they chose the print. The
+camera goes back to the whole phone, the phone's picture is held on the
+stop, and Stop is tapped under it; the page's own ticket is pictured with
+what is around it hidden (`Phone.picture()`) and comes up out of the top
+of the phone in feeds, as a printer feeds paper, while the phone drops away
+under it, and then forward into the frame, where its parts fly into the
+purse.
+
+**Everyone's bus, on a rider's map** (the maintainer's idea, October 2026,
+of the ways put to them: cards blooming from the buses, with the dressed bus
+flying in first). After the dressing up, the coach lifts off My tickets as
+the stage draws it there, the same drawing (`G.lift`), while the phones
+swap under it: another rider's phone, on the website, its map a step in.
+The coach comes down on the route and turns into the map's badge as it
+lands, where the page's own badge for it then appears and the count goes
+from four buses live to five. Then a card comes up out of each bus, south
+to north (`G.cards`): that bus on the road through the place it is
+nearest, the picture its popup draws (`rideSvg()`), from a look code the
+way the server carries it, read back the way the popup reads it
+(`lookRead()`): a blue bus by Tagaytay, a plain one whose sharer has not
+chosen to show theirs, a purple one at Kawit, a black one by PITX, and
+yours last, ringed in gold. The badges stay as the app draws them, all
+alike, because a bus's dress shows in its popup and not on the map: a
+video that dressed the badges would promise what the app does not do.
 
 **Real screens, not a drawing of them.** The guide, the flyer and the
 briefing redraw the tracker by hand and go stale when it changes. The video
@@ -2067,6 +2135,50 @@ so it cannot show a screen the app does not have; between scenes it shows
 drawings made by the app's own SIGNBOARD and PICTURES blocks, run the way
 `tools/make-pictures.js` runs them. When the screens change, the video is
 out of date until it is rendered again.
+
+**The app's video too, with two ways in** (October 2026, once the app was
+on Play for its internal test). It wears the app's look: the icon's morning
+coral with the print in deep maroon, as Play's feature graphic and the link
+preview have it, and it opens on the feature graphic's question, "Nasaan na
+ang bus?". It ends as the poster does, on two cards with a QR code each, in
+the poster's words: "Watch the bus", the tracker, "No app, no account."; and
+the Android app for sharing "with your phone locked", at `ANDROID_APP_URL`
+(the closed test's sign-up while it runs, saying "Early access. Scan to join
+the testers.", then the listing), with Google's "Get it on Google Play"
+badge, its own PNG unaltered as `index.html` carries it, and Google's
+trademark line under the cards. Never the bare Play logo: Google keeps it
+for its own lockups. So there is one video to keep, where there were three
+endings picked at render time (the website, the closed test, the listing);
+the maintainer asked for one with both codes (October 2026), and a change to
+`ANDROID_APP_URL` is a render, not a new cut. The sharer's phone is filmed
+as the app shows the page, with Android's plugins stood in for the way
+`test-boot.js` section 11 boots it and Android's status bar (the longer cut
+also filmed another rider's, as a browser shows it; `Phone` in
+`render.js` still films either). Nothing in the film is something only the app does: the sharing
+tab's "Keeps sharing with the screen locked." under Start went into the
+trip's first window on 20 October, which a sharer with nine trips behind
+them, as the film's has, never sees. The website is Bus Tracker and the app
+is Fibi, on the end card as everywhere else. Play's listing takes a video
+too, as a YouTube link; guides disagree on whether a portrait one suits it,
+so check Play Console's help before using this cut there.
+
+**An animated cut too** (October 2026, the maintainer's ask, `--motion`,
+`tools/video/motion.js`). Where the film records the app, this draws it:
+illustrated scenes and kinetic type, about 42 seconds, and no screens. Its
+pictures are the app's own, from the PICTURES block, which the stage now
+carries as code (`<!--APP-PICTURES-->`), so a scene draws one afresh each
+frame where something in it moves: the bus coming down the road to the
+shed, counted from four stops to Sakay na! by the card's own rule; the road
+from the front seat coming up to the stop; the bus repainted and dressed
+with `busSvg()`. The rest is the ride, the ticket's picture, the strip
+drawn the way the app draws it, and the film's end card, shared
+(`endCard()` in `film.js`). Its words are the film's captions, the poster's
+"A ticket and a salamat every trip." and the app's own, so they keep the
+same rules: no minutes, no arrival time, Bus Tracker and Fibi. The scenes
+are interludes on the same stage, so they come up from below as the film's
+do; their movements are the 'm-' interludes in `stage.html`, and what
+happens when is in `motion.js`. It films nothing, so it does not go out of
+date when a screen changes, only when a drawing or a word it uses does.
 
 **Nothing reaches the database.** Every request the page makes to Supabase
 is answered by the script (`World` in `tools/video/render.js`) with made-up
@@ -2104,14 +2216,55 @@ starts folded. Nothing else in the page
 differs from the commit, and the render stops if those lines change in
 `index.html`, rather than quietly filming the stutter again.
 
-**Saving the stop takes four seconds** (the maintainer's ask, October 2026).
-The camera closes on the picker while the whole name is typed. After the
-pick, it goes to the pin as it lands on the map, with rings going out from
-it and the stop's name beside them, and stays there a second before the
-card. It goes no closer than 1.35 times (`SHARP` in `film.js`). The phone
-is filmed at three pixels a point and the stage draws it at 2.2, so a
-closer camera enlarges the capture, and at 2.4 times the map blurred. The other scenes were each made a little shorter, so the video is
-still about a minute.
+**The bus is seen coming on the map, not only on the card** (the
+maintainer's ask, October 2026). The card's picture says how many stops,
+but there are no official stops and nobody waits exactly on the pin, so
+the map is where to see how near the bus really is. The phone comes up
+with the map a step in, as a rider looking for their own end of the route
+would have it, which puts the bus and the pin twice as far apart and still
+shows the whole route, and with the page down to the foot of the card, so
+the whole phone shows both: the bus comes up the map to the pin as it
+comes down the card's road. It starts seven stops and 14.5 km off, a speck
+at the end of the road, and stays there while the caption is read. No
+further, because before 9.25 km the Tagaytay hook puts stops behind it on
+the chain and the count would go 11, 12, 13, 14 and then 8. A close-up goes
+no closer than 1.35 times (`SHARP` in `film.js`): the phone is filmed at
+three pixels a point and the stage draws it at 2.2, so a closer camera
+enlarges the capture, and at 2.4 times the map blurred.
+
+**Three captions, and the app says the rest** (October 2026). A viewer of
+the first cut found it too fast: they were still reading a caption when the
+screen had already changed. It had a caption for every step, thirteen, and
+ten had a tap or a camera move within a second of appearing, most about half
+a second in, while a viewer reads the words first and looks at the phone
+after. Holding each until it could be read made the video 75 seconds, and
+showing each on its own over the dimmed phone made it 80; the maintainer
+liked neither, and chose to let the app speak for itself. So there are
+three captions, one for each part of the story, kept at the top for the
+whole of it: "Know when your bus is near." while waiting, "On the bus?
+Share it." while sharing, and "Earn coins and dress up your bus." in My
+tickets. The band a caption sits on over a close-up comes and goes with
+it. Every close-up fills the frame with the screen, but for the top where
+a caption's band is over it (`frameFor()` in `stage.html`), wherever the
+element it closes on is on the page. Framed only by that, the close-ups
+after the trip left the top of the frame to a band that was no longer
+there, and three under a caption brought the foot of the phone into
+sight, so the backdrop showed round it; the maintainer saw the first at
+once. The render's log names any settled close-up that shows backdrop
+round the glass, and which edge. The rest
+is said by the app's own words on screen: Malapit na!,
+Sakay na!, the salamat, Bababa na!, the ticket. The one tap, Start, goes
+as every tap did in the longer cut: a ring closes in on the button for a
+third of a second so the eye is there first, then the tap. Under a caption
+nothing is tapped or moved for its reading time (`READ` in `film.js`: 0.4
+seconds to notice it and a quarter of a second a word; what comes first
+under it is timed from it, `read()`), and
+`rehearse()` plays the cues on stand-ins before anything is launched: a
+tap, a camera move, a scroll, a new look on the bus, a salamat or the phone moving
+inside a caption's reading time, a caption gone before it can be read, or a
+tap while the camera is still moving, stops the render and names both.
+About 46 seconds, with an end card of 6.5, because a feed loops the video
+back to the title the moment it ends.
 
 **Choices the app forced.** The story waits at Javalera and gets off at SM
 City General Trias because the card counts down to both one stop at a time;
@@ -2119,27 +2272,48 @@ at Dagatan it reads "8 stops" and then "2", which is right (the Tagaytay
 hook) but looks like a fault. The sharer starts 700 m past the stop they
 waited at: within 300 m (`AT_STOP_KM`) the card would say Bababa na! at
 once and spend the trip's one buzz there. The stop to get off at is set while
-the phone is swiped off the screen as they board. Near the end the GPS is
-held still, so the page's next position (it sends one every five seconds at
-most) goes out the moment the bus reaches the last stretch.
+the phone is swiped off the screen as they board. The trip ends with the
+bus pulling in at the stop, and Stop is tapped as the phone swipes to the
+ticket. Within 100 m of a saved stop (`STOP_REACHED_KM`) the app asks
+"Getting off here?", and the film showed it until the maintainer asked for
+the arrival alone (October 2026); so the stop is saved again as the trip
+jumps ahead, inside 500 m of it, and a stop saved that close is not one the
+app asks about (`STOP_ARM_KM`). The road on the card has been drawn at its
+real length since 20 October, and a move further than it drives is drawn
+as a jump, so the old time-lapse, a stop every 0.75 seconds, jumped every
+half second. So the trip goes by in the interlude, the bus moving all the
+while so the half hour never looks like one standing still, and the
+phone's clock keeps the film's time again a second before the phone comes
+back, which the card's view, a poll behind, needs to draw the jump out of
+sight. The film comes back about 70 m short of the stop at 90 km/h, slower
+than the fastest the road drives (`SV_FASTEST`), with the stop and its
+people in sight; the bus slows in two seconds as one pulling in does, and
+stands a moment before the phone swipes to the ticket. The card's one buzz
+on board, two stops before the stop, is in the interlude.
 
 **What the captions may say.** One short plain sentence each, under the
 same rules as the app's own words: no minutes and no arrival time, Bus
 Tracker and never the company's initials, and the end card's
-"Community-run. Not affiliated with the bus company." One caption is the
+"Community-run. Not affiliated with the bus company." The end card said "No
+app, no account." until there was an Android app, then "Nothing to install.
+No account." on its website ending, which named no app while nobody could
+install it. Now that there is a way in, the closed test's sign-up, the one
+ending names it, Fibi, beside the tracker, whose card says "No app, no
+account." again, of watching. One caption is the
 maintainer's own and breaks the spare-parts rule on purpose: "Earn coins and
 dress up your bus." (October 2026). The app still says spare parts and draws
-a nut; the video's word is coins. The stage draws a buzz only in the two
-alarm scenes. Filming it found the page buzzing just after Stop too, for the
+a nut; the video's word is coins. The stage draws a buzz only while the
+sharer waits. Filming it found the page buzzing just after Stop too, for the
 bus just left; that is fixed in the app ("The reader's own stop"). The parol is switched off in the made-up settings, so the
 video still looks current after the season. The map needs `CARTO_API_KEY`;
 the script writes it only into the copy of `config.txt` it serves, and keeps
 the tiles in `video-out/.tiles` so a re-render asks CARTO for nothing.
 
-**Its sounds are the interface's only.** Taps, the buzz in the app's own
-on-off pattern, a pop for Malapit na!, a chime for Sakay na! and Bababa na!,
-a sparkle for salamat, the ticket printing, a stamp for Keep, coins for the
-paint, a click for the switch, and swipes between scenes. Each is made from
+**Its sounds are the interface's only.** The tap, the buzz in the app's own
+on-off pattern, a pop for Malapit na!, a chime for Sakay na!, a sparkle for
+salamat, the ticket printing, a blip and a ring for each new look on the
+bus, and swipes between moments (`sounds.js` still has the longer cut's
+stamp for Keep, coins for the paint and a click for the switch). Each is made from
 sine waves and noise by `tools/video/sounds.js`, so there is nothing to
 license, and each is placed where the page was seen to do the thing on
 screen (`LISTEN` in `film.js`), not where the script expected it to. Music,

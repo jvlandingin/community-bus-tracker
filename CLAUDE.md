@@ -103,7 +103,7 @@ places; `test-mystop.js` fails while a place is off the route:
 node tools/make-places.js calabarzon-latest.osm.pbf metro_manila-latest.osm.pbf   # assets/places.txt
 ```
 
-One more makes the showcase video: a minute of the real tracker on a phone,
+One more makes the showcase video: about a minute of the real tracker on a phone,
 with made-up buses, for posting where riders are. It needs ffmpeg, the map
 key and Playwright, which never goes in a package.json: a global install, or
 `npm install --no-save playwright-core@1.56` as CI does with jsdom. It writes
@@ -111,6 +111,7 @@ to `video-out/`, which is not committed:
 
 ```
 CARTO_API_KEY=... sh tools/render-video.sh
+sh tools/render-video.sh video-out --motion   # the animated cut: no screens, no key
 ```
 
 ## Architecture
@@ -731,8 +732,50 @@ picture glides for one of the film's half-second polls, at an even pace,
 and the sharing phone sends its position that often, so the buses come on
 smoothly (`filmPage()`). It carries no "demo" label and one caption says coins, both the
 maintainer's decision (October 2026), and its only sounds are the
-interface's, made by `tools/video/sounds.js`. `docs/ARCHITECTURE.md`, "The
-showcase video".
+interface's, made by `tools/video/sounds.js`. **Three captions, one for
+each part of the story, and the app's own words say the rest** (the
+maintainer's choice, after a viewer of the first cut, which captioned every
+step, was still reading when the screen changed). Under each, nothing
+happens until it can have been read: the first tap is timed from it
+(`read()`), and `rehearse()` stops the render if a tap, a camera move or a
+scroll lands inside its reading time. **It is the app's video too**
+(October 2026): the icon's coral, Play's feature graphic's "Nasaan na ang
+bus?", and **one ending with the poster's two ways in**, the maintainer's
+call over three endings picked at render time: the tracker's QR code for
+watching, and the app's, for `ANDROID_APP_URL`, with Google's badge and
+trademark line, for sharing with the phone locked, so a change there is a
+render, not another cut. The sharer's phone is filmed as the app shows the
+page (Android's plugins stood in for, its status bar). **It is a promo, not
+a tutorial** (the maintainer's call, October 2026): about 46 seconds of
+moments, the steps between them done while the phone swipes off the
+screen, and Start the one tap shown. **Motion graphics say what the
+screens do**, drawn by the stage over and behind the phone from where the
+page has things each frame (`G` in `stage.html`, `LIVE` in `film.js`): a
+pin coming down on the stop, the bus sighted and the way to the pin drawn
+with a dot per stop, each going as the card counts it off; the bus going
+out to other riders' phones; stars for salamat; a marker and a tick at the
+stop on board; parts flying into a purse; a stroke of paint for each new
+look; the trip's ticket printed out of the top of the phone, the
+maintainer's pick of three ways from the stop to it; and, after the
+dressing up, the dressed bus flying off My tickets onto another rider's
+map, where cards come up out of the buses on it with each sharer's bus as
+its popup draws it, one plain, yours last (`G.lift`, `G.cards`). The map's
+badges are the app's and all alike; the dress shows in the popup, so the
+cards carry it, never the badges. **Waiting, the map is on screen with
+the card**, a step in, so the bus is seen coming to the pin as well as
+counted down: nobody waits on the pin itself (the maintainer's point).
+**The trip ends with the bus pulling in**: the road comes up to the stop at
+the bus's pace, since the road on board is drawn at its real length and a
+time-lapse would make it jump, and without the "Getting off here?" the app
+would ask, at the maintainer's word: the stop is saved again off screen
+within 500 m of it, which the app never asks about. **There is an animated cut too**
+(`tools/video/motion.js`, `--motion`, October 2026, the maintainer's ask):
+drawn scenes and kinetic type and no screens, its pictures the app's own
+drawn afresh each frame (the stage carries the PICTURES block), its words
+the film's captions, the poster's and the app's, and the film's end card.
+It films nothing, so a changed screen does not date it; a changed picture
+or word in those blocks does, and it is a minute and a half to render.
+`docs/ARCHITECTURE.md`, "The showcase video".
 
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`
 each redraw the tracker's screen the same way, showing four buses live because

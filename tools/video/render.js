@@ -1,9 +1,13 @@
 #!/usr/bin/env node
-// Renders the showcase video: about a minute, vertical (1080x1920), of the
+// Renders the showcase video: about 46 seconds, vertical (1080x1920), of the
 // real tracker being used on a phone, with drawn interludes made by the
 // app's own picture code and the interface's sounds (sounds.js).
 //
 //   sh tools/render-video.sh [output-directory]      (default: video-out/)
+//
+// With --motion it renders the animated cut instead (motion.js): drawn
+// scenes and kinetic type, no screens, on the same stage and with the same
+// end card, about 42 seconds.
 //
 // What is real and what is not. Everything on the phone's screen is
 // index.html exactly as committed, running in headless Chromium at a
@@ -17,9 +21,9 @@
 // label on it: the maintainer took it out (October 2026).
 //
 // The captions keep to the app's own rules (CLAUDE.md, "Say it in a few
-// words"): one short, plain sentence each, and no minutes or arrival times,
-// because it counts stops and kilometres. One says coins where the app says
-// spare parts, the maintainer's own words.
+// words"): three of them, one short, plain sentence each, and no minutes or
+// arrival times, because it counts stops and kilometres. One says coins
+// where the app says spare parts, the maintainer's own words.
 //
 // Frame-exact. Each phone's clock is Playwright's fake one, paused, and
 // moved on by one frame's worth before each screenshot, and every CSS
@@ -98,7 +102,7 @@ function road(names){
   for (let i = 1; i < pts.length; i++) at.push(at[i - 1] + metres(pts[i - 1], pts[i]) / 1000);
   const total = at[at.length - 1];
   return {
-    total,
+    total, names:names.slice(),
     // The point km along the road, and where each named stop is on it.
     point(km){
       km = Math.max(0, Math.min(total, km));
@@ -206,8 +210,10 @@ function serveRepo(route, url){
 //     eased, and on board a feed and a poll behind the bus: twice a second
 //     the first would start and stop and the other lag the film's buses by
 //     seconds. Here both are paced by the film's polls, waiting at an even
-//     pace, and on board the road is moved on every frame of the film
-//     rather than RIDE_FPS times a second.
+//     pace, and on board the road is put in place every millisecond of the
+//     phone's clock, so for the very moment each frame is taken: the clock
+//     goes on 33 or 34 ms a frame, and 30 times a second (every 33.3 ms)
+//     missed every third frame, so the road went on in steps.
 //   - The sharing phone sends its position at most every five seconds, so on
 //     board the card would stand still and then jump. Here it sends a little
 //     oftener than the film polls, so its own bus comes on with the others.
@@ -220,7 +226,7 @@ function filmPage(html){
                  ['STOP_RIDE_MS = 6000', 'STOP_RIDE_MS = ' + GLIDE_MS],
                  ['const SLOW_FEED_MS = 18000;', 'const SLOW_FEED_MS = ' + GLIDE_MS + ';'],
                  ['animation:stopglide 1s var(--ease-move) both', 'animation:stopglide ' + GLIDE_MS / 1000 + 's linear both'],
-                 ['const RIDE_FPS = 30;', 'const RIDE_FPS = ' + FPS + ';'],
+                 ['const RIDE_FPS = 30;', 'const RIDE_FPS = 1000;'],
                  ['riding ? u : u * u * (3 - 2 * u)', 'riding ? u : u'],
                  ['if (Date.now()-lastWrite<5000) return;', 'if (Date.now()-lastWrite<' + WRITE_MS + ') return;']];
   swaps.forEach(function(s){
@@ -238,8 +244,12 @@ function tileFile(url){
   return path.join(TILES, u.pathname.replace(/[^A-Za-z0-9_@./-]/g, '_'));
 }
 
+// app: a phone filmed as the app shows the page, the same page with
+// Android's plugins stood in for (INIT), so it takes its GPS and says what it
+// says the way the app does; the stage gives it Android's status bar rather
+// than a browser's.
 class Phone {
-  constructor(name, world){ this.name = name; this.world = world; this.pending = 0; this.v = 0; this.now = 0; this.wrote = false; }
+  constructor(name, world, o){ this.name = name; this.world = world; this.app = !!(o && o.app); this.pending = 0; this.v = 0; this.now = 0; this.wrote = false; }
   // clock: video seconds to this phone's time (ms). seed: what this phone
   // already remembers (localStorage), as { key: value }.
   async open(browser, clock, seed, startV){
@@ -255,7 +265,7 @@ class Phone {
     await this.ctx.clock.install({ time:this.now });
     await this.ctx.clock.pauseAt(this.now + 1);
     this.now += 1;
-    await this.ctx.addInitScript(INIT, { seed });
+    await this.ctx.addInitScript(INIT, { seed, app:this.app });
     await this.ctx.route(SITE + '/**', route => serveRepo(route, route.request().url()));
     await this.ctx.route(/^https:\/\/[^/]+\.supabase\.co\//, route => this.supabase(route));
     await this.ctx.route(/^https:\/\/[a-d]\.basemaps\.cartocdn\.com\//, route => {
@@ -348,6 +358,28 @@ class Phone {
     await this.page.touchscreen.tap(x, y);
     return { x, y };
   }
+  // One element of the page as a picture on nothing, upright: what is
+  // around it hidden for the moment the picture takes, while the phone is
+  // not being filmed. Returns the PNG, the element's size in the page, and
+  // where each of parts (selectors inside it) is on it, from 0 to 1 across
+  // and down: a point just in from its left, halfway down it.
+  async picture(sel, parts){
+    await this.page.addStyleTag({ content:'html.v-pic, html.v-pic body, html.v-pic .modal{background:transparent !important; backdrop-filter:none !important}' +
+      'html.v-pic body *{visibility:hidden !important} html.v-pic ' + sel + ', html.v-pic ' + sel + ' *{visibility:visible !important}' +
+      'html.v-pic ' + sel + '{transform:none !important; box-shadow:none !important}' });
+    await this.page.evaluate(() => document.documentElement.classList.add('v-pic'));
+    const el = await this.page.$(sel);
+    const box = await el.boundingBox();
+    const at = await this.page.evaluate(([s, ps]) => {
+      const e = document.querySelector(s).getBoundingClientRect(), out = {};
+      ps.forEach(p => { const q = document.querySelector(s + ' ' + p); if (!q) return; const r = q.getBoundingClientRect();
+        out[p] = { x:(r.left + 14 - e.left) / e.width, y:(r.top + r.height / 2 - e.top) / e.height }; });
+      return out;
+    }, [sel, parts || []]);
+    const png = await el.screenshot({ omitBackground:true });
+    await this.page.evaluate(() => document.documentElement.classList.remove('v-pic'));
+    return { png, w:box.width, h:box.height, parts:at };
+  }
   // Pixels per CSS pixel on the screen, for a close look: the page is laid
   // out the same, only drawn finer, so the camera can go nearer.
   async resolution(dsf){
@@ -356,7 +388,10 @@ class Phone {
   async gps(p){
     if (this.lastGps && metres(this.lastGps, p) < 1) return;
     this.lastGps = p;
-    await this.ctx.setGeolocation({ latitude:p.lat, longitude:p.lng, accuracy:8 });
+    // In the app the trip's fixes come through the background plugin's
+    // watcher (INIT), in a browser through navigator.geolocation.
+    if (this.app) await this.page.evaluate(p => window.__bgFix(p), p);
+    else await this.ctx.setGeolocation({ latitude:p.lat, longitude:p.lng, accuracy:8 });
   }
   // The page's own poll for positions, now rather than at its next turn.
   async poll(){ await this.page.evaluate(() => { lastPositionsAt = 0; return pollPositions(); }); await this.settle(); }
@@ -375,6 +410,26 @@ function INIT(o){
   const log = [];
   Object.defineProperty(window, '__buzzes', { value:log });
   try { Navigator.prototype.vibrate = function(p){ log.push(Array.isArray(p) ? p : [p]); return true; }; } catch (e) {}
+  // The Android app's plugins, for a film of the app: the page finds them
+  // where Capacitor puts them and behaves as it does inside the app, the way
+  // test-boot.js section 11 boots it. The trip's GPS comes through the
+  // background plugin's watcher, fed by Phone.gps().
+  if (o.app){
+    const watchers = [], done = function(v){ return Promise.resolve(v); };
+    window.__bgFix = function(p){
+      watchers.slice().forEach(function(w){ w.cb({ latitude:p.lat, longitude:p.lng, accuracy:8, speed:null, time:Date.now() }); });
+    };
+    window.Capacitor = { isNativePlatform: function(){ return true; }, Plugins: {
+      BackgroundGeolocation: {
+        addWatcher: function(opts, cb){ const id = 'w' + (watchers.length + 1); watchers.push({ id:id, cb:cb }); return id; },
+        removeWatcher: function(w){ for (let i = watchers.length - 1; i >= 0; i--) if (watchers[i].id === w.id) watchers.splice(i, 1); return done(); }
+      },
+      LocalNotifications: { requestPermissions: function(){ return done({ display:'granted' }); }, schedule: done, cancel: done },
+      App: { addListener: function(){ return done({ remove: function(){} }); }, minimizeApp: done },
+      Filesystem: { writeFile: function(f){ return done({ uri:'file:///cache/' + f.path }); } },
+      Share: { share: function(){ return done({}); } }
+    } };
+  }
   const born = new WeakMap();
   window.__vseek = function(ms){
     document.getAnimations().forEach(function(a){
@@ -403,12 +458,16 @@ class Stage {
     this.ctx = await browser.newContext({ viewport:{ width:1080, height:1920 }, deviceScaleFactor:1, colorScheme:'light' });
     const appCss = (fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').match(/<style[^>]*>[\s\S]*?<\/style>/g) || []).join('\n')
       .replace(/url\(assets\//g, 'url(' + SITE + '/assets/');
-    const html = fs.readFileSync(path.join(__dirname, 'stage.html'), 'utf8').replace('<!--APP-STYLES-->', appCss);
-    this.screenBuf = null;
+    // And its pictures' code, for a scene that draws one anew each frame
+    // (motion.js).
+    const html = fs.readFileSync(path.join(__dirname, 'stage.html'), 'utf8').replace('<!--APP-STYLES-->', appCss)
+      .replace('<!--APP-PICTURES-->', () => '<script>' + picturesCode() + '</script>');
+    this.screenBuf = null; this.printBuf = null;
     await this.ctx.route(STAGE + '/**', route => {
       const u = new URL(route.request().url());
       if (u.pathname === '/') return route.fulfill({ status:200, contentType:'text/html', body:html });
       if (u.pathname === '/screen') return route.fulfill({ status:200, contentType:'image/jpeg', body:this.screenBuf });
+      if (u.pathname === '/print') return route.fulfill({ status:200, contentType:'image/png', body:this.printBuf });
       return route.fulfill({ status:404, body:'' });
     });
     await this.ctx.route(SITE + '/**', route => serveRepo(route, route.request().url()));
@@ -420,13 +479,22 @@ class Stage {
     this.n = 0;
   }
   init(plan){ return this.page.evaluate(p => V.init(p), plan); }
+  // A picture of part of the page for the stage to move on its own (the
+  // ticket coming off the phone), its size in the page's pixels.
+  print(img){
+    this.printBuf = img.png;
+    return this.page.evaluate(([u, w, h]) => V.print(u, w, h), [STAGE + '/print?n=' + (++this.n), img.w, img.h]);
+  }
   event(e){ return this.page.evaluate(e => V.event(e), e); }
-  async frame(t, screen){
+  // clock: the time the phone on screen shows in its status bar (a film of
+  // the app), or nothing. live: where the page's things are now, for the
+  // stage's motion graphics (LIVE in film.js), or nothing to keep the last.
+  async frame(t, screen, clock, live){
     if (screen){
       this.screenBuf = screen;
       await this.page.evaluate(u => V.screen(u), STAGE + '/screen?n=' + (++this.n));
     }
-    await this.page.evaluate(t => V.render(t), t);
+    await this.page.evaluate(([t, c, l]) => V.render(t, c, l), [t, clock || null, live || null]);
     const r = await this.cdp.send('Page.captureScreenshot', { format:'jpeg', quality:93 });
     return Buffer.from(r.data, 'base64');
   }
@@ -435,13 +503,16 @@ class Stage {
 // ---- The app's own pictures, for the interludes -----------------------------
 // The SIGNBOARD and PICTURES blocks of index.html, taken out by their
 // markers and run, the way tools/make-pictures.js and the tests do.
-function pictures(){
+function picturesCode(){
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const block = (a, b) => { const i = html.indexOf(a), j = html.indexOf(b); if (i < 0 || j < i) throw new Error('index.html has no ' + a); return html.slice(i, j); };
+  return block('// ---- THE SIGNBOARD (unit tested)', '// ---- END SIGNBOARD') + block('// ---- THE PICTURES (unit tested)', '// ---- END PICTURES');
+}
+function pictures(){
   const S = {};
-  new Function('S', block('// ---- THE SIGNBOARD (unit tested)', '// ---- END SIGNBOARD') +
-    block('// ---- THE PICTURES (unit tested)', '// ---- END PICTURES') +
-    'S.signboardSvg=signboardSvg;S.signLayout=signLayout;S.sceneSvg=sceneSvg;S.rideSvg=rideSvg;S.TICKET_SKIES=TICKET_SKIES;S.SCENE_TIMES=SCENE_TIMES;')(S);
+  new Function('S', picturesCode() +
+    'S.signboardSvg=signboardSvg;S.signLayout=signLayout;S.sceneSvg=sceneSvg;S.rideSvg=rideSvg;S.TICKET_SKIES=TICKET_SKIES;S.SCENE_TIMES=SCENE_TIMES;' +
+    'S.stopViewSvg=stopViewSvg;S.ticketArtSvg=ticketArtSvg;S.busSvg=busSvg;S.decorTile=decorTile;S.svCoachFront=svCoachFront;S.svPinMark=svPinMark;')(S);
   return S;
 }
 // A lit board: the dots off underneath, and the same board lit over it, for
@@ -465,5 +536,6 @@ function encoder(file){
   };
 }
 
-module.exports = { World, Phone, Stage, road, keys, stop, pictures, board, encoder, FPS, POLL_FRAMES, FROM, TO, OUT, NAME, KEY, CHROME, playwright };
-if (require.main === module) require('./film.js').main().catch(e => { console.error(e); process.exit(1); });
+module.exports = { World, Phone, Stage, road, keys, stop, pictures, board, encoder, FPS, POLL_FRAMES, FROM, TO, OUT, NAME, ROOT, SITE, KEY, CHROME, playwright };
+// The film of the app (film.js), or with --motion the animated one (motion.js).
+if (require.main === module) require(ARGS.indexOf('--motion') >= 0 ? './motion.js' : './film.js').main().catch(e => { console.error(e); process.exit(1); });

@@ -25,6 +25,46 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-21: Everyone's bus on the map
+
+The maintainer wanted a quick scene after the dressing up showing where
+sharers have differently dressed buses on the map, and asked for ideas
+before anything was built. Four were put to them: cards blooming out of the
+buses on a rider's map, the dressed bus flying onto the map, a lens that
+shows the dress as it passes over a bus, a parade of the buses. Since the
+map's badges are all alike in the app, and the dress shows when a bus is
+tapped, each idea kept the badges as they are. They chose the cards, with
+the fly-in first: the coach lifts off My tickets, lands on another rider's
+map as a badge, and a card comes up out of each bus with its sharer's bus as
+its popup draws it, one plain, yours last in gold.
+
+## 2026-10-21: Motion graphics, and three ways to the ticket
+
+Watching the promo, the maintainer found the waiting unclear, with so much
+happening at once, the dress part a cropped picture that looked like a
+mistake, and the swipe from the stop to the ticket awkward; they asked for
+motion graphics wherever they would explain without words, made to look
+professional. The stage now draws them from where the page has things:
+a pin coming down on the stop, a sight on the bus and its way to the pin
+with a dot per stop that goes as the card counts it, the bus going out to
+other riders' phones at Start, stars for salamat, a marker and a tick at
+the stop on board, parts flying into a purse, a stroke of paint for each
+new look, the camera going in from My tickets to the bus. For the ticket
+they asked for options: printed out of the phone, a stamp's ink, or the
+camera through the stop and a flash, each rendered for them to choose.
+They chose the print, and the other two went.
+
+## 2026-10-21: A promo, not a tutorial
+
+Looking at the parts, the maintainer found the video showed too much: it
+should be a promo, not a tutorial that shows tapping Stop after arriving.
+It is now about 38 seconds of moments: the bus coming on the map and the
+stop card until Sakay na!, Start and the salamat, Bababa na! as the bus
+pulls in, the ticket, and the bus trying on paints and dress, then the two
+ways in. Saving the stop, the zoom, the switches, the direction, Stop, Keep
+and My tickets all happen while the phone swipes between moments, and
+Start is the one tap shown. The other rider's morning went too.
+
 ## 2026-10-21: A pin from the bus, and places that are not stops
 
 The maintainer, with two screenshots from a trip: the stop card on the
@@ -49,6 +89,62 @@ address, and that would be the conversation, not this.
 The regional extracts came from download.openstreetmap.fr, since Overpass,
 the usual way to ask for a corridor, could not be reached from where this
 was built, the same wall as the public routers in September.
+
+## 2026-10-21: The bus on the map while it comes
+
+The maintainer asked for the video's bus to come from further off, so it is
+plainly not there yet, and for the map to be on screen with the card while
+it comes: the card's picture alone does not say how near a bus is, and with
+no official stops nobody waiting at Javalera stands on the Javalera pin. The
+bus now starts seven stops and 14.5 km off, a speck at the end of the card's
+road, as far as the count runs down one stop at a time (further, the Tagaytay
+hook makes it jump). After the pin, the map goes in a step with its own +,
+and the whole phone shows the map and the card together while the bus comes
+up one and down the other. They also asked for the trip to end without the
+"Getting off here?" window: the bus now pulls in at the stop and stands a
+moment, and the sharer taps Stop. Both parts were rendered on their own for
+the maintainer to check before the whole video.
+
+## 2026-10-21: An animated cut
+
+The maintainer asked whether the video was an animated motion graphic. It
+is not: it records the real app, framed by drawn interludes. So they asked
+for one that is, illustrated scenes and kinetic type and no captured
+screens. It is drawn with the app's own pictures, run frame by frame: the
+bus coming down the road to the stop until Malapit na! and Sakay na!, the
+pin over a shared bus and salamat coming up, the road from the front seat
+to the stop, the ticket and its stamp, the bus repainted and dressed, and
+the same two ways in at the end. About 42 seconds, rendered in a minute
+and a half with `--motion`.
+
+## 2026-10-21: One video, two ways in
+
+The maintainer asked why the video needed an ending per stage of the app,
+and for one ending with both QR codes and the Play badge, so there is one
+video to keep. It now ends as the poster does: "Watch the bus" with the
+tracker's code, and the app's code beside Google's "Get it on Google Play"
+badge for sharing with the phone locked, "Early access. Scan to join the
+testers." while the closed test runs. Asked for the Play Store logo, it got
+the badge: Google keeps the bare logo for its own lockups and asks for the
+badge wherever people are sent to download, as the poster, the flyer and
+the tester page already do. The film shows both ways in too: the sharer's
+phone as the app, with Android's status bar, and the next morning's rider
+on the website.
+
+## 2026-10-20: The video catches up with the app
+
+The maintainer asked for the showcase video to be brought up to the day's
+changes. Most of them it took by being rendered again: the fewer words on
+both tabs, the wider popup, the waiting picture with a post for every stop.
+One scene could not. The trip was shown in time-lapse, a stop every 0.75
+seconds, and the card's road, drawn at its real length from the front seat
+since that day, draws a move further than a bus drives as a jump, so on
+screen it jumped twice a second. The trip now goes by in the interlude and
+the film comes back near the end of it: the road comes up at about 110
+km/h, the fastest it drives, and the app asks "Getting off here?" by
+itself, as it has since that day, so the ticket comes from that question's
+Stop sharing. The buzz two stops before the stop, on board, is now off
+screen; the waiting scene keeps its own. The video is 66 seconds.
 
 ## 2026-10-20: A look at every screen
 
@@ -286,6 +382,20 @@ the map itself. The second code follows `ANDROID_APP_URL`,
 and a test fails when the two part, so when the app goes public the poster
 cannot keep sending riders to a closed test.
 
+## 2026-10-19: The video becomes the app's
+
+With Fibi on Google Play for its internal test, the maintainer asked how the
+showcase video should work now. It wears the app's coral and opens on the
+feature graphic's "Nasaan na ang bus?", and where it sends the viewer is
+picked when it is rendered: the website for now, since only the internal
+testers can install the app; the closed test's sign-up once that opens,
+because Play wants testers who ride for two weeks before a public release;
+the listing once it is public. The app's endings film the app rather than
+the website, so the sharing tab says what only the app does: "Keeps sharing
+with the screen locked."
+
+---
+
 ## 2026-10-19: The saved stop's picture draws every stop
 
 Looking at the card on a phone, the maintainer saw "about 47 stops before
@@ -358,6 +468,25 @@ are a tester" and the listing. The group's welcome post now carries the steps
 too, as the sister project's does. The maintainer's name, photo and email
 address appear on those screens and are blurred or cropped out: the
 repository is public.
+
+## 2026-10-18: The video lets the app speak
+
+Someone the maintainer showed the showcase video to found it too fast: they
+were still reading a caption when something was already happening on the
+phone. Measured, ten of its thirteen captions had a tap or a camera move
+within a second of appearing, most about half a second in. Two fixes were
+tried and dropped: holding every caption until it could be read (75
+seconds), then showing each on its own over the dimmed phone first (80).
+The maintainer's call was to let the app speak for itself: three captions,
+one for each part of the story (waiting, sharing, dressing up the bus), and
+the app's own words for the rest, in about 67 seconds. A ring now points at
+each button just before it is tapped, and the render refuses a cut that
+taps under a caption before it can be read. The end card's "No app, no
+account." became "Nothing to install. No account.", true of the website
+now that there is an Android app, which the video does not name until it
+is public on Google Play.
+
+---
 
 ## 2026-10-18: An icon for Play
 

@@ -241,7 +241,8 @@
 <div id="v">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="v-mb" x="-30%" y="-10%" width="160%" height="120%">
     <feGaussianBlur id="v-mbg" stdDeviation="0 0"/></filter></svg>
-  <svg id="v-gback" viewBox="0 0 1080 1920"><defs><filter id="v-soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="22"/></filter></defs>
+  <svg id="v-gback" viewBox="0 0 1080 1920"><defs><filter id="v-soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="22"/></filter>
+    <filter id="v-soft-s" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="10"/></filter></defs>
     <g id="v-gb"></g><g id="v-gp" style="display:none"></g></svg>
   <div id="v-world">
     <div id="v-phone"><div id="v-glass">
@@ -590,7 +591,7 @@ const V = (function(){
     $('v-g').innerHTML = front;
     $('v-gb').innerHTML = back;
   }
-  const LAYER = { trail:1, lock:2, pin:3, burst:4 };
+  const LAYER = { trail:1, lock:2, pin:3, burst:4, cards:5, lift:6 };
   const G = {
     // The saved stop: a pin comes down onto it from above, and rings go out
     // from where it lands; its name beside it; a slow breath while it waits,
@@ -796,6 +797,83 @@ const V = (function(){
         const sx = a.x + w * (.08 + .84 * rnd(i, 21)), sy = a.y + h * (.12 + .7 * rnd(i, 22)), z = (26 + 22 * rnd(i, 23)) * Math.sin(Math.PI * v);
         s += '<g transform="translate(' + f1(sx) + ' ' + f1(sy) + ') rotate(' + f1(v * 90) + ')"><path d="' + sparkPath(z) + '" fill="#fff" stroke="' + GOLD + '" stroke-width="3"/></g>';
       }
+      return s;
+    },
+    // Your bus off My tickets and onto another rider's map: the coach as My
+    // tickets draws it lifts off the phone while the phones swap under it,
+    // flies down onto the route, and turns into the map's badge as it lands
+    // (live.land), where the page's own badge then comes in under it.
+    lift: function(g, u, t, S, L){
+      if (!g.from){
+        const c = live.coach;
+        if (!c) return '';
+        const a = S({ x:c.x, y:c.y }), b = S({ x:c.x + c.w, y:c.y + c.h });
+        g.from = { x:(a.x + b.x) / 2, y:(a.y + b.y) / 2, w:b.x - a.x };
+      }
+      const f = g.from, lp = ease(clamp(u / .6, 0, 1));
+      let x = f.x, y = f.y - 70 * lp, w = f.w * (1 - .3 * lp), rot = -4 * lp;
+      const fp = clamp((u - .65) / .7, 0, 1);
+      if (fp > 0 && live.land){
+        const end = S(live.land), e = ease(fp), mx = (x + end.x) / 2, my = Math.min(y, end.y) - 300;
+        x = (1 - e) * (1 - e) * x + 2 * (1 - e) * e * mx + e * e * end.x;
+        y = (1 - e) * (1 - e) * y + 2 * (1 - e) * e * my + e * e * end.y;
+        w = w + (L(30) * 1.6 - w) * e; rot = rot * (1 - e) + 8 * Math.sin(Math.PI * e);
+      }
+      const morph = clamp((fp - .72) / .28, 0, 1), landed = u - 1.35;
+      let s = '';
+      if (morph < 1){
+        const h = w * 136 / 364;
+        s += '<g opacity="' + f3(1 - morph) + '" transform="rotate(' + f1(rot) + ' ' + f1(x) + ' ' + f1(y) + ')">' +
+          '<ellipse cx="' + f1(x) + '" cy="' + f1(y + h * .55) + '" rx="' + f1(w * .42) + '" ry="' + f1(h * .1) + '" fill="#000" opacity="' + f3(.22 * (1 - fp)) + '"/>' +
+          '<svg x="' + f1(x - w / 2) + '" y="' + f1(y - h / 2) + '" width="' + f1(w) + '" height="' + f1(h) + '" viewBox="0 0 364 136" overflow="visible" style="' +
+          paintStyle(g.paint, 'day') + '">' + COACH_SIDE + decorOn(g.worn) + '</svg></g>';
+      }
+      if (morph > 0 && landed < .3){
+        const r = L(15) * (landed > 0 ? 1 + .3 * Math.sin(Math.PI * clamp(landed / .25, 0, 1)) : 1), o = morph * clamp(1 - landed / .3, 0, 1);
+        s += '<g opacity="' + f3(o) + '" transform="translate(' + f1(x) + ' ' + f1(y) + ')"><circle r="' + f1(r) + '" fill="#e39a1c" stroke="#fff" stroke-width="' + f1(L(2.5)) + '"/>' +
+          '<g transform="scale(' + f3(r / 15.5) + ') translate(-9.5 -9.5) scale(.8)" fill="#fff"><path d="' + COACH + '" fill-rule="evenodd"/></g></g>';
+      }
+      if (landed > 0 && landed < .7 && live.land){
+        const c = S(live.land), v = landed / .7;
+        s += '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(L(15) * (1 + 3 * easeOut(v))) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(10 * (1 - v)) + '" opacity="' + f3(1 - v) + '"/>';
+      }
+      return s;
+    },
+    // Riders' map, each bus as its sharer dressed it: a card out of each
+    // badge, the bus in it on the road through the place it is nearest, the
+    // way that bus's own popup draws it (rideSvg), one after another up the
+    // route; the one plain, its sharer having not chosen to show theirs; and
+    // yours last, ringed in gold.
+    cards: function(g, u, t, S){
+      const at = live.fleet || [];
+      let s = '';
+      g.buses.forEach(function(b, i){
+        const p = at[i], k = backOut((u - b.at) / .42);
+        if (!p || k <= 0) return;
+        const c = S(p), right = b.side > 0, W = 384, H = 170, pad = 11;
+        const x0 = right ? c.x + 50 : c.x - 50 - W, y0 = clamp(c.y - H / 2, 30, 1890 - H), cy = clamp(c.y, y0 + 26, y0 + H - 26);
+        const ex = right ? x0 + 3 : x0 + W - 3, tip = right ? c.x + 22 : c.x - 22;
+        const ride = rideSvg({ views:[b.view], sky:g.sky, worn:b.worn, paint:b.paint, now:t * 1000, frame:'popup' })
+          .replace('<svg class="rideart', '<svg x="' + f1(x0 + pad) + '" y="' + f1(y0 + pad) + '" width="' + (W - 2 * pad) + '" height="' + (H - 2 * pad) +
+            '" preserveAspectRatio="xMidYMid slice" class="rideart')
+          .replace('style="', 'style="width:' + (W - 2 * pad) + 'px;height:' + (H - 2 * pad) + 'px;');
+        s += '<g transform="translate(' + f1(c.x) + ' ' + f1(c.y) + ') scale(' + f3(k) + ') translate(' + f1(-c.x) + ' ' + f1(-c.y) + ')">' +
+          '<defs><clipPath id="g-card-' + i + '"><rect x="' + f1(x0 + pad) + '" y="' + f1(y0 + pad) + '" width="' + (W - 2 * pad) + '" height="' + (H - 2 * pad) + '" rx="14"/></clipPath></defs>' +
+          '<rect x="' + f1(x0 + 8) + '" y="' + f1(y0 + 18) + '" width="' + (W - 16) + '" height="' + H + '" rx="22" fill="#4a1119" opacity=".3" filter="url(#v-soft-s)"/>' +
+          '<path d="M' + f1(ex) + ' ' + f1(cy - 17) + 'L' + f1(tip) + ' ' + f1(c.y) + 'L' + f1(ex) + ' ' + f1(cy + 17) + 'Z" fill="' + (b.yours ? GOLD : '#fbf4e4') + '"/>' +
+          '<rect x="' + f1(x0) + '" y="' + f1(y0) + '" width="' + W + '" height="' + H + '" rx="22" fill="#fbf4e4" stroke="' + (b.yours ? GOLD : '#fff') + '" stroke-width="' + (b.yours ? 9 : 4) + '"/>' +
+          '<g clip-path="url(#g-card-' + i + ')">' + ride + '</g></g>';
+        if (b.yours){
+          const v = ((u - b.at) % 1.2) / 1.2;
+          s += '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(34 + 60 * v) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(9 * (1 - v)) + '" opacity="' + f3(1 - v) + '"/>';
+          for (let j = 0; j < 6; j++){
+            const q = (u - b.at - .15 - j * .06) / .55;
+            if (q <= 0 || q >= 1) continue;
+            const sx = x0 + W * (.1 + .8 * rnd(j, 31)), sy = y0 + (rnd(j, 32) < .5 ? -14 : H + 14), z = (22 + 16 * rnd(j, 33)) * Math.sin(Math.PI * q);
+            s += '<g transform="translate(' + f1(sx) + ' ' + f1(sy) + ') rotate(' + f1(q * 90) + ')"><path d="' + sparkPath(z) + '" fill="#fff" stroke="' + GOLD + '" stroke-width="3"/></g>';
+          }
+        }
+      });
       return s;
     },
     // The trip's ticket, printed: it comes up out of the top of the phone in

@@ -1980,16 +1980,18 @@ preview with no picture and nothing else changes.
 
 ## The showcase video
 
-`tools/render-video.sh` makes a vertical video of about 42 seconds (1080x1920, English
+`tools/render-video.sh` makes a vertical video of about 46 seconds (1080x1920, English
 captions, the interface's own sounds) for Facebook, TikTok and Reels, where the riders who have
 never heard of the tracker are. It is a promo, the moments of one sharer's
 morning one after another: the bus coming from seven stops off, on the map
 and on the stop card, until the card says Sakay na!; Start, and the bus on
 everyone's map with riders saying salamat; Bababa na! as the road comes up
 to their stop and the bus pulls in; the trip's ticket and the parts it
-brings; and, the camera going in from My tickets to the bus itself, the bus
+brings; the camera going in from My tickets to the bus itself, the bus
 trying on five paints and sets of accessories, under half a second each
-(the maintainer's ask: show how much can be changed, without the taps).
+(the maintainer's ask: show how much can be changed, without the taps);
+and that bus off My tickets and onto another rider's map, among the other
+sharers' buses, each as its sharer dressed it.
 
 **A promo, not a tutorial** (the maintainer's call, October 2026). The cut
 before it showed every step of that morning at a pace that could be
@@ -2038,6 +2040,23 @@ what is around it hidden (`Phone.picture()`) and comes up out of the top
 of the phone in feeds, as a printer feeds paper, while the phone drops away
 under it, and then forward into the frame, where its parts fly into the
 purse.
+
+**Everyone's bus, on a rider's map** (the maintainer's idea, October 2026,
+of the ways put to them: cards blooming from the buses, with the dressed bus
+flying in first). After the dressing up, the coach lifts off My tickets as
+the stage draws it there, the same drawing (`G.lift`), while the phones
+swap under it: another rider's phone, on the website, its map a step in.
+The coach comes down on the route and turns into the map's badge as it
+lands, where the page's own badge for it then appears and the count goes
+from four buses live to five. Then a card comes up out of each bus, south
+to north (`G.cards`): that bus on the road through the place it is
+nearest, the picture its popup draws (`rideSvg()`), from a look code the
+way the server carries it, read back the way the popup reads it
+(`lookRead()`): a blue bus by Tagaytay, a plain one whose sharer has not
+chosen to show theirs, a purple one at Kawit, a black one by PITX, and
+yours last, ringed in gold. The badges stay as the app draws them, all
+alike, because a bus's dress shows in its popup and not on the map: a
+video that dressed the badges would promise what the app does not do.
 
 **Real screens, not a drawing of them.** The guide, the flyer and the
 briefing redraw the tracker by hand and go stale when it changes. The video
@@ -2174,7 +2193,7 @@ under it is timed from it, `read()`), and
 tap, a camera move, a scroll, a new look on the bus, a salamat or the phone moving
 inside a caption's reading time, a caption gone before it can be read, or a
 tap while the camera is still moving, stops the render and names both.
-About 42 seconds, with an end card of 6.5, because a feed loops the video
+About 46 seconds, with an end card of 6.5, because a feed loops the video
 back to the title the moment it ends.
 
 **Choices the app forced.** The story waits at Javalera and gets off at SM

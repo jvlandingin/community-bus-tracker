@@ -30,9 +30,9 @@ const R = require('./render.js');
 const S = require('./sounds.js');
 
 // ---- How long each scene runs, in seconds ----------------------------------
-// As long as its beats take at the film's pace (below): about 42 seconds in
+// As long as its beats take at the film's pace (below): about 46 seconds in
 // all, an end card of 6.5 included.
-const DUR = { title:3.2, wait:10.1, share:6.6, trip:2.4, getoff:3.3, ticket:4.0, dress:5.6, end:6.5 };
+const DUR = { title:3.2, wait:10.1, share:6.6, trip:2.4, getoff:3.3, ticket:4.0, dress:5.6, fleet:4.6, end:6.5 };
 const T = {};
 let acc = 0;
 Object.keys(DUR).forEach(k => { T[k] = acc; acc += DUR[k]; });
@@ -104,6 +104,25 @@ const SEED_TICKETS = [
 // And the stop they wait at, saved on an earlier morning.
 const SEED_STOP = { name:WAIT, lat:R.stop(WAIT).lat, lng:R.stop(WAIT).lng };
 
+// After the dressing up, another rider's map: the other sharers' buses up the
+// route, each as its sharer chose to show it (the maintainer's idea, October
+// 2026), one of them plain, its sharer having not chosen to; and yours,
+// dressed as the dressing up left it, which comes down onto the map. Their
+// looks are codes the way the server carries them (busLook()), read back the
+// way a popup reads them (lookRead()).
+const FLEET = [
+  { id:'f1', dir:'north', road:NORTH, at:'Tagaytay Olivarez', paint:'dagat', worn:['goldrims', 'horns', 'visor'], side:1 },
+  { id:'f2', dir:'north', road:NORTH, at:'Santiago', paint:null, worn:[], side:1 },
+  { id:'f3', dir:'south', road:SOUTH, at:'S&R Kawit', paint:'lila', worn:['flowers', 'fringe', 'mirror'], side:-1 },
+  { id:'f4', dir:'south', road:SOUTH, at:'Washington', paint:'uling', worn:['flames', 'exhaust', 'antenna'], side:1 }
+];
+const YOURS = { id:'fy', dir:'north', road:NORTH, at:'Panungyanan', side:-1 };
+// The moments of the scene, from its start: the coach lifts off, the phones
+// swap under it, it lands, and the cards come up one by one, yours last.
+const LANDS = T.fleet + 1.35, BLOOM = T.fleet + 1.5, BLOOMS = [0, .3, .6, .9, 1.35];
+// Where each is on its road at t: a little way on during the scene.
+const fleetKm = b => R.keys([[T.fleet - 3, b.road.km(b.at) - .2], [T.end + 1, b.road.km(b.at) + .4]]);
+
 // ---- The buses --------------------------------------------------------------
 function buses(world){
   // The one the sharer waits for, from far enough off that it is not there
@@ -137,6 +156,13 @@ function buses(world){
     km:R.keys([[0, 2.2], [T.share, 6.0], [T.trip + DUR.trip, 14], [1000, 14]]) });
   // Salamat on the sharer's trip: one, then three.
   world.thanks.A = R.keys([[SALAMAT[0], 0], [SALAMAT[0] + .01, 1], [SALAMAT[1], 1], [SALAMAT[1] + .01, 3]]);
+  // The rider's map after the dressing up (FLEET); their looks are put in
+  // once the sharer's phone can write them (main()). Yours is on the map
+  // from when it lands.
+  FLEET.concat([YOURS]).forEach(b => {
+    b.bus = world.bus({ id:b.id, phone:'B', dir:b.dir, label:null, road:b.road, on:[0, 1000], age:6000, look:'', km:fleetKm(b) });
+  });
+  YOURS.bus.on = [LANDS, 1000];
 }
 // ---- Captions ---------------------------------------------------------------
 // One plain sentence for each part of the story, *word* drawn in gold, at
@@ -149,7 +175,7 @@ function buses(world){
 const CAP = {
   near:  { at:T.wait + .25,  to:T.share, say:'Know when your bus is *near*.' },
   share: { at:T.share + .35, to:T.trip + .3, say:'On the bus? *Share it*.' },
-  dress: { at:T.dress + .35, to:T.end + .3, say:'Earn coins and *dress up your bus*.' }
+  dress: { at:T.dress + .35, to:T.fleet + .3, say:'Earn coins and *dress up your bus*.' }
 };
 const read = k => CAP[k].at + READ(CAP[k].say);
 const SAY = Object.keys(CAP).map(k => [CAP[k].at, CAP[k].to, CAP[k].say]);
@@ -197,7 +223,7 @@ const PHONE_Y = [[T.wait - .6, 1920], [T.wait, 0], [T.trip - .1, 0], [T.trip + .
                  [T.getoff, 0], [T.ticket + 1.0, 0], [T.ticket + 1.55, 1900], [T.dress - .0499, 1900], [T.dress - .0498, 0],
                  [T.end, 0], [T.end + .6, -1920]];
 const whip = t => [[t - .3, 0], [t - .05, -1180], [t - .0499, 1180], [t + .25, 0]];
-const PHONE_X = [].concat(whip(T.share), whip(T.dress));
+const PHONE_X = [].concat(whip(T.share), whip(T.dress), whip(T.fleet + .4));
 // What else the bus could wear, under the last caption: a paint and the
 // things on it, from SHOP and the trophies this bus has earned (an unearned
 // trophy cannot be worn).
@@ -213,7 +239,8 @@ const LOOKS = [
 const SCORE = [
   { t:.35, kind:'board' }, { t:T.wait - .6, kind:'whoosh' }, { t:T.share - .3, kind:'whoosh' },
   { t:T.trip - .1, kind:'whoosh' }, { t:T.getoff - .6, kind:'whoosh' }, { t:T.ticket + 1.0, kind:'whoosh', gain:.6 },
-  { t:T.dress - .3, kind:'whoosh' }, { t:T.end, kind:'whoosh' }, { t:T.end + .35, kind:'outro' }
+  { t:T.dress - .3, kind:'whoosh' }, { t:T.fleet + .1, kind:'whoosh' }, { t:T.fleet + .65, kind:'whoosh', gain:.5 },
+  { t:T.end, kind:'whoosh' }, { t:T.end + .35, kind:'outro' }
 ];
 // What the page is showing that has a sound, read off the phone on screen
 // once a frame; changes() says which of them has just appeared.
@@ -256,7 +283,8 @@ const gold = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\*([^*
 // Run in the page each frame while a graphic needs it: where the saved
 // stop's pin, the bus waited for and the stops before the pin are on the
 // map, the card's count and its flag; the sharer's own bus on the strip; the
-// stop on the road on board; the bus in My tickets. In the page's pixels.
+// stop on the road on board; the bus in My tickets; on the rider's map, the
+// fleet's buses and where yours lands. In the page's pixels.
 function LIVE(o){
   const q = s => document.querySelector(s);
   const box = el => { if (!el) return null; const b = el.getBoundingClientRect(); return b.width || b.height ? { x:b.x, y:b.y, w:b.width, h:b.height } : null; };
@@ -274,7 +302,26 @@ function LIVE(o){
   if (o.pill) out.pill = box(q('#onbusStrip .buspill.me'));
   if (o.stop) out.stop = box(q('#tripStop .sv-k[data-w="0"]'));
   if (o.coach) out.coach = box(q('.alb-ride .rk'));
+  if (o.fleet){
+    const c = map.getContainer().getBoundingClientRect(), p = map.latLngToContainerPoint(o.land);
+    out.fleet = o.fleet.map(id => { const m = busMarkers[id], b = m && m.getElement() ? box(m.getElement()) : null; return b && { x:b.x + b.w / 2, y:b.y + b.h / 2 }; });
+    out.land = { x:c.left + p.x, y:c.top + p.y };
+  }
   return out;
+}
+// A look as the server carries it (busLook()'s code), from a paint and what
+// is worn; no paint is a bus whose sharer did not choose to show it.
+function LOOKCODE(list){
+  return list.map(o => o.paint ? findIn(PAINTS, o.paint).id + o.worn.map(k => (findIn(DECOR, k) || findIn(SHOP, k)).id).sort().join('') : '');
+}
+// A card's picture, as the bus's popup has it: the look read back the way
+// the popup reads it, and the view of the place the bus is nearest.
+function CARD(list){
+  return list.map(o => {
+    const look = lookRead(o.code) || { paint:'klasiko', worn:[] };
+    const i = nearestCheckpoint(routeProgressKm({ lat:o.lat, lng:o.lng }, CHECKPOINTS, ROUTE_CHAIN));
+    return { paint:look.paint, worn:look.worn, view:(CHECKPOINTS[i] && CHECKPOINTS[i].mark) || '' };
+  });
 }
 // What LIVE is asked for at v.
 function liveAt(v){
@@ -282,14 +329,17 @@ function liveAt(v){
   if (v >= T.wait - .9 && v < T.share) Object.assign(o, { map:true, bus:'a1', dots:DOTS });
   if (v >= START && v < T.trip) o.pill = true;
   if (v >= T.getoff - .65 && v < T.ticket + .5) o.stop = true;
-  if (v >= T.dress - .05 && v < T.end + .5) o.coach = true;
+  if (v >= T.dress - .05 && v < T.fleet + .3) o.coach = true;
+  if (v >= T.fleet + .3 && v < T.end + .5) Object.assign(o, { fleet:FLEET.concat([YOURS]).map(b => b.id), land:YOURS.road.point(YOURS.bus.km(LANDS)) });
   return Object.keys(o).length ? o : null;
 }
+// Which phone LIVE is run on at v: the rider's, once the phones have swapped.
+const livePhone = (v, A, B) => v >= T.fleet + .3 ? B : A;
 
 // ---- The scenes: what happens when ------------------------------------------
 // Each cue is [time, what]. A tap is shown by the stage as a ring where the
 // finger went, after a ring closing in on the place (press).
-function cues(A, stage, world, heard){
+function cues(A, B, stage, world, browser, heard){
   const tap = async (phone, sel, at) => {
     const p = await phone.tap(sel);
     await stage.event({ type:'tap', at, x:p.x, y:p.y });
@@ -457,6 +507,34 @@ function cues(A, stage, world, heard){
       heard.push({ t:v, kind:'dress' });
     });
   });
+  // fleet: off the screen, another rider's phone, on the website, its map a
+  // step in and the page at the map. Then the coach lifts off My tickets
+  // (G.lift) as the phones swap under it, and comes down on the route as a
+  // badge where yours then is on that rider's map; and the cards come up out
+  // of the buses (G.cards), each as its sharer dressed it, yours last.
+  at(T.fleet - 2.5, () => B.open(browser, A_CLOCK, { 'wt-guide-seen':'1' }, T.fleet - 2.5));
+  at(T.fleet - 1, () => B.run(() => {
+    map.setZoom(map.getZoom() + 1, { animate:false });
+    document.scrollingElement.scrollTop += map.getContainer().getBoundingClientRect().top - 8;
+  }));
+  at(T.fleet, async v => {
+    const own = await A.run(() => { const b = loadBus(); return { paint:b.paint, worn:busWorn(b, CHECKPOINTS), code:busLook(b, CHECKPOINTS) }; });
+    YOURS.code = own.code;
+    if (YOURS.bus) YOURS.bus.look = own.code;
+    await g(v, 'lift', { paint:own.paint, worn:own.worn, until:LANDS + .7 });
+  });
+  at(T.fleet + .35, v => cam(B, null, v, { dur:.01 }));
+  at(LANDS, () => B.poll());
+  sound(LANDS, 'stamp', .45);
+  at(BLOOM, async v => {
+    const all = FLEET.concat([YOURS]);
+    if (!YOURS.bus) return;   // the rehearsal's world has no buses
+    const drawn = await A.run(CARD, all.map(b => { const p = b.road.point(b.bus.km(v)); return { code:b.code, lat:p.lat, lng:p.lng }; }));
+    if (!Array.isArray(drawn)) return;
+    const sky = await B.run(() => skyNow());
+    await g(v, 'cards', { sky, buses:drawn.map((d, i) => Object.assign(d, { at:BLOOMS[i], side:all[i].side, yours:all[i] === YOURS })) });
+  });
+  BLOOMS.forEach((d, i) => sound(BLOOM + d + .1, i < BLOOMS.length - 1 ? 'pop' : 'sparkle', i < BLOOMS.length - 1 ? .4 : .8));
   return { list: list.sort((a, b) => a.t - b.t), scrolls };
 }
 
@@ -546,9 +624,9 @@ function endQr(){
 async function rehearse(){
   const noted = [], heard = [];
   const stand = name => ({ name, open: async () => {}, resolution: async () => {}, scrollTo: async () => {}, reveal: async () => {},
-    picture: async () => ({ png:null, w:1, h:1, parts:{} }),
+    picture: async () => ({ png:null, w:1, h:1, parts:{} }), poll: async () => {},
     tap: async () => ({ x:0, y:0 }), rect: async () => ({ x:0, y:0, w:1, h:1 }), run: async () => ({ x:0, y:0, w:1, h:1, pin:{ x:0, y:0 }, bus:{ x:0, y:0 } }) });
-  const { list, scrolls } = cues(stand('A'), { event: async e => { noted.push(e); }, print: async () => {} }, {}, heard);
+  const { list, scrolls } = cues(stand('A'), stand('B'), { event: async e => { noted.push(e); }, print: async () => {} }, {}, null, heard);
   // As the render runs them: at the first frame at or after their time.
   for (const c of list) await c.fn(Math.ceil(c.t * R.FPS - 1e-6) / R.FPS);
   const moves = [], s = t => t.toFixed(2) + 's', e = 1e-6;
@@ -596,7 +674,7 @@ async function main(){
   const world = new R.World();
   buses(world);
   const P = R.pictures();
-  const A = new R.Phone('A', world, { app:true });
+  const A = new R.Phone('A', world, { app:true }), B = new R.Phone('B', world);
   const stage = new R.Stage();
   const started = Date.now();
   await stage.open(browser);
@@ -608,10 +686,13 @@ async function main(){
     return { worn: busWorn(b, CHECKPOINTS), paint: b.paint };
   });
   await stage.init(plan(P, worn, endQr()));
+  // The fleet's looks, as their sharers' phones would send them.
+  const codes = await A.run(LOOKCODE, FLEET.map(b => ({ paint:b.paint, worn:b.worn })));
+  FLEET.forEach((b, i) => { b.code = b.bus.look = codes[i]; });
   // What is heard, and when: taps and buzzes as they happen, what the page
   // does as it is seen to (LISTEN), and the frame's own moments (SCORE).
   const heard = SCORE.slice();
-  const { list, scrolls } = cues(A, stage, world, heard);
+  const { list, scrolls } = cues(A, B, stage, world, browser, heard);
 
   const base = R.NAME;
   const name = base + (R.FROM > 0 || R.TO < T.total ? '-part' : '');
@@ -630,10 +711,12 @@ async function main(){
     // The sharer's GPS, from Start until Stop.
     if (v >= START - .05 && v < STOP) await A.gps(NORTH.point(GPS(v)));
     await A.step(v);
+    if (B.page) await B.step(v);
     // The page's own poll, more often than it would, so the buses glide in
     // steps of half a second rather than six; and right after the sharer's
     // phone sends a position, so its bus moves on its own screen at once.
     if (f % R.POLL_FRAMES === 0 || A.wrote){ A.wrote = false; await A.poll(); }
+    if (B.page && f % R.POLL_FRAMES === 0) await B.poll();
     // The buzz the story is about: Malapit na!, the one buzz the card gives a
     // bus. The page also buzzes as a trip starts (15 ms, too short to see or
     // hear) and once on board, both off the screen or out of the story, and
@@ -653,7 +736,7 @@ async function main(){
       await stage.page.evaluate(h => { document.getElementById('endRide').innerHTML = h; },
         framed(P, { views:['towers'], sky:'day', worn:look.worn, paint:look.paint, now:0 }, END_VIEW));
     }
-    const which = A;
+    const which = v >= T.fleet + .35 ? B : A;
     const onScreen = (v >= T.wait - .8 && v < T.trip + .5) || (v >= T.getoff - .6 && v < T.end + .4);
     // While the ticket comes off the phone, the phone's picture is held: it
     // is the stop it got to, whatever the page is doing under it.
@@ -667,7 +750,7 @@ async function main(){
       if (did.indexOf('sparkle') >= 0) await stage.event({ type:'g', kind:'stars', at:v });
       which.was = now;
     }
-    const want = liveAt(v), live = want ? await A.run(LIVE, want) : null;
+    const lp = livePhone(v, A, B), want = liveAt(v), live = want && lp.page ? await lp.run(LIVE, want) : null;
     const jpg = await stage.frame(v, shot, which.app ? clockOf(which.now) : null, live);
     await enc.write(jpg);
     drawn++;

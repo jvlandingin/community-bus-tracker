@@ -715,7 +715,7 @@ watching, and the app's, for `ANDROID_APP_URL`, with Google's badge and
 trademark line, for sharing with the phone locked, so a change there is a
 render, not another cut. The sharer's phone is filmed as the app shows the
 page (Android's plugins stood in for, its status bar). **It is a promo, not
-a tutorial** (the maintainer's call, October 2026): about 42 seconds of
+a tutorial** (the maintainer's call, October 2026): about 46 seconds of
 moments, the steps between them done while the phone swipes off the
 screen, and Start the one tap shown. **Motion graphics say what the
 screens do**, drawn by the stage over and behind the phone from where the
@@ -724,8 +724,13 @@ pin coming down on the stop, the bus sighted and the way to the pin drawn
 with a dot per stop, each going as the card counts it off; the bus going
 out to other riders' phones; stars for salamat; a marker and a tick at the
 stop on board; parts flying into a purse; a stroke of paint for each new
-look; and the trip's ticket printed out of the top of the phone, the
-maintainer's pick of three ways from the stop to it. **Waiting, the map is on screen with
+look; the trip's ticket printed out of the top of the phone, the
+maintainer's pick of three ways from the stop to it; and, after the
+dressing up, the dressed bus flying off My tickets onto another rider's
+map, where cards come up out of the buses on it with each sharer's bus as
+its popup draws it, one plain, yours last (`G.lift`, `G.cards`). The map's
+badges are the app's and all alike; the dress shows in the popup, so the
+cards carry it, never the badges. **Waiting, the map is on screen with
 the card**, a step in, so the bus is seen coming to the pin as well as
 counted down: nobody waits on the pin itself (the maintainer's point).
 **The trip ends with the bus pulling in**: the road comes up to the stop at

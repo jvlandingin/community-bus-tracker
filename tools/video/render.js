@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Renders the showcase video: about 42 seconds, vertical (1080x1920), of the
+// Renders the showcase video: about 46 seconds, vertical (1080x1920), of the
 // real tracker being used on a phone, with drawn interludes made by the
 // app's own picture code and the interface's sounds (sounds.js).
 //

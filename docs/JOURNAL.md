@@ -25,6 +25,19 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-21: Everyone's bus on the map
+
+The maintainer wanted a quick scene after the dressing up showing where
+sharers have differently dressed buses on the map, and asked for ideas
+before anything was built. Four were put to them: cards blooming out of the
+buses on a rider's map, the dressed bus flying onto the map, a lens that
+shows the dress as it passes over a bus, a parade of the buses. Since the
+map's badges are all alike in the app, and the dress shows when a bus is
+tapped, each idea kept the badges as they are. They chose the cards, with
+the fly-in first: the coach lifts off My tickets, lands on another rider's
+map as a badge, and a card comes up out of each bus with its sharer's bus as
+its popup draws it, one plain, yours last in gold.
+
 ## 2026-10-21: Motion graphics, and three ways to the ticket
 
 Watching the promo, the maintainer found the waiting unclear, with so much

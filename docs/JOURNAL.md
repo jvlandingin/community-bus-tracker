@@ -25,6 +25,21 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-21: The bus on the map while it comes
+
+The maintainer asked for the video's bus to come from further off, so it is
+plainly not there yet, and for the map to be on screen with the card while
+it comes: the card's picture alone does not say how near a bus is, and with
+no official stops nobody waiting at Javalera stands on the Javalera pin. The
+bus now starts seven stops and 14.5 km off, a speck at the end of the card's
+road, as far as the count runs down one stop at a time (further, the Tagaytay
+hook makes it jump). After the pin, the map goes in a step with its own +,
+and the whole phone shows the map and the card together while the bus comes
+up one and down the other. They also asked for the trip to end without the
+"Getting off here?" window: the bus now pulls in at the stop and stands a
+moment, and the sharer taps Stop. Both parts were rendered on their own for
+the maintainer to check before the whole video.
+
 ## 2026-10-21: An animated cut
 
 The maintainer asked whether the video was an animated motion graphic. It

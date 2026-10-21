@@ -5,9 +5,9 @@
 // One sharer's morning, then another rider's. Waiting at Javalera, the
 // stop card counts the bus down to "Sakay na!"; on board, the sharer puts
 // the bus on everyone's map, riders say salamat, the card says "Bababa
-// na!" as the road comes up to their stop, the app asks "Getting off here?"
-// and Stop sharing gives a ticket. The ticket goes into My tickets,
-// the bus gets a new paint, and "Show customized bus to riders" goes on.
+// na!" as the bus pulls in at their stop, and Stop gives a ticket. The
+// ticket goes into My tickets, the bus gets a new paint, and "Show
+// customized bus to riders" goes on.
 // Next morning a rider by Tagaytay taps that bus and sees it as dressed.
 //
 // Javalera and SM City General Trias were chosen because the card counts
@@ -27,9 +27,9 @@ const R = require('./render.js');
 const S = require('./sounds.js');
 
 // ---- How long each scene runs, in seconds ----------------------------------
-// As long as its beats take at the film's pace (below): about 66 seconds in
+// As long as its beats take at the film's pace (below): about 70 seconds in
 // all.
-const DUR = { title:3.2, watch:4.2, wait:12.9, share:8.8, trip:2.2, getoff:4.65, ticket:5.65, collect:3.0, dress:8.5, show:2.4, rider:3.85, end:6.5 };
+const DUR = { title:3.2, watch:4.2, wait:15.4, share:8.8, trip:2.2, getoff:6.4, ticket:5.65, collect:3.0, dress:8.5, show:2.4, rider:3.85, end:6.5 };
 const T = {};
 let acc = 0;
 Object.keys(DUR).forEach(k => { T[k] = acc; acc += DUR[k]; });
@@ -100,18 +100,23 @@ const SEED_TICKETS = [
 
 // ---- The buses --------------------------------------------------------------
 function buses(world){
-  // The one the sharer waits for: four stops off when the card comes into
-  // view, two (Malapit na!, and the buzz) 1.6s after the buzz is switched
-  // on, at the stop (Sakay na!) 2.5s after that. Waiting at Javalera the
-  // card's words change between 15.7 and 15.8, 18.2 and 18.3, 19.1 and
-  // 19.2 (Malapit na!) and 22.6 and 22.7 km (Sakay na!) on this road,
-  // measured a tenth of a kilometre apart. The page sees the bus only at
-  // the film's polls, on the half second, so each alarm is crossed between
-  // two of them (15.5 and 16.0s, 18.0 and 18.5s) and clear of both.
-  // It leaves the map as they board: whoever was sharing it got off there.
+  // The one the sharer waits for, from far enough off that it is not there
+  // yet: seven stops and 14.5 km when the stop is saved, a bus small at the
+  // far end of the card's road and a badge well down the map from the pin,
+  // and it grows as it comes, both places at once (the maintainer's ask).
+  // No further: before 9.25 km the Tagaytay hook puts stops behind it on
+  // the chain, and the count goes 11, 12, 13, 14 and then 8. Waiting at
+  // Javalera the count changes at 9.25 (7 stops), 11.8, 14.4, 15.75, 18.25,
+  // 19.15 (2, Malapit na!, and the buzz), 20.15, 22.25 and 22.65 km (Sakay
+  // na!), measured on this road. The page sees the bus only at the film's
+  // polls, on the half second, so each alarm is crossed between two of them
+  // (17.5 and 18.0s, 20.5 and 21.0s) and clear of both. It pulls in at the
+  // stop as the phone goes, and leaves the map as they board: whoever was
+  // sharing it got off there.
   world.bus({ id:'a1', phone:'A', dir:'north', label:'1043', road:NORTH, on:[0, T.share + .2], age:5000,
-    km:R.keys([[0, 10.6], [T.wait + 6.25, 17.0], [T.wait + 8.1, 18.95], [T.wait + 8.6, 19.3], [T.wait + 11.1, 22.9],
-               [T.wait + 12.2, WAIT_KM - .05]]) });
+    km:R.keys([[0, 6.0], [T.wait + 3.0, 9.3], [T.wait + 6.0, 9.7], [T.wait + 7.5, 12.4], [T.wait + 8.6, 15.6],
+               [T.wait + 10.1, 18.95], [T.wait + 10.6, 19.35], [T.wait + 13.1, 22.45], [T.wait + 13.6, 22.9],
+               [T.wait + 14.6, 24.2], [T.wait + 15.2, WAIT_KM - .05]]) });
   world.bus({ id:'a2', phone:'A', dir:'north', label:null, road:NORTH, on:[0, 1000], age:9000,
     km:R.keys([[0, 40.5], [T.share, 47.0], [T.trip + DUR.trip, 61], [1000, 61]]) });
   world.bus({ id:'a3', phone:'A', dir:'north', label:'1027', road:NORTH, on:[0, 1000], age:7000,
@@ -147,31 +152,32 @@ const CAP = {
 };
 const read = k => CAP[k].at + READ(CAP[k].say);
 const SAY = Object.keys(CAP).map(k => [CAP[k].at, CAP[k].to, CAP[k].say]);
-// Start and Stop, and the salamat (one, then three in all). Stop is the
-// "Stop sharing" of the app's "Getting off here?", asked at ASK.
-const START = read('share') + 2.4, STOP = T.ticket + .6, ASK = STOP - 1.85;
+// Start and Stop, and the salamat (one, then three in all).
+const START = read('share') + 2.4, STOP = T.ticket + .6;
 const SALAMAT = [T.share + 6.8, T.share + 8.0];
 
 // The sharer's GPS, from Start until Stop. 700 m past the stop when Start is
 // tapped: the card still has the stop they waited at, and within 300 m of it
 // (AT_STOP_KM) it would say "Bababa na!" and spend the trip's one buzz there.
 // The trip itself goes by while the phone is off the screen, in a moment of
-// the interlude, to 140 m short of where the app asks "Getting off here?":
-// within 100 m of the stop along the route (STOP_REACHED_KM), at 37.08 km on
-// this road, measured. The card says Bababa na! there, from 35.2 km.
-// From JUMPED it goes at V, about 110 km/h, the fastest the card's road
-// drives rather than jumps (SV_FASTEST in index.html), so the road comes on
-// from the front seat at the bus's own pace: the green sign for 0.2 km to
-// go goes by the glass a second after the phone is up, and the stop with
-// its people comes into sight on the horizon before the app asks. Then it
-// slows, as a bus pulling in does. Faster, the road's joints and dashes go
-// by too fast for the film's frames; the old time-lapse, a stop every
-// 0.75 s, was further each half second than the road drives and was drawn
-// as a jump every time.
-const V = .03, ASK_KM = NORTH.km(OFF) - .1;
-const GPS = R.keys([[START - .05, WAIT_KM + .7], [T.trip + .4, 26.4], [JUMPED, ASK_KM - V * (ASK - JUMPED)], [ASK, ASK_KM],
-                    [ASK + .5, ASK_KM + .012], [ASK + 1, ASK_KM + .02], [ASK + 1.5, ASK_KM + .025], [ASK + 2, ASK_KM + .027],
-                    [1000, ASK_KM + .027]]);
+// the interlude, to 120 m short of where the bus stops (ARRIVE_KM, 6 m short
+// of the stop's sign). The card says Bababa na! there, from 35.2 km. From
+// JUMPED it goes at about 110 km/h, the fastest the card's road drives
+// rather than jumps (SV_FASTEST in index.html), so the road comes on from
+// the front seat at the bus's own pace, the stop and its people coming
+// into sight on the horizon as the phone comes up, and it slows as a bus
+// pulling in does, and stands. Faster, the road's joints and dashes go by
+// too fast for the film's frames; the old time-lapse, a stop every 0.75 s,
+// was further each half second than the road drives and was drawn as a
+// jump every time. The app would ask "Getting off here?" within 100 m of a
+// stop saved while well ahead of the bus; the maintainer asked for the bus
+// to arrive without the question (October 2026), so the stop is saved again
+// off screen (at JUMPED, see the cues), inside 500 m of it, and by the
+// app's own rule a stop saved that close is not one the bus arrives at.
+const ARRIVE_KM = NORTH.km(OFF) - .006;
+const GPS = R.keys([[START - .05, WAIT_KM + .7], [T.trip + .4, 26.4], [JUMPED, ARRIVE_KM - .12], [JUMPED + 2.33, ARRIVE_KM - .05],
+                    [JUMPED + 2.93, ARRIVE_KM - .032], [JUMPED + 3.53, ARRIVE_KM - .018], [JUMPED + 4.13, ARRIVE_KM - .007],
+                    [JUMPED + 4.83, ARRIVE_KM - .002], [JUMPED + 5.46, ARRIVE_KM], [1000, ARRIVE_KM]]);
 // Where a buzz belongs in the story: waiting. On board the card buzzes
 // once, two stops before the sharer's own, and that is in the interlude.
 const BUZZ_SCENES = [[T.wait, T.share]];
@@ -330,12 +336,24 @@ function cues(A, B, stage, world, browser, heard){
   at(T.wait + 3.4, async v => {
     const r = await A.rect('.mypin');
     await cam(A, '.mypin', v, { width:1000, cy:1060, maxZ:SHARP, dur:.6 });
-    if (r) await stage.event({ type:'mark', at:v + .3, x:r.x + r.w / 2, y:r.y + r.h / 2, dur:1.5, label:WAIT });
+    if (r) await stage.event({ type:'mark', at:v + .3, x:r.x + r.w / 2, y:r.y + r.h / 2, dur:1.3, label:WAIT });
     heard.push({ t:v + .3, kind:'stamp', gain:.8 });
   });
-  at(T.wait + 5.15, v => cam(A, null, v, { dur:.45 }));
-  at(T.wait + 5.15, centre(A, '#myStop', .45));
-  at(T.wait + 5.65, v => cam(A, '#myStop', v, { width:1010, cy:1170 }));
+  // Then the map in a step, with its own +, as anyone looking for their own
+  // end of the route would: the bus and the pin twice as far apart, so the
+  // bus coming can be seen on the map and not only on the card. The stop is
+  // a mark on the map, not where anyone stands (the maintainer's point:
+  // nobody waits on the pin), so the map is how near it really is. One step
+  // only: it is still the whole route, so the rest of the film's map is too.
+  press(A, '#map .leaflet-control-zoom-in', T.wait + 5.1);
+  // Then the whole phone, the page down to the foot of the card, so the map
+  // and the card are both on it: the bus comes up the map to the pin as it
+  // comes down the card's road.
+  at(T.wait + 5.7, v => cam(A, null, v, { dur:.45 }));
+  at(T.wait + 5.7, glideDoc(A, () => {
+    const c = document.getElementById('myStop').getBoundingClientRect(), d = document.scrollingElement;
+    return Math.max(0, Math.min(d.scrollHeight - innerHeight, d.scrollTop + c.bottom + 8 - innerHeight));
+  }, .45));
   press(A, '#myStop .buzz input', T.wait + 7.0);
   // Sakay na!, and the whip onto the bus. The phone goes off the screen
   // close on the card, and the camera comes back out while nobody sees it.
@@ -362,10 +380,15 @@ function cues(A, B, stage, world, browser, heard){
   at(T.trip + .5, () => A.run(() => { if (!ROAD) toggleRoad(); }));
   at(T.trip + 1.05, centre(A, '#tripStop', .3));
   at(T.trip + 1.6, v => cam(A, '#tripStop', v - .6, { width:1010, cy:960 }));
-  // getoff: the road comes up to the stop by itself, and the app asks
-  // "Getting off here?" (ASK, by the GPS).
-  // ticket: its Stop sharing, the ticket, down it, Keep.
-  press(A, '#askYes', STOP);
+  // getoff: the road comes up to the stop by itself and the bus pulls in.
+  // The stop saved again, inside 500 m of it, so the app does not ask
+  // "Getting off here?" (see GPS). It stands there most of a second, and
+  // then the camera comes back out and the page goes up to Stop.
+  at(JUMPED + .05, () => A.run(() => setMyStop(MYSTOP.name, MYSTOP.lat, MYSTOP.lng)));
+  at(T.ticket - .5, v => cam(A, null, v, { dur:.45 }));
+  at(T.ticket - .5, glideDoc(A, () => 0, .4));
+  // ticket: Stop, the ticket, down it, Keep.
+  press(A, '#onbusActive .btn-stop', STOP);
   at(STOP + .6, v => cam(A, '#tktCard', v, { width:1040, topAt:60, maxH:420 }));
   at(T.ticket + 2.4, glide(A, '#tktModal', s => { const b = document.querySelector(s); return b.scrollHeight - b.clientHeight; }, 1.3));
   at(T.ticket + 4.2, v => cam(A, null, v, { dur:.5 }));
@@ -663,7 +686,7 @@ async function main(){
   fs.unlinkSync(silent);
   // The cover: a frame worth stopping on, for a post's thumbnail.
   try {
-    const at = Math.max(R.FROM, Math.min(T.wait + 9.4, R.TO - .1)) - R.FROM;
+    const at = Math.max(R.FROM, Math.min(T.wait + 10.9, R.TO - .1)) - R.FROM;
     execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(at), '-i', file, '-frames:v', '1', '-q:v', '2', path.join(R.OUT, base + '-cover.jpg')]);
   } catch (e) {}
   console.log('Calls answered here, none sent to Supabase: ' + JSON.stringify(world.log));

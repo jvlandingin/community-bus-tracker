@@ -1980,12 +1980,13 @@ preview with no picture and nothing else changes.
 
 ## The showcase video
 
-`tools/render-video.sh` makes a vertical video of about 66 seconds (1080x1920, English
+`tools/render-video.sh` makes a vertical video of about 70 seconds (1080x1920, English
 captions, the interface's own sounds) for Facebook, TikTok and Reels, where the riders who have
 never heard of the tracker are. The story is one sharer's morning: wait at a
-stop until the card says Sakay na!, get on and share the bus, riders say
-salamat, the card says Bababa na! as the road comes up to the stop, the app
-asks "Getting off here?" and Stop sharing gives a ticket, the ticket goes into
+stop while the bus comes from seven stops off, on the map and on the card,
+until the card says Sakay na!, get on and share the bus, riders say
+salamat, the card says Bababa na! as the road comes up to the stop and the
+bus pulls in, Stop sharing gives a ticket, the ticket goes into
 My tickets, the bus gets a new paint, tries on five other paints and sets of
 accessories for half a second each (the maintainer's ask: show how much can
 be changed, without the taps), and "Show customized bus to riders" goes
@@ -2087,6 +2088,19 @@ card. It goes no closer than 1.35 times (`SHARP` in `film.js`). The phone
 is filmed at three pixels a point and the stage draws it at 2.2, so a
 closer camera enlarges the capture, and at 2.4 times the map blurred.
 
+**The bus is seen coming on the map, not only on the card** (the
+maintainer's ask, October 2026). The card's picture says how many stops,
+but there are no official stops and nobody waits exactly on the pin, so
+how near the bus really is is on the map. After the pin, the map goes in a
+step with its own +, as a rider looking for their own end of the route
+would, which puts the bus and the pin twice as far apart and still shows
+the whole route; then the camera goes out to the whole phone with the page
+down to the foot of the card, and the bus comes up the map to the pin as
+it comes down the card's road. It starts seven stops and 14.5 km off, a
+speck at the end of the road. No further, because before 9.25 km the
+Tagaytay hook puts stops behind it on the chain and the count would go 11,
+12, 13, 14 and then 8.
+
 **Three captions, and the app says the rest** (October 2026). A viewer of
 the first cut found it too fast: they were still reading a caption when the
 screen had already changed. It had a caption for every step, thirteen, and
@@ -2118,7 +2132,7 @@ of a second a word; the first tap is timed from it, `read()`), and
 tap, a camera move, a scroll, a letter typed, a salamat or the phone moving
 inside a caption's reading time, a caption gone before it can be read, or a
 tap while the camera is still moving, stops the render and names both.
-About 66 seconds, with an end card of 6.5, because a feed loops the video
+About 70 seconds, with an end card of 6.5, because a feed loops the video
 back to the title the moment it ends.
 
 **Choices the app forced.** The story waits at Javalera and gets off at SM
@@ -2127,17 +2141,23 @@ at Dagatan it reads "8 stops" and then "2", which is right (the Tagaytay
 hook) but looks like a fault. The sharer starts 700 m past the stop they
 waited at: within 300 m (`AT_STOP_KM`) the card would say Bababa na! at
 once and spend the trip's one buzz there. The stop to get off at is set while
-the phone is swiped off the screen as they board. The trip ends as the app
-now ends one: within 100 m of the saved stop (`STOP_REACHED_KM`) it asks
-"Getting off here?", and its Stop sharing gives the ticket. The road on the
-card has been drawn at its real length since 20 October, and a move further
-than it drives is drawn as a jump, so the old time-lapse, a stop every 0.75
-seconds, jumped every half second. So the trip goes by in the interlude, the
-phone's clock keeps the film's time again before the phone comes back, and
-the film comes back 140 m short of the question, the road going at about
-110 km/h, the fastest it drives (`SV_FASTEST`): a green km sign goes by the
-glass, the stop comes into sight on the horizon, and the app asks. The
-card's one buzz on board, two stops before the stop, is in the interlude.
+the phone is swiped off the screen as they board. The trip ends with the
+bus pulling in at the stop and the sharer tapping Stop sharing, which gives
+the ticket. Within 100 m of a saved stop (`STOP_REACHED_KM`) the app asks
+"Getting off here?", and the film showed it until the maintainer asked for
+the arrival alone (October 2026); so the stop is saved again off screen as
+the phone comes back, inside 500 m of it, and a stop saved that close is
+not one the app asks about (`STOP_ARM_KM`). The road on the card has been
+drawn at its real length since 20 October, and a move further than it
+drives is drawn as a jump, so the old time-lapse, a stop every 0.75
+seconds, jumped every half second. So the trip goes by in the interlude,
+the phone's clock keeps the film's time again before the phone comes back,
+and the film comes back about 130 m short of the stop, the road going at
+about 110 km/h, the fastest it drives (`SV_FASTEST`): a green km sign goes
+by the glass, the stop comes into sight on the horizon, the bus slows as
+one pulling in does, and it stands at the stop most of a second before the
+camera goes out to Stop. The card's one buzz on board, two stops before the
+stop, is in the interlude.
 
 **What the captions may say.** One short plain sentence each, under the
 same rules as the app's own words: no minutes and no arrival time, Bus

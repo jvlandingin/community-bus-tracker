@@ -715,10 +715,14 @@ watching, and the app's, for `ANDROID_APP_URL`, with Google's badge and
 trademark line, for sharing with the phone locked, so a change there is a
 render, not another cut. The sharer's phone is filmed as the app shows the
 page (Android's plugins stood in for, its status bar), the other rider's as
-a browser does. **The trip ends as the app ends one**: the
-road comes up to the stop at the bus's pace and the app asks "Getting off
-here?", since the road on board is drawn at its real length and a
-time-lapse would make it jump. **There is an animated cut too**
+a browser does. **Waiting, the map is on screen with the card**, a step
+in, so the bus is seen coming to the pin as well as counted down: nobody
+waits on the pin itself (the maintainer's point, October 2026). **The trip
+ends with the bus pulling in**: the road comes up to the stop at the bus's
+pace, since the road on board is drawn at its real length and a time-lapse
+would make it jump, and without the "Getting off here?" the app would ask,
+at the maintainer's word: the stop is saved again off screen within 500 m
+of it, which the app never asks about. **There is an animated cut too**
 (`tools/video/motion.js`, `--motion`, October 2026, the maintainer's ask):
 drawn scenes and kinetic type and no screens, its pictures the app's own
 drawn afresh each frame (the stage carries the PICTURES block), its words

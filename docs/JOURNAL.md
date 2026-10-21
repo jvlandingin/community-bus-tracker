@@ -25,6 +25,20 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-21: One video, two ways in
+
+The maintainer asked why the video needed an ending per stage of the app,
+and for one ending with both QR codes and the Play badge, so there is one
+video to keep. It now ends as the poster does: "Watch the bus" with the
+tracker's code, and the app's code beside Google's "Get it on Google Play"
+badge for sharing with the phone locked, "Early access. Scan to join the
+testers." while the closed test runs. Asked for the Play Store logo, it got
+the badge: Google keeps the bare logo for its own lockups and asks for the
+badge wherever people are sent to download, as the poster, the flyer and
+the tester page already do. The film shows both ways in too: the sharer's
+phone as the app, with Android's status bar, and the next morning's rider
+on the website.
+
 ## 2026-10-20: The video catches up with the app
 
 The maintainer asked for the showcase video to be brought up to the day's

@@ -457,24 +457,22 @@ function clockOf(ms){
 const framed = (P, t, box) => P.rideSvg(t).replace(/viewBox="[^"]*"/, 'viewBox="' + box + '"');
 
 // ---- How it ends ----------------------------------------------------------------
-// One film, three endings (render.js --ending), for where the Android app is:
-// the website while the app is only in internal testing, the closed test's
-// sign-up while it needs testers who ride (testers.html says what it asks),
-// and the app on Google Play once it is public. The two app endings film the
-// page as the app shows it (R.APP), so it never shows what the website does
-// not do and then sends the viewer to the website, or the other way round.
-// The website is Bus Tracker and the app is Fibi, as everywhere else.
+// One film, ending on the poster's two ways in, each with its QR code: the
+// tracker, for watching, and the Android app, for sharing with the phone
+// locked, at ANDROID_APP_URL in config.txt (the closed test's sign-up while
+// it runs, the listing once the app is public), with Google's badge. The
+// film shows both: the sharer's phone is filmed as the app shows the page
+// (render.js, Phone's app), with Android's status bar, and the other rider's
+// as a browser does. The website is Bus Tracker and the app is Fibi, as
+// everywhere else. Google's badge is its own PNG, unaltered, the one
+// index.html carries, with Google's line under it.
 const SITE_URL = 'https://community-bus-tracker.netlify.app';
-const PLAY_ID = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'mobile', 'capacitor.config.json'), 'utf8')).appId;
-const ENDS = {
-  web:     { qr:SITE_URL, name:'Bus Tracker', lede:'See where the bus is right now.', url:'community-bus-tracker.netlify.app',
-             fine:'Nothing to install. No account.<br>Community-run. Not affiliated with the bus company.' },
-  testers: { qr:SITE_URL + '/testers', app:true, name:'Fibi', lede:'Test the app early.', url:'community-bus-tracker.netlify.app/testers', long:true,
-             fine:'Android. It keeps sharing with your screen locked.<br>Community-run. Not affiliated with the bus company.' },
-  play:    { qr:'https://play.google.com/store/apps/details?id=' + PLAY_ID, app:true, name:'Fibi', lede:'On Google Play.', url:'Fibi: Bus Tracker PH',
-             fine:'It keeps sharing with your screen locked.<br>Community-run. Not affiliated with the bus company.' }
-};
-const END = ENDS[R.ENDING];
+const APP_URL = ((fs.readFileSync(path.join(R.ROOT, 'config.txt'), 'utf8').match(/^ANDROID_APP_URL[ \t]*=[ \t]*(\S*)/m) || [])[1] || '').trim();
+const TESTERS = /\/testers\.html(?:[?#]|$)/i.test(APP_URL);
+const BADGE = (fs.readFileSync(path.join(R.ROOT, 'index.html'), 'utf8').match(/class="playbadge"[^>]*><img src="(data:image\/png;base64,[^"]+)"/) || [])[1];
+if (APP_URL && !BADGE) throw new Error('index.html has no Google Play badge to end the film on: see "How it ends" in film.js');
+// The end card's bus on the road, cut to the strip it has over the two cards.
+const END_VIEW = '22 15 166 54';
 
 // ---- What the stage is told before the first frame ---------------------------
 function plan(P, worn, qr){
@@ -483,7 +481,6 @@ function plan(P, worn, qr){
     captions: SAY.map(c => ({ from:c[0], to:c[1], html:gold(c[2]) })),
     phone: PHONE_Y,
     phoneX: PHONE_X,
-    app: R.APP,
     ints: [
       // "Where is the bus now?", as riders ask it in the group chat and as
       // Play's feature graphic asks it.
@@ -496,15 +493,22 @@ function plan(P, worn, qr){
               '<div class="v-board">' + R.board(P, ['GEN. TRIAS'], 'tg', 13) + '</div>' +
               '<div class="v-scene">' + framed(P, { views:['church'], sky:'day', worn:worn.worn, paint:worn.paint, now:0 }, '30 4 200 80') + '</div>' +
               '<div class="v-ground" style="background:' + sky.ground + '"></div>' },
+      // The poster's two ways in, in its words.
       { id:'end', in:[T.end, T.end + .6],
         html: '<div class="v-board">' + R.board(P, ['MENDEZ / TAGAYTAY', '⇄ ONE AYALA'], 'te', 5.4) + '</div>' +
-              '<div class="name">' + (END.app ? '<img class="icon" src="' + R.SITE + '/mobile/store/play-icon-512.png" alt="">' : '') +
-                END.name + '</div>' +
-              '<div class="lede">' + END.lede + '</div>' +
+              '<div class="e-name">Bus Tracker</div>' +
+              '<div class="e-lede">See where the bus is right now.</div>' +
               '<div class="v-scene" id="endRide"></div>' +
-              '<div class="qr">' + qr + '</div>' +
-              '<div class="url' + (END.long ? ' long' : '') + '">' + END.url + '</div>' +
-              '<div class="fine">' + END.fine + '</div>' }
+              '<div class="e-way e-watch' + (qr.app ? '' : ' e-only') + '"><div class="e-qr">' + qr.site + '</div><div class="e-words">' +
+                '<div class="e-kicker">Watch the bus</div><div class="e-big">Open the tracker</div>' +
+                '<div class="e-url">' + SITE_URL.replace(/^https:\/\//, '') + '</div><div class="e-note">No app, no account.</div></div></div>' +
+              (qr.app ? '<div class="e-way e-droid"><div class="e-qr">' + qr.app + '</div><div class="e-words">' +
+                '<div class="e-kicker"><img class="e-icon" src="' + R.SITE + '/mobile/store/play-icon-512.png" alt="">Fibi · Android</div>' +
+                '<div class="e-big">Share with your phone locked</div>' +
+                '<img class="e-badge" src="' + BADGE + '" alt="Get it on Google Play">' +
+                (TESTERS ? '<div class="e-note">Early access. Scan to join the testers.</div>' : '') + '</div></div>' : '') +
+              '<div class="e-fine">Community-run. Not affiliated with the bus company.' +
+                (qr.app ? '<small>Google Play and the Google Play logo are trademarks of Google LLC.</small>' : '') + '</div>' }
     ]
   };
 }
@@ -568,7 +572,7 @@ async function main(){
   const world = new R.World();
   buses(world);
   const P = R.pictures();
-  const A = new R.Phone('A', world), B = new R.Phone('B', world);
+  const A = new R.Phone('A', world, { app:true }), B = new R.Phone('B', world);
   const stage = new R.Stage();
   const started = Date.now();
   await stage.open(browser);
@@ -578,15 +582,16 @@ async function main(){
     const b = loadBus(); b.paid = busEarned(b, CHECKPOINTS); saveBus(b);
     return { worn: busWorn(b, CHECKPOINTS), paint: b.paint };
   });
-  const qr = execFileSync(process.execPath, [path.join(__dirname, '..', 'make-qr.js'), END.qr],
+  const qrOf = url => execFileSync(process.execPath, [path.join(__dirname, '..', 'make-qr.js'), url],
     { stdio:['ignore', 'pipe', 'ignore'] }).toString();
+  const qr = { site: qrOf(SITE_URL), app: APP_URL ? qrOf(APP_URL) : '' };
   await stage.init(plan(P, worn, qr));
   // What is heard, and when: taps and buzzes as they happen, what the page
   // does as it is seen to (LISTEN), and the frame's own moments (SCORE).
   const heard = SCORE.slice();
   const { list, scrolls } = cues(A, B, stage, world, browser, heard);
 
-  const base = R.NAME + (R.ENDING === 'web' ? '' : '-' + R.ENDING);
+  const base = R.NAME;
   const name = base + (R.FROM > 0 || R.TO < T.total ? '-part' : '');
   const file = path.join(R.OUT, name + '.mp4'), silent = path.join(R.OUT, name + '-picture.mp4');
   const enc = R.encoder(silent);
@@ -626,7 +631,7 @@ async function main(){
       endDrawn = true;
       const look = await A.run(() => { const b = loadBus(); return { worn: busWorn(b, CHECKPOINTS), paint: b.paint }; });
       await stage.page.evaluate(h => { document.getElementById('endRide').innerHTML = h; },
-        framed(P, { views:['towers'], sky:'day', worn:look.worn, paint:look.paint, now:0 }, '22 6 166 72'));
+        framed(P, { views:['towers'], sky:'day', worn:look.worn, paint:look.paint, now:0 }, END_VIEW));
     }
     const which = v < T.rider - .1 ? A : B;
     const onScreen = (v >= T.watch - .8 && v < T.trip + .5) || (v >= T.getoff - .5 && v < T.end + .4);
@@ -636,7 +641,7 @@ async function main(){
       if (onScreen && which.was) heard.push(...changes(which.was, now).map(kind => ({ t:v, kind })));
       which.was = now;
     }
-    const jpg = await stage.frame(v, shot, R.APP ? clockOf(which.now) : null);
+    const jpg = await stage.frame(v, shot, which.app ? clockOf(which.now) : null);
     await enc.write(jpg);
     drawn++;
     if (drawn % 30 === 0) process.stdout.write('  ' + v.toFixed(1) + 's of ' + T.total.toFixed(1) + 's (' + Math.round((Date.now() - started) / 1000) + 's)\n');
@@ -668,4 +673,4 @@ async function main(){
   console.log('Wrote ' + file + ' and ' + path.basename(track) + ' (' + drawn + ' frames in ' + Math.round((Date.now() - started) / 1000) + 's)');
   await browser.close();
 }
-module.exports = { main, rehearse, T, DUR, SAY, READ };
+module.exports = { main, rehearse, plan, framed, END_VIEW, T, DUR, SAY, READ };

@@ -59,15 +59,6 @@ const FPS = +opt('--fps', 30);
 // the phones are in the state they would be, but only FROM to TO is drawn.
 const FROM = +opt('--from', 0), TO = +opt('--to', 1e9);
 const NAME = opt('--name', 'bus-tracker');
-// How the film ends, and so what it is for (film.js, ENDS): 'web' sends the
-// viewer to the website; 'testers' to the Android app's closed test; 'play'
-// to the app on Google Play. The two app endings film the page as the app
-// shows it (APP): the same page, with Android's plugins stood in for, so it
-// takes its GPS and says what it says the way the app does, and the phone
-// has Android's status bar rather than a browser's.
-const ENDING = opt('--ending', 'web');
-if (['web', 'testers', 'play'].indexOf(ENDING) < 0){ console.error('--ending is web, testers or play'); process.exit(1); }
-const APP = ENDING !== 'web';
 const CHROME = process.env.CHROME || '';
 const KEY = (process.env.CARTO_API_KEY || '').trim();
 
@@ -249,8 +240,12 @@ function tileFile(url){
   return path.join(TILES, u.pathname.replace(/[^A-Za-z0-9_@./-]/g, '_'));
 }
 
+// app: a phone filmed as the app shows the page, the same page with
+// Android's plugins stood in for (INIT), so it takes its GPS and says what it
+// says the way the app does; the stage gives it Android's status bar rather
+// than a browser's.
 class Phone {
-  constructor(name, world){ this.name = name; this.world = world; this.pending = 0; this.v = 0; this.now = 0; this.wrote = false; }
+  constructor(name, world, o){ this.name = name; this.world = world; this.app = !!(o && o.app); this.pending = 0; this.v = 0; this.now = 0; this.wrote = false; }
   // clock: video seconds to this phone's time (ms). seed: what this phone
   // already remembers (localStorage), as { key: value }.
   async open(browser, clock, seed, startV){
@@ -266,7 +261,7 @@ class Phone {
     await this.ctx.clock.install({ time:this.now });
     await this.ctx.clock.pauseAt(this.now + 1);
     this.now += 1;
-    await this.ctx.addInitScript(INIT, { seed, app:APP });
+    await this.ctx.addInitScript(INIT, { seed, app:this.app });
     await this.ctx.route(SITE + '/**', route => serveRepo(route, route.request().url()));
     await this.ctx.route(/^https:\/\/[^/]+\.supabase\.co\//, route => this.supabase(route));
     await this.ctx.route(/^https:\/\/[a-d]\.basemaps\.cartocdn\.com\//, route => {
@@ -369,7 +364,7 @@ class Phone {
     this.lastGps = p;
     // In the app the trip's fixes come through the background plugin's
     // watcher (INIT), in a browser through navigator.geolocation.
-    if (APP) await this.page.evaluate(p => window.__bgFix(p), p);
+    if (this.app) await this.page.evaluate(p => window.__bgFix(p), p);
     else await this.ctx.setGeolocation({ latitude:p.lat, longitude:p.lng, accuracy:8 });
   }
   // The page's own poll for positions, now rather than at its next turn.
@@ -501,5 +496,5 @@ function encoder(file){
   };
 }
 
-module.exports = { World, Phone, Stage, road, keys, stop, pictures, board, encoder, FPS, POLL_FRAMES, FROM, TO, OUT, NAME, ENDING, APP, SITE, KEY, CHROME, playwright };
+module.exports = { World, Phone, Stage, road, keys, stop, pictures, board, encoder, FPS, POLL_FRAMES, FROM, TO, OUT, NAME, ROOT, SITE, KEY, CHROME, playwright };
 if (require.main === module) require('./film.js').main().catch(e => { console.error(e); process.exit(1); });

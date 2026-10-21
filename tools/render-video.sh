@@ -13,12 +13,10 @@
 #
 # Options, after the directory: --from S --to S renders only that part
 # (the phones still run from the start, so they are in the right state);
-# --no-key renders without the map key, watermarked, for a quick look;
-# --ending picks where the video sends the viewer, and so what it films:
-#   web       the website (the default), filmed in a browser
-#   testers   the Android app's closed test, filmed as the app
-#   play      the app on Google Play, filmed as the app
-# An ending other than web adds its name to the files, bus-tracker-testers.mp4.
+# --no-key renders without the map key, watermarked, for a quick look.
+#
+# It ends on two QR codes, as the poster does: the tracker, and the Android
+# app at ANDROID_APP_URL in config.txt, so a change there needs a render.
 #
 # Like render-flyer.sh this is run by hand, never at deploy, and nothing it
 # writes is committed. The video is the real index.html, so after a change

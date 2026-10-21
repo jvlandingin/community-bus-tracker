@@ -47,11 +47,15 @@
   #v-bar{height:56px; display:flex; align-items:center; justify-content:center; gap:10px;
          background:#7a1f2b; color:#f6e7d8; font:500 27px/1 var(--font-ui); letter-spacing:.2px;}
   #v-bar svg{width:20px; height:20px; fill:none; stroke:#f6e7d8; stroke-width:2.4; stroke-linecap:round;}
-  /* In a film of the app, Android's status bar instead: the phone's clock,
-     and signal, wifi and battery, on the app's colorPrimaryDark. */
-  #v-bar.status{justify-content:space-between; padding:0 36px 0 44px; background:#5c161f; color:#fff; font:600 28px/1 var(--font-ui);}
-  #v-bar.status .icons{display:flex; gap:12px; align-items:center;}
-  #v-bar.status .icons svg{width:24px; height:24px; fill:#fff; stroke:none;}
+  /* On a phone filmed as the app, the sharer's, Android's status bar
+     instead: the phone's clock, and signal, wifi and battery, on the app's
+     colorPrimaryDark. */
+  #v-status{height:56px; display:none; align-items:center; justify-content:space-between; padding:0 36px 0 44px;
+            background:#5c161f; color:#fff; font:600 28px/1 var(--font-ui);}
+  #v-status .icons{display:flex; gap:12px; align-items:center;}
+  #v-status .icons svg{width:24px; height:24px; fill:#fff; stroke:none;}
+  #v-glass.app #v-bar{display:none;}
+  #v-glass.app #v-status{display:flex;}
   #v-screen{display:block; width:860px; height:1455px; background:#f4eee3;}
 
   /* The caption: one short sentence, big, at the top, over a band of the
@@ -115,22 +119,36 @@
   #i-trip .v-ground{position:absolute; left:0; right:0; top:1668px; bottom:0;}
   #i-trip .v-board{top:600px;}
 
-  /* The end: where to find it, and what it is not. */
+  /* The end: the poster's two ways in, each with its QR code, and what it
+     is not. In the app's own colours (its :root, above): the tracker on
+     maroon, the app on white ringed in gold. Its classes are its own (e-),
+     since the app's stylesheet, which the stage carries, has a .big, a
+     .badge and a .note of its own. */
   #i-end{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%); text-align:center;}
-  #i-end .v-board{top:110px; padding:20px 24px;}
-  #i-end .name{position:absolute; left:0; right:0; top:340px; font:700 132px/1 var(--font-ui); color:#4a1119; letter-spacing:-1px;}
-  /* The app's icon beside its name, with the cream edge that keeps it a
-     tile on its own coral, as on the feature graphic. */
-  #i-end .name .icon{width:150px; height:150px; margin:-30px 34px -12px 0; border-radius:34px; vertical-align:middle;
-                     box-shadow:0 0 0 5px #fbf4e4, 0 14px 30px -10px rgba(90,30,10,.5);}
-  #i-end .lede{position:absolute; left:0; right:0; top:500px; font:600 50px/1.15 var(--font-ui); color:#7a1f2b;}
-  #i-end .v-scene{top:600px; height:520px; border-top:6px solid #fbf4e4; border-bottom:6px solid #fbf4e4;}
-  #i-end .qr{position:absolute; left:50%; top:1180px; width:330px; height:330px; transform:translateX(-50%);
-             background:#fbf6ee; border-radius:30px; padding:22px;}
-  #i-end .qr svg{display:block; width:100%; height:100%;}
-  #i-end .url{position:absolute; left:0; right:0; top:1548px; font:700 60px/1 var(--font-ui); color:#4a1119;}
-  #i-end .url.long{font-size:48px; top:1554px;}
-  #i-end .fine{position:absolute; left:50px; right:50px; top:1650px; font:500 38px/1.4 var(--font-text); color:rgba(74,17,25,.85);}
+  #i-end .v-board{top:70px; padding:20px 24px;}
+  #i-end .e-name{position:absolute; left:0; right:0; top:236px; font:700 120px/1 var(--font-ui); color:#4a1119; letter-spacing:-1px;}
+  #i-end .e-lede{position:absolute; left:0; right:0; top:372px; font:600 46px/1.15 var(--font-ui); color:#7a1f2b;}
+  #i-end .v-scene{top:446px; height:350px; border-top:6px solid #fbf4e4; border-bottom:6px solid #fbf4e4;}
+  #i-end .e-way{position:absolute; left:50px; right:50px; box-sizing:border-box; padding:0 36px; border-radius:40px;
+                display:flex; align-items:center; gap:36px; text-align:left;}
+  #i-end .e-watch{top:842px; height:340px; background:linear-gradient(180deg, var(--maroon), var(--maroon-deep)); color:#fff;}
+  #i-end .e-watch.e-only{top:1000px;}
+  #i-end .e-droid{top:1210px; height:400px; background:var(--surface); color:var(--ink); box-shadow:inset 0 0 0 5px var(--gold);}
+  #i-end .e-qr{flex:0 0 290px; height:290px; box-sizing:border-box; padding:16px; background:#fff; border-radius:26px;}
+  #i-end .e-qr svg{display:block; width:100%; height:100%;}
+  #i-end .e-words{min-width:0;}
+  #i-end .e-kicker{font:800 28px/1 var(--font-ui); letter-spacing:.12em; text-transform:uppercase; opacity:.9;}
+  #i-end .e-droid .e-kicker{display:flex; align-items:center; gap:14px; color:var(--gold-deep); opacity:1;}
+  #i-end .e-icon{width:52px; height:52px; border-radius:13px;}
+  #i-end .e-big{font:700 56px/1.02 var(--font-ui); letter-spacing:-.5px; margin-top:12px;}
+  #i-end .e-url{font:700 31px/1.2 var(--font-ui); margin-top:18px;}
+  #i-end .e-note{font:500 29px/1.3 var(--font-text); margin-top:6px; opacity:.85;}
+  #i-end .e-droid .e-note{color:var(--muted); opacity:1;}
+  /* Google's badge: its own PNG, unaltered, its clear space the PNG's own
+     transparent margin, so it sits that much left of the words. */
+  #i-end .e-badge{display:block; height:96px; width:auto; margin:8px 0 0 -12px;}
+  #i-end .e-fine{position:absolute; left:50px; right:50px; top:1652px; font:500 34px/1.4 var(--font-text); color:rgba(74,17,25,.85);}
+  #i-end .e-fine small{display:block; margin-top:8px; font-size:24px;}
 </style>
 </head>
 <body>
@@ -138,6 +156,7 @@
   <div id="v-world">
     <div id="v-phone"><div id="v-glass">
       <div id="v-bar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>community-bus-tracker.netlify.app</div>
+      <div id="v-status"><span class="clock"></span><span class="icons"><svg viewBox="0 0 24 24"><path d="M3 21h18V3z"/></svg><svg viewBox="0 0 24 24"><path d="M12 21 1.5 8.5a15.5 15.5 0 0 1 21 0z"/></svg><svg viewBox="0 0 24 24"><rect x="7" y="3.5" width="10" height="18" rx="2"/><rect x="10" y="1.5" width="4" height="3" rx="1"/></svg></span></div>
       <img id="v-screen" alt="">
     </div></div>
   </div>
@@ -188,15 +207,6 @@ const V = (function(){
       return '<div class="c" data-i="' + i + '">' + c.html + '</div>';
     }).join('');
     $('v-ints').innerHTML = plan.ints.map(function(x){ return '<div class="v-int" id="i-' + x.id + '">' + x.html + '</div>'; }).join('');
-    // A film of the app: Android's status bar where the browser's bar was.
-    if (plan.app){
-      const bar = $('v-bar');
-      bar.className = 'status';
-      bar.innerHTML = '<span class="clock"></span><span class="icons">' +
-        '<svg viewBox="0 0 24 24"><path d="M3 21h18V3z"/></svg>' +
-        '<svg viewBox="0 0 24 24"><path d="M12 21 1.5 8.5a15.5 15.5 0 0 1 21 0z"/></svg>' +
-        '<svg viewBox="0 0 24 24"><rect x="7" y="3.5" width="10" height="18" rx="2"/><rect x="10" y="1.5" width="4" height="3" rx="1"/></svg></span>';
-    }
   }
   // Something that happened in the page: a tap, a buzz, or a camera move
   // asked for by the script, each with the time it starts.
@@ -273,9 +283,11 @@ const V = (function(){
     return keys[keys.length - 1][1];
   }
 
-  // clock: what the phone's status bar says now, in a film of the app.
+  // clock: what the phone's status bar says now, for a phone filmed as the
+  // app; none for one filmed as a browser, which has the browser's bar.
   function render(t, clock){
-    if (clock){ const c = document.querySelector('#v-bar .clock'); if (c) c.textContent = clock; }
+    $('v-glass').classList.toggle('app', !!clock);
+    if (clock) $('v-status').querySelector('.clock').textContent = clock;
     // The phone: in, out, and the camera on it.
     const cam = camAt(t);
     const dy = track(plan.phone, t, 0), dx = track(plan.phoneX, t, 0);
@@ -414,7 +426,7 @@ const V = (function(){
     },
     end: function(el, u){
       sweep(el.querySelector('.v-board'), (u - .1) / .8);
-      ['name', 'lede', 'qr', 'url', 'fine'].forEach(function(k, j){
+      ['e-name', 'e-lede', 'e-watch', 'e-droid', 'e-fine'].forEach(function(k, j){
         const n = el.querySelector('.' + k);
         if (!n) return;
         const p = easeOut((u - .25 - j * .16) / .45);

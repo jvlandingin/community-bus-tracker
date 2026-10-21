@@ -1999,26 +1999,31 @@ drawings made by the app's own SIGNBOARD and PICTURES blocks, run the way
 `tools/make-pictures.js` runs them. When the screens change, the video is
 out of date until it is rendered again.
 
-**The app's video, with three endings** (October 2026, once the app was on
-Play for its internal test). It wears the app's look: the icon's morning
+**The app's video too, with two ways in** (October 2026, once the app was
+on Play for its internal test). It wears the app's look: the icon's morning
 coral with the print in deep maroon, as Play's feature graphic and the link
 preview have it, and it opens on the feature graphic's question, "Nasaan na
-ang bus?". Where it sends the viewer is picked when it is rendered
-(`--ending`): `web`, the website, while the app is only in internal
-testing; `testers`, the closed test's sign-up (`testers.html`), while Play
-wants testers who ride; `play`, the app's listing, once it is public. The
-two app endings film the page as the app shows it, with Android's plugins
-stood in for the way `test-boot.js` section 11 boots it, and Android's
-status bar where the browser's bar was. The sharing tab said the app's
-"Keeps sharing with the screen locked." under Start, where a browser says
-"Keep the screen on.", and the camera closed on it; since 20 October both
-are said only in the trip's first window, which a sharer with nine trips
-behind them, as the film's has, never sees. A film of the website never shows
-what only the app does, and a film of the app never sends the viewer to the
-website. The website is Bus Tracker and the app is Fibi, on the end card as
-everywhere else. Play's listing takes a video too, as a YouTube link;
-guides disagree on whether a portrait one suits it, so check Play Console's
-help before using this cut there.
+ang bus?". It ends as the poster does, on two cards with a QR code each, in
+the poster's words: "Watch the bus", the tracker, "No app, no account."; and
+the Android app for sharing "with your phone locked", at `ANDROID_APP_URL`
+(the closed test's sign-up while it runs, saying "Early access. Scan to join
+the testers.", then the listing), with Google's "Get it on Google Play"
+badge, its own PNG unaltered as `index.html` carries it, and Google's
+trademark line under the cards. Never the bare Play logo: Google keeps it
+for its own lockups. So there is one video to keep, where there were three
+endings picked at render time (the website, the closed test, the listing);
+the maintainer asked for one with both codes (October 2026), and a change to
+`ANDROID_APP_URL` is a render, not a new cut. The film shows both ways in:
+the sharer's phone is filmed as the app shows the page, with Android's
+plugins stood in for the way `test-boot.js` section 11 boots it and
+Android's status bar, and the other rider's, next morning, as a browser
+does. Nothing in the film is something only the app does: the sharing
+tab's "Keeps sharing with the screen locked." under Start went into the
+trip's first window on 20 October, which a sharer with nine trips behind
+them, as the film's has, never sees. The website is Bus Tracker and the app
+is Fibi, on the end card as everywhere else. Play's listing takes a video
+too, as a YouTube link; guides disagree on whether a portrait one suits it,
+so check Play Console's help before using this cut there.
 
 **Nothing reaches the database.** Every request the page makes to Supabase
 is answered by the script (`World` in `tools/video/render.js`) with made-up
@@ -2120,11 +2125,11 @@ card's one buzz on board, two stops before the stop, is in the interlude.
 same rules as the app's own words: no minutes and no arrival time, Bus
 Tracker and never the company's initials, and the end card's
 "Community-run. Not affiliated with the bus company." The end card said "No
-app, no account." until there was an Android app; the website's ending says
-"Nothing to install. No account.", which the website still is, and names no
-app, since a post naming an app nobody can install yet only frustrates (the
-maintainer's call, October 2026). The app's endings name it, Fibi, once
-there is a way in: the closed test's sign-up, then the listing. One caption is the
+app, no account." until there was an Android app, then "Nothing to install.
+No account." on its website ending, which named no app while nobody could
+install it. Now that there is a way in, the closed test's sign-up, the one
+ending names it, Fibi, beside the tracker, whose card says "No app, no
+account." again, of watching. One caption is the
 maintainer's own and breaks the spare-parts rule on purpose: "Earn coins and
 dress up your bus." (October 2026). The app still says spare parts and draws
 a nut; the video's word is coins. The stage draws a buzz only in the two

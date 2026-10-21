@@ -1,0 +1,4342 @@
+# Places along the route, for the stop picker's search: what a rider might
+# give as where they wait or get off, besides the stops in config.txt.
+# Written by tools/make-places.js from OpenStreetMap as of 2026-10-21;
+# run it again rather than editing this by hand.
+#
+# © OpenStreetMap contributors. The data is under the Open Database License
+# 1.0 (https://www.openstreetmap.org/copyright), and this file, a
+# derivative of it, is offered under the same licence.
+#
+# name | latitude | longitude | town, by its border in OpenStreetMap
+Amirsache Villa|14.0962|120.9140|Tagaytay
+Asisan|14.0983|120.9127|Tagaytay
+Bag of Beans|14.0949|120.9150|Tagaytay
+Guinhawa South|14.1039|120.9113|Tagaytay
+Mendez Crossing West Pabahay|14.0997|120.9145|Tagaytay
+Sambong|14.0958|120.9164|Tagaytay
+Soto Grande Subdivision|14.0979|120.9113|Tagaytay
+Starflower Tourist Lounge|14.0959|120.9163|Tagaytay
+Swiss Chalet|14.0949|120.9156|Tagaytay
+Las Brisas de Tagaytay|14.1013|120.9142|Tagaytay
+Jollibee|14.0968|120.9166|Tagaytay
+Tagaytay Haven Hotel|14.0970|120.9165|Tagaytay
+Powerhouse|14.0965|120.9171|Tagaytay
+Mendez Crossing West|14.0984|120.9163|Tagaytay
+Emilio Lim Appliance|14.0966|120.9173|Tagaytay
+Alaban Medical Clinic|14.0967|120.9174|Tagaytay
+Noceda|14.0967|120.9175|Tagaytay
+Lydia Joy Carinderia|14.0969|120.9174|Tagaytay
+Security Bank (Tagaytay)|14.0967|120.9177|Tagaytay
+Ace Hardware (Tagaytay)|14.0971|120.9175|Tagaytay
+BDO (Tagaytay - Mendez Junction)|14.0971|120.9176|Tagaytay
+PNB (Tagaytay)|14.0968|120.9178|Tagaytay
+DLTE Furniture Depot|14.0972|120.9177|Tagaytay
+FMI Ministries|14.1014|120.9157|Tagaytay
+Ultramega Supermarket|14.0969|120.9180|Tagaytay
+Novo|14.0975|120.9177|Tagaytay
+Uncle John's|14.0972|120.9180|Tagaytay
+Masaligan School Supplies|14.0969|120.9182|Tagaytay
+Vochoa Pawnshop|14.0970|120.9182|Tagaytay
+Watsons|14.0972|120.9181|Tagaytay
+Patutong Malaki South|14.1045|120.9145|Tagaytay
+JRJC Furniture|14.0970|120.9183|Tagaytay
+MC Enterprises|14.0970|120.9183|Tagaytay
+Andok's|14.0970|120.9184|Tagaytay
+Alfamart|14.0973|120.9183|Tagaytay
+Goldilocks|14.0970|120.9185|Tagaytay
+FMI World MIssion|14.1045|120.9148|Tagaytay
+Savemore (Tagaytay)|14.0976|120.9185|Tagaytay
+KFC|14.0975|120.9186|Tagaytay
+MR.DIY|14.0979|120.9185|Tagaytay
+Motorace|14.0979|120.9185|Tagaytay
+Mister Donut|14.0976|120.9187|Tagaytay
+Mendez Crossing Barangay Hall West|14.0986|120.9182|Tagaytay
+Cebuana Lhuillier|14.0973|120.9189|Tagaytay
+Motortrade|14.0973|120.9189|Tagaytay
+Potato Corner|14.0975|120.9188|Tagaytay
+Turks|14.0977|120.9187|Tagaytay
+Paolo's Gotohan|14.0982|120.9185|Tagaytay
+Red Ribbon|14.0973|120.9191|Tagaytay
+M Lhuillier|14.0974|120.9192|Tagaytay
+Petron|14.0982|120.9188|Tagaytay
+TGP|14.0974|120.9193|Tagaytay
+Generika|14.0975|120.9194|Tagaytay
+Stellar Brews|14.0976|120.9195|Tagaytay
+Tech Hive|14.0976|120.9195|Tagaytay
+7-Eleven (Mendez Junction)|14.0977|120.9199|Tagaytay
+Mercury Drug (Tagaytay Aguinaldo Highway)|14.0981|120.9197|Tagaytay
+Mang Pakpak|14.0978|120.9200|Tagaytay
+Bayani Tapsi|14.0980|120.9200|Tagaytay
+Bakery Supply|14.0978|120.9202|Tagaytay
+Newgard Hotel and Restaurant Supplies|14.0979|120.9203|Tagaytay
+Villarica|14.0979|120.9203|Tagaytay
+Supersale Food Solution|14.0979|120.9204|Tagaytay
+Cakes and pARTY NEEDS|14.0980|120.9204|Tagaytay
+Sr. Pedro|14.0982|120.9203|Tagaytay
+Tammy/Margie Store|14.0982|120.9203|Tagaytay
+978 Electrical Supply|14.0980|120.9205|Tagaytay
+Baliwag (Manok Liempo)|14.0982|120.9204|Tagaytay
+Princess Wholesaler|14.0983|120.9205|Tagaytay
+Mendez Crossing Elementary School|14.1005|120.9195|Tagaytay
+Nanay Cirilas' Kapeng Barako|14.1016|120.9194|Tagaytay
+Metroview Restaurant|14.0982|120.9213|Tagaytay
+Eway's Grill|14.0983|120.9215|Tagaytay
+Rodilla's Yema Cake & Buko Pie|14.0984|120.9216|Tagaytay
+Diners Original Bulalo|14.0985|120.9219|Tagaytay
+Collete's|14.0987|120.9221|Tagaytay
+7Twenty American Diner|14.0991|120.9219|Tagaytay
+Silog 198|14.0987|120.9222|Tagaytay
+Victory Christian Church|14.0992|120.9220|Tagaytay
+House of Inasal and Lechion Belly|14.0987|120.9223|Tagaytay
+Masingngo Pansit Batil Patong|14.0987|120.9223|Tagaytay
+Steak House & Japanese Restaurant|14.0991|120.9221|Tagaytay
+Hot Pot Salamat|14.0991|120.9222|Tagaytay
+Chinabank|14.0992|120.9222|Tagaytay
+Pedro Patricia Esguerra Ville|14.1003|120.9217|Tagaytay
+Angels Pizza|14.0992|120.9223|Tagaytay
+Juddie's Bulalohan|14.0989|120.9225|Tagaytay
+Juddies Tapsilogan|14.0989|120.9225|Tagaytay
+X Meat Here Korean|14.0992|120.9224|Tagaytay
+D' BAS|14.0992|120.9225|Tagaytay
+Tagaytay Tropical Greens|14.1035|120.9207|Tagaytay
+Balinsasayaw Restaurant|14.0995|120.9228|Tagaytay
+Mendez Crossing East|14.0993|120.9231|Tagaytay
+Hills View|14.0991|120.9233|Tagaytay
+Bonjour|14.0995|120.9231|Tagaytay
+Total|14.0996|120.9233|Tagaytay
+Bulalo Point Turo-Turo Grill|14.0992|120.9236|Tagaytay
+Bulalo Capital|14.0997|120.9235|Tagaytay
+Mer-Ben Tapsilogan sa Tagaytay|14.0994|120.9238|Tagaytay
+Cecilia's Buko Pie|14.0997|120.9237|Tagaytay
+Diner's Original Bulalo|14.0999|120.9236|Tagaytay
+Merben Canteen Tapsilog|14.0995|120.9242|Tagaytay
+Nanay Dorie's|14.0999|120.9240|Tagaytay
+Burger ahuy|14.0997|120.9244|Tagaytay
+Mr. Pares|14.1000|120.9243|Tagaytay
+South Drive Dinner|14.0998|120.9250|Tagaytay
+Tagaytay Component City Police Station|14.1036|120.9231|Tagaytay
+Jaytee's|14.1001|120.9254|Tagaytay
+Tagaytay City National High School|14.1029|120.9243|Tagaytay
+Villa San Jose|14.1001|120.9259|Tagaytay
+Tagaytay Foggy Inn|14.0997|120.9262|Tagaytay
+St. John|14.0997|120.9264|Tagaytay
+Zilog|14.0997|120.9264|Tagaytay
+Hinode Japanese Resto|14.0996|120.9266|Tagaytay
+Hotel Casiana ad Residences|14.1002|120.9268|Tagaytay
+Hotel Casiana|14.1003|120.9270|Tagaytay
+Reynaldo's Smoke House|14.0993|120.9279|Tagaytay
+Motor Vehicle Emission Testing|14.1020|120.9267|Tagaytay
+PNB (Tagaytay-Aguinaldo)|14.0991|120.9285|Tagaytay
+Tides Grill & Bistro|14.0998|120.9282|Tagaytay
+Hotel Monticello|14.1001|120.9281|Tagaytay
+Manukan Grille|14.0992|120.9287|Tagaytay
+The Wellington Courtyard|14.1021|120.9273|Tagaytay
+MJS Steel and Construction Supply|14.1011|120.9279|Tagaytay
+Petron|14.0989|120.9291|Tagaytay
+Treats|14.0988|120.9292|Tagaytay
+Kape Mo-To|14.0988|120.9294|Tagaytay
+Shell|14.0983|120.9298|Tagaytay
+Shell Select|14.0982|120.9300|Tagaytay
+Hotel Dolores|14.0986|120.9301|Tagaytay
+Bene Sanctuary Clinic|14.0985|120.9303|Tagaytay
+Sinangag Express|14.0984|120.9304|Tagaytay
+The Villa Hotel & Restaurant|14.0986|120.9304|Tagaytay
+Char's|14.1044|120.9275|Tagaytay
+Mahogany Place Tagaytay|14.1066|120.9264|Tagaytay
+Hortz Hotel and Resorts|14.0990|120.9304|Tagaytay
+The Tagaytay Commons|14.1050|120.9275|Tagaytay
+Mater Dei Academy|14.1025|120.9288|Tagaytay
+Greenhouse Cafe|14.1043|120.9279|Tagaytay
+Casa Celina|14.1041|120.9281|Tagaytay
+King's Crumbs Bakeshop|14.1059|120.9272|Tagaytay
+Sister Handmaids of Charity|14.1047|120.9279|Tagaytay
+Coconut Cream Pie|14.1061|120.9272|Tagaytay
+Munting Hardin Food Park|14.1058|120.9274|Tagaytay
+Barista Loft|14.1017|120.9295|Tagaytay
+Crimson Sunbird Events Place|14.1068|120.9276|Tagaytay
+Mahogany Site Restaurant|14.1021|120.9304|Tagaytay
+Pabahay V|14.1038|120.9297|Tagaytay
+Villarica|14.1028|120.9309|Tagaytay
+Mahogany Glass & Aluminum|14.1029|120.9311|Tagaytay
+Dwight Agri Supply|14.1029|120.9312|Tagaytay
+Renvics Water|14.1030|120.9313|Tagaytay
+7-Eleven|14.1032|120.9313|Tagaytay
+Gasso|14.1031|120.9314|Tagaytay
+Gabriel Heights|14.1083|120.9289|Tagaytay
+Patutong Malaki South|14.1053|120.9305|Tagaytay
+Angel's Burger|14.1036|120.9314|Tagaytay
+Tysun|14.1029|120.9318|Tagaytay
+Tagaytay Bulaluhan|14.1041|120.9312|Tagaytay
+Ang Dating Daan (Tagaytay)|14.1028|120.9319|Tagaytay
+Alpha Ace|14.1029|120.9319|Tagaytay
+Luminous Maternity Clinic|14.1030|120.9320|Tagaytay
+Tagaytay Hall of Justice|14.1035|120.9318|Tagaytay
+Jolibee|14.1029|120.9323|Tagaytay
+Kaybagal South|14.1033|120.9324|Tagaytay
+Licensing and Registration|14.1051|120.9315|Tagaytay
+LTO Tagaytay|14.1048|120.9317|Tagaytay
+LTO Medical Services|14.1047|120.9318|Tagaytay
+LKJ General Merchandise|14.1031|120.9327|Tagaytay
+Susan Store|14.1033|120.9326|Tagaytay
+LTO - Canteen|14.1051|120.9317|Tagaytay
+Vivian Eatery|14.1033|120.9327|Tagaytay
+Kaybagal South Covered Court|14.1038|120.9325|Tagaytay
+Riza May Bulalo|14.1033|120.9328|Tagaytay
+Mahogan Hardware|14.1032|120.9329|Tagaytay
+Ancaya Medical Clinic LTO approved|14.1033|120.9329|Tagaytay
+Casino Filipino Tagaytay|14.0980|120.9357|Tagaytay
+Pares ni Nanay|14.1033|120.9331|Tagaytay
+Tagaytay Heights|14.1053|120.9321|Tagaytay
+Mt. Carmel Rural Bank|14.1030|120.9334|Tagaytay
+Mommy Eway's Kamayan|14.1035|120.9342|Tagaytay
+Ribchon Cochinillo|14.1033|120.9344|Tagaytay
+Tagaytay City Hall|14.0963|120.9380|Tagaytay
+New Tagaytay City Hall Complex|14.0966|120.9381|Tagaytay
+Kristine Bulalo & Sisig|14.1033|120.9348|Tagaytay
+Tapsilogan by Kristina|14.1033|120.9349|Tagaytay
+Delantera Resto and Bar|14.1028|120.9353|Tagaytay
+Entrada bar & resto|14.1034|120.9350|Tagaytay
+Kape Muna|14.1035|120.9353|Tagaytay
+Viewsite|14.1035|120.9353|Tagaytay
+Silvina's Hotel & Resort|14.1029|120.9358|Tagaytay
+Senior Alvino’s Bulalo|14.1028|120.9360|Tagaytay
+Liesel's Events Place & Resort|14.1027|120.9361|Tagaytay
+Bells and Whistles|14.1032|120.9360|Tagaytay
+Character Hotel|14.0983|120.9385|Tagaytay
+Ol'Days Sangyupsal Unlimited BBQ|14.1027|120.9363|Tagaytay
+Vianshe Hotel and Events|14.1034|120.9360|Tagaytay
+Cali Pizza|14.0956|120.9401|Tagaytay
+Cosmos Commercial Building|14.0956|120.9401|Tagaytay
+Wingyard Tagaytay|14.0956|120.9401|Tagaytay
+Old Tagaytay City Hall|14.0995|120.9382|Tagaytay
+Rancho Vista|14.0959|120.9401|Tagaytay
+Tummy's|14.0962|120.9401|Tagaytay
+Palawan Pawnshop|14.1028|120.9368|Tagaytay
+Mang Jose Lechon and Inasal|14.1034|120.9365|Tagaytay
+Tagaytay Post Office|14.1001|120.9383|Tagaytay
+Tito Bee's Eatery|14.1033|120.9367|Tagaytay
+Registry of Deeds|14.1002|120.9383|Tagaytay
+Kingscom Construction Supply|14.1028|120.9370|Tagaytay
+T-Bone King|14.1033|120.9368|Tagaytay
+Ryoukai Ramen|14.1033|120.9369|Tagaytay
+Tagaytay Component City Police Station|14.1002|120.9385|Tagaytay
+Sinauna Manokan & Seafoods|14.1033|120.9370|Tagaytay
+Philippine Institute of Volcanolgy|14.1008|120.9383|Tagaytay
+Landbank|14.0989|120.9393|Tagaytay
+Malaco Hotel B&B|14.1034|120.9371|Tagaytay
+Saint Michael|14.0993|120.9392|Tagaytay
+Tagaytay|14.0993|120.9392|Tagaytay
+Kingscom Construction|14.1029|120.9374|Tagaytay
+Tagaytay West Substation|14.0959|120.9410|Tagaytay
+Señor Alvino’s|14.1033|120.9373|Tagaytay
+Chiks ni Otit|14.1031|120.9377|Tagaytay
+Malaco Hotel|14.1033|120.9376|Tagaytay
+City College of Tagaytay Senior High School|14.1023|120.9386|Tagaytay
+Ospital ng Tagaytay|14.0993|120.9402|Tagaytay
+Robinsons Supermarket|14.0965|120.9420|Tagaytay
+Handyman|14.0969|120.9419|Tagaytay
+DPWH Cavite 2nd District Engineering Office|14.1029|120.9389|Tagaytay
+Shakey's|14.0967|120.9421|Tagaytay
+Miao de Chan Temple|14.1126|120.9342|Tagaytay
+Robinsons Tagaytay|14.0970|120.9422|Tagaytay
+BPI|14.0972|120.9421|Tagaytay
+Bloomfields Tagaytay|14.0982|120.9416|Tagaytay
+Giligans|14.0972|120.9424|Tagaytay
+DOH Treatment and Rehabilitation Center|14.1018|120.9401|Tagaytay
+Starbucks|14.0972|120.9425|Tagaytay
+Metrogate Tagaytay Estates Phase 2|14.1172|120.9327|Tagaytay
+Summit Ridge|14.0980|120.9426|Tagaytay
+Rosario Restaurant|14.0971|120.9432|Tagaytay
+The Blessings in the Word Fellowship School|14.1034|120.9401|Tagaytay
+Maharlika West|14.0978|120.9431|Tagaytay
+Wind Residence Club House|14.1002|120.9421|Tagaytay
+Police Station|14.1026|120.9409|Tagaytay
+Dunkin'|14.1023|120.9411|Tagaytay
+P. C. Employees Village|14.1035|120.9405|Tagaytay
+Clean Fuel|14.1024|120.9412|Tagaytay
+7-Eleven (Wind Residences)|14.0991|120.9430|Tagaytay
+Wind Residences|14.1001|120.9425|Tagaytay
+Ka Tunying's|14.0980|120.9436|Tagaytay
+Blowing In The Wind - Serviced Apartments|14.0992|120.9430|Tagaytay
+Ong Bao Mon An Vietnamese Food|14.1026|120.9413|Tagaytay
+Chimmy|14.0979|120.9437|Tagaytay
+Rizza Drugstore|14.1025|120.9414|Tagaytay
+Ersao Taiwanese Cuisine|14.0992|120.9431|Tagaytay
+LBC|14.0992|120.9431|Tagaytay
+Tagaytay Forbes Residences|14.1118|120.9368|Tagaytay
+Turks|14.1026|120.9415|Tagaytay
+Pochollo's|14.0979|120.9439|Tagaytay
+Gerry's Grill|14.0982|120.9438|Tagaytay
+Junil's Bakeshop|14.1030|120.9414|Tagaytay
+D Rising Gas|14.1029|120.9415|Tagaytay
+Sip n Brew Milk Tea|14.1028|120.9418|Tagaytay
+BethRam's|14.1030|120.9417|Tagaytay
+TISE School|14.1057|120.9404|Tagaytay
+Tagaytay City Water District|14.1063|120.9401|Tagaytay
+Ace Hardware|14.0996|120.9435|Tagaytay
+Barako Pares Atbp|14.1030|120.9418|Tagaytay
+RDM Tagaytay Lomi House|14.1035|120.9416|Tagaytay
+Twin Bar Metal Industries|14.1078|120.9395|Tagaytay
+BDO|14.0996|120.9437|Tagaytay
+Anaya Cafe and Restaurant|14.1030|120.9420|Tagaytay
+Tower Canteen|14.1052|120.9409|Tagaytay
+Shell|14.1023|120.9424|Tagaytay
+Mr. Liempo|14.1073|120.9399|Tagaytay
+7-Eleven|14.1024|120.9426|Tagaytay
+Country Chateau Hotel|14.1030|120.9423|Tagaytay
+Sumosam|14.0999|120.9439|Tagaytay
+Buere's Canteen|14.1047|120.9416|Tagaytay
+Beef Pares|14.1064|120.9408|Tagaytay
+JP's Pizza|14.1066|120.9407|Tagaytay
+Cafe Severino|14.1041|120.9420|Tagaytay
+Weber's Delicatessen|14.1000|120.9441|Tagaytay
+Carlos S. Batino Sr. Memorial Elementary School|14.1132|120.9375|Tagaytay
+Dairy Queen|14.1000|120.9442|Tagaytay
+Fuel Express|14.1095|120.9395|Tagaytay
+Ridge Park|14.0990|120.9448|Tagaytay
+Pizza Hut|14.1000|120.9443|Tagaytay
+Ecol&Mark Store|14.1114|120.9386|Tagaytay
+Alfamart|14.1124|120.9381|Tagaytay
+Skyranch Store|14.1115|120.9386|Tagaytay
+McDonald's|14.1099|120.9395|Tagaytay
+Foodmarks Canteen|14.1114|120.9388|Tagaytay
+D&J Store|14.1116|120.9387|Tagaytay
+Rainbow's Medical Clinic Pharmacy|14.1130|120.9380|Tagaytay
+Noli Alfonso Hardware & Construction|14.1113|120.9389|Tagaytay
+Kaybagal Central|14.1124|120.9384|Tagaytay
+Metrogate Tagaytay Estates Phase 1|14.1214|120.9339|Tagaytay
+Boris Store|14.1138|120.9378|Tagaytay
+JC Food Hub|14.1123|120.9386|Tagaytay
+Malunggay Pandesal|14.1128|120.9384|Tagaytay
+Dali|14.1130|120.9383|Tagaytay
+Pipik's Sari Sari Store|14.1132|120.9382|Tagaytay
+Church of Christ at Tagaytay|14.1162|120.9367|Tagaytay
+Mang Ted Lechon Manok|14.1133|120.9382|Tagaytay
+The Brothers Unli Wings|14.1139|120.9381|Tagaytay
+Kaybagal Central Bgy Hall|14.1163|120.9371|Tagaytay
+The Velvet View|14.1060|120.9423|Tagaytay
+Penny Store|14.1162|120.9373|Tagaytay
+Salay Senyorita Kainan sa Kubo|14.1179|120.9365|Tagaytay
+Laurentino's|14.1201|120.9354|Tagaytay
+Hillbarn Event center|14.1203|120.9353|Tagaytay
+Hotel Kimberly|14.1221|120.9345|Tagaytay
+Julius Cesar Roofing & Metal Trading|14.1184|120.9364|Tagaytay
+Big Mummy|14.1184|120.9365|Tagaytay
+Nanay Feling's Pancit Malabon|14.1177|120.9369|Tagaytay
+Hotel Kimberly Tagaytay|14.1222|120.9347|Tagaytay
+Dahon @ Mesa Tagaytay|14.1005|120.9457|Tagaytay
+Kent Star Hardware and Construction Store|14.1207|120.9356|Tagaytay
+Kent Star Hardware Store|14.1207|120.9357|Tagaytay
+Colince 3A Consumer Store|14.1219|120.9353|Tagaytay
+Villanueva Store|14.1206|120.9360|Tagaytay
+RMG Store|14.1208|120.9359|Tagaytay
+Mang Ted Lechin Manok|14.1209|120.9359|Tagaytay
+Alfamart|14.1211|120.9358|Tagaytay
+4 Sisters Eatery|14.1212|120.9358|Tagaytay
+Beltran Store|14.1212|120.9358|Tagaytay
+Pan de Manila|14.1012|120.9459|Tagaytay
+Puring Store|14.1216|120.9357|Tagaytay
+Iglesia ni Cristo|14.1218|120.9356|Tagaytay
+Kaybagal North|14.1222|120.9354|Tagaytay
+Primark Town Center|14.1014|120.9460|Tagaytay
+SM Hypermart Tagaytay|14.1014|120.9461|Tagaytay
+Pag-Ibig HDF Tagaytay|14.1015|120.9462|Tagaytay
+St. Mary's Pre-Novitiate|14.1021|120.9459|Tagaytay
+McDonald's|14.1015|120.9463|Tagaytay
+Tagaytay High Grove|14.1048|120.9449|Tagaytay
+Royal Pines|14.1064|120.9441|Tagaytay
+Joaquin's Bed and Breakfast|14.1011|120.9468|Tagaytay
+Qiwellness|14.1012|120.9469|Tagaytay
+Betania Retreat House|14.1029|120.9464|Tagaytay
+Joyce's Diner|14.1013|120.9474|Tagaytay
+Ronamar Restaurant|14.1020|120.9472|Tagaytay
+PGA Homes|14.1175|120.9395|Tagaytay
+Bistro Ibarra|14.1015|120.9476|Tagaytay
+Villa Ibarra|14.1015|120.9476|Tagaytay
+Royal Pines West 1|14.1105|120.9432|Tagaytay
+PGA Log Cabin|14.1177|120.9396|Tagaytay
+Petron|14.1021|120.9475|Tagaytay
+Ronamar Apartelle|14.1028|120.9472|Tagaytay
+Jaytee's|14.1015|120.9479|Tagaytay
+Tagaytay Greenville Subdivision|14.1228|120.9377|Tagaytay
+Pine Valley|14.1207|120.9389|Tagaytay
+The Lake Hotel|14.1018|120.9485|Tagaytay
+Maharlika East|14.1022|120.9483|Tagaytay
+Maharlika Elementary School|14.1030|120.9482|Tagaytay
+FGC Building|14.1024|120.9487|Tagaytay
+Tambunting (Pawnshop)|14.1024|120.9487|Tagaytay
+Clearwater Resthouse|14.1021|120.9492|Tagaytay
+R. Lapid's Chicharon & Barbeque|14.1024|120.9491|Tagaytay
+Charito|14.1017|120.9495|Tagaytay
+Cafe Platito Atbp.|14.1017|120.9497|Tagaytay
+Buon Giorno|14.1016|120.9498|Tagaytay
+Domicillo|14.1018|120.9497|Tagaytay
+Via Appia Tagaytay|14.1135|120.9438|Tagaytay
+The Cliffhouse|14.1016|120.9499|Tagaytay
+Cliffhouse Tagaytay|14.1019|120.9498|Tagaytay
+The Inn At Cliffhouse Tagaytay|14.1016|120.9500|Tagaytay
+Fling Yogurt|14.1018|120.9500|Tagaytay
+Fire Lake Grill|14.1017|120.9501|Tagaytay
+Cafe Breton|14.1019|120.9500|Tagaytay
+Alta Monte|14.1143|120.9438|Tagaytay
+Royal Pines West 2|14.1111|120.9455|Tagaytay
+Bali Seafoods Paluto|14.1019|120.9502|Tagaytay
+RSM Lutong Bahay|14.1017|120.9509|Tagaytay
+Scooteria Cafe|14.1038|120.9499|Tagaytay
+Pacific Grove|14.1129|120.9454|Tagaytay
+Rivera Hotel|14.1028|120.9505|Tagaytay
+Max's Restaurant (Tagaytay Ridge)|14.1017|120.9511|Tagaytay
+Don Juan Bulalo|14.1028|120.9509|Tagaytay
+Balay Dako|14.1021|120.9513|Tagaytay
+Cesar's Grill|14.1029|120.9511|Tagaytay
+Daddy's Toasted Siopao|14.1029|120.9511|Tagaytay
+Figaro|14.1030|120.9512|Tagaytay
+Christ's Commission Felowship|14.1032|120.9511|Tagaytay
+First Colonial|14.1032|120.9511|Tagaytay
+Kuya Rex Testaurant|14.1032|120.9511|Tagaytay
+Leslie's Terrace Garden|14.1021|120.9517|Tagaytay
+LZM Restautant|14.1031|120.9512|Tagaytay
+Magallanes Square|14.1033|120.9511|Tagaytay
+Magallanes Square Hotel|14.1033|120.9511|Tagaytay
+Sari-Sari|14.1037|120.9509|Tagaytay
+7-Eleven|14.1030|120.9513|Tagaytay
+Diner's Bulalo|14.1020|120.9520|Tagaytay
+Pancake House|14.1021|120.9521|Tagaytay
+Starbucks Reserve (Hiraya)|14.1022|120.9521|Tagaytay
+One Destination|14.1023|120.9521|Tagaytay
+The Grill by Antonio's|14.1029|120.9518|Tagaytay
+Teriyaki Boy|14.1023|120.9522|Tagaytay
+Mile Hi Diner|14.1027|120.9521|Tagaytay
+Carlos Pizza|14.1025|120.9523|Tagaytay
+Kingdom Hall of Jehovah's Witnesses|14.1073|120.9499|Tagaytay
+Memory Lane Country Diner|14.1097|120.9488|Tagaytay
+Dencio's (Tagaytay)|14.1027|120.9524|Tagaytay
+Dencio's Bar and Grill|14.1027|120.9524|Tagaytay
+Solace of Soul|14.1086|120.9499|Tagaytay
+Theodore Hotel|14.1029|120.9528|Tagaytay
+Father Saturnino Lopez Home|14.1112|120.9487|Tagaytay
+Fathe Saturnino Lopez Home|14.1112|120.9488|Tagaytay
+Silang Crossing West|14.1040|120.9525|Tagaytay
+Marello Retreat House|14.1087|120.9509|Tagaytay
+Tootsie's|14.1051|120.9536|Tagaytay
+Taaleña Restaurant and Bar|14.1039|120.9543|Tagaytay
+Station House Tagaytay|14.1055|120.9544|Tagaytay
+Tom N Toms|14.1056|120.9544|Tagaytay
+Carlo's Pizza (Station House Tagaytay)|14.1057|120.9544|Tagaytay
+Richmore Land|14.1173|120.9486|Tagaytay
+Silang Crossing West|14.1083|120.9535|Tagaytay
+Calvary Chapel Tagaytay City|14.1087|120.9539|Tagaytay
+Richmore Clubhouse|14.1183|120.9492|Tagaytay
+John Mary Vianney Galilee Center|14.1142|120.9514|Tagaytay
+Taal Vista Hotel Tagaytay|14.1070|120.9551|Tagaytay
+Monastery of Corpus Christi|14.1140|120.9517|Tagaytay
+Radiant Star Apartelle|14.1076|120.9550|Tagaytay
+Pine Suites|14.1165|120.9506|Tagaytay
+Canossa House of Spirituality|14.1073|120.9556|Tagaytay
+Royale Parc Hotel and Restaurant|14.1087|120.9555|Tagaytay
+Tago|14.1101|120.9548|Tagaytay
+Bag of Beans|14.1091|120.9570|Tagaytay
+Tagaytay Country Homes 1|14.1143|120.9545|Tagaytay
+Manos Greek Travel Hotel|14.1096|120.9569|Tagaytay
+Santuario di Padre Pio - Capuchins|14.1103|120.9569|Tagaytay
+Old Lourdes Church|14.1104|120.9572|Tagaytay
+La Valette House of Prayer|14.1102|120.9575|Tagaytay
+Lourdes Parish|14.1107|120.9576|Tagaytay
+Our Lady of Lourdes Church Tagaytay|14.1114|120.9573|Tagaytay
+7-Eleven|14.1182|120.9614|Tagaytay
+7-Eleven|14.1244|120.9692|Tagaytay
+7-Eleven (Tagaytay Rotonda)|14.1148|120.9613|Tagaytay
+Amihan|14.1252|120.9681|Tagaytay
+Aristocrat|14.1263|120.9705|Tagaytay
+Auntie Anne's|14.1127|120.9591|Tagaytay
+Ayala Malls Serin|14.1127|120.9590|Tagaytay
+Ayala Malls Serin - Tagaytay|14.1129|120.9594|Tagaytay
+BPI (Serin)|14.1126|120.9585|Tagaytay
+Basilisk Hotel|14.1123|120.9596|Tagaytay
+Binalot sa Dahon|14.1178|120.9609|Tagaytay
+Brewed Awakening|14.1133|120.9603|Tagaytay
+Builders Warehouse|14.1209|120.9592|Tagaytay
+Card SME Bank|14.1187|120.9613|Tagaytay
+Chinabank|14.1197|120.9610|Tagaytay
+Classic Savory (Ayala Serin)|14.1130|120.9587|Tagaytay
+Colletes Buko Pie|14.1133|120.9603|Tagaytay
+Dairy Queen|14.1127|120.9592|Tagaytay
+Dairy Queen (Fora Tagaytay)|14.1156|120.9603|Tagaytay
+Day's Hotel|14.1138|120.9613|Tagaytay
+Dexter's|14.1143|120.9616|Tagaytay
+Eco Hotel|14.1127|120.9598|Tagaytay
+Elvie Pineda|14.1143|120.9617|Tagaytay
+Emilio S. Lim Appliances|14.1149|120.9615|Tagaytay
+Estancia Resort Hotel|14.1248|120.9697|Tagaytay
+Foggy Heights|14.1200|120.9618|Tagaytay
+Fora|14.1157|120.9603|Tagaytay
+Fora Mall Tagaytay|14.1159|120.9603|Tagaytay
+Fora Tagaytay|14.1156|120.9604|Tagaytay
+Guadas Bistro|14.1122|120.9593|Tagaytay
+Handyman|14.1135|120.9592|Tagaytay
+Harana|14.1252|120.9686|Tagaytay
+Hawaiian BBQ|14.1120|120.9592|Tagaytay
+Hillcrest Plaza|14.1143|120.9616|Tagaytay
+In His Presence Christian Church|14.1236|120.9676|Tagaytay
+JRJC Furniture|14.1199|120.9608|Tagaytay
+Jollibee|14.1127|120.9590|Tagaytay
+KFC|14.1175|120.9610|Tagaytay
+Kasa Luntian|14.1247|120.9687|Tagaytay
+Masjid al-Huda|14.1178|120.9610|Tagaytay
+McDonald's (Tagaytay Junction)|14.1177|120.9615|Tagaytay
+Mercury Drug|14.1123|120.9588|Tagaytay
+Mercury Drug|14.1179|120.9614|Tagaytay
+Metrobank|14.1193|120.9611|Tagaytay
+Moon Garden|14.1264|120.9679|Tagaytay
+Mori Restaurant and Bar|14.1260|120.9700|Tagaytay
+New Orleans Hotel|14.1148|120.9610|Tagaytay
+Olivarez College Tagaytay|14.1186|120.9627|Tagaytay
+Olivarez Plaza|14.1180|120.9613|Tagaytay
+Pamana|14.1125|120.9598|Tagaytay
+PhilJA Training Center|14.1161|120.9571|Tagaytay
+Plaza Carolina|14.1179|120.9615|Tagaytay
+Puregold|14.1212|120.9593|Tagaytay
+Quest Hotel Tagaytay|14.1158|120.9596|Tagaytay
+RCBC (Tagaytay)|14.1185|120.9613|Tagaytay
+RSM Lutong Bahay|14.1174|120.9612|Tagaytay
+Ridge Star Plaza|14.1149|120.9613|Tagaytay
+Rising Star Inn|14.1173|120.9605|Tagaytay
+Rowena's|14.1144|120.9616|Tagaytay
+San Jose Elementary School|14.1232|120.9678|Tagaytay
+Saring Church (Korean)|14.1149|120.9615|Tagaytay
+Serin East Tagaytay|14.1138|120.9587|Tagaytay
+Serin West Tagaytay|14.1121|120.9579|Tagaytay
+Silang Crossing East|14.1134|120.9602|Tagaytay
+Silang Crossing East Barangay Hall|14.1139|120.9600|Tagaytay
+Sinag|14.1246|120.9679|Tagaytay
+Sr. Pedro|14.1176|120.9610|Tagaytay
+Starbucks|14.1124|120.9586|Tagaytay
+Tagaytay Christian Academy|14.1236|120.9684|Tagaytay
+Tagaytay Country Homes 3|14.1188|120.9559|Tagaytay
+Tagaytay Country Hotel|14.1182|120.9624|Tagaytay
+Tagaytay Executive Village|14.1204|120.9639|Tagaytay
+Tagaytay Medical Center|14.1155|120.9608|Tagaytay
+Tala|14.1249|120.9674|Tagaytay
+The Botique Bed & Breakfast|14.1120|120.9593|Tagaytay
+The OverLook Inn|14.1143|120.9619|Tagaytay
+The Shops at Kasa Luntian|14.1246|120.9690|Tagaytay
+The Theodore Hotel|14.1122|120.9594|Tagaytay
+Tsokolateria|14.1121|120.9592|Tagaytay
+Villa Pura|14.1230|120.9666|Tagaytay
+Vista de Lago|14.1251|120.9701|Tagaytay
+WalterMart Supermarket (Tagaytay)|14.1136|120.9593|Tagaytay
+Workstation|14.1125|120.9590|Tagaytay
+ZUS Coffee|14.1132|120.9591|Tagaytay
+Phoenix|14.1224|120.9596|Tagaytay
+San Pablo Theological House|14.1270|120.9673|Tagaytay
+Rangya Hotel|14.1227|120.9600|Tagaytay
+Farmers Table|14.1235|120.9612|Tagaytay
+Tagaytay Public Transport Terminal|14.1223|120.9591|Tagaytay
+Landbank|14.1228|120.9592|Tagaytay
+Pahimis Restaurant|14.1234|120.9594|Tagaytay
+Hotel Dominique|14.1234|120.9593|Tagaytay
+Ospital ng Lunsod ng Tagaytay|14.1225|120.9577|Tagaytay
+Holy Spirit Chapel|14.1274|120.9658|Tagaytay
+Divine Word Seminary|14.1272|120.9653|Tagaytay
+Divine Word School of Theology|14.1271|120.9648|Tagaytay
+Divine Word Institute of Mission Studies|14.1269|120.9641|Tagaytay
+Hardware ans Construction Supply|14.1239|120.9589|Tagaytay
+Adoration Convent of Divine Mercy (Pink Sisters)|14.1265|120.9626|Tagaytay
+SVD Postulancy|14.1291|120.9668|Tagaytay
+Morgano Restaurant|14.1254|120.9605|Tagaytay
+Emiramona Hotel|14.1250|120.9596|Tagaytay
+Primepeak Tagaytay|14.1203|120.9516|Tagaytay
+1999 Coffee|14.1259|120.9610|Tagaytay
+Emiramona Garden Hotel|14.1253|120.9599|Tagaytay
+Sierra Travellers Inn|14.1256|120.9598|Tagaytay
+Amira’s|14.1256|120.9593|Tagaytay
+Queen of Angels Chapel|14.1266|120.9608|Tagaytay
+Yellow Bell Private Resort|14.1242|120.9563|Tagaytay
+Saint Augustine Major Seminary|14.1277|120.9622|Tagaytay
+Angels' Hills Retreat and Formation Center|14.1267|120.9604|Tagaytay
+Saint Jude Conference Hall|14.1269|120.9604|Tagaytay
+Saint Therese Dining Hall|14.1269|120.9604|Tagaytay
+Sari-sari|14.1291|120.9641|Tagaytay
+San Lorenzo Ruiz Village|14.1269|120.9603|Tagaytay
+St. Bridget's Convent|14.1298|120.9647|Tagaytay
+Kapihan ni Gunyong|14.1285|120.9624|Tagaytay
+John Aaron M. Panganiban|14.1320|120.9678|Tagaytay
+Colette's Buko Pie|14.1275|120.9584|Tagaytay
+Phantom Restaurant|14.1277|120.9580|Tagaytay
+Amira's Buco Tart Haus|14.1281|120.9583|Tagaytay
+Amira's Buko Tart|14.1281|120.9583|Tagaytay
+Maitim II East|14.1280|120.9581|Tagaytay
+Mag-asawang Ilat|14.1321|120.9649|Tagaytay
+Samuel Mission International School|14.1241|120.9506|Tagaytay
+Maitim II East|14.1304|120.9603|Tagaytay
+Metrogate Tagaytay Manors|14.1248|120.9474|Tagaytay
+Bethlehem Retreat House|14.1285|120.9535|Tagaytay
+Maitim II West|14.1240|120.9444|Tagaytay
+Maitim II Central|14.1285|120.9502|Tagaytay
+Farmers' Table|14.1248|120.9418|Tagaytay
+Pulong Sagingan|14.1258|120.9430|Tagaytay
+Tagaytay Memorial Park|14.1285|120.9475|Tagaytay
+Tagaytay Public Cemetery|14.1284|120.9463|Tagaytay
+Maitim 2nd West Barangay Hall|14.1265|120.9417|Tagaytay
+Maitim II West|14.1264|120.9415|Tagaytay
+T'viand Specials: Bulalo on the Hill|14.1257|120.9395|Tagaytay
+Muranf Karne & Seafood|14.1245|120.9345|Tagaytay
+Sizzlingan Ni Aling Mel|14.1248|120.9348|Tagaytay
+Cravel Filipino restaurant|14.1247|120.9344|Tagaytay
+7-Eleven (Kaybagal North)|14.1249|120.9347|Tagaytay
+Collette's Buko Pie|14.1248|120.9345|Tagaytay
+Shakey's|14.1253|120.9347|Tagaytay
+Bajaj|14.1252|120.9343|Amadeo
+Tagaytay-Amadeo Pharmacy|14.1253|120.9343|Amadeo
+Macoy Cheese Pandesal|14.1264|120.9340|Amadeo
+Makben's Refreshment|14.1268|120.9339|Amadeo
+Bensan Store|14.1269|120.9338|Amadeo
+Gimes Store|14.1271|120.9339|Amadeo
+Salaban Evangelical Methodist Church|14.1277|120.9335|Amadeo
+R. Caldo Bone Setting Therapy Center|14.1281|120.9334|Amadeo
+Salaban|14.1285|120.9334|Amadeo
+J&T Express|14.1286|120.9335|Amadeo
+Welmax Hardware|14.1285|120.9333|Amadeo
+Salaban Elementary School|14.1284|120.9329|Amadeo
+St. Joseph College of Science & Technology|14.1289|120.9334|Amadeo
+Good Sheperd Montessori School|14.1292|120.9335|Amadeo
+But First, Coffee|14.1296|120.9335|Amadeo
+Bgy Salaban Barangay Hall|14.1294|120.9331|Amadeo
+Salaban Barangay Hall|14.1297|120.9331|Amadeo
+Salaban Amadeo SDA Church|14.1302|120.9330|Amadeo
+Pine View Heights|14.1321|120.9339|Amadeo
+St. Rafael Chapel|14.1317|120.9327|Amadeo
+Dali|14.1320|120.9327|Amadeo
+Royal Villas West|14.1315|120.9313|Amadeo
+GOAT Woodworks|14.1326|120.9326|Amadeo
+Buenosaires Grocery Store|14.1327|120.9326|Amadeo
+Mr. Liempo|14.1329|120.9325|Amadeo
+Bikers Haven Restaurant|14.1331|120.9327|Amadeo
+Amadeo Trading|14.1332|120.9325|Amadeo
+JV Furniture|14.1349|120.9322|Amadeo
+Fuel Force|14.1351|120.9324|Amadeo
+Carolina Cafe|14.1355|120.9325|Amadeo
+Terrace Hill Resort & Hotel|14.1352|120.9317|Amadeo
+Marquez Store|14.1357|120.9321|Amadeo
+LifePoint Church Amadeo|14.1362|120.9322|Amadeo
+A'S Infinite Enterprises|14.1368|120.9319|Amadeo
+Arctic Fox Meat Storage Solutions|14.1380|120.9319|Amadeo
+Shop N Rite|14.1380|120.9319|Amadeo
+Calle Crisanto|14.1384|120.9320|Amadeo
+Teodoro's Lutong Bahay|14.1382|120.9316|Amadeo
+Bahay San Rafael Orphanage|14.1386|120.9321|Amadeo
+St Rafael School for Special Children|14.1392|120.9322|Amadeo
+San Ricardo Pampuri Convent|14.1399|120.9323|Amadeo
+Lord Agape|14.1393|120.9308|Amadeo
+Hot Coffee Road|14.1398|120.9314|Amadeo
+Nina Hardware|14.1403|120.9316|Amadeo
+Aedrielle Store|14.1405|120.9315|Amadeo
+LMJM Store|14.1406|120.9315|Amadeo
+Belle Store|14.1407|120.9315|Amadeo
+Dom Geraldo Children's Center|14.1403|120.9307|Amadeo
+KDY Hardware STore|14.1415|120.9310|Amadeo
+Ann Josh Store|14.1417|120.9311|Amadeo
+Teepee's Cafe Bar Bistro|14.1419|120.9314|Amadeo
+Cyrill Furniture|14.1420|120.9313|Amadeo
+Great Oil|14.1423|120.9313|Amadeo
+Jose Store|14.1428|120.9312|Amadeo
+Sprout Therapy Center|14.1431|120.9308|Amadeo
+Jesucita Baybay Lying-in Clinic|14.1440|120.9310|Amadeo
+Bgy Loma Multi Purpose Hall|14.1481|120.9302|Amadeo
+MCGI Amadeo Church of God|14.1491|120.9295|Amadeo
+Loma Elementary School|14.1495|120.9300|Amadeo
+Vilma Store|14.1497|120.9294|Amadeo
+Jaynalyn Store|14.1505|120.9291|Amadeo
+Rusi|14.1527|120.9284|Amadeo
+INGCO|14.1531|120.9287|Amadeo
+DFM Vines Hardware|14.1532|120.9287|Amadeo
+Rhonalyn Store|14.1538|120.9282|Amadeo
+La Excelsa Country Homes|14.1533|120.9269|Amadeo
+CF Sari Sari Store|14.1545|120.9279|Amadeo
+Bearseum - Teddy Bear Museum|14.1551|120.9281|Amadeo
+Yuno Store|14.1550|120.9278|Amadeo
+Kaffe Belardo|14.1588|120.9266|Amadeo
+Kersteen Joyce Transport|14.1590|120.9260|Amadeo
+Harisun Hardware|14.1606|120.9263|Amadeo
+La Josephina Coffee and Pastries|14.1612|120.9261|Amadeo
+Victory Amadeo|14.1615|120.9261|Amadeo
+Hapag Kainan Lutong Bahay|14.1635|120.9251|Amadeo
+Dali|14.1636|120.9248|Amadeo
+Sweet & Spice|14.1637|120.9248|Amadeo
+Bronston Store|14.1641|120.9250|Amadeo
+Jelsmitch Store|14.1644|120.9252|Amadeo
+New Jeffson Construction Supply|14.1647|120.9253|Amadeo
+Yuumi Store|14.1649|120.9253|Amadeo
+Mr. Fluffy Sugar|14.1668|120.9249|Amadeo
+Amadeo Integrated School|14.1674|120.9244|Amadeo
+Poblacion I Barangay Hall|14.1673|120.9231|Amadeo
+Poblacion I|14.1673|120.9230|Amadeo
+Kersteen Transport Bus Station|14.1684|120.9246|Amadeo
+Amadeo Fire Station|14.1677|120.9228|Amadeo
+Caya & Fica Cafe|14.1691|120.9244|Amadeo
+TGP|14.1681|120.9224|Amadeo
+Chong's Chicken Inasal|14.1699|120.9245|Amadeo
+Inay Meding's Restaurant|14.1700|120.9245|Amadeo
+Poblacion VI|14.1683|120.9214|Amadeo
+Baliwag|14.1703|120.9242|Amadeo
+Poblacion II|14.1693|120.9222|Amadeo
+Poblacion VII|14.1690|120.9213|Amadeo
+Amadeo Evangelical Church|14.1688|120.9209|Amadeo
+7-Eleven|14.1695|120.9220|Amadeo
+Ilayang Ilog EcoTourism Zone|14.1677|120.9189|Amadeo
+Zipline|14.1678|120.9188|Amadeo
+Alfamart|14.1697|120.9220|Amadeo
+Puremart|14.1695|120.9216|Amadeo
+Amadeo Covered Basketball Court|14.1699|120.9222|Amadeo
+Poblacion IX|14.1687|120.9201|Amadeo
+Iglesia ni Cristo|14.1695|120.9204|Amadeo
+Poblacion X|14.1698|120.9199|Amadeo
+Seventh Day Adventist Church|14.1693|120.9199|Amadeo
+St. Mary Magdalene Parochial School|14.1700|120.9214|Amadeo
+Poblacion XII|14.1698|120.9189|Amadeo
+Amadeo Municipal Hall|14.1702|120.9221|Amadeo
+Amadeo Church|14.1702|120.9215|Amadeo
+Poblacion VIII|14.1702|120.9210|Amadeo
+Funeraria Amadeo|14.1701|120.9200|Amadeo
+Andok's|14.1709|120.9244|Amadeo
+Bayani Store|14.1709|120.9242|Amadeo
+Sizzlingan Ni Aling Meng|14.1710|120.9244|Amadeo
+Cavite Rural Bank|14.1708|120.9216|Amadeo
+Poblacion III Barangay Hall|14.1710|120.9209|Amadeo
+Savemore Market|14.1714|120.9240|Amadeo
+Poblacion XI|14.1709|120.9197|Amadeo
+Poblacion XI Barangay Hall|14.1709|120.9197|Amadeo
+Baranggay Hall No. 7|14.1714|120.9235|Amadeo
+Amadeo Central Terminal|14.1715|120.9233|Amadeo
+Korean Market|14.1716|120.9241|Amadeo
+Poblacion III|14.1712|120.9207|Amadeo
+Paseo Amadeo|14.1716|120.9240|Amadeo
+Moto Credit|14.1716|120.9239|Amadeo
+Jenjo's Lechon Manok|14.1716|120.9237|Amadeo
+Makky's Diner|14.1716|120.9236|Amadeo
+Poblacion IV|14.1714|120.9216|Amadeo
+BDO Network Bank|14.1717|120.9240|Amadeo
+Lolo Claro's Restaurant|14.1717|120.9240|Amadeo
+RNA Lomi House|14.1717|120.9237|Amadeo
+Ninong's Chicken Recipe|14.1718|120.9237|Amadeo
+Mercury Drug|14.1719|120.9240|Amadeo
+Bulalo Papaitan|14.1719|120.9238|Amadeo
+Uncle John's|14.1721|120.9244|Amadeo
+Amadeo Royalle Town Center|14.1722|120.9247|Amadeo
+Angel's Burger|14.1722|120.9241|Amadeo
+Amadeo Public Market|14.1728|120.9277|Amadeo
+Petron (Amadeo Proper)|14.1724|120.9241|Amadeo
+Furniture Shop|14.1730|120.9258|Amadeo
+Pineview Heights II|14.1734|120.9282|Amadeo
+Renson & Joshua Construction Supply|14.1735|120.9254|Amadeo
+Amadeo Municipal Police Station|14.1738|120.9275|Amadeo
+Chibog's|14.1738|120.9270|Amadeo
+Cafe Amadeo|14.1739|120.9275|Amadeo
+Tito Bee's Eatery|14.1741|120.9272|Amadeo
+Dali|14.1742|120.9276|Amadeo
+Dali Amadeo|14.1743|120.9275|Amadeo
+Poblacion V|14.1736|120.9207|Amadeo
+7-Eleven|14.1744|120.9272|Amadeo
+Samgyup Sa Farm|14.1745|120.9272|Amadeo
+Poblacion 5 Barangay Hall|14.1742|120.9206|Amadeo
+Amadeo Public Cemetery|14.1746|120.9202|Amadeo
+Vennina Resort|14.1783|120.9295|Amadeo
+Dagatan Barangay Hall|14.1799|120.9292|Amadeo
+EG Cokiat Construction Supply|14.1801|120.9293|Amadeo
+Amadeo United Methodist Church|14.1806|120.9298|Amadeo
+JRCC Amadeo|14.1809|120.9298|Amadeo
+Navarrian One Stop Store|14.1811|120.9296|Amadeo
+Rowena's|14.1825|120.9303|Amadeo
+Villa Bread and Coffee|14.1826|120.9303|Amadeo
+Dagatan Elementary School|14.1837|120.9318|Amadeo
+Via Domus Amadeus Homes|14.1839|120.9297|Amadeo
+South Prime Medical and Wellness Center|14.1841|120.9310|Amadeo
+Domus Restaurant and Events|14.1842|120.9302|Amadeo
+Farm Ville|14.1841|120.9278|Amadeo
+Biker's Yard and Cafe|14.1852|120.9308|Amadeo
+Cecilia's Bakery|14.1864|120.9311|Amadeo
+S & L Hardware|14.1888|120.9324|Amadeo
+Ricardo's Coffee + Classic Cuisine|14.1920|120.9327|Amadeo
+Ricardo's|14.1921|120.9326|Amadeo
+Banay-Banay Hardware|14.1925|120.9326|Amadeo
+Pietra Homes|14.1928|120.9320|Amadeo
+Villa Breads & Coffee|14.1951|120.9341|Amadeo
+Petron|14.1952|120.9340|Amadeo
+Petron Banaybanay East-West Lateral Road|14.1952|120.9338|Amadeo
+Cavite Mission of the Seventh-day Adventists Headquarters|14.1954|120.9334|Amadeo
+Cafe Amadeo|14.1991|120.9345|Amadeo
+Superbees|14.2004|120.9350|Amadeo
+Halang Banaybanay Integrated School|14.2001|120.9317|Amadeo
+Istituto de Maria Immaculata|14.2004|120.9330|Amadeo
+Immaculate Conception Center|14.2008|120.9329|Amadeo
+New Home Builders Corporation|14.2014|120.9353|Amadeo
+Brightways Academy - Amadeo Campus|14.2018|120.9353|Amadeo
+Alfamart|14.2023|120.9355|Amadeo
+TGP|14.2023|120.9353|Amadeo
+Baliwag|14.2025|120.9354|Amadeo
+Dali|14.2032|120.9351|Amadeo
+PES|14.2037|120.9391|Silang
+Oiland|14.2039|120.9348|Amadeo
+CaKe's Coffee and Tea|14.2064|120.9334|Amadeo
+Golden Haven Memorial Park Amadeo|14.2069|120.9296|Amadeo
+Jacky's Paradise|14.2121|120.9306|Amadeo
+Tamakan Elementary School|14.2207|120.9276|Amadeo
+Phoenix|14.2220|120.9263|Amadeo
+Dali|14.2244|120.9256|Amadeo
+Sabella Phase 5|14.2289|120.9266|General Trias
+Sabella Phase 4|14.2315|120.9258|General Trias
+Sabella Village Basketball Court|14.2325|120.9247|General Trias
+Sabella Village|14.2326|120.9254|General Trias
+Sabella Phase 3|14.2332|120.9249|General Trias
+Panungyanan Barangay Hall|14.2349|120.9217|General Trias
+Panungyanan Elementary School|14.2351|120.9220|General Trias
+Sabella Phase 2|14.2364|120.9250|General Trias
+Sabella Phase 1|14.2368|120.9251|General Trias
+Golden Gate 2|14.2401|120.9226|General Trias
+Cavite Packaging Corp.|14.2469|120.9209|General Trias
+Javalera Phase 2|14.2478|120.9173|General Trias
+Javalera Phase 1|14.2534|120.9195|General Trias
+Uno Fuel (Javalera)|14.2535|120.9179|General Trias
+7-Eleven|14.2537|120.9179|General Trias
+Microtel|14.2558|120.9164|General Trias
+Javalera Elementary School|14.2563|120.9162|General Trias
+Sanno Philippines Manufacturing Corporation|14.2572|120.9209|General Trias
+Taiyo Plastic Corporation of the Philippines|14.2577|120.9241|General Trias
+Enomoto Philippine Manufacturing, Inc.|14.2573|120.9199|General Trias
+Telford Services Phils., Inc|14.2584|120.9236|General Trias
+O!Save|14.2588|120.9157|General Trias
+Analog Devices Cavite|14.2594|120.9203|General Trias
+Alfamart|14.2596|120.9153|General Trias
+Our Lady of Guadalupe Chapel|14.2603|120.9149|General Trias
+Cavite Mobile Patrol Javalera|14.2615|120.9147|General Trias
+Analog Devices General Trias|14.2627|120.9201|General Trias
+JAE Philippines Inc.|14.2636|120.9155|General Trias
+BDO|14.2645|120.9211|General Trias
+BPI Family Savings Bank|14.2645|120.9207|General Trias
+Coca-Cola FEMSA Philippines Inc. General Trias Plant|14.2649|120.9219|General Trias
+Geronimo Berenguer de los Reyes, Jr. (GBR) Museum|14.2647|120.9189|General Trias
+RCBC|14.2652|120.9210|General Trias
+Unilever Philippines Incorporated|14.2657|120.9214|General Trias
+Greenbreeze|14.2728|120.9201|General Trias
+The Brothers of Christ|14.2722|120.9147|General Trias
+Ebenezer International College|14.2741|120.9150|General Trias
+Ang Dating Daan|14.2765|120.9173|General Trias
+Biclatan Church of Christ|14.2772|120.9158|General Trias
+Lucio A. Nocon National High School|14.2775|120.9154|General Trias
+General Gregorio S. Alona, Sr. Memorial Elementary School|14.2779|120.9166|General Trias
+Holiday Homes|14.2776|120.9111|General Trias
+7-Eleven|14.2785|120.9159|General Trias
+Interoil Gas Station|14.2785|120.9156|General Trias
+Alfamart|14.2785|120.9155|General Trias
+Christian Bride Assembly|14.2785|120.9123|General Trias
+Ara Vista|14.2797|120.9154|General Trias
+Governor's Hills|14.2803|120.9162|General Trias
+AMA College Cavite|14.2819|120.9133|General Trias
+Palmdale|14.2828|120.9175|General Trias
+Grandview Village|14.2833|120.9185|General Trias
+Alfamart (Governor's Hills)|14.2840|120.9149|General Trias
+Governor Hills Multi-Purpose Clubhouse|14.2846|120.9188|General Trias
+Governor's Hills Science High School - Senior High School|14.2847|120.9172|General Trias
+Alfamart|14.2848|120.9177|General Trias
+O!Save|14.2846|120.9153|General Trias
+Governor's Hills Science High School|14.2852|120.9181|General Trias
+Ashlee Shane's Village Store|14.2858|120.9180|General Trias
+Greensborro|14.2861|120.9189|General Trias
+Metro South Executive|14.2876|120.9055|General Trias
+Dasmariñas Gas Station (General Trias)|14.2889|120.9127|General Trias
+The Bayleaf (Cavite)|14.2895|120.9169|General Trias
+Tsarina Grand Villas|14.2894|120.9138|General Trias
+COECSA Main Building|14.2896|120.9152|General Trias
+COECSA Annex Building|14.2897|120.9147|General Trias
+Lyceum of the Philippines University Cavite|14.2901|120.9159|General Trias
+Gentri Medical Center and Hospital|14.2891|120.9068|General Trias
+Florida Sun Estates|14.2895|120.9093|General Trias
+Academic Resource Center Building|14.2903|120.9152|General Trias
+Botanical Garden|14.2903|120.9146|General Trias
+LPU-C Amphitheatre|14.2904|120.9152|General Trias
+S&R General Trias|14.2908|120.9183|General Trias
+East Building|14.2905|120.9155|General Trias
+Dr. José Paciano Laurel Monument|14.2906|120.9153|General Trias
+West Building|14.2906|120.9150|General Trias
+Chapel of the Sacred Heart of Jesus|14.2907|120.9156|General Trias
+LPU-C Food Court|14.2907|120.9150|General Trias
+Saint Vincent Ferrer Parish Park|14.2902|120.9104|General Trias
+The Zhang Place|14.2893|120.9024|General Trias
+LPU-C Health Services Department|14.2910|120.9159|General Trias
+Saint Vincent Ferrer Parish Office|14.2904|120.9105|General Trias
+Kura Cafe|14.2895|120.9024|General Trias
+KrispyPapi|14.2895|120.9023|General Trias
+LPU-C University Auditorium|14.2911|120.9151|General Trias
+Saint Vincent Ferrer Parish Church|14.2906|120.9105|General Trias
+Manggahan Barangay Hall|14.2907|120.9107|General Trias
+Jthree Ceramics Tile Shop|14.2899|120.9028|General Trias
+Saint Vincent Ferrer Park|14.2911|120.9105|General Trias
+Florida Sun Estates Commercial Zone|14.2910|120.9094|General Trias
+WalterMart Supermarket|14.2909|120.9085|General Trias
+Mang Inasal|14.2910|120.9082|General Trias
+7-Eleven|14.2904|120.9029|General Trias
+WalterMart (General Trias)|14.2911|120.9080|General Trias
+Manggahan Center|14.2911|120.9069|General Trias
+Fuel Force|14.2908|120.9037|General Trias
+BDO Network Bank|14.2910|120.9044|General Trias
+City of General Trias Doctors Medical Center|14.2910|120.9040|General Trias
+JLASJ Building|14.2913|120.9051|General Trias
+Many Q|14.2912|120.9067|General Trias
+Maxcef Pharmacy|14.2911|120.9050|General Trias
+PSBank|14.2912|120.9066|General Trias
+Premiumbikes|14.2912|120.9051|General Trias
+Setsuna|14.2912|120.9067|General Trias
+Wagyuniku|14.2912|120.9050|General Trias
+Yamaha|14.2912|120.9052|General Trias
+K.Ramyun#|14.2912|120.9071|General Trias
+Manok Express|14.2912|120.9071|General Trias
+G+ Primary Healthcare and Ambulatory Clinic|14.2913|120.9070|General Trias
+Metropolis Greens|14.2915|120.9060|General Trias
+Molino Tile Center|14.2916|120.9054|General Trias
+Goldilocks|14.2913|120.9083|General Trias
+Dunkin'|14.2913|120.9085|General Trias
+Southstar Drug|14.2913|120.9086|General Trias
+Handyman|14.2914|120.9083|General Trias
+Chowking|14.2915|120.9083|General Trias
+Pickup Coffee|14.2916|120.9080|General Trias
+Fortune Bakeshop|14.2916|120.9083|General Trias
+LBC|14.2914|120.9100|General Trias
+Jollibee|14.2916|120.9084|General Trias
+CATRASCO Complex|14.2919|120.9064|General Trias
+New Hall Commercial Center|14.2915|120.9099|General Trias
+Manggahan Transport Terminal|14.2915|120.9110|General Trias
+King Bee|14.2917|120.9100|General Trias
+Angel's Pizza|14.2921|120.9069|General Trias
+Puregold (Jr. Manggahan)|14.2917|120.9104|General Trias
+KFC (General Trias-Manggahan)|14.2918|120.9102|General Trias
+Starbike|14.2921|120.9083|General Trias
+Cav-Medz Pharmacy|14.2918|120.9108|General Trias
+José Paciano Laurel Building|14.2912|120.9157|General Trias
+LPU-C Audio-Visual Theater|14.2913|120.9149|General Trias
+Citimotorbikes|14.2918|120.9110|General Trias
+Paradise Garden Memorial Park|14.2930|120.9016|General Trias
+Generika|14.2919|120.9106|General Trias
+CM1 Commercial Bldg|14.2922|120.9082|General Trias
+Tempura Sam|14.2922|120.9082|General Trias
+Ingco|14.2919|120.9107|General Trias
+BDO|14.2919|120.9108|General Trias
+7-Eleven (General Trias-Manggahan)|14.2919|120.9109|General Trias
+Timtapz|14.2918|120.9118|General Trias
+General Trias City Hall Annex|14.2919|120.9110|General Trias
+General Trias Community Police Assistance Center 2|14.2919|120.9110|General Trias
+PHLPost|14.2919|120.9110|General Trias
+Sotero Hidalgo Laurel Building|14.2914|120.9151|General Trias
+MS1|14.2922|120.9087|General Trias
+RCBC|14.2923|120.9082|General Trias
+EastWest Unibank|14.2922|120.9095|General Trias
+China Bank Savings|14.2922|120.9096|General Trias
+Wellcare Clinic|14.2923|120.9088|General Trias
+Jollibee (General Trias Highway)|14.2919|120.9121|General Trias
+Little Saints|14.2920|120.9113|General Trias
+Shawarma Shack|14.2920|120.9113|General Trias
+Domino's|14.2922|120.9097|General Trias
+SMJ Pawnshop|14.2920|120.9114|General Trias
+Sinag|14.2920|120.9114|General Trias
+Romantic Baboy|14.2922|120.9098|General Trias
+Jaro Pawnshop|14.2920|120.9115|General Trias
+S&R New York Style Pizza|14.2912|120.9180|General Trias
+Genstar Plaza Wet and Dry Market|14.2925|120.9077|General Trias
+PNB|14.2922|120.9102|General Trias
+Metrobank|14.2923|120.9094|General Trias
+LPU-C Security|14.2916|120.9152|General Trias
+BPI (General Trias-Manggahan)|14.2920|120.9120|General Trias
+One Unified Rural Bank of Cavite|14.2923|120.9101|General Trias
+Mercury Drug|14.2923|120.9105|General Trias
+Manggahan Junction|14.2921|120.9122|General Trias
+Royal Tern Ceramics Store|14.2920|120.9132|General Trias
+Southstar Drug|14.2923|120.9112|General Trias
+Andok's|14.2923|120.9115|General Trias
+McDonald's|14.2924|120.9108|General Trias
+Baliwag|14.2923|120.9117|General Trias
+Dunkin'|14.2923|120.9117|General Trias
+San Miguel Yamamura Fuso Mold|14.2912|120.9206|General Trias
+Sr. Pedro|14.2923|120.9119|General Trias
+Cyverzone Internet Cafe|14.2924|120.9115|General Trias
+BanKo|14.2925|120.9111|General Trias
+TGP|14.2925|120.9111|General Trias
+Kenny Rogers Roasters|14.2919|120.9166|General Trias
+Chowking|14.2924|120.9127|General Trias
+Seaoil|14.2925|120.9121|General Trias
+Skymart General Trias|14.2928|120.9097|General Trias
+Brainstorms and Brews|14.2924|120.9131|General Trias
+Posh Motorcycle Shop|14.2924|120.9132|General Trias
+Burger King (General Trias-Manggahan)|14.2925|120.9125|General Trias
+Klinikalidad|14.2929|120.9093|General Trias
+24 Chicken (General Trias)|14.2924|120.9134|General Trias
+ArmyNavy|14.2926|120.9155|General Trias
+The M-Hub at GenTri|14.2929|120.9132|General Trias
+Polytex - Styrowell|14.2928|120.9141|General Trias
+Magnolia|14.2923|120.9200|General Trias
+Camel Appliances Manufacturing Corporation Warehouse 1|14.2939|120.9149|General Trias
+New Cavite Industrial City|14.2943|120.9153|General Trias
+Styrolite Manfufacturing|14.2952|120.9136|General Trias
+General Trias Cable Ground Station|14.2959|120.9107|General Trias
+GTCNI Building|14.2961|120.9107|General Trias
+Petron|14.2966|120.9083|General Trias
+DwightSteel Building Systems|14.2956|120.9170|General Trias
+Stoneworks Specialist|14.2957|120.9176|General Trias
+General Trias Fire Station|14.2972|120.9078|General Trias
+Manggahan Elementary School|14.2968|120.9115|General Trias
+Dali|14.2975|120.9090|General Trias
+Sunshine Village|14.2975|120.9111|General Trias
+Costline Hardware|14.2996|120.9060|General Trias
+ANT Industrial Works, Inc.|14.3016|120.9149|General Trias
+BoxMates Packaging Corporation|14.3018|120.9148|General Trias
+Tierra Solana|14.3035|120.9066|General Trias
+Stateland View|14.3035|120.9096|General Trias
+Buenavista III|14.3050|120.9086|General Trias
+General Trias|14.3064|120.9082|General Trias
+Stateland Hills|14.3064|120.9131|General Trias
+Nineveh Learning Center|14.3138|120.9153|General Trias
+Mother Theresa School (General Trias)|14.3140|120.9154|General Trias
+Our Lady Of Peace and Good Voyage|14.3146|120.9116|General Trias
+Sunny Brooke 1 - Covered Court|14.3147|120.9118|General Trias
+Angel's Burger|14.3144|120.9156|General Trias
+SMJ Pawnshop|14.3145|120.9155|General Trias
+7-Eleven|14.3146|120.9154|General Trias
+TGP|14.3146|120.9155|General Trias
+Sunny Brooke 1|14.3151|120.9116|General Trias
+Kulot Store|14.3148|120.9147|General Trias
+Roselle Mangubat Store|14.3152|120.9115|General Trias
+Blessed Life Unida Church|14.3148|120.9154|General Trias
+R.A. Beltran Hardware|14.3148|120.9158|General Trias
+Generika|14.3149|120.9158|General Trias
+Green Gate Pharmacy|14.3150|120.9154|General Trias
+Jaro Pawnshop|14.3150|120.9158|General Trias
+Sr. Pedro Lechon Manok|14.3151|120.9154|General Trias
+Per Gas|14.3151|120.9157|General Trias
+Andok's|14.3152|120.9157|General Trias
+Marlon's Pancit Malabon|14.3152|120.9159|General Trias
+San Francisco|14.3153|120.9155|General Trias
+San Francisco Proper|14.3153|120.9156|General Trias
+Brookside Police Station|14.3153|120.9157|General Trias
+Sangguniang Pambarangay ng San Francisco|14.3154|120.9157|General Trias
+Bahay Pamahalaan ng Barangay San Francisco|14.3154|120.9158|General Trias
+Sunny Brooke 2|14.3154|120.9159|General Trias
+Sunny Brooke Elementary School|14.3154|120.9159|General Trias
+Buenavista II|14.3167|120.9090|General Trias
+Camella Homes Tierra Nevada|14.3173|120.9154|General Trias
+Buenavista I|14.3193|120.9079|General Trias
+Camella Homes Terra Nevada|14.3184|120.9153|General Trias
+General Trias Police Community Precinct|14.3192|120.9141|General Trias
+General Trias Fire Substation|14.3193|120.9141|General Trias
+Alfamart|14.3194|120.9137|General Trias
+Elang|14.3199|120.9137|General Trias
+San Francisco Health Center|14.3200|120.9136|General Trias
+Le Rica Homes|14.3200|120.9140|General Trias
+The True Vine Dynamic School|14.3206|120.9133|General Trias
+Great Oil|14.3222|120.9131|General Trias
+Dali|14.3223|120.9132|General Trias
+AllHome Vista Mall|14.3225|120.9123|General Trias
+Vista Cinema|14.3231|120.9117|General Trias
+Giligans|14.3234|120.9119|General Trias
+Gasso|14.3234|120.9128|General Trias
+Vista Mall General Trias Transport Terminal|14.3242|120.9120|General Trias
+Camella General Trias|14.3247|120.9083|General Trias
+Savannah Fields Phase 3|14.3240|120.9166|General Trias
+Mother Teresa Chapel|14.3263|120.9136|General Trias
+Super Health Center|14.3291|120.9116|General Trias
+Iglesia ni Cristo - Lokal ng Santiago|14.3303|120.9118|General Trias
+Normie's Native Cuisine|14.3304|120.9113|General Trias
+MINISTRIES WITHOUT BORDERS PHILIPPINES, INC.|14.3327|120.9092|General Trias
+FIHA Homes|14.3336|120.9058|General Trias
+General Trias Sports Park|14.3340|120.9107|General Trias
+Angel's Burger|14.3347|120.9095|General Trias
+Bella Vista|14.3348|120.9093|General Trias
+SPIDER|14.3352|120.9090|General Trias
+Tierra Vista General Trias|14.3362|120.9043|General Trias
+Rice Mill|14.3370|120.9085|General Trias
+Nueva Estancia|14.3372|120.9072|General Trias
+Bella Vista Homes|14.3370|120.9099|General Trias
+Alfamart|14.3374|120.9086|General Trias
+Santiago Brgy Hall|14.3374|120.9087|General Trias
+Alfamart (Brgy Santiago Gen Trias)|14.3379|120.9084|General Trias
+Santiago Catholic Church|14.3382|120.9082|General Trias
+New Santiago Hardware|14.3382|120.9084|General Trias
+Santiago Proper|14.3384|120.9083|General Trias
+KPNP Subdivision|14.3385|120.9104|General Trias
+Blessed Maria Cristina Brando School|14.3394|120.9076|General Trias
+South Christian Mission Church|14.3396|120.9085|General Trias
+LRTA Subdivision|14.3406|120.9046|General Trias
+Dali|14.3408|120.9073|General Trias
+TGP|14.3409|120.9075|General Trias
+Puremart|14.3411|120.9071|General Trias
+North Rail Resettlement Project|14.3416|120.9071|General Trias
+Manzil Al Taam-Cavite|14.3419|120.9072|General Trias
+MARIO AND ASIA ITALIAN RESTAURANT|14.3422|120.9070|General Trias
+Minami Residences|14.3425|120.9103|General Trias
+The Palmridge School|14.3429|120.9075|General Trias
+Santiago Elementary School|14.3450|120.9067|General Trias
+The Lawn Villa - Villa Emerald|14.3452|120.9058|General Trias
+Petro Gazz|14.3453|120.9056|General Trias
+Santiago Integrated National High School|14.3453|120.9064|General Trias
+The Lawn Villa - Villa Garnet|14.3454|120.9062|General Trias
+Sulucan|14.3473|120.9043|General Trias
+Rusi|14.3478|120.9043|General Trias
+GenTri Dairy Shop|14.3482|120.9040|General Trias
+Amaia Scapes General Trias|14.3516|120.9063|General Trias
+Liora Homes|14.3566|120.9048|General Trias
+Wellington Place|14.3562|120.9090|General Trias
+Liora Homes - Phase 2|14.3572|120.9046|General Trias
+Liora Homes Clubhouse|14.3575|120.9043|General Trias
+Pasong Camachile II|14.3575|120.9044|General Trias
+Liora Homes Phase 3|14.3579|120.9038|General Trias
+San Jose Townhomes|14.3599|120.9038|General Trias
+Masaito Homes|14.3603|120.9095|General Trias
+Gregoria's Kitchen|14.3618|120.9010|General Trias
+Ahnex Builders & Ready Mix Corporation|14.3630|120.9019|General Trias
+Pasong Camachile I|14.3639|120.9063|General Trias
+Himlayang General Trias|14.3642|120.9093|General Trias
+Alang-ilan|14.3644|120.9118|General Trias
+FVG Construction and Trading|14.3644|120.9119|General Trias
+King Solomon Hospital and Medical Center|14.3648|120.9121|General Trias
+Shell|14.3651|120.9131|General Trias
+Alfamart|14.3665|120.9115|General Trias
+Manchester 12|14.3683|120.9033|General Trias
+McDonald's|14.3666|120.9188|Imus
+San Benito Homes|14.3676|120.9126|General Trias
+Crabs N Crack (Open Canal)|14.3666|120.9223|Imus
+Malagasang II-C|14.3676|120.9144|Imus
+Peri-Peri (Imus Open Canal)|14.3667|120.9227|Imus
+Shakey's (Open Canal)|14.3668|120.9230|Imus
+Greenpark Villas|14.3668|120.9235|Imus
+Imus Central Fire Station|14.3669|120.9232|Imus
+Imus Central Police Station|14.3670|120.9236|Imus
+Genesis Square Building|14.3670|120.9242|Imus
+Cafe 10/23|14.3678|120.9194|Imus
+UNIQLO Logistics Facility|14.3691|120.9100|General Trias
+Malagasang II-C Barangay Hall Annex|14.3675|120.9253|Imus
+JRK Seven O One Trading|14.3679|120.9250|Imus
+The O Resort|14.3686|120.9194|Imus
+Gasso|14.3679|120.9251|Imus
+Greenplace Phase 2|14.3698|120.9221|Imus
+GPL2 EXT|14.3702|120.9197|Imus
+Greenmark Homes 1|14.3698|120.9249|Imus
+GREENPLACE PHASE 2 EXT|14.3709|120.9195|Imus
+Malagasang II-B|14.3706|120.9222|Imus
+Tierra Vista Homes|14.3701|120.9269|Imus
+Green Place Phase 3|14.3710|120.9225|Imus
+Greengate Homes 2|14.3715|120.9202|Imus
+Mandarin Homes 2|14.3712|120.9271|Imus
+Greenmark Homes 2|14.3722|120.9238|Imus
+Greengate Homes 1 Annex|14.3730|120.9196|Imus
+Imus National High School – Greengate Annex|14.3738|120.9239|Imus
+St. Martha Parish Church|14.3743|120.9236|Imus
+Greengate Homes 1|14.3744|120.9228|Imus
+Malagasang II-A|14.3742|120.9246|Imus
+Cafe triBU|14.3744|120.9233|Imus
+Greengate Homes 3|14.3742|120.9254|Imus
+Butterflies Milk Tea and Takoyaki|14.3746|120.9227|Imus
+Easymart Malagasang|14.3746|120.9249|Imus
+Yspacio Creative Park|14.3751|120.9257|Imus
+Greenpark Lane 1 Annex|14.3767|120.9194|Imus
+Greenpark Lane 1|14.3766|120.9203|Imus
+Yume at Riverpark|14.3788|120.9118|General Trias
+Green Estate|14.3808|120.9165|Imus
+Malagasang I-G Barangay Hall|14.3808|120.9166|Imus
+City Ecological Village|14.3814|120.9130|Imus
+Villa Sarignaya|14.3803|120.9220|Imus
+Malagasang I-G|14.3813|120.9163|Imus
+New Imus Cockpit Arena|14.3817|120.9156|Imus
+Malagasang I-D|14.3876|120.9246|Imus
+Jade Residences|14.3879|120.9248|Imus
+Jade Residences Club House|14.3898|120.9248|Imus
+Jade Residences Covered Court|14.3895|120.9248|Imus
+Malagasang I-C|14.3905|120.9242|Imus
+New Imus City Hall Complex|14.3903|120.9196|Imus
+Celina Plains|14.3923|120.9242|Imus
+Children of Isaac Learning Academy|14.3941|120.9253|Imus
+General Pantaleon Garcia Senior High School|14.3923|120.9198|Imus
+Malagasang I-B|14.3939|120.9234|Imus
+Imus Track & Field Oval and Grandstand|14.3926|120.9195|Imus
+Malagasang I-A|14.3951|120.9250|Imus
+Cavite Dialysis Center|14.3934|120.9196|Imus
+McDonald's|14.3932|120.9180|Imus
+Saint Joseph the Worker Chapel|14.3936|120.9186|Imus
+But First, Coffee|14.3938|120.9182|Imus
+Petron|14.3938|120.9181|Imus
+Bucandala V|14.3951|120.9204|Imus
+Shell|14.3942|120.9181|Imus
+Jollibee|14.3946|120.9180|Imus
+Camella Lessandra Bucandala|14.3971|120.9225|Imus
+Somerset 6|14.3879|120.9010|General Trias
+St. Edward School Charity Campus|14.3894|120.9032|General Trias
+Somerset 5|14.3881|120.8992|General Trias
+Chicken Deli|14.3960|120.9174|Imus
+Camella Homes Bucandala 4|14.3959|120.9152|Imus
+Somerset 4|14.3905|120.9027|General Trias
+Manchester 5|14.3886|120.8983|General Trias
+Somerset 3|14.3898|120.9009|General Trias
+Bucandala IV|14.3980|120.9196|Imus
+Manchester Fifth and North Ave.|14.3884|120.8974|General Trias
+Somerset West/Kensington West|14.3888|120.8983|General Trias
+Somerset 16|14.3918|120.9052|General Trias
+Manchester 4|14.3881|120.8963|General Trias
+Somerset 8|14.3917|120.9046|General Trias
+Manchester 2|14.3898|120.8983|General Trias
+Somerset 4, 8, and 16|14.3925|120.9042|General Trias
+Somerset North/Kensington|14.3913|120.9013|General Trias
+MPT South Management Corporation|14.3961|120.9119|Imus
+Somerset 1 and 2|14.3928|120.9041|General Trias
+Alfamart|14.3892|120.8957|General Trias
+3rd Manchester|14.3899|120.8972|General Trias
+The Goal Garden|14.3895|120.8960|General Trias
+Manchester 1|14.3918|120.9009|General Trias
+Dali|14.3897|120.8960|General Trias
+Manchester 3|14.3903|120.8964|General Trias
+Gab's Super Samgupsal|14.3947|120.9063|Imus
+Somerset 1|14.3935|120.9031|General Trias
+Uncle John's|14.3925|120.8999|General Trias
+Somerset 2|14.3944|120.9038|General Trias
+St. Edward School Faith Campus|14.3927|120.8997|General Trias
+Kensington 3|14.3921|120.8980|General Trias
+St. Edward Faith Campus|14.3930|120.8997|General Trias
+Kensington 1|14.3935|120.9008|General Trias
+Roselanie's Private Resort|14.3968|120.9080|Imus
+Kensington Ave.|14.3919|120.8966|General Trias
+Kensington 1 Playground|14.3942|120.9009|General Trias
+Kensington 7|14.3916|120.8949|General Trias
+Utoy's Tapsi|14.3942|120.9003|General Trias
+Kensington 5|14.3930|120.8970|General Trias
+Kensington Fifth|14.3928|120.8965|General Trias
+Kensington 2|14.3936|120.8983|General Trias
+Bacao I|14.3945|120.8993|General Trias
+Navarro|14.3945|120.8993|General Trias
+Shopwise|14.3976|120.9061|Imus
+Kensington 4|14.3934|120.8959|General Trias
+MC Home Depot|14.3971|120.9044|Imus
+Serbando's|14.3989|120.9077|Imus
+Milktea Express|14.3988|120.9074|Imus
+Saint Edward Integrated School|14.3988|120.9071|Imus
+Kensington 12|14.3949|120.8973|General Trias
+Kensington 23|14.3957|120.8986|General Trias
+Kensington 6|14.3939|120.8939|General Trias
+Handyman|14.3985|120.9045|Imus
+Tapa King|14.3986|120.9046|Imus
+IMA|14.3986|120.9045|Imus
+Giligan's|14.3987|120.9047|Imus
+Kensington 20|14.3959|120.8980|General Trias
+Dencio's|14.3988|120.9046|Imus
+Don Cirilo|14.3988|120.9046|Imus
+Donburi Mix|14.3989|120.9046|Imus
+Lancaster Square Building 2|14.3989|120.9045|Imus
+Calle Real|14.3990|120.9046|Imus
+Bayanihan Bike Trail|14.3959|120.8974|General Trias
+I&O|14.3990|120.9045|Imus
+Jovy's Bakeshop|14.3991|120.9046|Imus
+Kensington 12th|14.3955|120.8960|General Trias
+SMJ Pawnshop|14.3993|120.9046|Imus
+PSBank|14.3994|120.9046|Imus
+Alapan II-B|14.4008|120.9077|Imus
+Lancaster Square|14.3994|120.9042|Imus
+McDonald's|14.3998|120.9051|Imus
+Lancaster Transport Hub|14.3997|120.9043|Imus
+Route 104|14.3997|120.9043|Imus
+Route 101|14.3998|120.9042|Imus
+Route 102|14.3998|120.9042|Imus
+Route 103|14.3998|120.9042|Imus
+Riverpark Gateway District Showroon|14.4003|120.9049|Imus
+Buko ni Juan|14.4001|120.9040|Imus
+Lawson|14.4003|120.9042|Imus
+Lady Christine's Baby Back Ribs|14.4003|120.9041|Imus
+Stoops|14.4003|120.9040|Imus
+Ice Cream House|14.4004|120.9041|Imus
+Arithmetic Center for Kids|14.4004|120.9040|Imus
+Bean and Butter|14.4005|120.9041|Imus
+Lots'a Pizza|14.4005|120.9041|Imus
+Chef Roberto's Comedor|14.4006|120.9040|Imus
+Gabriel Archangel Learning Center|14.4006|120.9039|Imus
+Healthwealth Medical Specialist|14.4006|120.9039|Imus
+Henlin|14.4007|120.9041|Imus
+TGP|14.4007|120.9040|Imus
+Waffle Time|14.4007|120.9039|Imus
+Lancaster Square Building 1|14.4008|120.9039|Imus
+Potato Corner|14.4008|120.9039|Imus
+Robinsons Supermarket|14.4011|120.9039|Imus
+Kesley Bakery|14.4045|120.9112|Imus
+Gawad Kalinga - Alapan|14.4008|120.9024|Imus
+Downtown Lancaster|14.4012|120.9033|Imus
+GK – D3810 Legacy Multi Purpose Center|14.4008|120.9017|Imus
+GK1World Rosario Reyes Lacson Sibol School|14.4010|120.9015|Imus
+Lancaster Estates Model Houses|14.4019|120.9035|Imus
+Lancaster|14.4020|120.9034|Imus
+Yusen Logistics|14.4051|120.9096|Imus
+Alapan II-B Barangay Hall|14.4042|120.9073|Imus
+Chowking|14.4036|120.9056|Imus
+Burger King|14.4037|120.9057|Imus
+Jollibee (Lancaster)|14.4036|120.9053|Imus
+Church of the Holy Family|14.4031|120.9037|Imus
+Leighton Hall - Lancaster New City|14.4029|120.9032|Imus
+Holy Family Parish|14.4032|120.9038|Imus
+DLC Welding Shop|14.4027|120.9023|Imus
+Axel's Mangan RestoGrill|14.4028|120.9022|Imus
+Tokyo Tokyo|14.4040|120.9049|Imus
+Eat Sleep Burger|14.4045|120.9058|Imus
+Red Bucket|14.4045|120.9058|Imus
+Unioil|14.4040|120.9046|Imus
+Tricycle terminal|14.4034|120.9032|Imus
+Moonleaf|14.4045|120.9057|Imus
+Wing Avenue|14.4045|120.9057|Imus
+Freshly Bakehaus|14.4044|120.9054|Imus
+Dunkin'|14.4041|120.9047|Imus
+Roberto's Comedor|14.4045|120.9056|Imus
+Foss Coffee|14.4044|120.9053|Imus
+Bullet's Crispy Sisig Bulalo and Eatery|14.4045|120.9055|Imus
+Jacques Wood Steak House|14.4044|120.9052|Imus
+The Avenue|14.4044|120.9052|Imus
+Alapan 2-A Police Station|14.4035|120.9031|Imus
+Aqua de Nia|14.4043|120.9049|Imus
+Dreamville Alapan|14.4117|120.9219|Imus
+Calda Pizza|14.4045|120.9052|Imus
+Mercury Drug|14.4042|120.9045|Imus
+168 Cuisinera by Vangie|14.4043|120.9047|Imus
+Trioz Bakery|14.4059|120.9083|Imus
+Lancaster Commercial|14.4043|120.9046|Imus
+SM Savemore Alapan|14.4047|120.9055|Imus
+AAB Dental Care Center|14.4044|120.9048|Imus
+Lucido Optical|14.4044|120.9048|Imus
+Farinas Ilocos Empanada|14.4046|120.9052|Imus
+Ayie's Corner|14.4043|120.9045|Imus
+Baker's District|14.4046|120.9051|Imus
+EA Ortiz Internet Shop|14.4045|120.9048|Imus
+7-Eleven|14.4042|120.9041|Imus
+Vancianney Drug Store|14.4044|120.9045|Imus
+Don Federico Christian School|14.4064|120.9091|Imus
+Kean Food Corner|14.4047|120.9051|Imus
+Lancaster Residences 1|14.4057|120.9074|Imus
+Daddy's Toasted Siopao|14.4044|120.9044|Imus
+Mister Liempo|14.4044|120.9044|Imus
+168 Labandera|14.4046|120.9048|Imus
+Lotto|14.4046|120.9048|Imus
+Mang Inasal|14.4043|120.9039|Imus
+MSC Multi Specialty Clinic|14.4047|120.9048|Imus
+Lancaster New City Cavite|14.4048|120.9049|Imus
+Pediatrician|14.4055|120.9064|Imus
+Lancaster Filcab Station|14.4045|120.9040|Imus
+DF-Med Pharmacy|14.4055|120.9063|Imus
+Lancaster Residences 6|14.4065|120.9084|Imus
+Philip Aluminum Works|14.4050|120.9049|Imus
+Maricris Meatshop|14.4053|120.9048|Imus
+Alapan II-A|14.4069|120.9069|Imus
+Lancaster Residences 2-4|14.4067|120.9064|Imus
+Lancaster Village 2 - East|14.4058|120.9042|Imus
+Lancaster Village 2 - West|14.4053|120.9028|Imus
+Alapan I-C|14.4128|120.9201|Imus
+Mary Calkins|14.4066|120.9057|Imus
+St. Augustine of Canterbury Chapel|14.4131|120.9204|Imus
+Haven of Wisdom Academy|14.4131|120.9200|Imus
+Gabriel's Pizza|14.4066|120.9048|Imus
+O!Save|14.4134|120.9201|Imus
+Alfonso Village|14.4141|120.9215|Imus
+The Legian Imus 1|14.4153|120.9240|Imus
+Urban Hub Legian|14.4155|120.9242|Imus
+Legian Commercial Center|14.4160|120.9241|Imus
+CBC Center Legian|14.4161|120.9242|Imus
+Daijabou|14.4074|120.9037|Imus
+Daijobu Trading|14.4073|120.9034|Imus
+Unitop Grocery|14.4071|120.9028|Imus
+Lancaster Residences 5|14.4089|120.9069|Imus
+Panasonic|14.4074|120.9034|Imus
+Daijobou Commercial Building|14.4075|120.9036|Imus
+Boston Heights|14.4126|120.9153|Kawit
+Unitop Hardware|14.4071|120.9025|Imus
+Unitop|14.4071|120.9024|Imus
+Alfamart|14.4075|120.9033|Imus
+KeemKatt Online Shop|14.4124|120.9144|Kawit
+Dali|14.4077|120.9034|Imus
+Lancaster Residences 7|14.4092|120.9067|Imus
+Brey's Adult and Pediatric Clinic|14.4078|120.9033|Imus
+Golden Villas|14.4168|120.9240|Imus
+Brey's Pharmacy|14.4078|120.9032|Imus
+BREHMS School|14.4170|120.9239|Imus
+Mix and Match Construction Supply|14.4081|120.9033|Imus
+Great Price Construction Supply|14.4081|120.9031|Imus
+PARKSVILLE RESIDENCES|14.4077|120.9011|Imus
+Parksville Estates|14.4078|120.9012|Imus
+Alapan I Elementary School|14.4155|120.9187|Imus
+7-Eleven|14.4154|120.9180|Imus
+Paper Plant|14.4092|120.9035|Kawit
+Alapan I-B|14.4155|120.9180|Imus
+Puremart|14.4155|120.9179|Imus
+Total (Lancaster-Alapan)|14.4092|120.9031|Kawit
+Busan|14.4089|120.9024|Kawit
+Barangay's Pharmacy|14.4138|120.9136|Kawit
+Lakersfield Subdivision|14.4146|120.9153|Kawit
+Dali|14.4160|120.9174|Imus
+Westwood Homes|14.4167|120.9187|Imus
+Montefaro Village West|14.4182|120.9218|Imus
+ACM Good Wood Homes|14.4191|120.9223|Imus
+Acacia Townhomes|14.4159|120.9147|Kawit
+Carsadang Bago II|14.4191|120.9220|Imus
+Philhomes Ville|14.4153|120.9129|Kawit
+Bloomfields Subdivision|14.4178|120.9180|Imus
+Alapan I-A|14.4185|120.9191|Imus
+Alfamart|14.4176|120.9168|Imus
+Pinagkalooban Village|14.4148|120.9099|Kawit
+NOE’S place foodhub|14.4180|120.9168|Imus
+ACM Woodstock Homes Phase 9|14.4192|120.9191|Imus
+Alapan Seventh Day Adventist Church|14.4184|120.9158|Imus
+Kalayaan Homes|14.4164|120.9095|Kawit
+Regal Homes|14.4203|120.9175|Imus
+Rosedale Residences|14.4141|120.9023|Kawit
+Monte Royale|14.4133|120.8980|Kawit
+Antarctica Cold Storage|14.4143|120.8999|Kawit
+A.M. Rieta Chemicals|14.4148|120.8999|Kawit
+Handog Resort and Events Place|14.4187|120.9068|Kawit
+Estrella Homes 4|14.4192|120.9072|Kawit
+Kalayaan Kawit MPS|14.4173|120.8995|Kawit
+Kawit Kalayaan Hospital|14.4170|120.8984|Kawit
+MGT Granite Supply|14.4176|120.8995|Kawit
+19th Station|14.4176|120.8994|Kawit
+Brethren Drugstore|14.4175|120.8991|Kawit
+Heart Flowers and Coffee - Kawit|14.4175|120.8991|Kawit
+Bisugo Eto! Eatery|14.4177|120.8995|Kawit
+DF-Med Pharmacy|14.4177|120.8995|Kawit
+7-Eleven (Total San Sebastian Kawit)|14.4177|120.8991|Kawit
+Total (San Sebastian Kawit)|14.4178|120.8992|Kawit
+Veraneo Clubhouse|14.4195|120.9030|Kawit
+Sky Coster Construction Supply|14.4171|120.8970|Kawit
+Jlex Hardware|14.4194|120.8991|Kawit
+The Residences|14.4241|120.9010|Kawit
+Centennial Town Plaza|14.4260|120.8958|Kawit
+All Day Supermarket|14.4257|120.8917|Kawit
+AllDay Rx+|14.4258|120.8918|Kawit
+Coffee Project|14.4257|120.8915|Kawit
+AllBank|14.4261|120.8919|Kawit
+AllHome|14.4258|120.8911|Kawit
+Vista Mall Kawit|14.4262|120.8919|Kawit
+Kambingan Eatery|14.4269|120.8926|Kawit
+San Pedro Calungsod Medical Center|14.4279|120.8948|Kawit
+Puregold|14.4276|120.8939|Kawit
+Buslink Hardware|14.4270|120.8922|Kawit
+7-Eleven|14.4280|120.8944|Kawit
+Wendy's (Centennial-Kawit)|14.4277|120.8935|Kawit
+Jasmine|14.4274|120.8927|Kawit
+Caimol LPG Refilling Station|14.4286|120.8954|Kawit
+Phoenix|14.4281|120.8942|Kawit
+S&R New York Style Pizza (Kawit-Kalayaan)|14.4279|120.8937|Kawit
+Our Lady of Mount Carmel Church|14.4300|120.8985|Kawit
+Jollibee|14.4283|120.8942|Kawit
+Angel's Burger|14.4281|120.8937|Kawit
+Jaro Pawnshop|14.4281|120.8937|Kawit
+TGP|14.4281|120.8937|Kawit
+Burger King|14.4285|120.8944|Kawit
+Crossing Kalayaan|14.4285|120.8941|Kawit
+Wilcon Depot (Home Depot)|14.4280|120.8928|Kawit
+OMP Carinderia|14.4289|120.8947|Kawit
+Cafe Moraco|14.4292|120.8950|Kawit
+Zhearl Ria Grill and Restaurant|14.4293|120.8951|Kawit
+McDonald's|14.4287|120.8937|Kawit
+BDO|14.4289|120.8940|Kawit
+Mercury Drug|14.4289|120.8940|Kawit
+Kuya J|14.4290|120.8941|Kawit
+Subway|14.4297|120.8957|Kawit
+LBC|14.4290|120.8940|Kawit
+RZG Building|14.4296|120.8949|Kawit
+Chowking|14.4295|120.8946|Kawit
+Bureau of Internal Revenue DO 54-B|14.4292|120.8939|Kawit
+Pampini Halo-halo Restaurant|14.4297|120.8950|Kawit
+Filscan|14.4297|120.8949|Kawit
+Cestaves|14.4298|120.8951|Kawit
+Romehand Building|14.4298|120.8951|Kawit
+Lokal Mall|14.4293|120.8939|Kawit
+Homeplus|14.4294|120.8941|Kawit
+Samala|14.4298|120.8950|Kawit
+Starbucks (Exo City)|14.4309|120.8972|Kawit
+Army Navy|14.4311|120.8973|Kawit
+Batong Dalig|14.4349|120.8978|Kawit
+Batong Dalig Barangay Hall|14.4350|120.8978|Kawit
+Batong Dalig Elementary School|14.4348|120.8973|Kawit
+CJR Office|14.4319|120.8949|Kawit
+Cavite Prime Residences|14.4302|120.8936|Kawit
+Dunkin'|14.4330|120.8997|Kawit
+Home for the Elderly|14.4342|120.8939|Kawit
+Kawit Municipal Hall|14.4317|120.8952|Kawit
+Malicdem Eatery|14.4327|120.8990|Kawit
+Mitsubishi Motors Kawit|14.4333|120.8987|Kawit
+Shell (Kawit-Centennial)|14.4323|120.8985|Kawit
+Seattle's Best Coffee|14.4335|120.8993|Kawit
+Conti's Bakeshop and Restaurant|14.4336|120.8994|Kawit
+Suzuki|14.4331|120.8999|Kawit
+Collin Ville|14.4344|120.8995|Kawit
+Josephine's|14.4374|120.8974|Kawit
+Water Camp Resort|14.4369|120.8979|Kawit
+Orange County Grill|14.4344|120.9003|Kawit
+Caltex|14.4342|120.9005|Kawit
+Minimart|14.4344|120.9005|Kawit
+Lucky Home Depot|14.4340|120.9011|Kawit
+Hidden Tapsihan Plus|14.4345|120.9010|Kawit
+Sharry|14.4345|120.9012|Kawit
+Mr. Kim's Unlimited Korean BBQ and Buffet|14.4342|120.9015|Kawit
+Tabon III|14.4371|120.9021|Kawit
+Garland Subdivision|14.4364|120.9029|Kawit
+Pinagpala Memorial Park|14.4379|120.9016|Kawit
+Seaoil|14.4359|120.9035|Kawit
+McDonald's|14.4359|120.9049|Kawit
+Puregold (Tabon @DiviMart)|14.4365|120.9048|Kawit
+Starbucks|14.4369|120.9050|Kawit
+4K Subdivision|14.4400|120.9024|Kawit
+Pizza Hut|14.4371|120.9051|Kawit
+Kawit Evangelical Methodist Church|14.4387|120.9037|Kawit
+Bulwagang Pambarangay ng Tabon 1|14.4383|120.9041|Kawit
+Samgyupsalamat|14.4371|120.9052|Kawit
+Sky Cable Cavite Office|14.4412|120.9016|Kawit
+Sangguniang Pambarangay ng Tabon 1|14.4384|120.9041|Kawit
+The Generics Pharmacy|14.4384|120.9041|Kawit
+Chachago|14.4371|120.9053|Kawit
+EastWest Unibank|14.4366|120.9059|Kawit
+Robertson Plaza|14.4372|120.9054|Kawit
+Dali|14.4409|120.9021|Kawit
+Cafe Down Under|14.4367|120.9061|Kawit
+Big Bowl|14.4368|120.9061|Kawit
+Kenny Rogers Roasters (Centennial - Kawit)|14.4372|120.9058|Kawit
+Phoenix|14.4369|120.9064|Kawit
+Total|14.4373|120.9061|Kawit
+Savemore|14.4418|120.9023|Kawit
+Shakey's (Centennial - Kawit)|14.4376|120.9064|Kawit
+Max's Restaurant (Centennial - Kawit)|14.4378|120.9066|Kawit
+Krispy Kreme|14.4376|120.9068|Kawit
+Mana Town Center|14.4372|120.9073|Kawit
+NCD Wood and Steel Works|14.4377|120.9069|Kawit
+Tabon I|14.4394|120.9055|Kawit
+Kawit Primary Care Facility|14.4378|120.9072|Kawit
+7-Eleven|14.4375|120.9075|Kawit
+Iglesia ni Kristo - Lokal ng Kawit|14.4416|120.9040|Kawit
+Philippine Business Bank|14.4431|120.9028|Kawit
+Onda Medical Clinic|14.4434|120.9027|Kawit
+Tabon II|14.4424|120.9036|Kawit
+Wakas I|14.4430|120.9031|Kawit
+Tabon II Barangay Hall|14.4424|120.9037|Kawit
+Lechon Manok ni Sr. Pedro|14.4429|120.9033|Kawit
+Jetti|14.4382|120.9077|Kawit
+Shell|14.4384|120.9080|Kawit
+Noynoy Car Wash|14.4381|120.9083|Kawit
+Aguinaldo Elementary School|14.4422|120.9047|Kawit
+Yamaha|14.4385|120.9084|Kawit
+Crossing Gahak|14.4387|120.9087|Kawit
+Saint Mary Magdalene Parish Church|14.4444|120.9037|Kawit
+Alfamart|14.4388|120.9087|Kawit
+Subi-Monte Cafe|14.4390|120.9088|Kawit
+Bahay Tinapie|14.4390|120.9089|Kawit
+CleanFuel|14.4387|120.9092|Kawit
+Saint Mary Magdalene School|14.4445|120.9041|Kawit
+Poblacion|14.4440|120.9046|Kawit
+Cedz Restaurant|14.4388|120.9094|Kawit
+Mantat Construction Supply|14.4389|120.9096|Kawit
+Kartini Hotel|14.4393|120.9094|Kawit
+Great Oil|14.4448|120.9049|Kawit
+Viejo Subdivision|14.4398|120.9096|Kawit
+Emiliano T. Tirona Memorial National High School|14.4405|120.9090|Kawit
+Factory Outlet Olanis Ceramic|14.4397|120.9098|Kawit
+Tarmach Auto Service Center|14.4398|120.9100|Kawit
+Arkiworks|14.4395|120.9104|Kawit
+Fast Track|14.4396|120.9104|Kawit
+Petron|14.4400|120.9102|Kawit
+FC Tile Depot|14.4397|120.9105|Kawit
+Divine Mercy Chapel|14.4416|120.9089|Kawit
+Green E-Bikes & Parts Trading|14.4401|120.9104|Kawit
+Paolene Spa|14.4399|120.9107|Kawit
+D&D Home Trading|14.4400|120.9108|Kawit
+Gahak Barangay Hall|14.4419|120.9094|Kawit
+Pook ng Pagpapahayag ng Kasarinlan ng Pilipinas|14.4451|120.9066|Kawit
+Ruther E. Esconde School of Multiple Intelligences|14.4386|120.9124|Imus
+Toguin Steel Supply|14.4406|120.9107|Imus
+Miggy's Food Haus|14.4388|120.9124|Imus
+Aguinaldo Shrine|14.4450|120.9069|Kawit
+Ang Bahay ni Aguinaldo|14.4451|120.9069|Kawit
+Kaingen|14.4456|120.9065|Kawit
+Philippine Independence Declaration Mural|14.4456|120.9066|Kawit
+Emilio Aguinaldo y Famy|14.4453|120.9069|Kawit
+Emilio Aguinaldo Statue|14.4456|120.9068|Kawit
+Pag-asa III|14.4394|120.9124|Imus
+Jaro Pawnshop|14.4410|120.9111|Imus
+Generika|14.4401|120.9123|Imus
+Jollibee|14.4414|120.9112|Imus
+Alfamart|14.4403|120.9123|Imus
+Mang Inasal|14.4416|120.9115|Imus
+She-She Store|14.4442|120.9092|Kawit
+Medicion II-F|14.4409|120.9122|Imus
+Dali|14.4416|120.9116|Imus
+Red Ribbon|14.4417|120.9117|Imus
+Laters Baby Cafe|14.4417|120.9118|Imus
+VCG Motor Parts|14.4417|120.9118|Imus
+Alexander Tiles Center|14.4418|120.9119|Imus
+Gahak-Marulas Elementary School|14.4436|120.9104|Kawit
+Sunset Meadow|14.4450|120.9094|Kawit
+Marulas|14.4459|120.9088|Kawit
+Marulas Multiipurpose Hall|14.4467|120.9083|Kawit
+Tapsi ni Mi|14.4466|120.9084|Kawit
+Marulas Barangay Hall|14.4467|120.9085|Kawit
+Alessandra Building|14.4424|120.9130|Imus
+Gasso|14.4461|120.9098|Kawit
+Maligaya Subdivision|14.4425|120.9148|Imus
+Power Megamix Batching Inc.|14.4439|120.9143|Kawit
+Dali|14.4948|120.9891|Parañaque
+Jesus the Gospel Church International|14.4948|120.9891|Parañaque
+San Dionisio Health Center|14.4948|120.9895|Parañaque
+San Dionisio|14.4958|120.9894|Parañaque
+San Dionisio Chapel|14.4957|120.9895|Parañaque
+San Dionisio Barangay Hall|14.4959|120.9897|Parañaque
+Master Motors Motohelmet Center|14.4962|120.9895|Parañaque
+San Dionisio Gymnasium|14.4959|120.9900|Parañaque
+Chooks to Go|14.4974|120.9900|Parañaque
+Escuelahan de San Dionisio|14.4979|120.9899|Parañaque
+Manoy & Cucuz Panciteria|14.4978|120.9902|Parañaque
+Milktea Shop|14.4981|120.9902|Parañaque
+Soccoro Clinic|14.4980|120.9905|Parañaque
+Andok's|14.4985|120.9904|Parañaque
+Marina Bay Town South|14.5040|120.9856|Parañaque
+Lagumbay Bakery|14.4982|120.9908|Parañaque
+Sarisari store|14.4984|120.9907|Parañaque
+Sari Sari Store|14.4984|120.9909|Parañaque
+La Huerta Multi-Purpose Building|14.5008|120.9889|Parañaque
+Pan di Pedro|14.4989|120.9906|Parañaque
+Baliwag (Manok)|14.4989|120.9907|Parañaque
+RD|14.4989|120.9907|Parañaque
+Wet Market Goods Store|14.4986|120.9910|Parañaque
+LBC|14.4990|120.9907|Parañaque
+Irasan Commercial Center|14.4970|120.9925|Parañaque
+Cebuana Lhuillier|14.4989|120.9909|Parañaque
+Emilio S. Lim Appliances|14.4989|120.9909|Parañaque
+Community Precinct No. 2|14.5004|120.9897|Parañaque
+TGP|14.4992|120.9908|Parañaque
+LaHuerta Drugstore|14.4992|120.9909|Parañaque
+Minute Burger|14.4992|120.9910|Parañaque
+Super8 (La Huerta)|14.4995|120.9909|Parañaque
+McDonald's|14.4993|120.9912|Parañaque
+Bulungan sa Parañaque|14.5017|120.9891|Parañaque
+Bulungan Seafood Market|14.5017|120.9892|Parañaque
+China Bank Savings|14.4997|120.9910|Parañaque
+Eazy|14.4996|120.9911|Parañaque
+Leomarsan Drug Store|14.4995|120.9912|Parañaque
+Generika|14.4998|120.9911|Parañaque
+Villarica|14.4998|120.9911|Parañaque
+7-Eleven|14.4997|120.9913|Parañaque
+Red Ribbon|14.4999|120.9912|Parañaque
+Mercury Drug|14.5000|120.9912|Parañaque
+Parañaque Central Post Office|14.4981|120.9929|Parañaque
+La Huerta Elementary School|14.4980|120.9931|Parañaque
+PSBank|14.5001|120.9913|Parañaque
+Parañaque Public Market|14.4998|120.9917|Parañaque
+Tambunting|14.4987|120.9928|Parañaque
+Ospital ng Parañaque|14.5005|120.9912|Parañaque
+Parañaque Central Police Station|14.5008|120.9911|Parañaque
+La Huerta Barangay Hall|14.5007|120.9912|Parañaque
+La Huerta|14.5005|120.9914|Parañaque
+Saint Paul College|14.5012|120.9908|Parañaque
+La Huerta Fire Station|14.5009|120.9911|Parañaque
+Parañaque City Police & Fire Station|14.5009|120.9911|Parañaque
+Parañaque Cathedral|14.5002|120.9918|Parañaque
+Parañaque|14.5008|120.9915|Parañaque
+Saint Andrew's School|14.5004|120.9921|Parañaque
+Espiritu Compound|14.5016|120.9912|Parañaque
+Roland Lahuerta|14.4997|120.9929|Parañaque
+Parañaque Bus Depot A|14.5040|120.9891|Parañaque
+Don Galo Gym|14.5029|120.9906|Parañaque
+access road memorial|14.5027|120.9908|Parañaque
+BDO (La Huerta)|14.5013|120.9921|Parañaque
+PNP Maritime Group, Special Operations Unit 3|14.5031|120.9906|Parañaque
+La Huerta National High School|14.5012|120.9923|Parañaque
+T2 Nics|14.5010|120.9925|Parañaque
+Uncle John's|14.5014|120.9922|Parañaque
+Kapilya ni San Nicolas de Tolentino|14.5000|120.9935|Parañaque
+San Nicolas de Tolentino Chapel|14.5000|120.9935|Parañaque
+Don Galo Riverside Promenade|14.5025|120.9913|Parañaque
+La Huerta Barangay Outpost|14.5013|120.9924|Parañaque
+Manuel Bernabe y Hernandez (1890–1960)|14.5012|120.9925|Parañaque
+Nuestra Señora de Buensuceso Polyclinic and Diagnostic Center|14.5011|120.9926|Parañaque
+Motortrade|14.5015|120.9923|Parañaque
+RCBC (La Huerta)|14.5014|120.9926|Parañaque
+Hotel Sogo - Macapagal|14.5065|120.9884|Parañaque
+Kiu Pat Long Shiao Taoist Temple|14.5044|120.9912|Parañaque
+Parañaque Bus Depot B|14.5060|120.9900|Parañaque
+Battle of Don Galo Monument|14.5049|120.9910|Parañaque
+Don Galo|14.5050|120.9911|Parañaque
+Sangguniang Pambarangay ng Don Galo|14.5052|120.9911|Parañaque
+Don Galo Barangay Hall|14.5053|120.9911|Parañaque
+SSK Building|14.5073|120.9897|Parañaque
+Maloles Compound|14.5054|120.9918|Parañaque
+Grand Marina Luxury Residences|14.5080|120.9898|Parañaque
+Sentosia Condominiums|14.5094|120.9886|Parañaque
+Marina Baytown East|14.5112|120.9871|Parañaque
+Daying Supermarket|14.5077|120.9905|Parañaque
+Imperial Plaza Residences|14.5093|120.9894|Parañaque
+Royal View Garden|14.5063|120.9921|Parañaque
+Cebuana Lhuillier|14.5089|120.9908|Parañaque
+Food Terminal|14.5089|120.9908|Parañaque
+Multi-Faith Prayer Room|14.5088|120.9909|Parañaque
+PITX Clinic|14.5088|120.9909|Parañaque
+PITX LRT Building|14.5084|120.9913|Parañaque
+Villarica|14.5090|120.9908|Parañaque
+Kenny Rogers Roasters|14.5088|120.9910|Parañaque
+Palawan Pawnshop|14.5090|120.9909|Parañaque
+Potato Giant|14.5091|120.9909|Parañaque
+Black Onyx Cafe|14.5092|120.9909|Parañaque
+K2 Pharmacy|14.5092|120.9909|Parañaque
+Alfamart|14.5090|120.9911|Parañaque
+Chooks to Go|14.5058|120.9940|Parañaque
+Chowking (PITX)|14.5093|120.9909|Parañaque
+Razon's by Glenn|14.5093|120.9909|Parañaque
+Waka Pares!|14.5093|120.9909|Parañaque
+BPI|14.5091|120.9911|Parañaque
+J.Co (PITX)|14.5092|120.9911|Parañaque
+Jollibee (PITX)|14.5094|120.9910|Parañaque
+Red Ribbon|14.5094|120.9910|Parañaque
+The Sandwich Guy|14.5093|120.9911|Parañaque
+Barney Auto Lines PITX Terminal|14.5092|120.9912|Parañaque
+Chatime|14.5095|120.9910|Parañaque
+Marugame Udon|14.5095|120.9910|Parañaque
+The French Baker|14.5095|120.9910|Parañaque
+Pickup Coffee|14.5094|120.9911|Parañaque
+Malaya's Cafe|14.5093|120.9912|Parañaque
+Robinsons Easymart|14.5093|120.9912|Parañaque
+Tapa King|14.5093|120.9912|Parañaque
+Quirino & J. Gabriel|14.5061|120.9941|Parañaque
+Paaralang Elementary ng Don Galo|14.5069|120.9934|Parañaque
+Kyukyu Ramen|14.5096|120.9910|Parañaque
+Popeyes|14.5096|120.9910|Parañaque
+Buko Express|14.5095|120.9911|Parañaque
+Binalot|14.5094|120.9912|Parañaque
+Hap Chan|14.5094|120.9912|Parañaque
+Chan Complex|14.5075|120.9929|Parañaque
+PITX LRT Station|14.5093|120.9913|Parañaque
+Lorca Store|14.5063|120.9940|Parañaque
+Krispy Kreme|14.5097|120.9910|Parañaque
+Land Transportation Office (PITX-Parañaque Licensing Center)|14.5097|120.9910|Parañaque
+Subway|14.5097|120.9910|Parañaque
+Liezel's La Paz Batchoy & Kansi|14.5095|120.9912|Parañaque
+Mary Grace|14.5096|120.9912|Parañaque
+D'leaf Diner|14.5064|120.9941|Parañaque
+Funhan Mart|14.5098|120.9911|Parañaque
+Lawson|14.5096|120.9913|Parañaque
+Auntie Anne's|14.5099|120.9911|Parañaque
+Mang Inasal|14.5099|120.9911|Parañaque
+Fruitas|14.5098|120.9912|Parañaque
+Parañaque National High School – Don Galo Annex|14.5070|120.9937|Parañaque
+Bahn Mi Kitchen|14.5100|120.9911|Parañaque
+Goldilocks|14.5100|120.9911|Parañaque
+Parañaque Integrated Terminal Exchange|14.5096|120.9915|Parañaque
+KFC|14.5101|120.9911|Parañaque
+McDonald's (PITX)|14.5101|120.9911|Parañaque
+Soy Yummy|14.5099|120.9913|Parañaque
+CoCo Fresh Tea & Juice|14.5101|120.9912|Parañaque
+PITX Main Building|14.5101|120.9912|Parañaque
+Divi Mall|14.5080|120.9935|Parañaque
+Burger King|14.5102|120.9912|Parañaque
+24 Chicken|14.5104|120.9912|Parañaque
+Chick 'n Juicy|14.5104|120.9912|Parañaque
+Palmaris|14.5067|120.9955|Parañaque
+Plato Wraps|14.5103|120.9914|Parañaque
+Shawarma Shack|14.5105|120.9912|Parañaque
+Uzume|14.5115|120.9901|Parañaque
+Supersticks|14.5104|120.9914|Parañaque
+Hao Mi Chinese Restaurant|14.5080|120.9943|Parañaque
+Jamaican Pattie Shop|14.5106|120.9913|Parañaque
+John Lemon Juice Bar|14.5106|120.9913|Parañaque
+Pepper Lunch|14.5106|120.9913|Parañaque
+Potato Corner|14.5106|120.9913|Parañaque
+Arista Place|14.5071|120.9954|Parañaque
+Ultima|14.5069|120.9957|Parañaque
+Hen Lin|14.5107|120.9913|Parañaque
+Sbarro|14.5107|120.9913|Parañaque
+Taters|14.5106|120.9915|Parañaque
+Turks|14.5106|120.9915|Parañaque
+Waffle Time|14.5108|120.9913|Parañaque
+Watsons|14.5108|120.9913|Parañaque
+Earl of Sandwich|14.5107|120.9915|Parañaque
+Creamies|14.5108|120.9915|Parañaque
+St Food Store|14.5108|120.9915|Parañaque
+Rico's Paspas|14.5110|120.9914|Parañaque
+Tim Hortons|14.5110|120.9914|Parañaque
+RedDoorz near Tambo Quirino Avenue|14.5097|120.9930|Parañaque
+Balai Pandesal|14.5111|120.9914|Parañaque
+Dunkin' (PITX)|14.5111|120.9914|Parañaque
+7-Eleven|14.5112|120.9914|Parañaque
+Bonchon Chicken|14.5112|120.9914|Parañaque
+Highlands Coffee|14.5112|120.9914|Parañaque
+Wendy's|14.5113|120.9914|Parañaque
+Buko Juan|14.5113|120.9915|Parañaque
+Purefoods Tender Juicy Hotdog|14.5113|120.9915|Parañaque
+Original Pinoy Merienda|14.5114|120.9915|Parañaque
+Rice in a Box|14.5114|120.9915|Parañaque
+Ate Rica's Bacsilog|14.5115|120.9915|Parañaque
+Eggspert|14.5115|120.9915|Parañaque
+Minute Burger|14.5115|120.9915|Parañaque
+Mister Donut|14.5115|120.9915|Parañaque
+JG Mart|14.5116|120.9915|Parañaque
+Siomai House|14.5115|120.9917|Parañaque
+Pacific Coast Plaza|14.5111|120.9929|Parañaque
+Villamar Subdivision|14.5100|120.9949|Parañaque
+Santo Niño|14.5094|120.9958|Parañaque
+SunnyPlace Residences|14.5117|120.9936|Parañaque
+IEMELIF Church|14.5106|120.9949|Parañaque
+Dali|14.5108|120.9950|Parañaque
+Flying V|14.5107|120.9952|Parañaque
+Hengtai Gold Mansion|14.5123|120.9943|Parañaque
+Solaire Resort & Casino|14.5223|120.9828|Parañaque
+Camp Claudio|14.5132|120.9934|Parañaque
+Quirino & Lopez de Leon|14.5117|120.9952|Parañaque
+Bayshore Residential Resort|14.5206|120.9850|Parañaque
+Fast Food|14.5233|120.9819|Parañaque
+Solaire Shuttle|14.5236|120.9820|Parañaque
+The Coffee Bean & Tea Leaf|14.5224|120.9836|Parañaque
+The Theatre at Solaire|14.5225|120.9835|Parañaque
+Tambo|14.5163|120.9909|Parañaque
+Parañaque City Police Community Precinct № 2|14.5168|120.9904|Parañaque
+PCP 2 Solaire|14.5235|120.9828|Parañaque
+Meralco Parañaque|14.5129|120.9955|Parañaque
+R.D. Policarpio|14.5131|120.9953|Parañaque
+Commercial Building|14.5125|120.9960|Parañaque
+Bayside Court|14.5140|120.9943|Parañaque
+Tambo Barangay Hall|14.5151|120.9932|Parañaque
+Meralco Parañaque Auxilliary Business Office|14.5134|120.9954|Parañaque
+Old Paranaque Fire Volunteer|14.5132|120.9957|Parañaque
+Casiana Towers|14.5138|120.9951|Parañaque
+7-Eleven|14.5216|120.9878|Parañaque
+Tong Yang Plus|14.5222|120.9874|Parañaque
+Ayala Cinemas|14.5223|120.9873|Parañaque
+Furniture Republic|14.5230|120.9865|Parañaque
+True Value|14.5225|120.9871|Parañaque
+The Alley by Vikings|14.5225|120.9872|Parañaque
+Sha-Xia Snack House|14.5217|120.9882|Parañaque
+New Age Mart|14.5223|120.9876|Parañaque
+Watsons|14.5223|120.9877|Parañaque
+Workstation|14.5226|120.9874|Parañaque
+Manam|14.5231|120.9869|Parañaque
+Santouka|14.5226|120.9875|Parañaque
+Tuan Tuan Kitchen|14.5223|120.9881|Parañaque
+Yummy House Barbecue|14.5205|120.9902|Parañaque
+Tokyo Milkcheese Factory|14.5230|120.9873|Parañaque
+Chili's|14.5226|120.9878|Parañaque
+CoCo Fresh Tea & Juice|14.5233|120.9870|Parañaque
+Texas Roadhouse|14.5227|120.9877|Parañaque
+Tenya (Aseana)|14.5203|120.9905|Parañaque
+Chinabank (Macapagal Ave. - Aseana Square)|14.5206|120.9902|Parañaque
+Botejyu|14.5226|120.9879|Parañaque
+Racks (Aseana)|14.5204|120.9905|Parañaque
+Cibo|14.5225|120.9881|Parañaque
+Aseana Square|14.5208|120.9901|Parañaque
+Auntie Anne's|14.5224|120.9883|Parañaque
+Chatime|14.5225|120.9882|Parañaque
+Blue Seas Seafoods & Restaurant|14.5208|120.9902|Parañaque
+Hot-Star|14.5208|120.9902|Parañaque
+Peri Peri|14.5233|120.9873|Parañaque
+Modern Shang|14.5228|120.9879|Parañaque
+Chowking|14.5206|120.9905|Parañaque
+Shrimp Bucket|14.5232|120.9875|Parañaque
+Watami Grill and Sushi Bar|14.5228|120.9880|Parañaque
+Tealive|14.5223|120.9886|Parañaque
+Shaburi and Kintan Buffet|14.5228|120.9881|Parañaque
+Kumori Japanese Bakery|14.5224|120.9886|Parañaque
+Italianni's|14.5232|120.9877|Parañaque
+Nono's|14.5225|120.9886|Parañaque
+Recipes|14.5227|120.9884|Parañaque
+Mega Mart Korean Grocery|14.5209|120.9905|Parañaque
+Seattle's Best Coffee|14.5224|120.9888|Parañaque
+The Place|14.5225|120.9887|Parañaque
+Shi Lin|14.5228|120.9884|Parañaque
+Shakey's|14.5211|120.9904|Parañaque
+BPI|14.5224|120.9889|Parañaque
+MIA Road|14.5189|120.9930|Parañaque
+Fruitas|14.5227|120.9886|Parañaque
+Hap Chan|14.5228|120.9885|Parañaque
+Mann Hann|14.5228|120.9885|Parañaque
+Asina Mart|14.5227|120.9887|Parañaque
+Pancake House (Aseana Square)|14.5215|120.9901|Parañaque
+Genki Sushi|14.5234|120.9879|Parañaque
+Cinnabon|14.5228|120.9886|Parañaque
+88 BBQ|14.5216|120.9901|Parañaque
+Yankee Candle At True Value Bay Area|14.5228|120.9888|Parañaque
+Caltex|14.5215|120.9904|Parañaque
+Eng Bee Tin|14.5228|120.9889|Parañaque
+Mangan|14.5229|120.9888|Parañaque
+Potato Corner|14.5227|120.9891|Parañaque
+Pepper Lunch|14.5230|120.9889|Parañaque
+North Park (Caltex Macapagal)|14.5218|120.9903|Parañaque
+MR.DIY|14.5227|120.9893|Parañaque
+Merrymart|14.5228|120.9892|Parañaque
+Polland|14.5230|120.9890|Parañaque
+Philippine Statistics Authority|14.5228|120.9893|Parañaque
+Lucky Dragon Pearl Milk Tea|14.5231|120.9890|Parañaque
+Siomai House|14.5231|120.9890|Parañaque
+McDonald's|14.5228|120.9894|Parañaque
+Cotti Coffee|14.5230|120.9892|Parañaque
+Sbarro|14.5231|120.9892|Parañaque
+Starbucks|14.5232|120.9891|Parañaque
+Andok's|14.5226|120.9898|Parañaque
+Metrobank (Bayview)|14.5192|120.9938|Parañaque
+Express Lingkod Office|14.5229|120.9895|Parañaque
+Dairy Queen|14.5231|120.9893|Parañaque
+My Thai|14.5231|120.9894|Parañaque
+Phở Hòa|14.5232|120.9893|Parañaque
+Kenny Rogers Roasters|14.5240|120.9884|Parañaque
+Marugame Udon|14.5234|120.9891|Parañaque
+Ninetea|14.5234|120.9891|Parañaque
+Max's Restaurant|14.5239|120.9886|Parañaque
+Ayala Malls Manila Bay Transport Terminal|14.5227|120.9900|Parañaque
+BDO (Macapagal Blvd. - Bay Area)|14.5241|120.9884|Parañaque
+Bayview International Towers|14.5195|120.9938|Parañaque
+BreadTalk|14.5233|120.9894|Parañaque
+Mamak Kopitiam|14.5233|120.9894|Parañaque
+Landers Aseana|14.5277|120.9843|Parañaque
+Metrobank|14.5242|120.9884|Parañaque
+King Chef|14.5236|120.9891|Parañaque
+Bayview International Tower 2 & 3|14.5193|120.9941|Parañaque
+Bonchon Chicken|14.5237|120.9890|Parañaque
+Romantic Baboy|14.5240|120.9887|Parañaque
+Koi The|14.5237|120.9891|Parañaque
+Mesa|14.5240|120.9888|Parañaque
+Hawker Chan|14.5235|120.9894|Parañaque
+KFC|14.5235|120.9894|Parañaque
+Tim Ho Wan|14.5236|120.9893|Parañaque
+Red House Sha-bu Sha-bu|14.5264|120.9861|Parañaque
+Classic Savory|14.5241|120.9888|Parañaque
+Shakey's|14.5241|120.9888|Parañaque
+Tokyo Tokyo|14.5236|120.9894|Parañaque
+Pound|14.5238|120.9893|Parañaque
+Landmark Hardware|14.5234|120.9898|Parañaque
+Villa Carolina Townhomes III|14.5195|120.9944|Parañaque
+Abaca Building|14.5266|120.9862|Parañaque
+Global City Boxing|14.5266|120.9862|Parañaque
+Crabs N Crack Seafood House|14.5267|120.9861|Parañaque
+Sankai|14.5267|120.9861|Parañaque
+Palacio de Memoria|14.5197|120.9943|Parañaque
+Kuya J|14.5241|120.9892|Parañaque
+Blims|14.5242|120.9891|Parañaque
+Landmark Manila Bay Supermarket|14.5236|120.9898|Parañaque
+Seda|14.5245|120.9888|Parañaque
+Hen Lin|14.5238|120.9897|Parañaque
+Caltex|14.5276|120.9853|Parañaque
+Supersam|14.5267|120.9864|Parañaque
+Landmark Manila Bay|14.5238|120.9898|Parañaque
+Adobe Building|14.5270|120.9861|Parañaque
+Mandaue Foam Home Store|14.5245|120.9891|Parañaque
+MC Home Depot|14.5270|120.9862|Parañaque
+El Presidente of Binondo|14.5240|120.9897|Parañaque
+Shell|14.5230|120.9910|Parañaque
+Jollibee|14.5232|120.9909|Parañaque
+The Loggia|14.5202|120.9944|Parañaque
+Capiz Building|14.5267|120.9871|Parañaque
+The Blue Leaf Filipinas|14.5228|120.9917|Parañaque
+Uncle John's|14.5231|120.9914|Parañaque
+Amphitheater Park|14.5271|120.9869|Parañaque
+8912 Asean Ave|14.5254|120.9889|Parañaque
+Starbucks (Parqal - Aseana City)|14.5268|120.9873|Parañaque
+JT's Manukan Grille|14.5266|120.9876|Parañaque
+Cierto|14.5268|120.9874|Parañaque
+XO 46 Heritage Bistro|14.5268|120.9875|Parañaque
+7-Eleven|14.5256|120.9889|Parañaque
+Asia United Bank|14.5254|120.9892|Parañaque
+BarbeeQ Restaurant|14.5266|120.9879|Parañaque
+Banig Building|14.5268|120.9877|Parañaque
+Billiards Club|14.5268|120.9877|Parañaque
+Hyatt Regency COD|14.5227|120.9925|Parañaque
+Villa Carolina Townhoue Ⅲ|14.5210|120.9945|Parañaque
+City of Dreams - Crown Hotel Manila|14.5227|120.9926|Parañaque
+A1 Premium Shabu-Shabu|14.5271|120.9875|Parañaque
+Caltex|14.5298|120.9844|Parañaque
+Parqal|14.5269|120.9878|Parañaque
+Umi Matsu|14.5269|120.9878|Parañaque
+Agave Mexican Cantina|14.5271|120.9876|Parañaque
+Rattan Building|14.5272|120.9875|Parañaque
+MidPark Towers|14.5262|120.9887|Parañaque
+Lotus Tea and Coffee|14.5271|120.9877|Parañaque
+Fiery Style|14.5266|120.9883|Parañaque
+BDO (Macapagal Blvd. - Aseana 3)|14.5254|120.9897|Parañaque
+7-Eleven (CPI Diokno)|14.5300|120.9844|Parañaque
+City of Dreams Manila|14.5239|120.9915|Parañaque
+The Coffee Bean & Tea Leaf|14.5271|120.9878|Parañaque
+CoCo Fresh Tea & Juice|14.5266|120.9884|Parañaque
+Aseana Three|14.5256|120.9896|Parañaque
+Bayview Garden Homes|14.5214|120.9945|Parañaque
+David's Tea House|14.5254|120.9899|Parañaque
+Starbucks (City of Dreams)|14.5236|120.9920|Parañaque
+RCBC|14.5266|120.9886|Parañaque
+The Tokyo Matcha|14.5269|120.9883|Parañaque
+Panda Hotpot|14.5256|120.9900|Parañaque
+Cogon Building|14.5269|120.9885|Parañaque
+St. John Paul II Church|14.5284|120.9868|Parañaque
+Kurata|14.5272|120.9882|Parañaque
+Gloria Maris Shark Fin Restaurant|14.5309|120.9839|Pasay
+Kodanda Archery Range|14.5309|120.9839|Pasay
+Samgyup Salamat|14.5257|120.9900|Parañaque
+Wave|14.5233|120.9928|Parañaque
+Monarch Parksuites|14.5296|120.9855|Parañaque
+Buffalo's Wing N' Things|14.5311|120.9838|Pasay
+Cut & Grill Manila|14.5269|120.9887|Parañaque
+LÉ REALE Café|14.5269|120.9887|Parañaque
+Zark's Burger|14.5274|120.9882|Parañaque
+Café Mary Grace|14.5311|120.9839|Pasay
+Bayview Garden Homes II|14.5220|120.9945|Parañaque
+Sawali Building|14.5272|120.9885|Parañaque
+East Ocean Palace 東海|14.5279|120.9877|Parañaque
+East Ocean Restaurant|14.5279|120.9877|Parañaque
+Red Ginger|14.5238|120.9925|Parañaque
+Dylan Gourmet Cafe|14.5272|120.9886|Parañaque
+Security Bank (Parqal)|14.5274|120.9884|Parañaque
+Gringo|14.5311|120.9841|Pasay
+K1 Center|14.5284|120.9873|Parañaque
+Bôn Pho & Roll|14.5272|120.9887|Parañaque
+What The Pho|14.5311|120.9842|Pasay
+Nipa Building|14.5269|120.9891|Parañaque
+MAAX Building|14.5310|120.9844|Pasay
+The HubStop Cafe|14.5311|120.9843|Pasay
+The Marketplace|14.5270|120.9891|Parañaque
+Dickey's Barbecue Pit|14.5272|120.9889|Parañaque
+North Park|14.5272|120.9889|Parañaque
+7-Eleven (Hop Inn Hotel Aseana)|14.5279|120.9881|Parañaque
+Nobu Hotel COD|14.5237|120.9930|Parañaque
+7-Eleven (Monarch Park Suites)|14.5299|120.9858|Parañaque
+Dunkin'|14.5272|120.9890|Parañaque
+Hop Inn Hotel Aseana|14.5279|120.9882|Parañaque
+Gianetto|14.5272|120.9891|Parañaque
+DreamPlay|14.5250|120.9917|Parañaque
+Inland Channel|14.5236|120.9934|Parañaque
+Mary Grace|14.5272|120.9893|Parañaque
+Kawayan Building|14.5274|120.9891|Parañaque
+The Crunch|14.5275|120.9890|Parañaque
+Starbucks (Mall of Asia Arena)|14.5318|120.9841|Pasay
+Boulangerie22|14.5275|120.9891|Parañaque
+Nobu Restaurant|14.5242|120.9930|Parañaque
+Petron|14.5234|120.9940|Parañaque
+SM Mall of Asia Arena|14.5323|120.9837|Pasay
+Nord Anglia International School|14.5296|120.9869|Parañaque
+Sinocan Corporate Center|14.5280|120.9889|Parañaque
+Bayview Village|14.5225|120.9953|Parañaque
+Platinum Office Tower|14.5258|120.9916|Parañaque
+Treats|14.5235|120.9943|Parañaque
+Nüwa Hotel COD|14.5250|120.9926|Parañaque
+Growing Place Preschool|14.5238|120.9940|Parañaque
+Villa Josefa Carmela|14.5238|120.9942|Parañaque
+UCPB Savings Bank (Aseana City)|14.5293|120.9879|Parañaque
+The Other Office By the Bay|14.5293|120.9880|Parañaque
+Honda Cars Manila Bay|14.5288|120.9886|Parañaque
+Sequoia Hotel|14.5264|120.9914|Parañaque
+Herbs Bistro|14.5293|120.9881|Parañaque
+Starbucks|14.5281|120.9896|Parañaque
+Mercury Drug|14.5220|120.9967|Parañaque
+MOA/Corporate Building F|14.5325|120.9846|Pasay
+Genba Business Management Co., Ltd.|14.5289|120.9888|Parañaque
+Chinabank (Solemare)|14.5293|120.9884|Parañaque
+Wyndham Garden (Manila Bay)|14.5244|120.9942|Parañaque
+Casa Ibarra|14.5312|120.9863|Pasay
+Ri-Rance Corporate Center 1|14.5265|120.9918|Parañaque
+MOA/South Wing Terminal|14.5333|120.9839|Pasay
+Li Auto Sales|14.5284|120.9897|Parañaque
+South Wing Terminal|14.5333|120.9841|Pasay
+SM Mall of Asia|14.5333|120.9842|Pasay
+Philflex Bay Center|14.5311|120.9868|Pasay
+Solemare Parksuites|14.5299|120.9882|Parañaque
+Philflex|14.5312|120.9867|Pasay
+7-Eleven|14.5295|120.9890|Parañaque
+Fatless Shabu-Shabu|14.5295|120.9891|Parañaque
+PNB|14.5314|120.9869|Pasay
+Greenwich|14.5295|120.9892|Parañaque
+Life Coffee & Tea|14.5296|120.9891|Parañaque
+BPI|14.5297|120.9890|Parañaque
+Anchor Land|14.5268|120.9924|Parañaque
+Mercury Drug (Aseana Business Park Parañaque)|14.5295|120.9893|Parañaque
+Fruity Lemons|14.5341|120.9840|Pasay
+Yasubei|14.5298|120.9890|Parañaque
+A Place|14.5313|120.9873|Pasay
+Okubo|14.5299|120.9890|Parañaque
+Golden Phoenix Hotel|14.5324|120.9861|Pasay
+BDO (A Place - Coral Way)|14.5314|120.9873|Pasay
+Starbucks (Aseana Powerstation)|14.5300|120.9890|Parañaque
+Kusina ni Tatang|14.5301|120.9889|Parañaque
+Aseana Powerstation|14.5299|120.9892|Parañaque
+Total Tambo|14.5234|120.9968|Parañaque
+DBP|14.5302|120.9889|Parañaque
+McDonald's (Macapagal Avenue)|14.5297|120.9895|Parañaque
+Total|14.5232|120.9971|Parañaque
+Robinsons Bank|14.5327|120.9861|Pasay
+Queensland Construction Supply|14.5235|120.9968|Parañaque
+UCPB Savings Bank (Coral Way)|14.5314|120.9877|Pasay
+Royal Peak Plaza 华诚中心|14.5235|120.9970|Parañaque
+Lemon Baby (Aseana Powerstation)|14.5304|120.9890|Parañaque
+DFA|14.5299|120.9896|Parañaque
+Shell Select|14.5301|120.9894|Parañaque
+Nissan|14.5289|120.9908|Parañaque
+Fly Ace Corporate Center|14.5314|120.9879|Pasay
+Yellow Cab Pizza|14.5304|120.9891|Parañaque
+Uncle John's|14.5331|120.9860|Pasay
+Asia United Bank|14.5327|120.9865|Pasay
+Shell|14.5303|120.9893|Parañaque
+BDO|14.5331|120.9861|Pasay
+Nena's Kitchenette|14.5239|120.9968|Parañaque
+food trip|14.5295|120.9903|Parañaque
+Harton Corporate Center|14.5283|120.9917|Parañaque
+Happy Every Time Tea and Food|14.5240|120.9968|Parañaque
+Xing Di Mei Shi Restaurant|14.5240|120.9968|Parañaque
+FamilyMart|14.5327|120.9867|Pasay
+Department of Foreign Affairs - Office of Consular Affairs|14.5297|120.9902|Parañaque
+Protacio Hospital|14.5242|120.9966|Parañaque
+Cleanfuel Auto LPG|14.5263|120.9942|Parañaque
+Ford Manila Bay|14.5289|120.9912|Parañaque
+K Line Laboratory|14.5314|120.9883|Pasay
+EastWest Unibank|14.5327|120.9868|Pasay
+Ming's Guillin Noodles|14.5241|120.9968|Parañaque
+Ri Rance Corporate Center Two|14.5278|120.9925|Parañaque
+Kambal Pandesal|14.5334|120.9860|Pasay
+L. Gabriel|14.5261|120.9946|Parañaque
+K-Line|14.5314|120.9885|Pasay
+BDO (Crowne Bay Tower)|14.5266|120.9941|Parañaque
+Nichols Airport Hotel|14.5243|120.9968|Parañaque
+Minerva Tire Gallery|14.5301|120.9901|Parañaque
+DFA Clinic|14.5300|120.9904|Parañaque
+Petron|14.5303|120.9901|Parañaque
+Bayprime Hotel and Condominium|14.5279|120.9929|Parañaque
+J's Squared Seafoods Restaurant|14.5312|120.9891|Pasay
+Beulah Land Bible Baptist Church|14.5245|120.9969|Parañaque
+Jetti Business Center|14.5314|120.9890|Pasay
+Singapore School Manila|14.5284|120.9925|Parañaque
+Basil|14.5315|120.9889|Pasay
+Jollibee|14.5292|120.9916|Parañaque
+North Park|14.5313|120.9892|Pasay
+7-Eleven|14.5271|120.9941|Parañaque
+Zhu Ba Jie Premium - Pasay|14.5316|120.9889|Pasay
+Pizza Hut|14.5292|120.9917|Parañaque
+Treats|14.5306|120.9901|Parañaque
+UniOil|14.5272|120.9941|Parañaque
+FILC Coffee + Pastries|14.5344|120.9858|Pasay
+TJM Garden Cafe|14.5264|120.9951|Parañaque
+Pickup Coffee|14.5316|120.9891|Pasay
+The Strip at Sea|14.5341|120.9862|Pasay
+Security Bank (Aseana City)|14.5292|120.9919|Parañaque
+S&R Membership Shopping (Aseana-Baclaran)|14.5301|120.9909|Parañaque
+Ramen Kuroda|14.5292|120.9920|Parañaque
+Mercury Drug|14.5321|120.9887|Pasay
+Jetti|14.5316|120.9893|Pasay
+Sea Residences|14.5341|120.9864|Pasay
+Uncle John's|14.5292|120.9921|Parañaque
+Police Community Precinct 1|14.5274|120.9942|Parañaque
+Citadines Bay City Manila|14.5324|120.9884|Pasay
+Airport Road|14.5278|120.9938|Parañaque
+Quirino & T. Alonzo|14.5252|120.9969|Parañaque
+Parañaque Community High School|14.5253|120.9968|Parañaque
+Red Planet Hotels|14.5291|120.9924|Parañaque
+Café 1700|14.5292|120.9924|Parañaque
+W.Mall (Macapagal)|14.5323|120.9888|Pasay
+Edison Lodge Inn|14.5256|120.9966|Parañaque
+UnionBank|14.5314|120.9899|Pasay
+MR.DIY|14.5322|120.9890|Pasay
+Balay|14.5273|120.9947|Parañaque
+Bread World|14.5273|120.9947|Parañaque
+W Department Store|14.5325|120.9887|Pasay
+Crosswinds Ocean Hotel|14.5276|120.9944|Parañaque
+North Wing Terminal|14.5370|120.9835|Pasay
+Top Chef Abalone|14.5315|120.9899|Pasay
+Dimsum Dimsum|14.5323|120.9890|Pasay
+Potato Corner|14.5323|120.9890|Pasay
+Dhom & Ced's Restaurant|14.5256|120.9968|Parañaque
+Chatime|14.5324|120.9889|Pasay
+WalterMart|14.5325|120.9888|Pasay
+Mang Inasal|14.5326|120.9887|Pasay
+Osakakutei|14.5315|120.9900|Pasay
+Subaru Manila Bay|14.5291|120.9928|Parañaque
+The Coffee Bean & Tea Leaf|14.5322|120.9892|Pasay
+Lawson|14.5316|120.9899|Pasay
+The Alley|14.5316|120.9899|Pasay
+The French Baker|14.5323|120.9891|Pasay
+Baymont Suites & Residences|14.5275|120.9947|Parañaque
+Handyman|14.5326|120.9888|Pasay
+Kuanzhai Alley|14.5327|120.9887|Pasay
+MOA/North Wing Terminal|14.5371|120.9836|Pasay
+Y Tower|14.5316|120.9900|Pasay
+Happy Store|14.5262|120.9963|Parañaque
+McDonald's|14.5324|120.9891|Pasay
+Avocadoria.ph|14.5326|120.9889|Pasay
+S&R New York Style Pizza|14.5325|120.9891|Pasay
+Alfamart|14.5332|120.9883|Pasay
+KFC|14.5326|120.9891|Pasay
+Inn Flight|14.5275|120.9951|Parañaque
+7-Eleven|14.5328|120.9890|Pasay
+Allison's Eatery|14.5262|120.9967|Parañaque
+SM Mall of Asia Complex|14.5373|120.9841|Pasay
+Coffee Project (Scape Building)|14.5332|120.9890|Pasay
+Ecom Center Station 3|14.5376|120.9839|Pasay
+Heartland Medical and Diagnostic Center|14.5324|120.9900|Pasay
+Luxe Duty Free|14.5381|120.9834|Pasay
+Alfamart|14.5360|120.9859|Pasay
+JVMI 1|14.5282|120.9950|Parañaque
+BDO (Macapagal Blvd. - Pearl Drive)|14.5334|120.9890|Pasay
+Army Navy|14.5335|120.9890|Pasay
+Bonchon Chicken|14.5335|120.9890|Pasay
+Lydia's Lechon|14.5293|120.9939|Parañaque
+JVMI 2|14.5284|120.9950|Parañaque
+Commission on Filipinos Overseas|14.5353|120.9870|Pasay
+NexGen Tower|14.5353|120.9870|Pasay
+Good Luck Hot Pot|14.5354|120.9869|Pasay
+Baclaran|14.5285|120.9950|Parañaque
+Ecom Center Station 4|14.5378|120.9842|Pasay
+Trendy Dimsum|14.5361|120.9862|Pasay
+Chinabank (Macapagal Ave. Biopolis)|14.5337|120.9890|Pasay
+Five E-com Center|14.5394|120.9824|Pasay
+Redemptorist–Aseana|14.5304|120.9929|Parañaque
+The Alley|14.5354|120.9871|Pasay
+Golden Bay Fresh Seafood Restaurant|14.5330|120.9899|Pasay
+shell residency|14.5365|120.9859|Pasay
+Jollibee|14.5341|120.9887|Pasay
+Mister Kabab|14.5361|120.9864|Pasay
+SM Corporate Offices|14.5377|120.9846|Pasay
+DHL|14.5306|120.9930|Parañaque
+Burger King (Macapagal Boulevard Southbound)|14.5343|120.9887|Pasay
+Chimney BBQ|14.5362|120.9866|Pasay
+Gala Food Park|14.5328|120.9906|Pasay
+Asian Entertainment Building|14.5301|120.9938|Parañaque
+Shell Residences|14.5366|120.9863|Pasay
+Phoenix|14.5355|120.9876|Pasay
+Starbucks (SM Five E-com)|14.5399|120.9825|Pasay
+Landbank (Baclaran)|14.5301|120.9939|Parañaque
+I.Land Bay Plaza|14.5348|120.9885|Pasay
+Bureau of Immigration|14.5339|120.9896|Pasay
+Bôn Pho & Roll|14.5346|120.9888|Pasay
+Ecom Center Station 2|14.5390|120.9837|Pasay
+Win88Win|14.5363|120.9869|Pasay
+Infinity Taste|14.5347|120.9888|Pasay
+Seaside Seafoods Market|14.5305|120.9937|Parañaque
+Hotel 101 Manila|14.5355|120.9879|Pasay
+BDO (Five E-Com Center)|14.5399|120.9828|Pasay
+Bureau of Immigration Main Building and Annex|14.5338|120.9899|Pasay
+BDO (Mall of Asia - Shell Residences)|14.5363|120.9870|Pasay
+Al Razi's Shawarma Station|14.5292|120.9954|Parañaque
+Kw Party Music Restaurant|14.5349|120.9888|Pasay
+Xiaolongkan Restaurant|14.5343|120.9895|Pasay
+Domino's|14.5307|120.9937|Parañaque
+Goldilocks|14.5307|120.9937|Parañaque
+Reach|14.5352|120.9885|Pasay
+Asia United Bank (Eastfield Macapagal)|14.5344|120.9895|Pasay
+Horizon Cafe|14.5357|120.9880|Pasay
+One Wheels Condominium|14.5333|120.9908|Pasay
+Lawson|14.5351|120.9888|Pasay
+Songtan Premium BBQ|14.5351|120.9888|Pasay
+Mang Inasal|14.5309|120.9937|Parañaque
+Namsan Korean Barbecue|14.5346|120.9894|Pasay
+Dongji Xiangju Restaurant|14.5346|120.9895|Pasay
+Chowking|14.5310|120.9937|Parañaque
+Aspire Corporate Plaza|14.5335|120.9908|Pasay
+Eastfield Center|14.5345|120.9897|Pasay
+Security Bank|14.5353|120.9888|Pasay
+Bantayog ng mga Desaparecidos|14.5311|120.9937|Parañaque
+UnionBank|14.5349|120.9894|Pasay
+Jidong|14.5383|120.9855|Pasay
+Sail Residences|14.5377|120.9862|Pasay
+PSBank (EDSA Extension Macapagal)|14.5365|120.9876|Pasay
+PNB|14.5350|120.9894|Pasay
+DD Meridian Tower|14.5357|120.9886|Pasay
+Four-Ecom Center|14.5409|120.9826|Pasay
+In Memory of the Victims of Military Sexual Slavery and Violence During the Second World War|14.5312|120.9940|Parañaque
+DoubleDragon Center West|14.5350|120.9896|Pasay
+Sinirangan|14.5315|120.9937|Parañaque
+Mister Wang|14.5366|120.9879|Pasay
+Baby Company Corporate Office|14.5397|120.9844|Pasay
+RCBC|14.5354|120.9894|Pasay
+Kenny Rogers Roasters|14.5366|120.9881|Pasay
+Chinabank (Macapagal Ave. - Doubledragon)|14.5355|120.9894|Pasay
+Metro Cafe|14.5366|120.9882|Pasay
+BPI (Macapagal Meridian Park)|14.5356|120.9894|Pasay
+Ossuary|14.5319|120.9938|Parañaque
+Golden Noodle House|14.5392|120.9854|Pasay
+Candle Chapel|14.5312|120.9947|Parañaque
+BDO (Macapagal Blvd. - Meridian Park)|14.5358|120.9894|Pasay
+Met Live Mall|14.5372|120.9878|Pasay
+Shore 3 Residences|14.5390|120.9858|Pasay
+Dunkin'|14.5323|120.9936|Parañaque
+Farmacia Baclaran|14.5323|120.9936|Parañaque
+Skills Training Center|14.5320|120.9940|Parañaque
+Ecom Center Station 1|14.5413|120.9832|Pasay
+Filinvest Cyberzone Bay City|14.5346|120.9910|Pasay
+Yoshinoya|14.5360|120.9894|Pasay
+Mala|14.5369|120.9884|Pasay
+TRYP by Wyndham (Mall of Asia)|14.5421|120.9824|Pasay
+The Coffee Bean & Tea Leaf|14.5360|120.9895|Pasay
+The Marketplace|14.5372|120.9882|Pasay
+BDO (Baclaran - Redemptorist Road)|14.5323|120.9939|Parañaque
+Romantic Baboy|14.5360|120.9896|Pasay
+Smokees Fashion Center|14.5325|120.9937|Parañaque
+Li Garden Hot Pot Kitchen|14.5371|120.9884|Pasay
+Uncle John's|14.5356|120.9902|Pasay
+Max's Restaurant|14.5327|120.9936|Parañaque
+Watsons|14.5323|120.9941|Parañaque
+SM Retail Headquarters|14.5410|120.9840|Pasay
+Ramen Kuroda|14.5361|120.9897|Pasay
+One Esplanade|14.5423|120.9825|Pasay
+Kimono Ken|14.5373|120.9884|Pasay
+Persia Grill|14.5374|120.9883|Pasay
+BDO|14.5405|120.9847|Pasay
+Baclaran Church|14.5314|120.9953|Parañaque
+Ang Dating Daan Baclaran|14.5330|120.9935|Pasay
+I Love Milktea|14.5330|120.9935|Pasay
+Pancake House|14.5375|120.9883|Pasay
+Alfamart|14.5401|120.9853|Pasay
+Greenwich|14.5361|120.9900|Pasay
+Korea Soul Food|14.5376|120.9883|Pasay
+DD Meridian Park|14.5358|120.9904|Pasay
+Starbucks|14.5408|120.9846|Pasay
+Lawson|14.5378|120.9881|Pasay
+Jaro Pawnshop (Baclaran Branch 2)|14.5329|120.9938|Pasay
+Kape de la Cruz|14.5323|120.9945|Parañaque
+Red Ribbon|14.5323|120.9946|Parañaque
+DoubleDragon Plaza|14.5359|120.9905|Pasay
+Watsons|14.5410|120.9846|Pasay
+Grandma's Home Restaurant|14.5405|120.9852|Pasay
+Jollibee|14.5362|120.9902|Pasay
+McDonald's Bluebay Walk|14.5371|120.9892|Pasay
+New World Diagnostics|14.5411|120.9846|Pasay
+BPI (Baclaran - Roxas Boulevard)|14.5332|120.9938|Pasay
+Uniqlo|14.5370|120.9894|Pasay
+Starbucks|14.5373|120.9891|Pasay
+Seaside Boulevard|14.5424|120.9832|Pasay
+KFC|14.5336|120.9935|Pasay
+Chowking|14.5362|120.9905|Pasay
+Cebu's Best Rico's Lechon|14.5375|120.9891|Pasay
+Double Dragon Plaza|14.5364|120.9904|Pasay
+Merrymart Grocery|14.5358|120.9911|Pasay
+J&T Express|14.5338|120.9935|Pasay
+The Food Club|14.5375|120.9892|Pasay
+Mitsuyado sei-men|14.5372|120.9896|Pasay
+UCC Clockwork|14.5373|120.9895|Pasay
+Yamato Bakery Café|14.5373|120.9895|Pasay
+Burger King|14.5363|120.9907|Pasay
+RCBC (Roxas Boulevard)|14.5339|120.9935|Pasay
+McDonald's Roxas Boulevard|14.5340|120.9934|Pasay
+Mang Inasal|14.5363|120.9908|Pasay
+Crisostomo|14.5373|120.9898|Pasay
+Lieutenant Artiaga|14.5330|120.9948|Parañaque
+Shore Residences|14.5412|120.9853|Pasay
+McDonald's|14.5341|120.9936|Pasay
+Chef & Brewer|14.5374|120.9899|Pasay
+Tambunting|14.5331|120.9949|Pasay
+J.Co|14.5364|120.9911|Pasay
+7-Eleven|14.5361|120.9915|Pasay
+Sichu Malatang|14.5362|120.9914|Pasay
+The Orange Bucket|14.5364|120.9912|Pasay
+Conti's|14.5374|120.9901|Pasay
+Metrobank (Seafront)|14.5345|120.9935|Pasay
+Highlands Coffee|14.5364|120.9913|Pasay
+Outback Steakhouse|14.5374|120.9902|Pasay
+Blue Bay Walk|14.5379|120.9897|Pasay
+Bonchon Chicken|14.5382|120.9894|Pasay
+Hot Star|14.5383|120.9894|Pasay
+Yellow Cab Pizza|14.5377|120.9901|Pasay
+Metrobank (Metropolitan Park - Roxas Blvd.)|14.5371|120.9908|Pasay
+Bayani & Pag-asa|14.5365|120.9915|Pasay
+Roxas Seafront Garden|14.5343|120.9941|Pasay
+Arabian Grill|14.5363|120.9918|Pasay
+Subway|14.5364|120.9917|Pasay
+Army Navy|14.5384|120.9894|Pasay
+Dairy Queen|14.5385|120.9893|Pasay
+Pickup Coffee|14.5380|120.9899|Pasay
+Panda Express|14.5365|120.9917|Pasay
+Quick Stop|14.5386|120.9893|Pasay
+Red Ribbon|14.5351|120.9934|Pasay
+DoubleDragon Center East|14.5365|120.9918|Pasay
+Baclaran (Heritage) Terminal|14.5355|120.9930|Pasay
+Shore 2 Residences|14.5413|120.9864|Pasay
+Roxas Boulevard|14.5369|120.9916|Pasay
+Asia United Bank|14.5366|120.9920|Pasay
+Bank of Commerce (Roxas Boulevard)|14.5354|120.9934|Pasay
+Bardolci|14.5378|120.9907|Pasay
+Kung Fu Chili Bluebay|14.5373|120.9914|Pasay
+Manila Tytana College|14.5400|120.9883|Pasay
+Papa John's|14.5392|120.9893|Pasay
+EDSA-Roxas Boulevard (northbound|14.5370|120.9919|Pasay
+Mercury Drug|14.5373|120.9916|Pasay
+88 Courtyard Hotel|14.5357|120.9936|Pasay
+Courtyard Hotel|14.5359|120.9934|Pasay
+Met Park Sports Center|14.5379|120.9914|Pasay
+Spicypot Restaurant 香鍋里辣|14.5351|120.9947|Pasay
+Bagong Milenyo Plaza|14.5345|120.9954|Pasay
+Liza's Lodge|14.5358|120.9939|Pasay
+Road Hero 马路英雄|14.5351|120.9948|Pasay
+Victoria Court|14.5356|120.9943|Pasay
+Chang Shui Grocery 长水超市|14.5351|120.9949|Pasay
+Smilething Bakery|14.5351|120.9949|Pasay
+Tongdetang Medical Laboratory Medical Center|14.5351|120.9951|Pasay
+Metropolitan Technological Park Building|14.5385|120.9912|Pasay
+Ai Mai Minimart 爱買超市|14.5351|120.9952|Pasay
+BAGPI Garment Center|14.5348|120.9959|Pasay
+The Heritage Hotel|14.5367|120.9938|Pasay
+SixSenses Residences|14.5404|120.9896|Pasay
+Rivera Cafe|14.5368|120.9938|Pasay
+Mitsubishi Motors|14.5375|120.9932|Pasay
+Robinsons Supermarket|14.5409|120.9893|Pasay
+Dunkin'|14.5426|120.9874|Pasay
+Subway|14.5426|120.9874|Pasay
+Diamond Inn|14.5359|120.9952|Pasay
+Petron|14.5425|120.9876|Pasay
+Shell Select|14.5376|120.9934|Pasay
+Petron Gasul|14.5427|120.9877|Pasay
+GSIS Complex|14.5466|120.9832|Pasay
+Senate of the Philippines|14.5466|120.9832|Pasay
+San Juan De Dios College|14.5379|120.9934|Pasay
+Shell|14.5377|120.9937|Pasay
+Bay Garden|14.5413|120.9896|Pasay
+Copacabana Apartment Hotel|14.5370|120.9946|Pasay
+Metropolitan Park|14.5409|120.9905|Pasay
+San Juan de Dios Educational Foundation Inc. - Hospital|14.5386|120.9933|Pasay
+Barangay 77|14.5363|120.9960|Pasay
+Seaside Boulevard|14.5436|120.9877|Pasay
+Petron|14.5366|120.9960|Pasay
+Dampa sa Pasay|14.5453|120.9859|Pasay
+Barangay 75|14.5367|120.9959|Pasay
+Harrison|14.5374|120.9951|Pasay
+Hotel Sogo - EDSA Harrison Pasay|14.5368|120.9959|Pasay
+Le Pavillon|14.5413|120.9908|Pasay
+Metrobank|14.5407|120.9915|Pasay
+Trinity Restaurant|14.5451|120.9864|Pasay
+Bentaub Drugstore [small]|14.5384|120.9942|Pasay
+Sinta Court|14.5372|120.9956|Pasay
+7-Eleven|14.5408|120.9915|Pasay
+G-Squared|14.5449|120.9868|Pasay
+Madonna's Cuisine|14.5385|120.9943|Pasay
+Lopez Court|14.5393|120.9934|Pasay
+J's Squared Seafoods Restaurant|14.5449|120.9869|Pasay
+Landbank|14.5482|120.9833|Pasay
+Midas Hotel and Casino|14.5398|120.9931|Pasay
+Government Service Insurance System|14.5476|120.9841|Pasay
+GSIS Museo ng Sining|14.5474|120.9844|Pasay
+Seaside Macapagal|14.5453|120.9869|Pasay
+Heuying restaurant Seaside|14.5455|120.9868|Pasay
+Cebuana Lhuillier (Seaside)|14.5453|120.9872|Pasay
+PNB|14.5480|120.9842|Pasay
+Chinabank (Pasay - Roxas Boulevard)|14.5409|120.9925|Pasay
+Yakimix|14.5459|120.9868|Pasay
+Hong Kong Chef|14.5451|120.9879|Pasay
+Embassy of Japan|14.5405|120.9933|Pasay
+Cheng's Kitchenette|14.5468|120.9861|Pasay
+Metropark Mini Park|14.5425|120.9911|Pasay
+Traffic and Parking Management Office|14.5470|120.9859|Pasay
+Songdo-won+Jinmateu|14.5452|120.9880|Pasay
+Brothers Burger|14.5464|120.9867|Pasay
+Antel Seaview Towers|14.5410|120.9930|Pasay
+Sun Lok Seafood Restaurant|14.5470|120.9861|Pasay
+Diwata Pares Overload|14.5495|120.9832|Pasay
+Libertad Pumping Station|14.5446|120.9890|Pasay
+Lee's Korean Restaurant|14.5508|120.9819|Pasay
+Serbilis Center|14.5472|120.9861|Pasay
+Uncle John's|14.5471|120.9863|Pasay
+Roxas Boulevard Promenade - Light Park|14.5428|120.9914|Pasay
+Barangay 76|14.5459|120.9878|Pasay
+Immanuel Church|14.5478|120.9856|Pasay
+Hobbies of Asia|14.5472|120.9863|Pasay
+Amazing Show|14.5507|120.9823|Pasay
+Toyota Manila Bay|14.5436|120.9908|Pasay
+BPI (Pasay D. Macapagal Avenue)|14.5473|120.9865|Pasay
+Maru|14.5463|120.9878|Pasay
+Manila Film Center|14.5502|120.9833|Pasay
+Social Security System|14.5460|120.9884|Pasay
+Krispy Kreme|14.5442|120.9907|Pasay
+PNB Main Office|14.5477|120.9867|Pasay
+7-Eleven|14.5443|120.9907|Pasay
+Bacham Eatery|14.5465|120.9883|Pasay
+Petron|14.5443|120.9909|Pasay
+Petron Gasul|14.5445|120.9909|Pasay
+Sofitel Philippine Plaza|14.5525|120.9819|Pasay
+Shell|14.5503|120.9845|Pasay
+Seafront Compound|14.5444|120.9918|Pasay
+U.S. Department of Veterans Affairs - Manila Regional Office|14.5440|120.9924|Pasay
+CW Home Depot|14.5502|120.9854|Pasay
+Arnaiz Avenue|14.5453|120.9911|Pasay
+Suzuki Auto Manila Bay|14.5500|120.9859|Pasay
+Kia Manila Bay|14.5501|120.9859|Pasay
+PNB Financial Complex|14.5485|120.9878|Pasay
+Dialysis Center|14.5452|120.9917|Pasay
+The Lord's Grace Clinic|14.5510|120.9850|Pasay
+BPI (Pasay D. Macapagal Avenue)|14.5504|120.9857|Pasay
+Hyundai Manila Sales By Team NPG|14.5503|120.9859|Pasay
+Cuneta Astrodome|14.5449|120.9922|Pasay
+Jollibee|14.5454|120.9917|Pasay
+Department of Trade and Industry|14.5453|120.9919|Pasay
+World Trade Center (Macapagal)|14.5503|120.9861|Pasay
+Taste of Joy|14.5456|120.9916|Pasay
+Myjake|14.5457|120.9915|Pasay
+Jollibee|14.5507|120.9857|Pasay
+Landbank|14.5454|120.9919|Pasay
+Macapagal–World Trade Center|14.5511|120.9853|Pasay
+Roxas Strip Building|14.5454|120.9920|Pasay
+Asian Institute of Maritime Studies|14.5457|120.9917|Pasay
+Securities and Exchange Commission|14.5533|120.9829|Pasay
+Pasay Post Office|14.5452|120.9924|Pasay
+Pag-Ibig Fund|14.5455|120.9921|Pasay
+Julie's|14.5457|120.9919|Pasay
+Professional Regulation Commission (PICC)|14.5534|120.9830|Pasay
+Barangay 76 Barangay Hall|14.5453|120.9926|Pasay
+PICC Foodcourt|14.5536|120.9832|Pasay
+Secretariat Building|14.5538|120.9832|Pasay
+Pasay City Sports Complex|14.5454|120.9931|Pasay
+Kulitz Food House|14.5459|120.9926|Pasay
+Department of Foreign Affairs|14.5468|120.9917|Pasay
+Delegation Building|14.5544|120.9829|Pasay
+Benjas Grillhauz|14.5460|120.9927|Pasay
+Pasay City Impounding Area|14.5484|120.9900|Pasay
+Halina Motel|14.5458|120.9933|Pasay
+Ship Port Restaurant|14.5476|120.9913|Pasay
+WTCMM Main Building|14.5509|120.9875|Pasay
+World Trade Center Metro Manila|14.5511|120.9873|Pasay
+Center for International Trade Expositions and Missions|14.5493|120.9895|Pasay
+CCP Complex|14.5518|120.9869|Pasay
+William Square Townhouse|14.5477|120.9918|Pasay
+Plenary Hall|14.5546|120.9840|Pasay
+Sunset View Towers|14.5484|120.9913|Pasay
+World Trade Center (Gil Puyat)|14.5519|120.9875|Pasay
+Philippine International Convention Center|14.5538|120.9854|Pasay
+Legend Seafood Restaurant|14.5531|120.9863|Pasay
+Philippine Trade Training Center|14.5512|120.9886|Pasay
+Barangay 13|14.5482|120.9922|Pasay
+Hotel Sogo|14.5492|120.9911|Pasay
+PICC Complex|14.5545|120.9852|Pasay
+Pasay Buddhism Temple|14.5484|120.9925|Pasay
+Techo Development Center of the Philippines, Inc.|14.5475|120.9936|Pasay
+City Service Corporation|14.5484|120.9928|Pasay
+Yamaha|14.5479|120.9935|Pasay
+The Pergola, Venue for Special Events|14.5528|120.9879|Pasay
+Church of God|14.5481|120.9934|Pasay
+Aliw Inn|14.5478|120.9938|Pasay
+Maria Montessori Children's School Foundation|14.5485|120.9930|Pasay
+Harrison & Williams|14.5482|120.9934|Pasay
+La Pergola Verde, Events Pavilion|14.5532|120.9877|Pasay
+Philippine Economic Zones Authority|14.5511|120.9903|Pasay
+Shabushabuko|14.5513|120.9901|Pasay
+Car Land Auto Exchange|14.5530|120.9883|Pasay
+Barangay 12|14.5506|120.9912|Pasay
+Boom Na Boom|14.5539|120.9874|Pasay
+Nha Hang Dai Viet|14.5516|120.9901|Pasay
+YCL Building|14.5516|120.9901|Pasay
+Petron|14.5493|120.9929|Pasay
+Star City|14.5555|120.9857|Pasay
+The Singing Cooks & Waiters|14.5518|120.9901|Pasay
+Barangay 11|14.5513|120.9909|Pasay
+Splash Philippines Incorporated|14.5520|120.9901|Pasay
+Camel|14.5522|120.9899|Pasay
+Akira Ramen|14.5521|120.9901|Pasay
+Quickshop Convenience Store|14.5522|120.9900|Pasay
+Upside Down Museum|14.5546|120.9873|Pasay
+Tritan Trading Corporation|14.5501|120.9927|Pasay
+Barangay 32|14.5477|120.9956|Pasay
+Promax Trading Corporation|14.5502|120.9927|Pasay
+Barangay 27|14.5490|120.9941|Pasay
+Shell|14.5522|120.9904|Pasay
+Crocodile Park Manila|14.5542|120.9881|Pasay
+Barangay 26|14.5497|120.9934|Pasay
+Networld Hotel|14.5530|120.9897|Pasay
+Gil Puyat Overpass|14.5524|120.9904|Pasay
+Barangay 26 Zone 4 Hall|14.5503|120.9929|Pasay
+Pan de Manila|14.5523|120.9906|Pasay
+Harrison & M. Santos|14.5505|120.9927|Pasay
+Crocoseum|14.5544|120.9882|Pasay
+Barangay 10|14.5522|120.9908|Pasay
+The Church in Pasay|14.5479|120.9958|Pasay
+Barangay 31|14.5485|120.9952|Pasay
+BDO (Gil Puyat - Harrison)|14.5524|120.9908|Pasay
+Freya Store|14.5480|120.9960|Pasay
+Seacrest Commercial Building|14.5524|120.9910|Pasay
+Barangay 9|14.5528|120.9906|Pasay
+Marinduqueño's Litson Manok|14.5513|120.9924|Pasay
+Pasay Volunteers Fire Brigade|14.5486|120.9956|Pasay
+Tiger LPG|14.5538|120.9896|Pasay
+Han Eatery|14.5516|120.9923|Pasay
+Barangay 30|14.5495|120.9948|Pasay
+Julievic Trading|14.5486|120.9959|Pasay
+Barangay 8|14.5535|120.9903|Pasay
+Barangay 40|14.5488|120.9958|Pasay
+Champion Daily Mart|14.5488|120.9959|Pasay
+Lau-Ren Hardware|14.5519|120.9923|Pasay
+Happy Home Grocery|14.5489|120.9958|Pasay
+Lakan Roasters|14.5520|120.9922|Pasay
+Marina Hotel|14.5539|120.9901|Pasay
+Our Lady of Sorrows Church|14.5516|120.9928|Pasay
+BPI (Harrison-Buendia)|14.5526|120.9917|Pasay
+Manahan|14.5492|120.9957|Pasay
+Hoon Korean Grocery|14.5493|120.9956|Pasay
+Iglesia Ni Cristo, Lokal ng Proprietarios|14.5501|120.9947|Pasay
+Manhattan Lodge|14.5540|120.9903|Pasay
+Harrison & Villaruel|14.5524|120.9922|Pasay
+Unioil|14.5532|120.9913|Pasay
+Savory Restaurant|14.5526|120.9920|Pasay
+McDonald's|14.5520|120.9927|Pasay
+Gil Puyat & Harrison|14.5528|120.9918|Pasay
+Barangay 7|14.5541|120.9903|Pasay
+Angel's Burger|14.5523|120.9924|Pasay
+Landbank|14.5525|120.9922|Pasay
+Somnia Convenience Store|14.5527|120.9920|Pasay
+Barangay 25|14.5515|120.9934|Pasay
+Burger Machine|14.5528|120.9919|Pasay
+Bonanza Timbao Building|14.5493|120.9960|Pasay
+Dunkin'|14.5532|120.9915|Pasay
+Cartimar Fresh Food Plaza|14.5499|120.9954|Pasay
+Barangay 29|14.5506|120.9946|Pasay
+Cebuana Lhuillier|14.5532|120.9917|Pasay
+Overseas Workers Welfare Administration|14.5526|120.9924|Pasay
+Bulwagang Pambarangay ng Barangay 39|14.5490|120.9966|Pasay
+Sangguniang Pambarangay ng Barangay 39|14.5490|120.9966|Pasay
+Metrobank (F.B. Harrison - Gil Puyat Ave.)|14.5528|120.9922|Pasay
+Blessed Elena Academy|14.5517|120.9935|Pasay
+Barangay 6|14.5549|120.9898|Pasay
+7-Eleven|14.5533|120.9918|Pasay
+Sorosa Building|14.5533|120.9918|Pasay
+Zhendong Food|14.5498|120.9959|Pasay
+Tony's Store|14.5501|120.9956|Pasay
+M Lhuillier|14.5534|120.9918|Pasay
+Mercury Drug|14.5529|120.9924|Pasay
+Ricdor Grains|14.5502|120.9956|Pasay
+Lots'a Pizza|14.5533|120.9920|Pasay
+Andok's|14.5535|120.9918|Pasay
+CMC Rice Center and General Merchandise|14.5502|120.9957|Pasay
+Palawan Pawnshop|14.5535|120.9919|Pasay
+Harrison & Gil Puyat|14.5536|120.9918|Pasay
+Barangay 24|14.5527|120.9929|Pasay
+Grand Cross Commercial|14.5530|120.9926|Pasay
+Strike Zone Sports Complex|14.5563|120.9888|Pasay
+Benrosi III Residences|14.5540|120.9915|Pasay
+Barangay 5|14.5555|120.9898|Pasay
+King Jian Bao Restaurant|14.5537|120.9919|Pasay
+Cartimar Market|14.5501|120.9961|Pasay
+Wantunan ni Pompom (Fb Harrison Pasay)|14.5537|120.9920|Pasay
+Selah Pods Hotel|14.5538|120.9919|Pasay
+Bulwagang Pambarangay ng № 38 Zone 5|14.5508|120.9954|Pasay
+Cartimar|14.5509|120.9953|Pasay
+Alfamart|14.5541|120.9916|Pasay
+EastWest Unibank|14.5531|120.9929|Pasay
+Barangay 39|14.5501|120.9964|Pasay
+7-Eleven|14.5512|120.9952|Pasay
+Revenue District Office No. 51|14.5531|120.9931|Pasay
+Barangay 7 Zone 2 Hall|14.5546|120.9914|Pasay
+Tramway Bayview Buffet|14.5572|120.9885|Pasay
+Barangay 4|14.5563|120.9896|Pasay
+Petron|14.5545|120.9917|Pasay
+Dali|14.5514|120.9954|Pasay
+Barangay 28|14.5523|120.9944|Pasay
+Uncle John's|14.5550|120.9913|Pasay
+Barangay 2|14.5571|120.9889|Pasay
+Miraculous Medal Hospital|14.5536|120.9930|Pasay
+Cartimar Food Court|14.5506|120.9965|Pasay
+Cartimar Shopping Center|14.5507|120.9964|Pasay
+Barangay 3|14.5569|120.9892|Pasay
+Philippine Pasay Chung Hua Academy|14.5497|120.9976|Pasay
+Barangay 59|14.5491|120.9983|Pasay
+Immanuel Beautiful Church|14.5524|120.9949|Pasay
+Barangay 23|14.5537|120.9934|Pasay
+Trebbia Building|14.5499|120.9979|Pasay
+Barangay 38|14.5508|120.9969|Pasay
+DLTBCo Pasay City Bus Depot|14.5538|120.9935|Pasay
+Blackstone Cafe & Bakery|14.5531|120.9944|Pasay
+Savemore|14.5508|120.9973|Pasay
+Leveriza|14.5530|120.9948|Pasay
+Pao Ong Kong Chinese Temple|14.5562|120.9911|Pasay
+Philippine Business Bank|14.5504|120.9979|Pasay
+Barangay 21|14.5548|120.9928|Pasay
+LBC|14.5505|120.9978|Pasay
+Barangay 2 Hall|14.5575|120.9897|Pasay
+Harrison & Sinciego|14.5565|120.9909|Pasay
+Barangay 20|14.5556|120.9921|Pasay
+McDonald's|14.5508|120.9977|Pasay
+Molding Future Innovator Technological Institute|14.5505|120.9981|Pasay
+A. Bonifacio Elementary School|14.5539|120.9942|Pasay
+Kamakura Japanese Restaurant|14.5533|120.9950|Pasay
+Motortrade|14.5510|120.9977|Pasay
+PNB (Taft Cartimar)|14.5511|120.9977|Pasay
+Galaxi|14.5570|120.9909|Pasay
+Barangay 16|14.5572|120.9907|Pasay
+Cartimar|14.5511|120.9978|Pasay
+RCBC|14.5534|120.9952|Pasay
+Asia United Bank|14.5539|120.9949|Pasay
+Jollibee (Trium Square)|14.5539|120.9949|Pasay
+Barangay 58|14.5501|120.9994|Pasay
+Gil Puyat & Leveriza|14.5538|120.9951|Pasay
+Barangay 18|14.5568|120.9917|Pasay
+Hotel Ava (Buendia)|14.5526|120.9967|Pasay
+Haven’s Brew Leveriza|14.5545|120.9945|Pasay
+Metrobank|14.5521|120.9974|Pasay
+Ceres Transport|14.5515|120.9981|Pasay
+Trium Square 駿昇廣場|14.5541|120.9951|Pasay
+South Eastern College|14.5504|120.9995|Pasay
+BPI (Pasay - Buendia)|14.5541|120.9952|Pasay
+TGP|14.5535|120.9960|Pasay
+Lugawan Sa Tejeros|14.5550|120.9943|Pasay
+Palawan Pawnshop|14.5551|120.9944|Pasay
+Pasay City Academy|14.5541|120.9956|Pasay
+Grand Star|14.5523|120.9977|Pasay
+Shell Canvas|14.5540|120.9958|Pasay
+JAM Liner|14.5524|120.9977|Pasay
+Legend Mansion Condo|14.5550|120.9947|Pasay
+Barangay 55|14.5514|120.9989|Pasay
+Barangay 60|14.5502|121.0003|Pasay
+Deluna Bakery|14.5554|120.9943|Pasay
+Barangay 22|14.5560|120.9937|Pasay
+South Western College|14.5506|121.0002|Pasay
+Pasay City Seventh-day Adventist Church|14.5543|120.9959|Pasay
+Mang Inasal|14.5532|120.9972|Pasay
+Barangay 37 Zone 3|14.5551|120.9950|Pasay
+Barangay 37|14.5546|120.9956|Pasay
+Sogo Hotel Buendia|14.5534|120.9970|Pasay
+Mely Meds Drugstore|14.5559|120.9941|Pasay
+Atrium Hotel|14.5535|120.9969|Pasay
+Manila Adventist Medical Center Church|14.5553|120.9949|Pasay
+McDonald's (Pasay Donada)|14.5541|120.9963|Pasay
+Page Condominium|14.5505|121.0005|Pasay
+Lucban|14.5519|120.9989|Pasay
+Gotamco Elementary School|14.5575|120.9924|Pasay
+Manila Adventist College|14.5555|120.9950|Pasay
+NPUC Park|14.5549|120.9957|Pasay
+JAC/JAM Buendia Terminal|14.5543|120.9966|Pasay
+Barangay 19, Zone 2 Hall|14.5569|120.9937|Pasay
+Barangay 35|14.5558|120.9950|Pasay
+Barangay 56|14.5511|121.0005|Pasay
+Jose Abad Santos High School|14.5532|120.9981|Pasay
+Maranatha Christian Academy|14.5514|121.0002|Pasay
+Adventist Medical Center Manila|14.5558|120.9951|Pasay
+Barangay 19|14.5573|120.9934|Pasay
+DLTBCo Buendia/Gil Puyat Terminal (Pasay/Gil Puyat)|14.5545|120.9967|Pasay
+LRT Buendia Station|14.5541|120.9972|Pasay
+Gil Puyat|14.5542|120.9971|Pasay
+Keysi Minimart|14.5579|120.9928|Pasay
+Ceres/Gold Star Pasay Terminal|14.5536|120.9978|Pasay
+Potato Corner|14.5544|120.9969|Pasay
+Jollibee|14.5538|120.9976|Pasay
+Arnaiz Sub-station|14.5543|120.9971|Pasay
+Kathleen Place|14.5528|120.9989|Pasay
+AMCM Hospital Building|14.5560|120.9953|Pasay
+Barangay 61|14.5512|121.0009|Pasay
+Kevs Tapsilogan|14.5580|120.9931|Pasay
+Mandarin Court|14.5531|120.9988|Pasay
+7-Eleven|14.5539|120.9979|Pasay
+Barangay 49|14.5535|120.9984|Pasay
+Barangay 52|14.5530|120.9990|Pasay
+BBL Trans - Buendia Terminal|14.5550|120.9967|Pasay
+G. Villanueva Street|14.5523|120.9999|Pasay
+One Buendia Food Plaza|14.5544|120.9975|Pasay
+Vibe Hotel Buendia|14.5546|120.9973|Pasay
+Wendy's|14.5540|120.9980|Pasay
+KS Residence|14.5555|120.9963|Pasay
+Barangay 17|14.5580|120.9934|Pasay
+Keysi Minimart Apartment|14.5581|120.9933|Pasay
+KFC|14.5539|120.9982|Pasay
+Philippine Law School|14.5558|120.9960|Pasay
+Pizza Hut|14.5540|120.9981|Pasay
+Mercury Drug|14.5549|120.9971|Pasay
+7-Eleven|14.5557|120.9962|Pasay
+Dunkin'|14.5550|120.9971|Pasay
+Barangay 34|14.5575|120.9943|Pasay
+Wabbit Motor Trading|14.5552|120.9970|Pasay
+BDO|14.5541|120.9983|Pasay
+ALPS Pasay Terminal|14.5556|120.9966|Pasay
+LRT Gil Puyat Station|14.5553|120.9970|Pasay
+Mixue|14.5553|120.9970|Pasay
+NCR - Provincial Statistical Office V|14.5541|120.9984|Pasay
+King Sejong Institute|14.5558|120.9965|Pasay
+Chowking|14.5546|120.9979|Pasay
+Barangay 53|14.5529|120.9999|Pasay
+RK Manufacturing|14.5585|120.9934|Pasay
+The Salvation Army|14.5558|120.9966|Pasay
+Forum Hardware Electrical|14.5546|120.9980|Pasay
+Gil Puyat & F. Fernando|14.5542|120.9985|Pasay
+South Tower|14.5562|120.9962|Pasay
+Epifanio delos Santos Elementary School|14.5522|121.0009|Pasay
+La Verti Residences|14.5564|120.9961|Pasay
+Pasay City North High School – Tramo Campus – Annex|14.5521|121.0012|Pasay
+Barangay 36|14.5568|120.9958|Pasay
+Nemoto Restaurant|14.5546|120.9984|Pasay
+Barangay 57|14.5517|121.0018|Pasay
+North Tower|14.5568|120.9959|Pasay
+Barangay 47|14.5553|120.9977|Pasay
+Barangay 54|14.5524|121.0012|Pasay
+72nd Avenue|14.5566|120.9964|Pasay
+Barangay 57 Hall|14.5519|121.0020|Pasay
+Gil Puyat & Dominga|14.5547|120.9988|Pasay
+Shui Shui Store|14.5568|120.9964|Pasay
+The Church of Jesus Christ of Latter-day Saints|14.5575|120.9956|Pasay
+Julie’s|14.5548|120.9988|Pasay
+Microlab|14.5536|121.0002|Pasay
+Goldland Villa|14.5555|120.9980|Pasay
+Metrobank (Taft Avenue)|14.5570|120.9963|Pasay
+Barangay 50|14.5542|120.9996|Pasay
+Uncle John's (Dominga)|14.5549|120.9989|Pasay
+Security Bank|14.5569|120.9966|Pasay
+Binalot|14.5576|120.9960|Pasay
+Pan De Manila|14.5576|120.9960|Pasay
+Barangay 62|14.5520|121.0026|Makati
+Barangay 33|14.5591|120.9944|Pasay
+LoveYourself Uni|14.5549|120.9994|Pasay
+Bernabe Elementary School|14.5568|120.9972|Pasay
+Centro Buendia|14.5550|120.9993|Pasay
+Barangay 51|14.5540|121.0005|Pasay
+Barangay 65|14.5516|121.0034|Makati
+DBP|14.5550|120.9996|Pasay
+Angel's Burger|14.5550|120.9997|Pasay
+Philtrust Bank|14.5578|120.9965|Pasay
+Imarflex Sales and Service Center|14.5550|120.9998|Pasay
+Tripa de Gallina Linear Park|14.5528|121.0024|Makati
+Barangay 48|14.5556|120.9992|Pasay
+South City Express Pasay Terminal|14.5587|120.9958|Pasay
+Arellano University|14.5590|120.9955|Pasay
+Barangay 44 Hall|14.5569|120.9980|Pasay
+Fern Apartments|14.5572|120.9978|Pasay
+Taftsihan Carenderia|14.5586|120.9962|Pasay
+San Isidro Parish Church|14.5582|120.9967|Pasay
+Barangay 41|14.5588|120.9961|Pasay
+Jomarian Hardware & Construction Supply|14.5588|120.9962|Pasay
+Barangay 44|14.5579|120.9973|Pasay
+Nutex Equipment Supply|14.5591|120.9962|Pasay
+San Isidro Catholic School|14.5583|120.9972|Pasay
+Unnie Cafe|14.5593|120.9961|Pasay
+Florete Building|14.5543|121.0021|Makati
+Zen rooms|14.5553|121.0010|Makati
+Eun Mart|14.5577|120.9983|Pasay
+Motorista Motors|14.5551|121.0015|Makati
+San Isidro Bantay Bayan Outpost|14.5521|121.0051|Makati
+Monaco Garden Tower|14.5577|120.9986|Pasay
+Cooperative Rural Bank of Bulacan|14.5554|121.0013|Makati
+Asia Pacific Medical and Diagnostic Services Inc.|14.5536|121.0034|Makati
+Dian Street cor. Edison Street Mini Play Park|14.5525|121.0048|Makati
+Jap Residences|14.5587|120.9977|Pasay
+Shell|14.5527|121.0047|Makati
+Barangay 45|14.5582|120.9984|Pasay
+The Aston Place|14.5582|120.9984|Pasay
+Buendia Food by the Court|14.5551|121.0021|Makati
+Bautista|14.5553|121.0019|Makati
+Vizard Building|14.5556|121.0016|Makati
+Barangay 46|14.5574|120.9996|Pasay
+Bautista Street|14.5549|121.0027|Makati
+Suzuki Auto Makati|14.5551|121.0025|Makati
+Jollibee|14.5557|121.0019|Makati
+Barangay 42|14.5595|120.9977|Pasay
+Wheeltek|14.5551|121.0029|Makati
+China Bank Savings (Gil Puyat Avenue - Bautista)|14.5557|121.0023|Makati
+Landbank (Bautista - Palanan)|14.5557|121.0024|Makati
+Max Power|14.5558|121.0026|Makati
+Herald Suites Solana|14.5550|121.0036|Makati
+Kokorro Curry|14.5563|121.0021|Makati
+Parilya Ihaw-ihaw|14.5563|121.0021|Makati
+W Tramo Residences|14.5591|120.9989|Pasay
+J. Morales Building|14.5524|121.0069|Makati
+Opera Haus|14.5569|121.0017|Makati
+Security Bank|14.5557|121.0031|Makati
+San Isidro|14.5538|121.0055|Makati
+Kart Plaza|14.5559|121.0032|Makati
+Salud!|14.5574|121.0015|Makati
+Bank of Makati|14.5558|121.0034|Makati
+EastWest Unibank (Gil Puyat Avenue)|14.5560|121.0033|Makati
+Petron|14.5558|121.0036|Makati
+Dian|14.5560|121.0034|Makati
+Wisma Cyberhub|14.5561|121.0033|Makati
+Finlandia Townhomes|14.5555|121.0040|Makati
+BYD Makati|14.5559|121.0039|Makati
+Mercury Drug|14.5562|121.0038|Makati
+BDO (Dian-Gil Puyat)|14.5559|121.0042|Makati
+Bethany Baptist Church|14.5565|121.0036|Makati
+Bethany Baptist Church Educational Ministries Foundation, Inc.|14.5565|121.0038|Makati
+Ergo Contracts|14.5527|121.0083|Makati
+PNB|14.5560|121.0045|Makati
+BPI|14.5560|121.0046|Makati
+Lawson|14.5568|121.0037|Makati
+St. Mary of The Woods School|14.5544|121.0066|Makati
+Metro Bakers, Inc.|14.5528|121.0087|Makati
+Nida's Store & Eatery|14.5593|121.0012|Makati
+Pondok Rasa Kitchen|14.5578|121.0030|Makati
+McDonald's|14.5566|121.0045|Makati
+Vito|14.5560|121.0052|Makati
+Motortrade|14.5564|121.0049|Makati
+Oishi Bachoi|14.5561|121.0054|Makati
+Shakey's|14.5567|121.0048|Makati
+San Isidro Barangay Hall|14.5544|121.0075|Makati
+AllenOne|14.5565|121.0051|Makati
+Big Guys Pizza|14.5565|121.0051|Makati
+Three House|14.5580|121.0034|Makati
+JM Profreeze|14.5535|121.0087|Makati
+Chinabank (Gil Puyat Avenue)|14.5567|121.0050|Makati
+Robina House|14.5562|121.0056|Makati
+Uncle John's|14.5580|121.0036|Makati
+8680 Coffee|14.5562|121.0057|Makati
+Holy Family Parish|14.5544|121.0078|Makati
+San Isidro National High School|14.5555|121.0067|Makati
+Fillmore|14.5568|121.0053|Makati
+Solid Steel Machinery & Tools Inc.|14.5569|121.0053|Makati
+Queenbank|14.5567|121.0056|Makati
+Health Port|14.5589|121.0031|Makati
+Iglesia Ni Cristo-Locale of Makati|14.5607|121.0011|Makati
+Comprehensive Pulmonary Clinic|14.5565|121.0060|Makati
+Batangas|14.5564|121.0063|Makati
+Jamaican|14.5573|121.0055|Makati
+Amber|14.5574|121.0054|Makati
+Palanan Elementary School|14.5607|121.0016|Makati
+L-mansion|14.5596|121.0029|Makati
+J. M. Compound|14.5550|121.0084|Makati
+SM Hypermarket|14.5562|121.0074|Makati
+Ultimate Liempo|14.5576|121.0058|Makati
+UniOil|14.5571|121.0064|Makati
+Burger King|14.5574|121.0061|Makati
+KFC|14.5579|121.0057|Makati
+Dunkin'|14.5572|121.0066|Makati
+Maxfill|14.5572|121.0067|Makati
+Bryan Condominium|14.5600|121.0037|Makati
+Pan de Manila|14.5566|121.0077|Makati
+TGP|14.5580|121.0061|Makati
+Mercury Drug|14.5584|121.0057|Makati
+Cebuana Lhuillier|14.5616|121.0020|Makati
+North Park|14.5567|121.0077|Makati
+Anytime Fitness|14.5591|121.0050|Makati
+BDO|14.5569|121.0076|Makati
+Petron|14.5577|121.0067|Makati
+Cash & Carry Supermarket|14.5585|121.0058|Makati
+Innomoto Cycle Parts Inc.|14.5592|121.0050|Makati
+Belgian Waffle|14.5583|121.0061|Makati
+Asia United Bank|14.5577|121.0068|Makati
+Palanan|14.5616|121.0023|Makati
+Palanan Mini Park|14.5616|121.0023|Makati
+Palanan Public Market|14.5618|121.0021|Makati
+Osmeña Highway|14.5575|121.0071|Makati
+Jollibee|14.5588|121.0057|Makati
+TGP|14.5619|121.0021|Makati
+Konz Body Kits|14.5594|121.0051|Makati
+Red Ribbon Bakeshop|14.5588|121.0058|Makati
+Yellow Cab|14.5588|121.0058|Makati
+Dela Rosa|14.5565|121.0085|Makati
+Tambunting|14.5618|121.0024|Makati
+Luk Yuen|14.5588|121.0059|Makati
+The Sandwhich Guy|14.5584|121.0064|Makati
+Deli Bistro|14.5584|121.0065|Makati
+Ropali|14.5578|121.0072|Makati
+Street Ramen|14.5599|121.0048|Makati
+Pancake House|14.5589|121.0060|Makati
+Teriyaki Boy|14.5589|121.0060|Makati
+Cash & Carry Mall Cinema 2|14.5584|121.0066|Makati
+French Baker|14.5589|121.0061|Makati
+Lollipop Store|14.5603|121.0045|Makati
+Airo Suites Merkati|14.5604|121.0044|Makati
+Cash & Carry Mall Cinema 1|14.5585|121.0067|Makati
+Taters|14.5586|121.0066|Makati
+St. Joseph the Worker Parish Church|14.5617|121.0030|Makati
+BonChon|14.5590|121.0062|Makati
+Savory|14.5590|121.0062|Makati
+Makati Special Education Center|14.5552|121.0107|Makati
+Pio del Pilar|14.5546|121.0114|Makati
+Auntie Anne's|14.5591|121.0062|Makati
+7-Eleven|14.5604|121.0047|Makati
+BPI|14.5590|121.0064|Makati
+Kolesiyum ng Bayan|14.5547|121.0114|Makati
+Chatime|14.5591|121.0063|Makati
+Starbucks|14.5592|121.0062|Makati
+Buendia|14.5577|121.0080|Makati
+Palanan Sports Complex|14.5602|121.0051|Makati
+Makati Executive Tower IV|14.5577|121.0083|Makati
+Cityland Makati Executive Towers|14.5571|121.0090|Makati
+7-Eleven|14.5578|121.0082|Makati
+Lucky Rainbow|14.5563|121.0100|Makati
+Palanan Barangay Hall|14.5602|121.0055|Makati
+CEnAG Solar HQ|14.5570|121.0093|Makati
+Buendia Plaza|14.5583|121.0078|Makati
+Assumption College|14.5465|121.0216|Makati
+Sangguniang Pambarangay ng Palanan|14.5603|121.0056|Makati
+San Lorenzo Village|14.5479|121.0201|Makati
+Palanan Police Station|14.5603|121.0057|Makati
+Makati Executive Tower I - side pickup/drop-off point|14.5575|121.0090|Makati
+New Makati Central Fire Station|14.5584|121.0080|Makati
+Buendia Crossing|14.5583|121.0082|Makati
+Makati Fire Sub-station 5|14.5603|121.0059|Makati
+Louiessa's Bakery|14.5573|121.0094|Makati
+Artemis Place Makati|14.5620|121.0040|Makati
+Makati Central Police and Fire Stations|14.5585|121.0081|Makati
+Makati Central Police Station|14.5586|121.0080|Makati
+Arny Dading Peachy Peachy ng Malabon|14.5606|121.0057|Makati
+Chinese Supermarket|14.5590|121.0076|Makati
+7-Eleven (Dela Rosa)|14.5573|121.0096|Makati
+Palawan Pawnshop|14.5573|121.0096|Makati
+EastWest Unibank|14.5581|121.0087|Makati
+E. Jacinto Street|14.5563|121.0108|Makati
+Shell|14.5539|121.0136|Makati
+Makati Gospel Church|14.5576|121.0093|Makati
+WL Market House|14.5552|121.0122|Makati
+Metro9 Cafe|14.5589|121.0079|Makati
+BPI (Pasong Tamo)|14.5541|121.0136|Makati
+Uncle John's|14.5590|121.0080|Makati
+Church of God Makati|14.5548|121.0129|Makati
+P&L II Condominium|14.5616|121.0050|Makati
+Silver Rose General Merchandise|14.5574|121.0099|Makati
+Citiland Dela Rosa Condominium|14.5577|121.0096|Makati
+Heneral Pio del Pilar Elementary School I|14.5559|121.0117|Makati
+Pacifica Corporate Center|14.5545|121.0135|Makati
+Buendia Plant Nursery|14.5587|121.0087|Makati
+Robinsons Easymart|14.5583|121.0092|Makati
+Chicken Jay & Kitchenette|14.5550|121.0131|Makati
+Microcadd Institute Makati|14.5538|121.0147|Makati
+Cloty’s Balot Balot|14.5563|121.0118|Makati
+Little Tokyo|14.5539|121.0146|Makati
+AGS Plaza|14.5580|121.0099|Makati
+San Antonio National High School|14.5611|121.0063|Makati
+Thai Mookata|14.5581|121.0099|Makati
+San Isidro National High School Pio del Pilar Annex|14.5563|121.0120|Makati
+Goldilocks (Pasong Tamo)|14.5551|121.0134|Makati
+JTKC Center|14.5546|121.0140|Makati
+Big Brew|14.5614|121.0061|Makati
+UnionBank (JTKC Center)|14.5547|121.0139|Makati
+iAcademy|14.5597|121.0081|Makati
+AnHai Kitchen|14.5580|121.0101|Makati
+LeJi Cuisine|14.5581|121.0100|Makati
+Lim Food House|14.5581|121.0100|Makati
+Halcyon Marine HealthCare Systems|14.5575|121.0107|Makati
+CAEG Building|14.5576|121.0106|Makati
+BDO (Gil Puyat - TechZone)|14.5589|121.0091|Makati
+Mayapis Apartments|14.5615|121.0061|Makati
+Rodic's Diner|14.5600|121.0079|Makati
+Badminton Center|14.5601|121.0078|Makati
+Phines|14.5615|121.0062|Makati
+BPI (Buendia Malugay)|14.5592|121.0090|Makati
+Manam's Mama Nams|14.5508|121.0188|Makati
+Chan Ren Fang Restaurant|14.5601|121.0080|Makati
+TechZone|14.5592|121.0091|Makati
+Matrinco|14.5557|121.0132|Makati
+Pasia|14.5502|121.0196|Makati
+Omakase|14.5552|121.0138|Makati
+Department of Information and Communications Technology (Emerging Technology Group)|14.5592|121.0092|Makati
+BDO (A. Arnaiz-Paseo)|14.5508|121.0190|Makati
+Rufino|14.5555|121.0136|Makati
+The Rabbit Hole|14.5593|121.0092|Makati
+Landbank (Marvin Plaza)|14.5554|121.0138|Makati
+Creekside Mall|14.5548|121.0145|Makati
+APMC Building|14.5542|121.0152|Makati
+Merkado Supermarket (Avida Asten)|14.5600|121.0085|Makati
+Samgyupal|14.5552|121.0141|Makati
+Bon Banhmi|14.5626|121.0055|Makati
+Bôn Phó & Roll|14.5626|121.0055|Makati
+China Bank Savings|14.5559|121.0133|Makati
+Marvin Plaza|14.5553|121.0140|Makati
+Graceland Building|14.5560|121.0132|Makati
+Teppen|14.5554|121.0139|Makati
+Wagyu Manila|14.5555|121.0138|Makati
+Cirkulo|14.5508|121.0193|Makati
+Milky Way Café|14.5508|121.0193|Makati
+Dela Rosa Centre|14.5578|121.0112|Makati
+Washington Turning Point|14.5585|121.0104|Makati
+Spaces Hotel|14.5550|121.0145|Makati
+Azuthai|14.5508|121.0194|Makati
+Prito prito|14.5625|121.0058|Makati
+Rufino–Amorsolo|14.5552|121.0143|Makati
+Tsukiji|14.5508|121.0195|Makati
+Office of the Solicitor General|14.5545|121.0152|Makati
+Hecky's Kitchen|14.5626|121.0058|Makati
+BPI (Gamboa)|14.5541|121.0157|Makati
+7373 Garden Roofdeck|14.5609|121.0079|Makati
+Security Bank (Paseo de Roxas)|14.5514|121.0190|Makati
+Security Bank (Gamboa)|14.5535|121.0166|Makati
+Sterling Bank of Asia (Makati - Amorsolo)|14.5548|121.0151|Makati
+Bakeshop Tomono|14.5532|121.0170|Makati
+Ikkyu-An|14.5526|121.0178|Makati
+The Cheese Steak Shop|14.5508|121.0199|Makati
+The E Hotel Makati|14.5508|121.0199|Makati
+Lawson|14.5527|121.0177|Makati
+KL Executive Greenbelt (KLX)|14.5534|121.0169|Makati
+Greenbelt Radissons Condotel|14.5528|121.0176|Makati
+Nono's|14.5535|121.0168|Makati
+EastWest Unibank|14.5526|121.0179|Makati
+BDO (Legaspi Village - Gamboa)|14.5535|121.0169|Makati
+Luz Building|14.5536|121.0168|Makati
+China Bank (Legaspi Village - AIM)|14.5524|121.0182|Makati
+I'm Angus Steakhouse|14.5605|121.0088|Makati
+Citystate Savings bank|14.5507|121.0202|Makati
+Xception|14.5526|121.0180|Makati
+Metrobank (Legazpi Village - Makati)|14.5551|121.0151|Makati
+Landbank (Paseo de Roxas)|14.5517|121.0191|Makati
+Fernando C. Amorsolo|14.5554|121.0148|Makati
+Japanese Yakiniku Restaurant|14.5507|121.0203|Makati
+Makati Chef Garden Restaurant|14.5569|121.0131|Makati
+RCBC (Buendia)|14.5594|121.0102|Makati
+The Residences at Greenbelt|14.5512|121.0198|Makati
+BPI (Pasay Road)|14.5507|121.0204|Makati
+The Copa|14.5507|121.0204|Makati
+Coffee Project|14.5526|121.0182|Makati
+Chesa Bianca|14.5606|121.0089|Makati
+Grepalife|14.5594|121.0103|Makati
+Mile Long Building|14.5560|121.0143|Makati
+CAP Building|14.5555|121.0149|Makati
+China Bank (Legaspi Village - Amorsolo)|14.5555|121.0149|Makati
+One Greenbelt Hotel|14.5506|121.0206|Makati
+BDO (Asia Tower-Paseo)|14.5519|121.0191|Makati
+UnionBank|14.5507|121.0205|Makati
+First Midland Office Condominium Building|14.5533|121.0175|Makati
+Kawasaki|14.5579|121.0122|Makati
+Ang Dating Daan|14.5561|121.0143|Makati
+Greenbelt|14.5508|121.0205|Makati
+Bizu Kitchen Studio|14.5533|121.0176|Makati
+Caltex|14.5574|121.0129|Makati
+Kin Durian Convenience Store|14.5533|121.0177|Makati
+LSS Fastfood|14.5581|121.0122|Makati
+Privatization and Management Office|14.5532|121.0179|Makati
+Privatization and Management Office Building|14.5532|121.0179|Makati
+Gus|14.5515|121.0199|Makati
+Mile Long|14.5565|121.0141|Makati
+Avida Towers Makati West|14.5602|121.0098|Makati
+Asia United Bank (Herrera)|14.5559|121.0148|Makati
+7-Eleven|14.5511|121.0204|Makati
+Fu Yuan|14.5533|121.0179|Makati
+Erechem|14.5555|121.0154|Makati
+dropthebean|14.5555|121.0154|Makati
+BDO (Washington-Puyat)|14.5593|121.0110|Makati
+BDO|14.5578|121.0128|Makati
+Trasierra|14.5529|121.0185|Makati
+One Oculus Center|14.5579|121.0127|Makati
+PBCom (Legaspi)|14.5561|121.0148|Makati
+Grepalife Building|14.5598|121.0105|Makati
+Choi Garden|14.5506|121.0212|Makati
+Kayamanan A|14.5574|121.0133|Makati
+Legazpi Active Park|14.5544|121.0168|Makati
+Asian Institute of Management (Joseph R. McMicking Campus)|14.5526|121.0189|Makati
+Rufino–Salcedo|14.5556|121.0155|Makati
+BDO (Yakal - Chino Roces Avenue)|14.5606|121.0097|Makati
+EastWest Unibank (Amorsolo-Queensway)|14.5563|121.0147|Makati
+Almon Marina|14.5514|121.0204|Makati
+Burger Machine|14.5582|121.0125|Makati
+Avida Towers Makati City 2|14.5608|121.0095|Makati
+Mercury Drug|14.5584|121.0123|Makati
+MACEA|14.5549|121.0164|Makati
+PNB|14.5506|121.0214|Makati
+CIBI II Philippines|14.5625|121.0076|Makati
+Century Savings Bank (Makati)|14.5558|121.0154|Makati
+BPI|14.5584|121.0124|Makati
+Dela Rosa Square|14.5584|121.0124|Makati
+Conti's|14.5518|121.0201|Makati
+Uncle John's|14.5592|121.0115|Makati
+Cebuana Lhuillier|14.5506|121.0215|Makati
+Chowking|14.5594|121.0113|Makati
+King's Court|14.5576|121.0134|Makati
+Oriental Garden Makati|14.5589|121.0119|Makati
+Robinsons Bank (Amorsolo)|14.5565|121.0147|Makati
+Bloomingdale Building|14.5559|121.0154|Makati
+Purple Oven|14.5547|121.0168|Makati
+Legazpi Village|14.5541|121.0175|Makati
+PNB (Makati-Amorsolo)|14.5566|121.0146|Makati
+Domino's|14.5585|121.0124|Makati
+Tender Bob's|14.5518|121.0202|Makati
+Watsons|14.5586|121.0123|Makati
+Toby's Estate|14.5547|121.0169|Makati
+San Antonio Village Elementary School|14.5621|121.0083|Makati
+Casa Armas|14.5518|121.0203|Makati
+BDO (Herrera)|14.5556|121.0159|Makati
+YL Holdings|14.5557|121.0158|Makati
+Exportbank Plaza|14.5594|121.0115|Makati
+Watami|14.5521|121.0200|Makati
+Washington SyCip Park|14.5540|121.0178|Makati
+M2B Chicken Inasal|14.5602|121.0106|Makati
+Metrobank (Legaspi Village - Makati)|14.5568|121.0146|Makati
+Pooja's Cafe|14.5581|121.0131|Makati
+Makati Commerce Tower|14.5600|121.0109|Makati
+Cyma Estiatorio|14.5521|121.0201|Makati
+Jollibee|14.5595|121.0115|Makati
+Think & Try Learning Center|14.5632|121.0072|Makati
+Union Church of Manila|14.5546|121.0172|Makati
+Kaiser Medical Center|14.5577|121.0136|Makati
+Huang Jia|14.5602|121.0107|Makati
+Starbucks|14.5590|121.0121|Makati
+Subway|14.5591|121.0120|Makati
+Chihuahua|14.5518|121.0205|Makati
+Dela Rosa|14.5586|121.0126|Makati
+BDO (Legazpi Village - Salcedo St.)|14.5562|121.0154|Makati
+Chino Roces|14.5596|121.0115|Makati
+San Antonio|14.5621|121.0086|Makati
+Sinangag Express|14.5603|121.0107|Makati
+Sugi|14.5517|121.0207|Makati
+Lawson|14.5591|121.0121|Makati
+Metrobank (Pasong Tamo - Buendia)|14.5592|121.0120|Makati
+Greenbelt 2|14.5519|121.0205|Makati
+Kings Court 2|14.5582|121.0132|Makati
+León Gallery International|14.5533|121.0189|Makati
+EastWest Unibank (Chino Roces-Dela Rosa)|14.5583|121.0131|Makati
+Landbank (Pasong Tamo)|14.5596|121.0116|Makati
+San Antonio Barangay Hall|14.5622|121.0086|Makati
+BPI (Legaspi Salcedo)|14.5561|121.0157|Makati
+Citystate Savings Bank (Chino Roces)|14.5587|121.0127|Makati
+Metrobank (Corinthian Plaza - Makati)|14.5533|121.0190|Makati
+San Lorenzo|14.5534|121.0189|Makati
+Legazpi Sunday Market|14.5536|121.0187|Makati
+Sangguniang Pambarangay ng San Antonio|14.5623|121.0086|Makati
+BPI|14.5501|121.0228|Makati
+Cafe Mary Grace|14.5521|121.0205|Makati
+The Wholesome Table (Greenbelt)|14.5521|121.0205|Makati
+Hong Kong Noodles|14.5589|121.0126|Makati
+Security Bank|14.5583|121.0133|Makati
+Metrobank|14.5504|121.0225|Makati
+Tachibana Izakaya Robota|14.5499|121.0231|Makati
+Isuzu Gencars Makati|14.5586|121.0130|Makati
+Villarica|14.5500|121.0230|Makati
+San Antonio Covered Court|14.5624|121.0086|Makati
+Metrobank|14.5557|121.0164|Makati
+Bizu|14.5521|121.0206|Makati
+CTBC Bank (Rada)|14.5546|121.0177|Makati
+Bank of Commerce|14.5583|121.0134|Makati
+Balikbayan Handicrafts|14.5497|121.0234|Makati
+Blue Note|14.5479|121.0255|Makati
+Bank of Commerce|14.5500|121.0231|Makati
+Cedar Executive Building Ⅰ|14.5500|121.0231|Makati
+One Legaspi Park|14.5550|121.0173|Makati
+San Lorenzo|14.5507|121.0223|Makati
+Bloom Cafe + Bar|14.5521|121.0207|Makati
+ACME Pawnshop|14.5491|121.0242|Makati
+Corinthian Plaza|14.5535|121.0191|Makati
+Crown Regency|14.5486|121.0248|Makati
+Goldilocks|14.5557|121.0166|Makati
+Petron|14.5601|121.0115|Makati
+Mang Inasal|14.5595|121.0122|Makati
+BDO|14.5492|121.0242|Makati
+Isshin|14.5488|121.0247|Makati
+Pio del Pilar|14.5599|121.0118|Makati
+The Curator|14.5544|121.0182|Makati
+Design Ligna|14.5495|121.0239|Makati
+Sejong Mart Korean Grocery|14.5495|121.0239|Makati
+Greenbelt 1|14.5532|121.0196|Makati
+Tapella|14.5526|121.0203|Makati
+NEDA sa Makati Building|14.5576|121.0145|Makati
+FamilyMart|14.5558|121.0166|Makati
+Xiao Long Kan Restaurant|14.5595|121.0123|Makati
+Allied|14.5497|121.0237|Makati
+Yakiniku sakura|14.5491|121.0244|Makati
+Goto King|14.5602|121.0115|Makati
+Anglo-Eastern Manila Training Center|14.5547|121.0179|Makati
+Tealive|14.5597|121.0121|Makati
+New World Hotel|14.5511|121.0221|Makati
+Greenbelt 3 Cinemas|14.5518|121.0213|Makati
+LBC|14.5598|121.0120|Makati
+BPI (Corinthian Plaza)|14.5537|121.0191|Makati
+Ippudo|14.5526|121.0204|Makati
+Casmer Building|14.5571|121.0152|Makati
+Makati Medical Center College|14.5559|121.0166|Makati
+Makati Avenue|14.5504|121.0230|Makati
+BDO (Legaspi Village - C. Palanca)|14.5543|121.0185|Makati
+McDonald's|14.5599|121.0120|Makati
+Simply Thai|14.5526|121.0205|Makati
+Tandem|14.5563|121.0162|Makati
+Fat Chino's Pizza Co.|14.5594|121.0126|Makati
+Petron|14.5474|121.0266|Makati
+Chili's|14.5526|121.0206|Makati
+Delimondo|14.5594|121.0127|Makati
+California Pizza (2nd flr)|14.5527|121.0205|Makati
+Greenbelt 1|14.5515|121.0219|Makati
+Krazy Garlic (2nd flr)|14.5528|121.0204|Makati
+Paul|14.5528|121.0204|Makati
+Chinese Beef Noodles House|14.5597|121.0124|Makati
+Aventus|14.5579|121.0145|Makati
+Pan de Manila|14.5489|121.0250|Makati
+RCBC|14.5557|121.0171|Makati
+BPI (Sen. Gil Puyat-Don Chino Roces)|14.5602|121.0119|Makati
+Tapa King|14.5597|121.0125|Makati
+Va Bene Pasta Deli|14.5474|121.0268|Makati
+Mercury Drug|14.5487|121.0253|Makati
+UCC Coffee Park Café Express|14.5475|121.0267|Makati
+Raffles Makati|14.5506|121.0231|Makati
+Las Flores (Greenbelt 3)|14.5520|121.0215|Makati
+Pioneer Station Building|14.5598|121.0125|Makati
+Treats|14.5475|121.0268|Makati
+Café Breton|14.5519|121.0217|Makati
+BDO|14.5564|121.0165|Makati
+8760 Residences|14.5638|121.0079|Makati
+Far East Bank And Trust Company (Carlos Palanca Branch)|14.5546|121.0186|Makati
+BDO (Medical Plaza - Legaspi Village)|14.5583|121.0143|Makati
+Antipodean|14.5542|121.0191|Makati
+First Life Center|14.5573|121.0155|Makati
+Robinsons Bank|14.5567|121.0162|Makati
+Angel's Pizza|14.5475|121.0269|Makati
+Garden Towers 2|14.5494|121.0247|Makati
+Din Tai Fung|14.5519|121.0218|Makati
+Mesa|14.5526|121.0210|Makati
+STI College|14.5600|121.0124|Makati
+BDO (V.A. Rufino - Tuscan)|14.5558|121.0173|Makati
+Fairmont Makati|14.5509|121.0230|Makati
+BPI (Medical Plaza Makati)|14.5584|121.0143|Makati
+National Sports Grill|14.5517|121.0221|Makati
+Lorenzo's Way|14.5526|121.0211|Makati
+Wild Flour|14.5520|121.0218|Makati
+Marks & Spencer|14.5527|121.0210|Makati
+Sanctuary of Saint Paul|14.5632|121.0088|Makati
+UnionBank (Rada)|14.5554|121.0179|Makati
+Security Bank (Medical Plaza)|14.5585|121.0143|Makati
+BPI (Paseo - Legazpi)|14.5542|121.0193|Makati
+111 Paseo de Roxas|14.5543|121.0192|Makati
+Muji (Greenbelt 3)|14.5519|121.0220|Makati
+West of Ayala|14.5599|121.0127|Makati
+Dela Rosa Street/Salcedo Street|14.5538|121.0198|Makati
+Serenitea (Rada)|14.5553|121.0181|Makati
+EastWest Unibank (Rada)|14.5555|121.0179|Makati
+EastWest Unibank (Paseo de Roxas)|14.5543|121.0193|Makati
+UnionBank|14.5543|121.0193|Makati
+Mango Tree Cafe|14.5521|121.0219|Makati
+Park Square|14.5492|121.0253|Makati
+GSIS|14.5572|121.0160|Makati
+Pickup Coffee|14.5597|121.0131|Makati
+7-Eleven|14.5579|121.0152|Makati
+Metrobank (Rada-Rodriguez)|14.5556|121.0179|Makati
+Glass Tower|14.5550|121.0186|Makati
+Asia United Bank (Paseo de Roxas)|14.5544|121.0193|Makati
+eWestPod|14.5612|121.0114|Makati
+Starbucks Reserve|14.5521|121.0220|Makati
+BDO (Greenbelt-Legaspi)|14.5540|121.0198|Makati
+Maisen|14.5528|121.0212|Makati
+Red Planet Amorsolo|14.5596|121.0133|Makati
+Black Scoop Cafe|14.5609|121.0118|Makati
+Empanada Nation|14.5597|121.0132|Makati
+Fairmont Makati Hotel|14.5512|121.0231|Makati
+Palm Promenade|14.5500|121.0245|Makati
+Greenbelt Chancellor|14.5550|121.0187|Makati
+Greenbelt 3|14.5520|121.0222|Makati
+Isla Bank|14.5551|121.0186|Makati
+PNB (Makati-Eton Yakal)|14.5614|121.0113|Makati
+Pioneer House|14.5541|121.0198|Makati
+Golden Rock Building|14.5578|121.0155|Makati
+UV Express South Bound|14.5492|121.0255|Makati
+7-Eleven|14.5597|121.0133|Makati
+MediCard Clinic|14.5585|121.0147|Makati
+BDO (Salcedo-Dela Rosa)|14.5579|121.0154|Makati
+BPI (Rufino Esteban)|14.5561|121.0175|Makati
+Spectrum|14.5513|121.0231|Makati
+Izakaya-Terra|14.5569|121.0166|Makati
+Mantra (Makati)|14.5569|121.0166|Makati
+Yakimix|14.5520|121.0223|Makati
+Burgundy Corporate Tower|14.5600|121.0130|Makati
+RobinsonsBank (Paseo de Roxas - Legazpi Village)|14.5545|121.0194|Makati
+PNB (Burgundy)|14.5601|121.0129|Makati
+Frabelle Business Center|14.5558|121.0179|Makati
+St Paul's|14.5626|121.0100|Makati
+Metrobank (Greenbelt)|14.5540|121.0200|Makati
+Garden Towers|14.5497|121.0250|Makati
+Torch|14.5528|121.0214|Makati
+Via Mare Oyster Bar|14.5522|121.0221|Makati
+Park Terraces|14.5505|121.0241|Makati
+Dusit Thani Manila|14.5487|121.0262|Makati
+Greenbelt Park|14.5524|121.0219|Makati
+Sage House|14.5561|121.0176|Makati
+Shelbys|14.5600|121.0131|Makati
+Treats|14.5600|121.0131|Makati
+Wildflour|14.5557|121.0181|Makati
+People's Palace|14.5522|121.0222|Makati
+EastWest Unibank (Chino Roces - Bagtikan)|14.5621|121.0107|Makati
+Yankee Candle At True Value Greenbelt|14.5530|121.0213|Makati
+UV Express Terminal|14.5494|121.0255|Makati
+Planters Products|14.5568|121.0169|Makati
+Bad Cafe|14.5575|121.0161|Makati
+Windsor Tower|14.5576|121.0160|Makati
+Nikkei|14.5558|121.0181|Makati
+OMO|14.5552|121.0188|Makati
+China Bank|14.5577|121.0159|Makati
+CTBC Bank (Buendia - Pasong Tamo)|14.5602|121.0130|Makati
+Garden Towers 1|14.5498|121.0251|Makati
+Pinkberry|14.5529|121.0215|Makati
+Greenbelt 5|14.5530|121.0214|Makati
+Starbucks (Keyland Centre)|14.5586|121.0149|Makati
+Spotted Pig Cafe|14.5568|121.0170|Makati
+Cangco medical clinic|14.5618|121.0112|Makati
+Damiana's Kitchen|14.5551|121.0190|Makati
+Citiland 3|14.5565|121.0174|Makati
+Sala Bistro|14.5522|121.0224|Makati
+Pryce Center|14.5621|121.0109|Makati
+Mentoré Coffee+Bar By UCC|14.5512|121.0236|Makati
+Chic'ins|14.5586|121.0150|Makati
+Keyland Centre|14.5586|121.0150|Makati
+Sha-Xia Snack House|14.5599|121.0135|Makati
+Healthway Office|14.5563|121.0177|Makati
+Panco cafe|14.5551|121.0191|Makati
+BDO (Perea-Paseo)|14.5545|121.0198|Makati
+Sarsá|14.5559|121.0182|Makati
+Burger King|14.5590|121.0146|Makati
+Uncle John's|14.5590|121.0146|Makati
+Sentro 1771|14.5529|121.0217|Makati
+PNB|14.5616|121.0116|Makati
+Philippine Orthopedic Institute|14.5586|121.0151|Makati
+Feliza Building|14.5563|121.0178|Makati
+BenLife|14.5582|121.0156|Makati
+China Bank (Legazpi Village - Esteban)|14.5570|121.0170|Makati
+Centro Escolar University|14.5608|121.0126|Makati
+PNB|14.5578|121.0161|Makati
+Pancake House|14.5592|121.0145|Makati
+Legaspi Towers 200|14.5549|121.0195|Makati
+Shakey's|14.5494|121.0259|Makati
+Yardstick Coffee|14.5568|121.0173|Makati
+Your Local|14.5568|121.0173|Makati
+Campos Rueda Building|14.5599|121.0137|Makati
+Potato Corner|14.5624|121.0108|Makati
+Siêu Thị Việt Nam|14.5624|121.0108|Makati
+Kuya J's|14.5495|121.0258|Makati
+UnionBank|14.5594|121.0143|Makati
+Asia United Bank|14.5564|121.0178|Makati
+Garuda|14.5583|121.0156|Makati
+Pizza Hut|14.5590|121.0148|Makati
+Pares|14.5627|121.0105|Makati
+Dela Rosa Street–Salcedo|14.5585|121.0154|Makati
+BDO (Bagtikan - Chino Roces Avenue)|14.5622|121.0111|Makati
+Bank of Commerce (Paseo de Roxas)|14.5549|121.0196|Makati
+Universal LMS|14.5569|121.0173|Makati
+Chao Shan Beef Hotpot|14.5600|121.0137|Makati
+FedEx Office|14.5600|121.0137|Makati
+Makati Prime City|14.5637|121.0094|Makati
+Makati Diamond Residences|14.5539|121.0208|Makati
+Reyes Barbecue|14.5584|121.0156|Makati
+Cluster 1 Prime Makati|14.5641|121.0090|Makati
+Brunch Bureau|14.5555|121.0190|Makati
+Royal Thai Embassy|14.5562|121.0182|Makati
+Seattle's Best|14.5593|121.0146|Makati
+Chao Shan Beef BBQ|14.5600|121.0138|Makati
+Fresh Choice|14.5545|121.0202|Makati
+Princess|14.5570|121.0173|Makati
+Tropical Hut|14.5614|121.0122|Makati
+Philtrust Bank (Puyat Avenue)|14.5608|121.0129|Makati
+GMA Lou-Bel Plaza|14.5627|121.0107|Makati
+Erziwawa Restaurant|14.5566|121.0178|Makati
+Mercury Drug (Makati City Legaspi Village Salcedo)|14.5585|121.0156|Makati
+BDO (Makati - Esteban)|14.5574|121.0169|Makati
+Watsons Pharmacy (Don Jacinto)|14.5587|121.0154|Makati
+Eton Westend Square|14.5619|121.0117|Makati
+Greenbelt Chapel|14.5528|121.0223|Makati
+Ayala Center Makati|14.5522|121.0230|Makati
+Mary Mother of Hope - Landmark Chapel|14.5516|121.0237|Makati
+Angelus Medical Clinic|14.5566|121.0179|Makati
+Koh Cafe + Roasters|14.5560|121.0186|Makati
+PNB (Greenbelt)|14.5537|121.0213|Makati
+Gino's Brick Oven Pizza|14.5562|121.0184|Makati
+Nanbantei Yakitori Bar|14.5556|121.0191|Makati
+Jade Garden|14.5513|121.0241|Makati
+The Coffee Bean & Tea Leaf|14.5508|121.0247|Makati
+Local Edition|14.5545|121.0204|Makati
+Centro Escolar University|14.5576|121.0168|Makati
+Caffè Pascucci|14.5510|121.0245|Makati
+Ginza Bairin|14.5510|121.0245|Makati
+Metrobank (Pasong Tamo - Bagtikan)|14.5627|121.0109|Makati
+Jollibee|14.5518|121.0236|Makati
+Palm Towers|14.5635|121.0100|Makati
+Associated Medical Services|14.5586|121.0157|Makati
+Kalayaan Building|14.5586|121.0157|Makati
+The Tattooed Baker|14.5586|121.0157|Makati
+Visita Building|14.5617|121.0121|Makati
+Felix|14.5531|121.0221|Makati
+Fely J's Kitchen|14.5532|121.0220|Makati
+Southstar Drug (Legaspi Village)|14.5569|121.0177|Makati
+RCI Building|14.5563|121.0184|Makati
+Nono's|14.5514|121.0241|Makati
+Chew & Brew|14.5545|121.0205|Makati
+Sourdough|14.5545|121.0205|Makati
+Tenya|14.5510|121.0246|Makati
+Lugang Café|14.5504|121.0253|Makati
+Eastwest|14.5584|121.0160|Makati
+BDO|14.5492|121.0267|Makati
+China Bank Savings (Rada)|14.5561|121.0187|Makati
+Metrobank (Dela Rosa - Salcedo)|14.5586|121.0158|Makati
+Shake Shack|14.5531|121.0222|Makati
+Buffet 101|14.5513|121.0243|Makati
+Holiday Inn and Suites|14.5507|121.0250|Makati
+Citystate Savings Bank (Perea)|14.5544|121.0207|Makati
+Swagat|14.5563|121.0185|Makati
+Luk Yuen|14.5514|121.0242|Makati
+H&M Home|14.5496|121.0263|Makati
+Buffalo Wild Wings|14.5503|121.0255|Makati
+Dunkin'|14.5577|121.0169|Makati
+Chinabank (Pasong Tamo - Bagtikan)|14.5627|121.0111|Makati
+Trans-Phil House|14.5627|121.0111|Makati
+Greenbelt|14.5535|121.0218|Makati
+Metrobank (Skyland Plaza)|14.5609|121.0132|Makati
+Tapi Makati|14.5634|121.0103|Makati
+Chowking|14.5505|121.0253|Makati
+J.Co|14.5500|121.0259|Makati
+iVegan|14.5568|121.0180|Makati
+MOS Burger 2F|14.5507|121.0251|Makati
+Filipino Building|14.5581|121.0165|Makati
+Landmark Supermarket|14.5521|121.0235|Makati
+CoCo Ichibanya|14.5510|121.0248|Makati
+Mexicali|14.5511|121.0247|Makati
+Salustiana D. Ty Tower|14.5549|121.0203|Makati
+Smokeys|14.5629|121.0110|Makati
+RCBC (Dela Rosa)|14.5575|121.0173|Makati
+Single Origin|14.5532|121.0223|Makati
+French Baker|14.5520|121.0237|Makati
+China Bank (Legaspi Village - C. Palanca)|14.5557|121.0194|Makati
+Singapore Diagnostics|14.5576|121.0172|Makati
+Sterling Centre|14.5576|121.0172|Makati
+DHL|14.5491|121.0271|Makati
+8065 Bagnet|14.5645|121.0092|Makati
+Uncle John's|14.5516|121.0242|Makati
+UnionBank (Perea)|14.5547|121.0206|Makati
+Glorietta 1|14.5504|121.0256|Makati
+Philippine Veterans Bank|14.5572|121.0177|Makati
+BDO (Makati Medical Center)|14.5591|121.0155|Makati
+Bistro Pamana|14.5548|121.0205|Makati
+S & L Building|14.5579|121.0169|Makati
+S&R New York Style Pizza|14.5506|121.0254|Makati
+M Lhuillier|14.5488|121.0275|Makati
+Metrobank (Perea-Gallardo)|14.5544|121.0210|Makati
+BPI (Glorietta Mall Ground Level)|14.5501|121.0260|Makati
+Mamou|14.5532|121.0224|Makati
+Maybank (Rufino)|14.5569|121.0181|Makati
+Beard Papa's|14.5508|121.0252|Makati
+Via Mare|14.5625|121.0116|Makati
+Honolulu Cafe|14.5533|121.0223|Makati
+SM Supermarket|14.5497|121.0265|Makati
+Subway|14.5577|121.0172|Makati
+Crate & Barrel|14.5491|121.0272|Makati
+Veterans Bank|14.5572|121.0178|Makati
+SSHG Law Center|14.5554|121.0199|Makati
+Landmark|14.5524|121.0234|Makati
+Balkan|14.5544|121.0211|Makati
+UnionBank (Greenbelt)|14.5538|121.0218|Makati
+SM Makati|14.5495|121.0268|Makati
+The Landmark|14.5521|121.0238|Makati
+Activity Center|14.5509|121.0252|Makati
+SM Makati Annex|14.5491|121.0273|Makati
+Ace Hardware|14.5492|121.0272|Makati
+Veterans Bank|14.5554|121.0200|Makati
+East west unibank|14.5548|121.0207|Makati
+MJL Building|14.5630|121.0112|Makati
+Sukiya|14.5508|121.0254|Makati
+Chowking|14.5570|121.0182|Makati
+Plaza One Hundred|14.5570|121.0182|Makati
+Infinity Windhorse Alliance|14.5632|121.0110|Makati
+Blims|14.5503|121.0260|Makati
+Popeyes conf|14.5585|121.0165|Makati
+BreadTalk|14.5500|121.0264|Makati
+Masajiro Burger 2F|14.5513|121.0249|Makati
+RCBC (Greenbelt)|14.5538|121.0220|Makati
+BYD|14.5502|121.0262|Makati
+Urban Avenue|14.5608|121.0139|Makati
+Lawson|14.5584|121.0167|Makati
+PHLPost|14.5535|121.0224|Makati
+Chinabank (Legaspi Village - Perea)|14.5548|121.0209|Makati
+Gogoro|14.5530|121.0230|Makati
+BDO (Dela Rosa-Rada)|14.5567|121.0187|Makati
+Lobby Cafe|14.5598|121.0151|Makati
+Starbucks|14.5580|121.0172|Makati
+BPI|14.5578|121.0175|Makati
+Hiro|14.5560|121.0196|Makati
+Philippine Business Bank|14.5623|121.0123|Makati
+Army Navy|14.5580|121.0173|Makati
+Mang Inasal|14.5581|121.0172|Makati
+Alishan At The Alley|14.5575|121.0179|Makati
+Dean and Deluca|14.5575|121.0179|Makati
+The SM Store|14.5496|121.0271|Makati
+Mercury Drug|14.5601|121.0149|Makati
+Banapple|14.5595|121.0156|Makati
+Hakata Ton-ichi|14.5595|121.0156|Makati
+Jollibee (One Ayala MRT)|14.5491|121.0277|Makati
+Tan Tan Men House|14.5565|121.0191|Makati
+KFC|14.5522|121.0241|Makati
+Tiara Oriental Hotel & Restaurant|14.5615|121.0133|Makati
+Figaro|14.5554|121.0204|Makati
+Gringo|14.5561|121.0196|Makati
+M.G.T. Guerra Building|14.5635|121.0110|Makati
+Northpoint Corporate Towers|14.5629|121.0117|Makati
+Lo de Alberto Taqueria|14.5543|121.0217|Makati
+PSBank (Skyland Plaza)|14.5611|121.0138|Makati
+Misto|14.5599|121.0152|Makati
+Krispy Kreme|14.5501|121.0266|Makati
+McDonald's|14.5601|121.0150|Makati
+Karinderya|14.5638|121.0107|Makati
+BSA Tower|14.5540|121.0221|Makati
+Chinabank|14.5633|121.0113|Makati
+Seafarer's Drugstore|14.5627|121.0120|Makati
+Chagee Glorietta 4|14.5504|121.0263|Makati
+Zark's Burgers 2F|14.5504|121.0263|Makati
+Taiwan House|14.5560|121.0198|Makati
+BPI Family Bank Center|14.5554|121.0205|Makati
+Tiara Oriental|14.5616|121.0133|Makati
+Tatatito|14.5561|121.0197|Makati
+Straight Up|14.5599|121.0153|Makati
+Solaris One|14.5582|121.0173|Makati
+Happy Lemon|14.5504|121.0264|Makati
+Tous les Jours|14.5504|121.0264|Makati
+Mary Joanne's Kitchenette|14.5629|121.0119|Makati
+BDO (SM Makati)|14.5494|121.0276|Makati
+Seda Residences Hotel|14.5599|121.0154|Makati
+Glorietta Activity Center|14.5513|121.0254|Makati
+Texas Roadhouse 2F|14.5507|121.0261|Makati
+Philippine Business Bank (Legaspi Village - Makati)|14.5545|121.0217|Makati
+Greenbelt 4|14.5533|121.0231|Makati
+Publiq|14.5558|121.0202|Makati
+McDonald's|14.5515|121.0252|Makati
+Estrella Food Market|14.5638|121.0109|Makati
+Eton Tower Makati|14.5577|121.0180|Makati
+Chinabank (Ayala Avenue-Amorsolo)|14.5602|121.0151|Makati
+Burger King|14.5511|121.0257|Makati
+No Brand|14.5505|121.0264|Makati
+Ayala North Exchange|14.5598|121.0156|Makati
+Tiger Sugar|14.5506|121.0263|Makati
+Tokyo Tokyo To Go|14.5568|121.0191|Makati
+RKP Motortrading|14.5636|121.0112|Makati
+GoRun FreshMart|14.5637|121.0111|Makati
+Veca building|14.5637|121.0111|Makati
+Jollibee|14.5594|121.0161|Makati
+Piggy Wiggy|14.5545|121.0218|Makati
+ArmyNavy|14.5565|121.0195|Makati
+Hawker Chan|14.5522|121.0245|Makati
+UCPB (Dela Rosa)|14.5553|121.0209|Makati
+Prince Plaza I|14.5541|121.0223|Makati
+Kenny Rogers Roasters|14.5517|121.0251|Makati
+The Coffee Bean & Tea Leaf|14.5597|121.0158|Makati
+Hokkaido Ramen Santouka|14.5505|121.0265|Makati
+Mercury Drug (Makati Ayala Center Glorietta 4)|14.5505|121.0265|Makati
+Ayala|14.5493|121.0279|Makati
+Dela Rosa–Paseo de Roxas|14.5561|121.0200|Makati
+Italianni's|14.5598|121.0157|Makati
+Goldilocks|14.5495|121.0277|Makati
+Security Bank (Nieva)|14.5551|121.0212|Makati
+Bà Nội's|14.5545|121.0219|Makati
+Sisig Society|14.5564|121.0197|Makati
+Museum Café|14.5534|121.0232|Makati
+North Park|14.5522|121.0246|Makati
+Prince Plaza II|14.5541|121.0224|Makati
+2GO Express|14.5603|121.0152|Makati
+Denny's|14.5598|121.0158|Makati
+BreadTalk|14.5600|121.0156|Makati
+Myeong Ryun Jinsa Galbi|14.5521|121.0248|Makati
+New Bombay|14.5521|121.0248|Makati
+BPI|14.5601|121.0155|Makati
+Filipinas Heritage Library|14.5536|121.0231|Makati
+Watami|14.5598|121.0159|Makati
+MochiCream Café|14.5506|121.0266|Makati
+Outback Steakhouse|14.5506|121.0266|Makati
+Glorietta|14.5513|121.0258|Makati
+Modern China|14.5507|121.0265|Makati
+BDO (Dela Rosa - Gallardo)|14.5544|121.0222|Makati
+Tous les Jours (Greenbelt 5)|14.5538|121.0229|Makati
+LBC|14.5569|121.0193|Makati
+San Antonio|14.5643|121.0107|Makati
+Buddy's|14.5527|121.0242|Makati
+Ä Veneto|14.5521|121.0249|Makati
+Convergys One|14.5595|121.0163|Makati
+Mom & Tina's|14.5546|121.0220|Makati
+Tapa King|14.5528|121.0241|Makati
+Persia Grill|14.5541|121.0226|Makati
+Italianni's|14.5511|121.0261|Makati
+Manam|14.5511|121.0261|Makati
+Ayala Museum|14.5536|121.0232|Makati
+Glorietta 4 Cinemas|14.5512|121.0260|Makati
+Bread Talk|14.5618|121.0137|Makati
+Subway (MRT Ayala Makati)|14.5495|121.0280|Makati
+Mercury Drug|14.5526|121.0244|Makati
+Mann Hann|14.5527|121.0243|Makati
+Mad Mark's|14.5521|121.0250|Makati
+Philippine AXA Life Tower|14.5614|121.0142|Makati
+Max's Restaurant|14.5596|121.0163|Makati
+The Link|14.5529|121.0241|Makati
+KFC 2F|14.5505|121.0269|Makati
+Yi Fang|14.5542|121.0226|Makati
+Alveo Financial Tower|14.5592|121.0168|Makati
+Subway|14.5543|121.0225|Makati
+Ayala Avenue|14.5612|121.0145|Makati
+Tokyo Tokyo|14.5606|121.0152|Makati
+Glorietta 3|14.5520|121.0252|Makati
+Brothers Burger|14.5595|121.0165|Makati
+North Park|14.5596|121.0164|Makati
+Tempura Japanese Grill|14.5596|121.0164|Makati
+Ascott Makati|14.5510|121.0264|Makati
+Araya Ramen|14.5554|121.0213|Makati
+Tony Roma's|14.5511|121.0263|Makati
+New Bistro Deli|14.5630|121.0125|Makati
+Makati Sky Plaza|14.5587|121.0175|Makati
+BDO (AEGIS People Support)|14.5606|121.0153|Makati
+Watsons|14.5557|121.0210|Makati
+Yellow Cab Pizza (Co)|14.5607|121.0152|Makati
+KFC|14.5608|121.0151|Makati
+NEX Tower|14.5584|121.0179|Makati
+Glorietta 4|14.5512|121.0263|Makati
+Chopstop|14.5550|121.0219|Makati
+Rufino Pacific Tower|14.5581|121.0183|Makati
+Adobo Connection|14.5551|121.0218|Makati
+Standard Chartered (Makati)|14.5588|121.0175|Makati
+Chowking (Ayala MRT Station)|14.5496|121.0282|Makati
+TGI Fridays|14.5521|121.0253|Makati
+BPI|14.5558|121.0210|Makati
+Starbucks|14.5558|121.0210|Makati
+Cooper's Coffee Haus - One Ayala|14.5503|121.0274|Makati
+8065 Coffee|14.5645|121.0109|Makati
+Starbucks|14.5609|121.0151|Makati
+Pancake House|14.5548|121.0222|Makati
+Robinsons Supermarket (One Ayala)|14.5499|121.0279|Makati
+L.A. Car Accessories and Tint Room|14.5635|121.0121|Makati
+Hap Chan|14.5549|121.0221|Makati
+Sizzlin' Steak|14.5549|121.0221|Makati
+Legazpi|14.5543|121.0228|Makati
+Greenwich|14.5580|121.0185|Makati
+Bread Talk|14.5513|121.0263|Makati
+Dakasi|14.5550|121.0220|Makati
+Starbucks (6788 Ayala Ave)|14.5587|121.0177|Makati
+Rufino Plaza|14.5581|121.0184|Makati
+Bagsik Bagnet|14.5547|121.0224|Makati
+Pizza Niro|14.5547|121.0224|Makati
+SSS Makati|14.5578|121.0188|Makati
+Ineng's Special BBQ|14.5548|121.0223|Makati
+Sugarhouse|14.5556|121.0214|Makati
+Mang Rudy's|14.5630|121.0128|Makati
+BPI (Rufino Tower)|14.5581|121.0185|Makati
+Hard Rock Cafe|14.5522|121.0254|Makati
+Tim Ho Wan|14.5522|121.0254|Makati
+Yellow Cab Pizza 2F|14.5504|121.0275|Makati
+Dasmariñas Village|14.5494|121.0287|Makati
+6780 Ayala Avenue|14.5574|121.0194|Makati
+EastWest Unibank (Ayala Avenue - Rufino Tower)|14.5582|121.0185|Makati
+UnionBank (Makati City - Ayala Rufino)|14.5582|121.0185|Makati
+Dasmariñas|14.5496|121.0285|Makati
+Metrobank (Ayala Avenue - VA Rufino)|14.5583|121.0184|Makati
+BDO (Ayala - Rufino)|14.5584|121.0183|Makati
+Enterprise Center|14.5561|121.0210|Makati
+The Rise Makati|14.5623|121.0138|Makati
+FamilyMart|14.5556|121.0216|Makati
+Arkipelago|14.5630|121.0130|Makati
+Bugóng|14.5557|121.0215|Makati
+Security Bank Centre|14.5571|121.0199|Makati
+Green Frog ZE Transport Corporation|14.5633|121.0127|Makati
+Makati Central Post Office|14.5615|121.0148|Makati
+Seattle's Best Coffee|14.5523|121.0255|Makati
+UnionBank (Ayala - SSS)|14.5579|121.0190|Makati
+MCC Center|14.5573|121.0197|Makati
+Glorietta Plaza|14.5512|121.0268|Makati
+Sterling Bank of Asia (Makati - Ayala Avenue)|14.5580|121.0189|Makati
+Amber's Best|14.5644|121.0115|Makati
+Pancake House|14.5577|121.0193|Makati
+Salcedo Village|14.5596|121.0171|Makati
+Ayala Terminal|14.5493|121.0291|Makati
+The Sandwich Guy|14.5549|121.0226|Makati
+Watsons|14.5575|121.0196|Makati
+VGP Center|14.5569|121.0203|Makati
+BDO (6780 Ayala Avenue)|14.5577|121.0194|Makati
+Ramon Cojuangco Building|14.5541|121.0236|Makati
+BPI (Ayala East)|14.5597|121.0171|Makati
+UCPB (Ayala Ave.)|14.5598|121.0170|Makati
+PNB (Ayala Ave.)|14.5569|121.0204|Makati
+Altro Mondo Creative Space|14.5643|121.0118|Makati
+Kenny Rogers Roasters|14.5551|121.0225|Makati
+China Bank Savings (Ayala Avenue)|14.5571|121.0202|Makati
+Security Bank (Main Office Branch)|14.5572|121.0201|Makati
+121 Grill and Restaurant|14.5601|121.0244|Makati
+139 Corporate Center|14.5581|121.0220|Makati
+146 Alfaro Place|14.5596|121.0238|Makati
+24 Chicken|14.5586|121.0236|Makati
+331 Building|14.5625|121.0242|Makati
+52nd State|14.5626|121.0260|Makati
+6750 Ayala Avenue|14.5532|121.0255|Makati
+7-Eleven|14.5611|121.0210|Makati
+7-Eleven|14.5586|121.0226|Makati
+7-Eleven|14.5546|121.0238|Makati
+7-Eleven|14.5624|121.0158|Makati
+7-Eleven (139 Corporate Center)|14.5582|121.0219|Makati
+7-Eleven (N. Garcia)|14.5630|121.0226|Makati
+7-Eleven (Podium)|14.5612|121.0166|Makati
+8 Cuts Burger Blends|14.5607|121.0253|Makati
+88 Corporate Center|14.5582|121.0223|Makati
+ATCI Overseas Corporation|14.5656|121.0137|Makati
+Ace Hardware Express|14.5638|121.0220|Makati
+Aesthetic Science|14.5631|121.0251|Makati
+Air Residences|14.5626|121.0147|Makati
+Alfamart|14.5615|121.0215|Makati
+AllCars|14.5584|121.0232|Makati
+Allied Bank Center|14.5549|121.0232|Makati
+Alphaland Makati Place|14.5628|121.0161|Makati
+Alrose|14.5651|121.0150|Makati
+Altaire Tower|14.5631|121.0182|Makati
+Always Open|14.5611|121.0273|Makati
+Andok's|14.5610|121.0273|Makati
+Antel Corporate Center|14.5589|121.0198|Makati
+Apartment 1B|14.5590|121.0222|Makati
+Apple Seed Montessori|14.5592|121.0224|Makati
+Aristocrat|14.5631|121.0238|Makati
+Armstrong Corporate Center|14.5610|121.0215|Makati
+Army Navy|14.5590|121.0237|Makati
+Asia United Bank|14.5619|121.0231|Makati
+Asia United Bank (Ayala-ATB)|14.5594|121.0176|Makati
+Asia United Bank (Gil Puyat)|14.5624|121.0246|Makati
+Asia United Bank (H. V. Dela Costa)|14.5618|121.0219|Makati
+Assad Mini Mart|14.5630|121.0258|Makati
+Ateneo de Manila University|14.5611|121.0217|Makati
+Ayala Center|14.5528|121.0267|Makati
+Ayala Triangle Gardens|14.5561|121.0237|Makati
+Ayala Triangle Gardens North|14.5575|121.0251|Makati
+Ayala Triangle Gardens Tower 2|14.5576|121.0255|Makati
+B. A . Lepanto|14.5582|121.0242|Makati
+BDO|14.5619|121.0228|Makati
+BDO|14.5625|121.0165|Makati
+BDO (Alfaro - Salcedo)|14.5595|121.0206|Makati
+BDO (Ayala Avenue - SGV 1 Bldg.)|14.5557|121.0223|Makati
+BDO (Ayala Avenue)|14.5593|121.0177|Makati
+BDO (Ayala Triangle 1)|14.5565|121.0224|Makati
+BDO (Gil Puyat-Metro House)|14.5624|121.0238|Makati
+BDO (Makati Avenue - Ayala)|14.5546|121.0240|Makati
+BDO (Metropolitan Avenue)|14.5652|121.0143|Makati
+BDO (Pacific Star - Makati)|14.5614|121.0271|Makati
+BDO (Paseo de Roxas)|14.5585|121.0257|Makati
+BDO (Philam Tower - Valero)|14.5575|121.0217|Makati
+BDO (Tordesillas - The Orient Mansion)|14.5607|121.0246|Makati
+BDO (Tordesillas)|14.5604|121.0206|Makati
+BDO (V.A. Rufino - Valero)|14.5595|121.0196|Makati
+BDO (Valero)|14.5588|121.0233|Makati
+BDO (Villar)|14.5598|121.0247|Makati
+BDO North Tower|14.5605|121.0269|Makati
+BDO Plaza|14.5586|121.0257|Makati
+BDO Private Bank (Paseo Tower – Makati)|14.5578|121.0238|Makati
+BDO Salcedo Tower|14.5593|121.0244|Makati
+BDO Towers Valero|14.5590|121.0252|Makati
+BDO-Equitable Tower|14.5579|121.0238|Makati
+BGC - Ayala Terminal|14.5493|121.0293|Makati
+BIR RDO 50|14.5572|121.0262|Makati
+BIR Revenue Region 8B - South NCR|14.5620|121.0182|Makati
+BOC (Manila)|14.5572|121.0216|Makati
+BPI|14.5510|121.0282|Makati
+BPI|14.5622|121.0261|Makati
+BPI (Alfaro)|14.5592|121.0217|Makati
+BPI (Ayala 6750)|14.5532|121.0254|Makati
+BPI (Ayala Avenue II)|14.5576|121.0204|Makati
+BPI (Ayala Avenue SGV)|14.5555|121.0226|Makati
+BPI (Ayala Columns)|14.5617|121.0164|Makati
+BPI (Ayala Paseo)|14.5573|121.0221|Makati
+BPI (Ayala Triangle)|14.5564|121.0224|Makati
+BPI (BPI Buendia Center)|14.5616|121.0266|Makati
+BPI (Buendia Reposo)|14.5624|121.0230|Makati
+BPI (Makati Atrium)|14.5575|121.0262|Makati
+BPI (Paseo de Roxas)|14.5579|121.0255|Makati
+BPI (Salcedo - Tordesillas)|14.5610|121.0200|Makati
+BPI (Salcedo Alfaro)|14.5598|121.0242|Makati
+BPI (Salcedo Village)|14.5582|121.0223|Makati
+BPI (Tordesillas NDC)|14.5607|121.0245|Makati
+BPI-Philam Life Makati|14.5598|121.0173|Makati
+Bacolod Chicken Inasal|14.5576|121.0230|Makati
+Bacolod Chicken Inasal|14.5631|121.0247|Makati
+Baicapture Inc.|14.5651|121.0127|Makati
+Bait's|14.5592|121.0190|Makati
+BancNet|14.5580|121.0239|Makati
+Bank of Commerce (Ayala)|14.5562|121.0216|Makati
+Bank of Commerce (Bel-Air Petron)|14.5622|121.0273|Makati
+Bank of Commerce (Dela Costa - Alfaro)|14.5609|121.0188|Makati
+Bank of Commerce (Salcedo)|14.5610|121.0247|Makati
+Bank of the Philippine Islands (Buendia Center)|14.5615|121.0264|Makati
+Barangay Bel-Air Health Office|14.5604|121.0231|Makati
+Barangay Bel-Air Salcedo Tanod Office|14.5605|121.0231|Makati
+Barangay Urdaneta Hall|14.5553|121.0299|Makati
+Beit Yaacov Synagogue|14.5612|121.0244|Makati
+Bel-Air|14.5620|121.0266|Makati
+Bel-Air 2|14.5639|121.0257|Makati
+Bel-Air 2 Park|14.5634|121.0272|Makati
+Bench Coffee Station|14.5507|121.0281|Makati
+Bento box|14.5596|121.0205|Makati
+Blackbird|14.5559|121.0244|Makati
+Bo's Coffee|14.5517|121.0270|Makati
+Bo's Coffee|14.5614|121.0239|Makati
+Bonchon Chicken|14.5603|121.0182|Makati
+Botica ng Bayan|14.5608|121.0246|Makati
+Bowler Restaurant|14.5587|121.0225|Makati
+Buendia Freedom Park|14.5616|121.0152|Makati
+Buma Building|14.5649|121.0147|Makati
+Bureau of Internal Revenue (South Makati City)|14.5573|121.0263|Makati
+Bureau of Philippine Standards|14.5622|121.0270|Makati
+Burger King - Two Central|14.5602|121.0177|Makati
+Buttery & Co.|14.5509|121.0283|Makati
+Bôn Pho & Roll|14.5624|121.0162|Makati
+C' Restaurant|14.5599|121.0237|Makati
+CTBC Bank (Ayala)|14.5566|121.0224|Makati
+CTBC Bank (Dela Costa)|14.5610|121.0250|Makati
+Cafe Alfonso|14.5592|121.0219|Makati
+Cafe Caruso|14.5655|121.0226|Makati
+Canada Visa Application Center|14.5615|121.0216|Makati
+Car Lines Rent-A-Car|14.5538|121.0265|Makati
+Car Snack|14.5632|121.0140|Makati
+Carlos P. Romulo Auditorium|14.5612|121.0168|Makati
+Cebuana Lhuillier|14.5630|121.0229|Makati
+Cebuana Llhuillier Rural Bank|14.5630|121.0228|Makati
+Centrum II|14.5591|121.0236|Makati
+Chatham House|14.5596|121.0195|Makati
+Chatime|14.5587|121.0208|Makati
+Cheesecake, Etc.|14.5598|121.0202|Makati
+Chicken Inasal|14.5654|121.0140|Makati
+Chikos|14.5588|121.0231|Makati
+Chilli Pepper|14.5584|121.0216|Makati
+China Bank Building|14.5583|121.0247|Makati
+China Bank Savings|14.5614|121.0182|Makati
+China Bank Savings Building|14.5613|121.0182|Makati
+Chinabank (Ayala - Columns)|14.5618|121.0167|Makati
+Chinabank (Ayala Avenue)|14.5558|121.0222|Makati
+Chinabank (Gil Puyat Ave - Reposo)|14.5624|121.0244|Makati
+Chinabank (L.P. Leviste)|14.5602|121.0253|Makati
+Chinabank (Makati Main)|14.5582|121.0249|Makati
+Chinabank (Salcedo Village - Tordesillas)|14.5606|121.0209|Makati
+Chinabank (Salcedo Village - Valero)|14.5590|121.0203|Makati
+Chocolate Fire|14.5600|121.0198|Makati
+Chopstop|14.5496|121.0296|Makati
+Citadines Salcedo Makati|14.5590|121.0234|Makati
+Citi Center|14.5586|121.0253|Makati
+Clyde's Breads & Pastries|14.5507|121.0280|Makati
+Cocolife|14.5596|121.0176|Makati
+Common Man Coffee Roasters|14.5565|121.0236|Makati
+Coquina|14.5609|121.0252|Makati
+Country Space 1|14.5618|121.0229|Makati
+Cravings Restaurant|14.5599|121.0258|Makati
+Crosta|14.5606|121.0254|Makati
+Crêpe Glazik|14.5605|121.0206|Makati
+Darwin's|14.5635|121.0220|Makati
+Dell's Foodhall|14.5578|121.0239|Makati
+Denny's|14.5511|121.0282|Makati
+Dental Profession in the Philippines|14.5637|121.0158|Makati
+Department of Labour and Employment|14.5622|121.0265|Makati
+Department of Tourism|14.5624|121.0257|Makati
+Department of Trade and Industry|14.5620|121.0185|Makati
+Department of Trade and Industry|14.5621|121.0270|Makati
+Development Bank of the Philippines|14.5607|121.0276|Makati
+Discovery Primea|14.5535|121.0268|Makati
+Dizon Farms|14.5618|121.0273|Makati
+Doña Consolacion Building|14.5629|121.0262|Makati
+Dugout|14.5645|121.0126|Makati
+Dunkin'|14.5560|121.0219|Makati
+Dunkin'|14.5619|121.0272|Makati
+ECC Canteen|14.5625|121.0266|Makati
+Earl's Deli|14.5617|121.0164|Makati
+EastWest Unibank|14.5572|121.0217|Makati
+EastWest Unibank (Ayala - Triangle)|14.5558|121.0233|Makati
+EastWest Unibank (Ayala Avenue - Herrera)|14.5582|121.0195|Makati
+EastWest Unibank (Gil Puyat Avenue)|14.5624|121.0240|Makati
+EastWest Unibank (Valero)|14.5588|121.0230|Makati
+Eastwest Unibank|14.5619|121.0229|Makati
+Ecoville|14.5657|121.0163|Makati
+El Rico Suites|14.5658|121.0139|Makati
+Elbert's Pizzeria|14.5606|121.0252|Makati
+Elbert's Steak Room|14.5611|121.0255|Makati
+Embassy of Malaysia|14.5606|121.0214|Makati
+Emperor Express|14.5586|121.0235|Makati
+Employees' Compensation Commission|14.5622|121.0266|Makati
+Escolta|14.5556|121.0252|Makati
+Esthetics Science Clinic|14.5565|121.0257|Makati
+FEU Makati|14.5621|121.0172|Makati
+Faburrito|14.5618|121.0164|Makati
+FamilyMart|14.5607|121.0173|Makati
+FamilyMart|14.5498|121.0294|Makati
+FamilyMart|14.5581|121.0220|Makati
+Far Eastern University|14.5620|121.0173|Makati
+Figaro|14.5606|121.0255|Makati
+Finman Centre|14.5610|121.0242|Makati
+Flexroom|14.5649|121.0231|Makati
+Forbes Park|14.5502|121.0293|Makati
+Forbes Park North|14.5507|121.0304|Makati
+Forbes Park Substation|14.5494|121.0298|Makati
+Forbes Tower|14.5598|121.0256|Makati
+Four Seasons|14.5604|121.0237|Makati
+Frabelle Corporate Plaza|14.5609|121.0239|Makati
+Friss Point|14.5598|121.0202|Makati
+Friss Point Bakery|14.5597|121.0201|Makati
+GT Tower International|14.5600|121.0169|Makati
+Gabriela Silang Monument|14.5550|121.0243|Makati
+Galleon Food Gallery|14.5583|121.0243|Makati
+Gen. Pio del Pilar Statue|14.5586|121.0265|Makati
+General Pio Del Pilar Monument Park|14.5586|121.0265|Makati
+Generika|14.5645|121.0119|Makati
+Genki Sushi|14.5510|121.0275|Makati
+Gentleprince|14.5627|121.0269|Makati
+Geronimo|14.5615|121.0176|Makati
+Gino's Brick Oven Pizza|14.5611|121.0241|Makati
+Global Academy|14.5628|121.0265|Makati
+Glorietta 5|14.5517|121.0272|Makati
+Golden Gibbon|14.5596|121.0235|Makati
+Gonzo Grill and Restaurant|14.5592|121.0218|Makati
+Good Cars Trading|14.5652|121.0118|Makati
+Good Mixes|14.5585|121.0239|Makati
+Governance Commission for GOCCs|14.5584|121.0252|Makati
+Greenwich|14.5561|121.0217|Makati
+Greyhound Café|14.5562|121.0243|Makati
+Grub Shack|14.5584|121.0217|Makati
+Guijo Suites|14.5650|121.0129|Makati
+H Proper Coffee Roasters - Ayala Triangle Garden|14.5564|121.0240|Makati
+H. V. de la Costa|14.5605|121.0272|Makati
+HSBC|14.5564|121.0212|Makati
+HSBC (The Enterprise Center)|14.5563|121.0212|Makati
+Habitual Coffee|14.5594|121.0227|Makati
+Happy Cream Puff|14.5627|121.0192|Makati
+Happy Lele|14.5594|121.0226|Makati
+Heaven's Barbeque|14.5627|121.0195|Makati
+Helm|14.5569|121.0249|Makati
+Hen Lin|14.5582|121.0222|Makati
+Hilltop Mart|14.5631|121.0239|Makati
+Holiday Inn & Suites|14.5525|121.0260|Makati
+Hussain Restaurant|14.5594|121.0230|Makati
+IOM Manila Health Centre|14.5609|121.0264|Makati
+ITC Building|14.5625|121.0231|Makati
+Ikinari Steak|14.5510|121.0283|Makati
+Il Ponticello|14.5589|121.0199|Makati
+Infinity Tower Suites|14.5608|121.0252|Makati
+Informatics|14.5587|121.0186|Makati
+Insular Life Building|14.5573|121.0211|Makati
+International Baptist Church of Manila|14.5610|121.0204|Makati
+International Exchange Bank (H. V. Dela Costa)|14.5612|121.0178|Makati
+J. Cuppacakes|14.5632|121.0217|Makati
+J.Co|14.5578|121.0228|Makati
+JAPANESE Clinic|14.5613|121.0176|Makati
+JT's Manukan|14.5627|121.0190|Makati
+JT’s manukan grille|14.5627|121.0194|Makati
+Jazz Mall|14.5634|121.0215|Makati
+Jazz Park|14.5631|121.0219|Makati
+Jewel|14.5631|121.0235|Makati
+Jiang Nan Hotpot|14.5643|121.0229|Makati
+Johnny B. Good|14.5524|121.0257|Makati
+Jollibee|14.5496|121.0291|Makati
+Jollibee|14.5560|121.0218|Makati
+Joy Market|14.5604|121.0181|Makati
+Juju Eats|14.5609|121.0243|Makati
+Jupiter Place|14.5631|121.0249|Makati
+KFC|14.5591|121.0241|Makati
+KFC|14.5625|121.0276|Makati
+KOI Thé|14.5502|121.0286|Makati
+Kalayaan–N. Garcia|14.5662|121.0234|Makati
+Karayama|14.5503|121.0288|Makati
+Kasiyahan Homes|14.5485|121.0328|Makati
+Kenny Rogers Roasters|14.5510|121.0282|Makati
+Kitaro|14.5611|121.0249|Makati
+Kopi Roti|14.5618|121.0160|Makati
+Korea Garden|14.5630|121.0257|Makati
+Krispy Kreme|14.5587|121.0241|Makati
+Krispy Kreme Podium|14.5610|121.0166|Makati
+Kuya J|14.5639|121.0221|Makati
+L' Incontro|14.5657|121.0234|Makati
+L.V. Locsin Building|14.5545|121.0239|Makati
+LBC|14.5642|121.0223|Makati
+LDB|14.5659|121.0138|Makati
+LRI Design Plaza|14.5655|121.0224|Makati
+La Cabrera|14.5528|121.0257|Makati
+La Creperie (Salcedo Village)|14.5604|121.0248|Makati
+La Cuisine Francaise|14.5588|121.0225|Makati
+La Pita|14.5596|121.0235|Makati
+Landbank|14.5571|121.0260|Makati
+Landbank|14.5621|121.0191|Makati
+Landbank (Gil Puyat 4)|14.5618|121.0178|Makati
+Landbank (Makati Business Center)|14.5574|121.0207|Makati
+Latitude Bean & Bar - One Ayala|14.5507|121.0285|Makati
+Lawson|14.5607|121.0175|Makati
+Lawson|14.5598|121.0202|Makati
+Lawson (One Ayala)|14.5510|121.0282|Makati
+Lawsons|14.5579|121.0199|Makati
+Le Metropole|14.5614|121.0198|Makati
+Liberty Center|14.5606|121.0255|Makati
+Liberty Plaza|14.5604|121.0260|Makati
+Liroville Apartments|14.5593|121.0224|Makati
+Little Flour|14.5574|121.0224|Makati
+Little India|14.5624|121.0268|Makati
+Little Jeju Resto|14.5591|121.0240|Makati
+Luk Foo|14.5615|121.0221|Makati
+Lutong Macau|14.5628|121.0267|Makati
+Lyceum of the Philippines College of Law|14.5602|121.0202|Makati
+M1 Tower|14.5616|121.0218|Makati
+Maidu|14.5589|121.0205|Makati
+Makati|14.5568|121.0211|Makati
+Makati Avenue|14.5616|121.0271|Makati
+Makati Life Medical Center|14.5632|121.0177|Makati
+Makati Police Station|14.5630|121.0152|Makati
+Makati Sports Club|14.5599|121.0213|Makati
+Makati Stock Exchange|14.5557|121.0231|Makati
+Makati Street Meet @ Leviste|14.5603|121.0251|Makati
+Makati Tuscany|14.5539|121.0263|Makati
+Manam|14.5563|121.0242|Makati
+Mandarin Oriental Hotel|14.5573|121.0249|Makati
+Mang Tootz Foodhouse Makati|14.5591|121.0206|Makati
+Mangiamo Ristorrante|14.5583|121.0224|Makati
+Mango Mart|14.5603|121.0198|Makati
+Manila Peninsula Hotel|14.5559|121.0252|Makati
+Manila South Cemetery|14.5660|121.0208|Manila
+Mapúa University Makati|14.5660|121.0159|Makati
+Marketplace|14.5600|121.0181|Makati
+Marugame Udon|14.5503|121.0287|Makati
+Max's Restaurant|14.5587|121.0240|Makati
+Maybank|14.5622|121.0262|Makati
+McDonald's|14.5607|121.0180|Makati
+McDonald's|14.5576|121.0231|Makati
+McDonald's (Bankmer)|14.5554|121.0229|Makati
+McKinley Exchange Corporate Center|14.5493|121.0294|Makati
+Meatogether|14.5635|121.0221|Makati
+Mendokoro|14.5602|121.0244|Makati
+Meralco (Makati)|14.5644|121.0155|Makati
+Mercury Drug|14.5511|121.0282|Makati
+Mercury Drug|14.5588|121.0242|Makati
+Mercury Drug (Salcedo Village Valero Plaza)|14.5589|121.0204|Makati
+Metro House|14.5625|121.0238|Makati
+Metrobank (Alfaro)|14.5595|121.0231|Makati
+Metrobank (Ayala Avenue - Bankmer)|14.5555|121.0228|Makati
+Metrobank (Jupiter Bel-air)|14.5627|121.0270|Makati
+Metrobank (Makati Avenue)|14.5587|121.0262|Makati
+Metrobank (Paseo de Roxas)|14.5577|121.0225|Makati
+Metrobank (Salcedo Village)|14.5594|121.0208|Makati
+Metrobank (San Agustin - H.V. Dela Costa)|14.5606|121.0257|Makati
+Metrobank (Urdaneta Village - Makati)|14.5572|121.0261|Makati
+Metropolitan Avenue|14.5644|121.0160|Makati
+Metrostar|14.5649|121.0154|Makati
+Mey Lin Bistro|14.5630|121.0249|Makati
+Miguel Hernandez Library|14.5565|121.0225|Makati
+Miladay Mall|14.5631|121.0235|Makati
+Moonleaf Tea Shop|14.5618|121.0157|Makati
+Morning Star Center|14.5628|121.0249|Makati
+Mr. Wang Barbeque|14.5650|121.0150|Makati
+Muji|14.5523|121.0259|Makati
+Multinational Bancorporation Centre|14.5595|121.0178|Makati
+Musashi Tei|14.5510|121.0276|Makati
+N. Garcia|14.5621|121.0227|Makati
+N. Garcia–Jupiter Intersection|14.5629|121.0229|Makati
+NDC Building|14.5607|121.0244|Makati
+Namaya|14.5632|121.0211|Makati
+Nanyang|14.5510|121.0282|Makati
+National Development Company|14.5607|121.0244|Makati
+National Maritime Polytechnic|14.5622|121.0264|Makati
+National Shrine of the Sacred Heart|14.5640|121.0141|Makati
+Nene Chicken|14.5506|121.0283|Makati
+New Bombay|14.5617|121.0160|Makati
+New Bombay|14.5611|121.0254|Makati
+New Hatchin Japanese Grocery|14.5649|121.0144|Makati
+Nicanor T. Garcia Street|14.5661|121.0234|Makati
+Nielson Tower|14.5559|121.0246|Makati
+Ninoy Aquino Monument|14.5568|121.0215|Makati
+Nobel Plaza|14.5600|121.0189|Makati
+Noble Square|14.5558|121.0220|Makati
+North Park|14.5591|121.0216|Makati
+Old Manila|14.5545|121.0252|Makati
+Old Swiss Inn|14.5563|121.0259|Makati
+Omotesando Koffee|14.5593|121.0249|Makati
+One Antonio|14.5638|121.0128|Makati
+One Central|14.5611|121.0174|Makati
+One Central Park|14.5612|121.0172|Makati
+One Pacific Place Serviced Residences|14.5613|121.0190|Makati
+One Salcedo Place|14.5599|121.0224|Makati
+Oppen Building|14.5625|121.0251|Makati
+Orion Mart|14.5598|121.0189|Makati
+PBCom|14.5584|121.0192|Makati
+PBCom|14.5623|121.0254|Makati
+PBCom (Makati Place)|14.5623|121.0159|Makati
+PBCom (Salcedo Village)|14.5604|121.0251|Makati
+PLDT Compound|14.5647|121.0221|Makati
+PLDT Smart Integrated Operations Center (IOC)|14.5651|121.0222|Makati
+PNB|14.5614|121.0237|Makati
+PNB (Makati Center)|14.5548|121.0235|Makati
+PNB (Metropolitan Avenue)|14.5650|121.0146|Makati
+PNB (Petron Megaplaza)|14.5617|121.0260|Makati
+PNB (Salcedo Village)|14.5593|121.0209|Makati
+PNB Savings Bank (Ayala)|14.5553|121.0230|Makati
+PSBank|14.5575|121.0225|Makati
+PSBank (Gil Puyat - N. Garcia)|14.5624|121.0229|Makati
+PSBank Center|14.5576|121.0224|Makati
+Pablo|14.5600|121.0241|Makati
+Pacific Star Building|14.5613|121.0270|Makati
+Pan de Manila|14.5586|121.0235|Makati
+Pancake House|14.5513|121.0279|Makati
+Parkville|14.5642|121.0125|Makati
+Paseo Center|14.5577|121.0229|Makati
+Paul (Le Cafe)|14.5509|121.0283|Makati
+Pearl Bank Centre|14.5589|121.0232|Makati
+Peninsula Court|14.5586|121.0260|Makati
+Petron|14.5644|121.0154|Makati
+Petron|14.5619|121.0276|Makati
+Petron Megaplaza|14.5618|121.0263|Makati
+Petron Square Belair|14.5620|121.0273|Makati
+PhilHealth (Makati City)|14.5626|121.0232|Makati
+Philam Life|14.5591|121.0213|Makati
+Philamlife Tower|14.5574|121.0217|Makati
+Philcom Building|14.5578|121.0233|Makati
+Philippine Dental Association|14.5637|121.0158|Makati
+Philtrust Bank (Makati Tordesillas)|14.5616|121.0199|Makati
+Phở Hòa|14.5579|121.0229|Makati
+Pickup Coffee|14.5508|121.0280|Makati
+Pickup Coffee|14.5615|121.0218|Makati
+Pickup Coffee|14.5591|121.0201|Makati
+Playworks School|14.5607|121.0234|Makati
+Poblacion|14.5664|121.0240|Makati
+Poly Incense|14.5593|121.0191|Makati
+Poochinis|14.5587|121.0238|Makati
+Popeyes|14.5586|121.0189|Makati
+Potato Corner|14.5618|121.0168|Makati
+Project Pie|14.5599|121.0258|Makati
+Purple Oven|14.5645|121.0137|Makati
+QualiMed|14.5497|121.0295|Makati
+Queens Taj Mahal|14.5631|121.0240|Makati
+Questronix Corporation|14.5632|121.0150|Makati
+RCBC|14.5616|121.0197|Makati
+RCBC (Ayala Vicente Madrigal)|14.5581|121.0196|Makati
+RCBC (Ayala)|14.5575|121.0220|Makati
+RCBC (Bel-Air)|14.5629|121.0262|Makati
+RCBC (Paseo de Roxas)|14.5580|121.0243|Makati
+RCBC (RCBC Plaza)|14.5606|121.0166|Makati
+RCBC (Salcedo)|14.5600|121.0204|Makati
+RCBC Plaza|14.5608|121.0164|Makati
+REACH International School|14.5644|121.0136|Makati
+Ramada Encore Makati|14.5652|121.0132|Makati
+Ramen Kuroda|14.5518|121.0270|Makati
+Ramen Nagi|14.5594|121.0192|Makati
+Randy's Donuts|14.5514|121.0279|Makati
+Rasa Baru|14.5592|121.0199|Makati
+Refinery|14.5609|121.0239|Makati
+Rekado Atbp.|14.5618|121.0165|Makati
+Relish at Ponte|14.5591|121.0201|Makati
+Restock|14.5652|121.0127|Makati
+Reyes Barbeque|14.5578|121.0230|Makati
+Rezidenza JMJ|14.5657|121.0144|Makati
+Ricco Renzo The Artists Cafe|14.5652|121.0229|Makati
+Ritz Towers|14.5529|121.0275|Makati
+Robinsons Bank (Sedeño Salcedo Village)|14.5580|121.0224|Makati
+Robinsons Summit Center|14.5576|121.0207|Makati
+Robinsons Supermarket|14.5509|121.0283|Makati
+Romantic Baboy (Paseo Center)|14.5577|121.0232|Makati
+Romulo Café|14.5631|121.0232|Makati
+Roxas Triangle Towers|14.5606|121.0276|Makati
+Royal Enfield|14.5637|121.0143|Makati
+Rumba|14.5577|121.0256|Makati
+Rustan's|14.5524|121.0267|Makati
+Rustan's Makati|14.5523|121.0266|Makati
+Rustan’s Fresh|14.5577|121.0229|Makati
+Ryu Ramen & Curry|14.5638|121.0221|Makati
+SEC Headquarters|14.5590|121.0261|Makati
+SM Hypermart|14.5638|121.0218|Makati
+SM Jazz Residences|14.5635|121.0218|Makati
+SPI Global|14.5644|121.0226|Makati
+STI Holdings Center|14.5560|121.0216|Makati
+Sagittarius Building|14.5611|121.0256|Makati
+Saint George Greek Orthodox Chapel|14.5601|121.0246|Makati
+Sala|14.5544|121.0238|Makati
+Salad Stop|14.5599|121.0201|Makati
+Salcedo Park|14.5603|121.0231|Makati
+Salcedo Saturday Market|14.5600|121.0231|Makati
+Salcedo Village|14.5596|121.0227|Makati
+Sampiro|14.5596|121.0233|Makati
+San Mig Food Ave.|14.5620|121.0273|Makati
+Sandwich Shop|14.5634|121.0219|Makati
+Santa Cruz|14.5643|121.0163|Makati
+Savemore (AirMall)|14.5627|121.0145|Makati
+Savor Park Cafe|14.5601|121.0245|Makati
+Sbarro|14.5577|121.0202|Makati
+Seattle's Best Coffee|14.5505|121.0285|Makati
+Seattle's Best Coffee (Valero)|14.5592|121.0200|Makati
+Securities and Exchange Commission|14.5590|121.0262|Makati
+Security Bank (Ayala - Rufino)|14.5587|121.0186|Makati
+Security Bank (HV Dela Costa)|14.5613|121.0226|Makati
+Security Bank (Salcedo)|14.5592|121.0212|Makati
+Security Bank (Savings)|14.5586|121.0188|Makati
+Security Bank Savings Center|14.5588|121.0188|Makati
+Serenitea|14.5508|121.0280|Makati
+Shaka|14.5596|121.0234|Makati
+Shakey's|14.5582|121.0221|Makati
+Signa Residences|14.5592|121.0191|Makati
+Single Origin Osteria|14.5608|121.0240|Makati
+Sisa's Secret|14.5510|121.0283|Makati
+Social Security System|14.5623|121.0265|Makati
+Society Lounge|14.5575|121.0264|Makati
+Somerset Central Salcedo|14.5612|121.0225|Makati
+Somerset Olympia|14.5564|121.0257|Makati
+Spices|14.5554|121.0254|Makati
+Spring|14.5634|121.0218|Makati
+Spurgeon School Foundation|14.5610|121.0207|Makati
+St. Andrew The Apostle Parish Church|14.5661|121.0237|Makati
+St. Andrew The Apostle Park|14.5663|121.0235|Makati
+St. Stamford Clinic|14.5559|121.0220|Makati
+Star Centrum|14.5623|121.0194|Makati
+Starbuck's Podium|14.5610|121.0165|Makati
+Starbucks|14.5615|121.0216|Makati
+Starbucks|14.5594|121.0230|Makati
+Starbucks|14.5517|121.0270|Makati
+Starbucks (6750 Ayala Avenue)|14.5531|121.0253|Makati
+Starbucks (Makati Stock Exchange)|14.5558|121.0234|Makati
+Starbucks (PNB Building Ayala Ave.)|14.5553|121.0230|Makati
+Starbucks (Pacific Star Building)|14.5612|121.0272|Makati
+Starbucks (Pearl Bank Center-Valero)|14.5588|121.0232|Makati
+Starbucks Reserve|14.5591|121.0193|Makati
+Sterling Bank of Asia (L. P. Leviste)|14.5593|121.0224|Makati
+Sterling Bank of Asia (Makati - Gil Puyat)|14.5624|121.0247|Makati
+Stoops|14.5627|121.0191|Makati
+Street Delights|14.5564|121.0258|Makati
+Subway|14.5585|121.0238|Makati
+Sultan|14.5592|121.0204|Makati
+Sultan Kudarat Monument|14.5580|121.0259|Makati
+Sultan Kudarat Monument Park|14.5580|121.0259|Makati
+Sultan Mediterranean Grill|14.5590|121.0206|Makati
+Supercare Medical Services|14.5609|121.0188|Makati
+Sweet Ideas Breads and Cakes|14.5594|121.0252|Makati
+TOSH Café|14.5588|121.0231|Makati
+Taiwan Chef White|14.5659|121.0139|Makati
+Takashi|14.5617|121.0210|Makati
+Tapadera|14.5647|121.0147|Makati
+Tea Farm Cafe|14.5578|121.0203|Makati
+Teaberi|14.5589|121.0199|Makati
+Terry's Selection|14.5592|121.0220|Makati
+The Alpha Suites|14.5626|121.0160|Makati
+The Church of Jesus Christ of Latter-day Saints|14.5616|121.0250|Makati
+The Coffee Bean & Tea Leaf|14.5605|121.0236|Makati
+The Coffee Bean & Tea Leaf|14.5632|121.0219|Makati
+The Columns|14.5618|121.0160|Makati
+The Feast Makati Salcedo|14.5600|121.0209|Makati
+The French Baker|14.5508|121.0280|Makati
+The Galley|14.5589|121.0236|Makati
+The KPMG Center|14.5577|121.0203|Makati
+The Kebab Factory|14.5639|121.0222|Makati
+The Lerato|14.5630|121.0169|Makati
+The Lobby|14.5549|121.0253|Makati
+The Marketplace|14.5626|121.0162|Makati
+The Marketplace|14.5523|121.0266|Makati
+The Peak|14.5601|121.0195|Makati
+The Peninsula Manila|14.5550|121.0253|Makati
+The Picasso Boutique Residence|14.5600|121.0243|Makati
+The Plantation|14.5605|121.0180|Makati
+The Shops Ayala Triangle Gardens|14.5569|121.0250|Makati
+The Strand Cafe|14.5615|121.0190|Makati
+The Suez Serviced Studios|14.5654|121.0152|Makati
+The Valero Tower|14.5592|121.0203|Makati
+The Wholesome Table|14.5608|121.0253|Makati
+The Zone|14.5628|121.0195|Makati
+Three Central Mall|14.5600|121.0183|Makati
+Tim Ho Wan|14.5511|121.0276|Makati
+Toby's Estate|14.5604|121.0250|Makati
+Tokyo Tokyo|14.5589|121.0191|Makati
+Tokyo Tokyo|14.5625|121.0276|Makati
+Top of the Citi|14.5590|121.0251|Makati
+Tordesillas|14.5619|121.0213|Makati
+Tous Les Jours|14.5632|121.0216|Makati
+Tower 6789|14.5580|121.0201|Makati
+Tower Club|14.5574|121.0219|Makati
+Toyota Makati|14.5637|121.0168|Makati
+Trafalgar Plaza|14.5608|121.0263|Makati
+Trattoria Altrové|14.5612|121.0214|Makati
+Tsumura Sushi Bar and Restaurant|14.5582|121.0224|Makati
+Twin Towers|14.5520|121.0286|Makati
+Two Central|14.5599|121.0181|Makati
+UCC Clockwork|14.5511|121.0276|Makati
+UCPB (Metropolitan)|14.5656|121.0141|Makati
+UCPB (Tordesillas)|14.5607|121.0233|Makati
+UCPB (Valero)|14.5589|121.0200|Makati
+UHS Essential Health Philippines Inc.|14.5563|121.0213|Makati
+UPRC VI|14.5621|121.0188|Makati
+Uncle John's|14.5606|121.0171|Makati
+Uncle John's|14.5614|121.0209|Makati
+Uncle John's|14.5546|121.0238|Makati
+Uncle John's|14.5605|121.0238|Makati
+UnionBank|14.5591|121.0242|Makati
+UnionBank (Ayala - Madrigal)|14.5580|121.0198|Makati
+UnionBank (H.V. Dela Costa)|14.5611|121.0209|Makati
+UnionBank (Makati City - Valero)|14.5585|121.0210|Makati
+UnionBank (San Agustin - Dela Costa)|14.5605|121.0259|Makati
+Urdaneta|14.5555|121.0297|Makati
+Urdaneta Apartments|14.5514|121.0291|Makati
+Urdaneta Barangay Hall|14.5552|121.0300|Makati
+Urdaneta Village|14.5560|121.0295|Makati
+Urdaneta Village Park|14.5562|121.0295|Makati
+V Corporate Center|14.5604|121.0248|Makati
+Valenzuela|14.5654|121.0231|Makati
+Valero Grand Suites|14.5592|121.0238|Makati
+Valero Grand Suites by Swiss Belhotel|14.5590|121.0239|Makati
+Valero Telepark|14.5596|121.0187|Makati
+Vanilla Bean Cafe|14.5602|121.0245|Makati
+Vernida 4|14.5590|121.0215|Makati
+Vicente Madrigal Building|14.5582|121.0197|Makati
+Vikings|14.5640|121.0221|Makati
+WSI Corporate Center|14.5649|121.0157|Makati
+Watsons|14.5637|121.0219|Makati
+Wendy's|14.5641|121.0222|Makati
+Wendy's|14.5579|121.0199|Makati
+Whistlestop|14.5590|121.0202|Makati
+Wildflour|14.5602|121.0248|Makati
+XO 46 Bistro Filipino|14.5585|121.0211|Makati
+Xmay Korean Food Mart|14.5605|121.0170|Makati
+Y Cafe|14.5609|121.0187|Makati
+YMCA of Makati|14.5646|121.0137|Makati
+Ya Kun Kaya Toast|14.5632|121.0218|Makati
+Yi Fang Tea|14.5595|121.0196|Makati
+Ymart Trading|14.5604|121.0170|Makati
+Yoshinoya|14.5587|121.0239|Makati
+Yuchengco Museum|14.5604|121.0164|Makati
+Yupangco Building|14.5625|121.0226|Makati
+ZUS Coffee|14.5582|121.0220|Makati
+Zabo Chicken|14.5640|121.0222|Makati
+Zuellig Building|14.5580|121.0266|Makati
+deli2go|14.5592|121.0246|Makati
+iAcademy|14.5613|121.0195|Makati
+tai koo hk roast|14.5605|121.0251|Makati

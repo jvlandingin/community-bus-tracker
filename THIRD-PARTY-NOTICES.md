@@ -1,9 +1,10 @@
 # Third-party notices
 
-This project bundles the following libraries in `assets/vendor/` and one
-typeface in `assets/fonts/`. They are served from the site itself rather than
-a CDN, so the app makes no third-party requests other than map tiles. Each
-keeps its own licence, reproduced or pointed to below.
+This project bundles the following libraries in `assets/vendor/`, one
+typeface in `assets/fonts/` and a list of places from OpenStreetMap in
+`assets/places.txt`. They are served from the site itself rather than a CDN,
+so the app makes no third-party requests other than map tiles. Each keeps its
+own licence, reproduced or pointed to below.
 
 The Supabase browser bundle is minified and carries no header comment of its
 own, so its notice is reproduced here rather than in the file. The Leaflet
@@ -101,6 +102,27 @@ This Font Software is licensed under the SIL Open Font License, Version 1.1.
 ```
 
 The full licence text is in `assets/fonts/OFL.txt`, next to the files.
+
+---
+
+## Places along the route: OpenStreetMap
+
+https://www.openstreetmap.org/copyright
+
+File: `assets/places.txt`, written by `tools/make-places.js` from
+OpenStreetMap's regional extracts: the names, points and towns of places near
+the route, for the stop picker's search.
+
+```
+© OpenStreetMap contributors
+
+OpenStreetMap data is available under the Open Database License (ODbL) 1.0:
+https://opendatacommons.org/licenses/odbl/1-0/
+```
+
+The file is a derivative database of OpenStreetMap, so it is offered under
+the ODbL too, not under this project's AGPL. It says so in its own first
+lines, and the picker credits OpenStreetMap under the places it lists.
 
 ---
 

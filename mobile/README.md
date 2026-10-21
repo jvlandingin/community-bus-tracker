@@ -186,7 +186,8 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
     minutes after the page closes.
 
   Not collected: names, accounts, contacts, the advertising ID, a watcher's
-  location, the saved stop, tickets or your bus. The share key is the route's,
+  location, the saved stop or what is typed to find it (the places along
+  the route are searched on the phone), tickets or your bus. The share key is the route's,
   not the person's: the app keeps it on the phone and sends it only to be
   checked, as a browser does. Users can delete their data: Stop removes the
   position, and everything else goes by itself.

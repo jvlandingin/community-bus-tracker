@@ -65,6 +65,31 @@ ways in. Saving the stop, the zoom, the switches, the direction, Stop, Keep
 and My tickets all happen while the phone swipes between moments, and
 Start is the one tap shown. The other rider's morning went too.
 
+## 2026-10-21: A pin from the bus, and places that are not stops
+
+The maintainer, with two screenshots from a trip: the stop card on the
+sharing tab saying "This bus has passed your stop" under YOUR PIN, and the
+picker over it. "Drop a pin does not work when sharing bus." It did nothing
+at all: the picker closed and the pin waited on the tracker's map, behind
+the tab the sharer was on. The tracker now comes up for the pin, asks where
+you get off, and the trip screen comes back once it is down.
+
+And a question: "can't we make a place searchable? Like what if it's not
+listed in our list?" The usual answer, a search box that asks Google or
+OpenStreetMap's own search, would send away what a rider types there, which
+is where they will be standing. Nothing about a watcher has ever left a
+phone here, and changing that is the deliberate conversation the invariants
+ask for, not a side effect of a feature. So the answer built keeps it
+there: about 4,300 named places along the
+route, from OpenStreetMap, in a file the site serves like any other and the
+phone searches itself. "Jollibee Imus", "school gen trias", a barangay, a
+subdivision's gate. The maintainer may still want a search that knows every
+address, and that would be the conversation, not this.
+
+The regional extracts came from download.openstreetmap.fr, since Overpass,
+the usual way to ask for a corridor, could not be reached from where this
+was built, the same wall as the public routers in September.
+
 ## 2026-10-21: The bus on the map while it comes
 
 The maintainer asked for the video's bus to come from further off, so it is

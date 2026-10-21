@@ -21,7 +21,8 @@ new Function('S', hav + prog + mine +
   'S.stopChainKms=stopChainKms;S.approachInfo=approachInfo;S.myStopWords=myStopWords;' +
   'S.haversineKm=haversineKm;S.namedStopKms=namedStopKms;S.stopsBetween=stopsBetween;S.rideState=rideState;' +
   'S.aboardBus=aboardBus;S.aboardInfo=aboardInfo;S.aboardWords=aboardWords;S.stopsAway=stopsAway;S.stopsBack=stopsBack;' +
-  'S.makeStopGuard=makeStopGuard;S.stopGuardUpdate=stopGuardUpdate;S.STOP_ARM_KM=STOP_ARM_KM;S.STOP_REACHED_KM=STOP_REACHED_KM;S.AT_STOP_KM=AT_STOP_KM;')(S);
+  'S.makeStopGuard=makeStopGuard;S.stopGuardUpdate=stopGuardUpdate;S.STOP_ARM_KM=STOP_ARM_KM;S.STOP_REACHED_KM=STOP_REACHED_KM;S.AT_STOP_KM=AT_STOP_KM;' +
+  'S.placeWords=placeWords;S.parsePlaces=parsePlaces;S.placeIndex=placeIndex;S.stopSearch=stopSearch;S.PLACE_KM=PLACE_KM;S.PLACE_HITS=PLACE_HITS;')(S);
 
 const txt = fs.readFileSync(path.join(ROOT, 'config-template.txt'), 'utf8').split(/\r?\n/);
 const CP = txt.filter(l => l.trim().startsWith('CHECKPOINT =')).map(l => {
@@ -394,6 +395,80 @@ console.log('\n=== 12. sharing stops at the stop you get off at ===');
         S.stopGuardUpdate(S.makeStopGuard(), me, NaN, 'north', 1) === false,
     'no guard, no bus on the chain or no stop: false, never a throw');
   check(!/Date|\bnow\b|speed|minute/.test(S.stopGuardUpdate.toString()), 'it reads places along the road and nothing about time');
+}
+
+console.log('\n=== 13. searching: the stops, and the places along the route that are not ===');
+// assets/places.txt, from tools/make-places.js, is searched on the phone and
+// never asked about. First the file as shipped, against config.txt rather
+// than the template: it has to fit the route the app actually loads, and a
+// fork that changed the route without running the tool again fails here.
+{
+  const text = fs.readFileSync(path.join(ROOT, 'assets', 'places.txt'), 'utf8');
+  const cfg = fs.readFileSync(path.join(ROOT, 'config.txt'), 'utf8').split(/\r?\n/);
+  const field = (l, n) => l.split('=').slice(1).join('=').split('|').map(x => x.trim())[n];
+  const cps = cfg.filter(l => /^CHECKPOINT\s*=/.test(l.trim())).map(l => ({ lat: +field(l, 2), lng: +field(l, 3) }));
+  const live = cfg.filter(l => /^STOP\s*=/.test(l.trim())).map(l => ({ name: field(l, 0), lat: +field(l, 1), lng: +field(l, 2) }));
+  const lines = text.split(/\r?\n/).filter(l => l && l[0] !== '#');
+  const raw = S.parsePlaces(text);
+  check(raw.length === lines.length && raw.length > 0, 'every line of assets/places.txt is a place', `${raw.length} of ${lines.length}`);
+  check(/© OpenStreetMap contributors/.test(text) && /Open Database License/.test(text),
+    'and the file says whose data it is and under what licence');
+  const P = S.placeIndex(raw, live);
+  const off = raw.filter(p => !P.some(q => q.name === p.name && q.lat === p.lat && q.lng === p.lng));
+  check(off.length === 0, 'every place is within ' + S.PLACE_KM + ' km of a stop in config.txt (if not, run tools/make-places.js)',
+    off.slice(0, 3).map(p => p.name).join(', '));
+  check(raw.every(p => !live.some(s => S.placeWords(s.name) === S.placeWords(p.name) && S.haversineKm(s, p) < 1.5)),
+    'none is a listed stop over again');
+  const chain = S.buildRouteChain(cps), kms = raw.map(p => S.routeProgressKm(p, cps, chain));
+  const back = kms.filter((k, i) => i && k < kms[i - 1] - 1e-9).length;
+  check(back === 0, 'and they run along the route, which is the order the picker lists them in', back ? back + ' out of order' : '');
+}
+// Then the search, on a handful of places made up beside the template's
+// stops, so it reads the same whatever OpenStreetMap holds this year.
+{
+  const by = (n, town, name, dLat) => `${name || 'x'}|${(stop(n).lat + (dLat || .0008)).toFixed(4)}|${stop(n).lng.toFixed(4)}|${town}`;
+  const lines = [
+    by('Crossing Mendez', 'Tagaytay', '7-Eleven (Mendez Junction)'),
+    by('Javalera', 'General Trias', 'Jollibee'), by('Javalera', 'General Trias', '7-Eleven'),
+    by('Lancaster New City', 'Imus', 'Jollibee (Lancaster)'),
+    by('S&R Kawit', 'Kawit', 'Jollibee'), by('S&R Kawit', 'Kawit', 'Kawit Municipal Hall'), by('Evo City', 'Kawit', 'Vista Mall Kawit'),
+    by('Coastal Road', 'Parañaque', 'Parañaque Cathedral'),
+    'Far away|10.3000|123.9000|Cebu'
+  ];
+  const P = S.placeIndex(S.parsePlaces(lines.join('\n')), STOPS);
+  const find = q => S.stopSearch(q, STOPS, P);
+  check(P.length === lines.length - 1 && !P.some(p => p.name === 'Far away'),
+    'a place far from every stop is not on this route, whatever the file says');
+  const all = find('');
+  check(all.stops.length === STOPS.filter(s => !isNaN(s.lat)).length && all.places.length === 0 && all.more === 0,
+    'nothing typed: every stop, and no place');
+  check(find('j').places.length === 0 && find('j').stops.some(s => s.name === 'Javalera'),
+    'one letter: the stops it starts, and no place, which would be half the route');
+  check(find('kawit').stops.map(s => s.name).join() === 'S&R Kawit' && find('shakey').stops.map(s => s.name).join() === "Salaban (Shakey's Bypass)" &&
+        find('s&r').stops.some(s => s.name === 'S&R Kawit'),
+    'a stop is found by the start of any word of its name, ampersand and apostrophe and all');
+  const jb = find('jollibee');
+  check(jb.stops.length === 0 && jb.places.map(p => p.name + ' near ' + p.near).join() ===
+        'Jollibee near Javalera,Jollibee (Lancaster) near Lancaster New City,Jollibee near S&R Kawit',
+    'a place that is not a stop is found by its name, with the stop it is near, in the order of the file', jb.places.map(p => p.near).join());
+  check(find('jollibee kawit').places.map(p => p.near).join() === 'S&R Kawit' && find('jollibee general trias').places.map(p => p.near).join() === 'Javalera',
+    'a town after the name narrows it to that town');
+  check(find('7-eleven javalera').places.map(p => p.name).join() === '7-Eleven' && find('jollibee lancaster new').places.length === 1,
+    'and so does the stop it is near');
+  check(find('kawit').places.map(p => p.name).join() === 'Kawit Municipal Hall,Vista Mall Kawit',
+    'a town on its own finds the places named after it, not every place in it');
+  check(find('7eleven').places.length === 2 && find('7-eleven').places.length === 2 && find('mendez junction').places.length === 1,
+    '"7eleven" finds 7-Eleven, and a branch is found by its name');
+  check(find('paranaque').places.map(p => p.name).join() === 'Parañaque Cathedral', '"paranaque" finds Parañaque');
+  check(find('zzzz').stops.length === 0 && find('zzzz').places.length === 0 && find('jollibee cebu').places.length === 0,
+    'and nothing, for what is nowhere on the route');
+  const many = S.placeIndex(STOPS.slice(0, 40).map(s => ({ name: 'Sari-sari', lat: s.lat, lng: s.lng, town: '' })), STOPS);
+  const capped = S.stopSearch('sari', STOPS, many);
+  check(capped.places.length === S.PLACE_HITS && capped.more === 40 - S.PLACE_HITS,
+    'at most ' + S.PLACE_HITS + ' places, and how many more there are', `${capped.places.length} + ${capped.more}`);
+  check(S.parsePlaces('# a note\n\nOnly a name\nNo|place|here\nGood|14.1|120.9|Imus\n|14|120').map(p => p.name + '/' + p.town).join() === 'Good/Imus',
+    'a line that is not a place is passed over, never a throw');
+  check(S.stopSearch('anything', [], []).places.length === 0 && S.placeIndex([], []).length === 0, 'and nothing to search finds nothing');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

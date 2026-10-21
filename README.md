@@ -36,7 +36,8 @@ company's name or initials, for the same reason.
   *about 5 stops before yours · 3.0 km* — measured along the road
   rather than as the crow flies. Two stops out it says **Malapit na!**, and
   **Sakay na!** when yours is next; phones that can vibrate can buzz once.
-  Pick from the route's own stop list, or drop a pin. There is also an opt-in ➤
+  Pick from the route's own stop list, type a place along the route that is
+  not on it (*Jollibee Imus*), or drop a pin. There is also an opt-in ➤
   control on the map that shows where you are. **All of this stays on your
   phone**: the stop is saved in the browser, the distance is worked out on the
   device from positions the page already has, and nothing about a person
@@ -222,6 +223,15 @@ coach parked on the Tagaytay ridge above Taal Lake. It is drawn in code
 (`sceneSvg()` in `index.html`), not photographed, so nothing breaks elsewhere,
 but it is unmistakably Cavite: a fork redraws the ground or keeps the volcano,
 then runs `node tools/make-pictures.js` to redraw the covers.
+
+**So is the list of places the stop picker searches.** `assets/places.txt`
+holds the named places along this route, from OpenStreetMap, so a rider can
+type *Jollibee Imus* as well as pick a listed stop. A fork downloads its own
+region's extracts (from download.openstreetmap.fr or Geofabrik) and runs
+`node tools/make-places.js its-region-latest.osm.pbf` after filling in its
+stops, or deletes the file and searches its stops alone. The page ignores a
+place far from every stop in `config.txt`, and `test-mystop.js` fails until
+the file fits the route.
 
 The two adoption pages need two more edits by hand. A printed poster has no
 runtime to ask what host it is on, so `flyer.html` states the deployment's URL

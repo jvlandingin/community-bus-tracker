@@ -1116,6 +1116,76 @@ public id in `GONE`, in memory only, so a poll answered before
 trip has a public id of its own, so one gone is gone for good. Found while
 filming the showcase video; `test-boot.js` section 14 holds it.
 
+**A pin from the sharing tab is dropped on the tracker's map** (October
+2026). The picker opens from the stop card on both tabs, but there is one
+map, on the tracker. "Drop a pin instead" armed that map and scrolled to it
+while it was hidden behind the sharing tab, so a sharer tapping it saw the
+picker close and nothing else: the maintainer's report, with a screenshot of
+"This bus has passed your stop" and no way to move the pin. `startPinMode()`
+now brings the tracker up when it is not on screen, asks "Tap the map where
+you get off." on a bus, and `cancelPinMode()` takes the sharer back to the
+trip once the pin is down or cancelled. Leaving the tracker ends pin mode
+(`switchTab()`), so a tap on the map later drops nothing. The bar that says
+what to do sits beside the map's buttons now: it had always been under them,
+which hid its first words. `test-boot.js` section 14.
+
+**Places that are not stops** (October 2026). The maintainer's question:
+"what if it's not listed in our list?" A rider waits at a Jollibee, a
+barangay hall, the gate of their subdivision, and gets off at their office;
+the posters list 71 stops. The picker now searches those places too, once
+two letters are typed, under "Other places", each with the listed stop it
+is near: *Jollibee (Lancaster), near Savemore - The Avenue*. Picked, a place
+is saved exactly as a stop or a pin is, a name and a point, and the card
+measures it along the chain like any other.
+
+- **Searched on the phone, never asked about.** An online geocoder was the
+  obvious build and was not built: what is typed into this box is where the
+  person typing will be standing, and nothing about a watcher leaves the
+  device (the invariant). It would also have been a second third party
+  beside CARTO. So the places along this one route, about 4,300, are a
+  static file, `assets/places.txt`, fetched whole from the site itself the
+  first time the picker opens (`loadPlaces()`), the same request for
+  everyone, and searched in memory (`stopSearch()`). About 55 KB over the
+  wire; 5 ms a keystroke on a laptop. `test-boot.js` section 10 fails if a
+  request carries anything typed.
+- **Made from OpenStreetMap by `tools/make-places.js`**, from the regional
+  extracts (Calabarzon and Metro Manila for this route), with its own
+  reader for `.osm.pbf` in plain Node, like every tool here. Overpass, the
+  usual way to ask OSM for a corridor, was out of reach from where this was
+  built; the extracts were not, and need no server at all. The data is
+  under the ODbL, so the file says so in its first lines, the picker credits
+  OpenStreetMap under the places it lists, and THIRD-PARTY-NOTICES.md has
+  the licence. The file is offered under the ODbL, not the AGPL.
+- **What is kept:** things a rider would point at (shops and chains, banks,
+  petrol stations, schools, churches, malls, hotels, barangays,
+  subdivisions, offices of government, parks), within 600 m of a listed stop
+  or 350 m of the line between two neighbouring stops. Not along CAVITEX,
+  where the stops are 11 km apart and nobody gets off. Streets are left out,
+  since one runs along the road for kilometres and a single point for it
+  would be arbitrary; so are names that say what a thing is and not which
+  one ("Guard House", "Block 9", "Purok 102") and anything called what a
+  listed stop is called. An area whose middle is off the road, a barangay
+  or a subdivision, is placed at its edge nearest the road, where its
+  people would wait.
+- **Found by its name, its town or its stop.** Every typed word has to start
+  a word of the name, so "jollibee" finds every Jollibee, and words left
+  over can match the place's town or the stop it is near: "jollibee kawit",
+  "school gen trias", "jollibee javalera". The town comes from the town's
+  border in OSM, which the tool reads too. A town alone finds the places
+  named after it, never every place in it. Accents and marks fold away
+  (`placeWords()`), so "paranaque" finds Parañaque and "7eleven" 7-Eleven.
+  Stops are searched the same way now, by the start of a word rather than
+  anywhere in it.
+- **One choice per name per stop.** Thirty places a search at most, in
+  route order, then how many more and "Add the town to see fewer." Two
+  places with one name nearest one stop are one place to a rider choosing
+  between labels, so the tool keeps the one nearest the road.
+- **A file is a promise about one route.** The page drops any place more
+  than 2 km from every stop in `config.txt`, so a fork that kept this file
+  shows none of Cavite, and `test-mystop.js` section 13 fails until the fork
+  runs the tool for its own region or deletes the file. Without the file the
+  picker searches the stops alone, as it always did.
+
 ## Following one bus, and the town lines
 
 October 2026. **Send a link**, in a bus's popup, hands over a

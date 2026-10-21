@@ -698,15 +698,22 @@
   }
   .stoplist button .approx{color:var(--muted); font-weight:600; font-size:var(--fs-cap);}
   .stoplist .empty{padding:14px 2px; color:var(--muted); font-size:var(--fs-small); font-weight:600;}
+  /* Places that are not stops (assets/places.txt), set apart under their
+     own heading, each with the stop it is near on a line of its own. */
+  .stoplist .placeshead{margin:10px 2px 2px; font-size:var(--fs-cap); font-weight:800; letter-spacing:.08em; color:var(--muted); text-transform:uppercase;}
+  .stoplist button .near{display:block; margin-top:1px; color:var(--muted); font-weight:600; font-size:var(--fs-cap);}
+  .stoplist .osm{padding:6px 2px 2px; color:var(--muted); font-size:var(--fs-cap); font-weight:600;}
   .pickrow{display:flex; gap:6px; margin-top:10px;}
   .pickrow button{
     flex:1; min-height:var(--tap); border-radius:var(--r-m); padding:0 8px;
     border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
     font-family:inherit; font-size:var(--fs-label); font-weight:700; cursor:pointer;
   }
-  /* Shown over the map while the reader is placing a pin by hand. */
+  /* Shown over the map while the reader is placing a pin by hand. Beside
+     Leaflet's buttons rather than under them (10px in, var(--tap) wide, and
+     a gap): from the left edge they hid the first words of what to do. */
   .pinmode{
-    position:absolute; left:8px; right:8px; top:8px; z-index:900;
+    position:absolute; left:calc(18px + var(--tap)); right:8px; top:8px; z-index:900;
     padding:8px 10px; border-radius:var(--r-m); background:var(--mine); color:#fff;
     font-size:var(--fs-label); font-weight:700; box-shadow:var(--sh-2);
     display:flex; align-items:center; gap:8px;
@@ -1951,7 +1958,7 @@
       <h4 class="ok">If you're just watching the map</h4>
       <p>The app never asks for your location on its own, and you can use the whole map without ever giving it. No account, no name, no phone number. We can't see who is watching.</p>
       <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the location button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the page or the app.</p>
-      <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the page or the app, and is never sent either.</p>
+      <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. Searching for a stop or a place happens on your phone as well: the list of places along the route comes whole from this site, so <b>what you type is never sent</b>. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the page or the app, and is never sent either.</p>
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
       <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number. On our side it never adds up across trips: <b>no running total is kept for any driver or any bus on the server.</b> The sharer's own phone adds theirs up for their bus in My tickets, and that never leaves it.</p>
       <p>And one more, also only if you tap it: <b>Not a real bus?</b>, on a bus, or <b>Wrong?</b>, on a sighting, to tell the organizer something on the map looks wrong. It is stored the same scrambled way as Salamat, so it can't be traced back to you and a second tap isn't counted twice. <b>Only the organizer sees how many</b>, not the sharer and not other riders, and it is deleted when that trip ends or the sighting expires. Nothing happens on its own: the organizer looks and decides.</p>
@@ -1971,7 +1978,7 @@
       </div>
 
       <h4 class="hon">To be fully honest</h4>
-      <p>• The map's background images load from CARTO, a map provider. Like any website you visit, they can see your device's IP address. Everything else (code, fonts) is served from this site itself.<br>
+      <p>• The map's background images load from CARTO, a map provider. Like any website you visit, they can see your device's IP address. Everything else (code, fonts, the list of places) is served from this site itself.<br>
       • The database runs on Supabase, which keeps standard server logs like any hosting service.<br>
       • Anyone who opens this site can see live bus positions, no key needed. That's the point of the tool, but worth saying plainly: while you share, anyone can watch, and could write down what they see as it happens. This site itself keeps only where the bus is now.<br>
       • Sharing normally needs the key from the group chat. The organizer can open it to everyone, and while it is open anyone at all can put a bus on the map, so a bus here is somebody's report, not a fact.</p>
@@ -2133,7 +2140,7 @@
     </h3>
     <div class="modal-top">
       <p class="hint" style="margin:0 0 10px;">Saved on this phone only.</p>
-      <input type="text" class="stopsearch" id="stopSearch" placeholder="Type a few letters, e.g. Imus" autocomplete="off" oninput="renderStopList()">
+      <input type="text" class="stopsearch" id="stopSearch" placeholder="A stop or a place, e.g. Jollibee Imus" autocomplete="off" oninput="renderStopList()">
       <div class="pickrow">
         <button type="button" id="nearestBtn" onclick="pickNearestStop()">Use my current location</button>
         <button type="button" onclick="startPinMode()">Drop a pin instead</button>
@@ -2209,7 +2216,7 @@
 
       <div class="mapwrap">
         <div class="pinmode hidden" id="pinMode">
-          <span>Tap the map where you wait for the bus.</span>
+          <span id="pinModeWords">Tap the map where you wait for the bus.</span>
           <button type="button" onclick="cancelPinMode()">Cancel</button>
         </div>
         <div id="map"></div>
@@ -4314,6 +4321,8 @@ document.addEventListener('keydown', function(e){
 // Tabs + filter
 // ============================================================
 function switchTab(which) {
+  // A pin is dropped on the map on screen: leaving the map ends it.
+  if (which !== 'track' && pinModeOn){ pinBackTo = ''; cancelPinMode(); }
   const t=document.getElementById('tabTrack'), o=document.getElementById('tabOnbus');
   t.classList.toggle('active', which==='track');
   o.classList.toggle('active', which==='share');
@@ -6091,6 +6100,96 @@ function stopGuardUpdate(g, busKm, stopKm, dir, apartKm){
   g.done = true;
   return true;
 }
+
+// Searching for where you wait or get off (October 2026): the route's stops,
+// and from two letters on, the places along the route that are not stops (a
+// mall, a church, a barangay, a Jollibee) from assets/places.txt, which
+// tools/make-places.js writes from OpenStreetMap. All of it on this phone:
+// the list arrives whole, from the site itself, and what is typed is never
+// sent, because what someone types here is where they will be standing.
+//
+// A name or a search as plain words: no accents, no capitals and nothing
+// between letters but a space, so "paranaque" finds Parañaque and "s&r"
+// S&R Kawit. tools/make-places.js reads names with it too.
+function placeWords(s){
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ').trim();
+}
+// assets/places.txt, a place a line: name|latitude|longitude|town, the town
+// left off where the tool could not tell it. Anything else in it (its
+// notes, a blank line, a line cut short) is passed over.
+function parsePlaces(text){
+  const out = [];
+  String(text || '').split(/\r?\n/).forEach(function(l){
+    if (!l || l.charAt(0) === '#') return;
+    const p = l.split('|');
+    const name = (p[0] || '').trim(), lat = parseFloat(p[1]), lng = parseFloat(p[2]);
+    if (name && !isNaN(lat) && !isNaN(lng)) out.push({ name:name, lat:lat, lng:lng, town:(p[3] || '').trim() });
+  });
+  return out;
+}
+// Each place with the stop it is nearest, which is how the picker says where
+// it is ("near Javalera"), and the words it can be found by, worked out once
+// when the list arrives. A place more than PLACE_KM from every stop is not
+// on this route, whatever the file says: a fork's, say, that kept this
+// route's places.
+const PLACE_KM = 2;
+function placeIndex(places, stops){
+  const ss = stops.filter(function(s){ return !isNaN(s.lat) && !isNaN(s.lng); });
+  if (!ss.length) return [];
+  let lat0 = 0;
+  ss.forEach(function(s){ lat0 += s.lat / ss.length; });
+  // Flat at the route's latitude, which over a few km is near enough to pick
+  // the nearest of seventy stops for thousands of places in a blink.
+  const kx = 111.320 * Math.cos(lat0 * Math.PI / 180), ky = 110.574;
+  const out = [];
+  for (let i=0;i<places.length;i++){
+    const p = places[i];
+    let best = 0, d2 = Infinity;
+    for (let j=0;j<ss.length;j++){
+      const dx = (p.lng - ss[j].lng) * kx, dy = (p.lat - ss[j].lat) * ky, d = dx*dx + dy*dy;
+      if (d < d2){ d2 = d; best = j; }
+    }
+    if (d2 > PLACE_KM * PLACE_KM) continue;
+    out.push({ name:p.name, lat:p.lat, lng:p.lng, near:ss[best].name, words:placeWords(p.name),
+               about:placeWords((p.town || '') + ' ' + ss[best].name) });
+  }
+  return out;
+}
+// What a search finds: the stops with every typed word at the start of a
+// word of their name (all of them, for nothing typed), then, from two
+// letters, the places that match the same way, and after them those that
+// match with the words of their town and the stop they are near ("bdo
+// imus", "jollibee javalera"), each in the order its list has them: the
+// route's, for the places. At most PLACE_HITS places; `more` is how many
+// were left out. Typed with its spaces taken out, a search also finds a
+// name that starts with it, so "7eleven" is 7-Eleven.
+const PLACE_HITS = 30;
+function stopSearch(q, stops, places){
+  const typed = placeWords(q), flat = typed.replace(/ /g, '');
+  const qs = typed ? typed.split(' ') : [];
+  const starts = function(words, w){ return (' ' + words).indexOf(' ' + w) >= 0; };
+  const has = function(words){
+    if (!qs.length || words.replace(/ /g, '').indexOf(flat) === 0) return true;
+    for (let i=0;i<qs.length;i++){ if (!starts(words, qs[i])) return false; }
+    return true;
+  };
+  const out = { stops:[], places:[], more:0 };
+  out.stops = stops.filter(function(s){ return !isNaN(s.lat) && !isNaN(s.lng) && has(placeWords(s.name)); });
+  if (flat.length < 2) return out;
+  const named = [], helped = [];
+  for (let i=0;i<places.length;i++){
+    const p = places[i];
+    if (has(p.words)) named.push(p);
+    // Some of it has to be the place's own name, or "imus" would bring
+    // every place in Imus.
+    else if (has(p.words + ' ' + p.about) && qs.some(function(w){ return starts(p.words, w); })) helped.push(p);
+  }
+  const all = named.concat(helped);
+  out.places = all.slice(0, PLACE_HITS);
+  out.more = all.length - out.places.length;
+  return out;
+}
 // ---- END MY STOP -------------------------------------------------------
 
 // ---- My stop: storage, the picker, and the marks on the map -----------
@@ -6453,29 +6552,54 @@ function openStopPicker(){
   if (box) box.value = '';
   const clear = document.getElementById('clearStopBtn');
   if (clear) clear.classList.toggle('hidden', !MYSTOP);
+  loadPlaces();
   renderStopList();
   openModal('stopModal');
+}
+// The places along the route that are not stops, for the search
+// (stopSearch()): null until the picker first opens, since most visits never
+// do. Fetched whole from the site itself, the same request for everyone,
+// so it carries nothing typed. A failed fetch leaves the stops to search on
+// their own, and the next opening tries again.
+let PLACES = null;
+function loadPlaces(){
+  if (PLACES !== null) return;
+  PLACES = [];
+  fetch('assets/places.txt').then(function(r){
+    if (!r.ok) throw new Error('places ' + r.status);
+    return r.text();
+  }).then(function(t){
+    PLACES = placeIndex(parsePlaces(t), STOPS);
+    const m = document.getElementById('stopModal');
+    if (m && !m.classList.contains('hidden')) renderStopList();
+  }).catch(function(){ PLACES = null; });
 }
 function renderStopList(){
   const box = document.getElementById('stopList');
   if (!box) return;
-  const q = (document.getElementById('stopSearch').value || '').trim().toLowerCase();
-  const hits = STOPS.filter(function(s){
-    return !isNaN(s.lat) && (!q || s.name.toLowerCase().indexOf(q) >= 0);
-  });
-  if (!hits.length){ box.innerHTML = '<div class="empty">No stop here matches that. Try fewer letters, or drop a pin.</div>'; return; }
+  const found = stopSearch(document.getElementById('stopSearch').value, STOPS, PLACES || []);
+  if (!found.stops.length && !found.places.length){ box.innerHTML = '<div class="empty">Nothing here matches that. Try fewer letters, or drop a pin.</div>'; return; }
   // Names go into data attributes and the coordinates come back off the
   // element, rather than being interpolated into an inline onclick. Two of
   // this route's stops would have had to survive that trip through an HTML
   // attribute and then a JavaScript string: "S&R Kawit" carries an ampersand
   // and "Salaban (Shakey's Bypass)" an apostrophe. Both happen to work, and
   // neither is worth relying on when a fork's stop list is arbitrary text
-  // from config.txt.
-  box.innerHTML = hits.map(function(s){
+  // from config.txt, or a place's name from OpenStreetMap.
+  const pick = function(s, after){
     return '<button type="button" data-lat="' + s.lat + '" data-lng="' + s.lng +
-      '" data-name="' + escapeHtml(s.name) + '">' +
-      escapeHtml(s.name) + (s.conf === 'L' ? ' <span class="approx">(approx.)</span>' : '') + '</button>';
-  }).join('');
+      '" data-name="' + escapeHtml(s.name) + '">' + escapeHtml(s.name) + after + '</button>';
+  };
+  box.innerHTML = found.stops.map(function(s){
+      return pick(s, s.conf === 'L' ? ' <span class="approx">(approx.)</span>' : '');
+    }).join('') +
+    // Not stops, so set apart from them, each by the stop it is near. The
+    // credit is OpenStreetMap's licence, wherever its names are shown.
+    (found.places.length ? '<div class="placeshead">Other places</div>' + found.places.map(function(p){
+      return pick(p, ' <span class="near">near ' + escapeHtml(p.near) + '</span>');
+    }).join('') : '') +
+    (found.more ? '<div class="empty">And ' + found.more + ' more. Add the town to see fewer.</div>' : '') +
+    (found.places.length ? '<div class="osm">Places © OpenStreetMap contributors</div>' : '');
 }
 // One delegated listener, attached once: the list is rewritten on every
 // keystroke, so per-button handlers would be re-bound on each one.
@@ -6515,9 +6639,19 @@ function pickNearestStop(){
   }, { enableHighAccuracy:false, maximumAge:30000, timeout:15000 });
 }
 
+// The sharing tab has no map, so a pin asked for there is dropped on the
+// tracker's, and the sharer is taken back once it is down or cancelled.
+// Until October 2026 the button armed a map that was not on the screen, and
+// a sharer tapping it saw nothing happen at all.
+let pinBackTo = '';
 function startPinMode(){
   closeModal('stopModal');
+  const track = document.getElementById('trackView');
+  pinBackTo = track && track.classList.contains('hidden') ? 'share' : '';
+  if (pinBackTo) switchTab('track');
   pinModeOn = true;
+  const words = document.getElementById('pinModeWords');
+  if (words) words.textContent = sharing || ABOARD ? 'Tap the map where you get off.' : 'Tap the map where you wait for the bus.';
   const bar = document.getElementById('pinMode');
   if (bar) bar.classList.remove('hidden');
   if (map){
@@ -6530,10 +6664,12 @@ function pinModeClick(e){
   cancelPinMode();
 }
 function cancelPinMode(){
-  pinModeOn = false;
+  const back = pinBackTo;
+  pinModeOn = false; pinBackTo = '';
   const bar = document.getElementById('pinMode');
   if (bar) bar.classList.add('hidden');
   if (map) map.off('click', pinModeClick);
+  if (back) switchTab(back);
 }
 
 // The blue dot. Opt-in, per visit, and it never leaves the device: nothing

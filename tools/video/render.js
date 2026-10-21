@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Renders the showcase video: about 38 seconds, vertical (1080x1920), of the
+// Renders the showcase video: about 42 seconds, vertical (1080x1920), of the
 // real tracker being used on a phone, with drawn interludes made by the
 // app's own picture code and the interface's sounds (sounds.js).
 //
@@ -102,7 +102,7 @@ function road(names){
   for (let i = 1; i < pts.length; i++) at.push(at[i - 1] + metres(pts[i - 1], pts[i]) / 1000);
   const total = at[at.length - 1];
   return {
-    total,
+    total, names:names.slice(),
     // The point km along the road, and where each named stop is on it.
     point(km){
       km = Math.max(0, Math.min(total, km));
@@ -358,6 +358,28 @@ class Phone {
     await this.page.touchscreen.tap(x, y);
     return { x, y };
   }
+  // One element of the page as a picture on nothing, upright: what is
+  // around it hidden for the moment the picture takes, while the phone is
+  // not being filmed. Returns the PNG, the element's size in the page, and
+  // where each of parts (selectors inside it) is on it, from 0 to 1 across
+  // and down: a point just in from its left, halfway down it.
+  async picture(sel, parts){
+    await this.page.addStyleTag({ content:'html.v-pic, html.v-pic body, html.v-pic .modal{background:transparent !important; backdrop-filter:none !important}' +
+      'html.v-pic body *{visibility:hidden !important} html.v-pic ' + sel + ', html.v-pic ' + sel + ' *{visibility:visible !important}' +
+      'html.v-pic ' + sel + '{transform:none !important; box-shadow:none !important}' });
+    await this.page.evaluate(() => document.documentElement.classList.add('v-pic'));
+    const el = await this.page.$(sel);
+    const box = await el.boundingBox();
+    const at = await this.page.evaluate(([s, ps]) => {
+      const e = document.querySelector(s).getBoundingClientRect(), out = {};
+      ps.forEach(p => { const q = document.querySelector(s + ' ' + p); if (!q) return; const r = q.getBoundingClientRect();
+        out[p] = { x:(r.left + 14 - e.left) / e.width, y:(r.top + r.height / 2 - e.top) / e.height }; });
+      return out;
+    }, [sel, parts || []]);
+    const png = await el.screenshot({ omitBackground:true });
+    await this.page.evaluate(() => document.documentElement.classList.remove('v-pic'));
+    return { png, w:box.width, h:box.height, parts:at };
+  }
   // Pixels per CSS pixel on the screen, for a close look: the page is laid
   // out the same, only drawn finer, so the camera can go nearer.
   async resolution(dsf){
@@ -440,11 +462,12 @@ class Stage {
     // (motion.js).
     const html = fs.readFileSync(path.join(__dirname, 'stage.html'), 'utf8').replace('<!--APP-STYLES-->', appCss)
       .replace('<!--APP-PICTURES-->', () => '<script>' + picturesCode() + '</script>');
-    this.screenBuf = null;
+    this.screenBuf = null; this.printBuf = null;
     await this.ctx.route(STAGE + '/**', route => {
       const u = new URL(route.request().url());
       if (u.pathname === '/') return route.fulfill({ status:200, contentType:'text/html', body:html });
       if (u.pathname === '/screen') return route.fulfill({ status:200, contentType:'image/jpeg', body:this.screenBuf });
+      if (u.pathname === '/print') return route.fulfill({ status:200, contentType:'image/png', body:this.printBuf });
       return route.fulfill({ status:404, body:'' });
     });
     await this.ctx.route(SITE + '/**', route => serveRepo(route, route.request().url()));
@@ -456,15 +479,22 @@ class Stage {
     this.n = 0;
   }
   init(plan){ return this.page.evaluate(p => V.init(p), plan); }
+  // A picture of part of the page for the stage to move on its own (the
+  // ticket coming off the phone), its size in the page's pixels.
+  print(img){
+    this.printBuf = img.png;
+    return this.page.evaluate(([u, w, h]) => V.print(u, w, h), [STAGE + '/print?n=' + (++this.n), img.w, img.h]);
+  }
   event(e){ return this.page.evaluate(e => V.event(e), e); }
   // clock: the time the phone on screen shows in its status bar (a film of
-  // the app), or nothing.
-  async frame(t, screen, clock){
+  // the app), or nothing. live: where the page's things are now, for the
+  // stage's motion graphics (LIVE in film.js), or nothing to keep the last.
+  async frame(t, screen, clock, live){
     if (screen){
       this.screenBuf = screen;
       await this.page.evaluate(u => V.screen(u), STAGE + '/screen?n=' + (++this.n));
     }
-    await this.page.evaluate(([t, c]) => V.render(t, c), [t, clock || null]);
+    await this.page.evaluate(([t, c, l]) => V.render(t, c, l), [t, clock || null, live || null]);
     const r = await this.cdp.send('Page.captureScreenshot', { format:'jpeg', quality:93 });
     return Buffer.from(r.data, 'base64');
   }

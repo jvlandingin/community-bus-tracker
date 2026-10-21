@@ -25,6 +25,21 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-21: Motion graphics, and three ways to the ticket
+
+Watching the promo, the maintainer found the waiting unclear, with so much
+happening at once, the dress part a cropped picture that looked like a
+mistake, and the swipe from the stop to the ticket awkward; they asked for
+motion graphics wherever they would explain without words, made to look
+professional. The stage now draws them from where the page has things:
+a pin coming down on the stop, a sight on the bus and its way to the pin
+with a dot per stop that goes as the card counts it, the bus going out to
+other riders' phones at Start, stars for salamat, a marker and a tick at
+the stop on board, parts flying into a purse, a stroke of paint for each
+new look, the camera going in from My tickets to the bus. For the ticket
+they asked for options: printed out of the phone, a stamp's ink, or the
+camera through the stop and a flash, each rendered for them to choose.
+
 ## 2026-10-21: A promo, not a tutorial
 
 Looking at the parts, the maintainer found the video showed too much: it

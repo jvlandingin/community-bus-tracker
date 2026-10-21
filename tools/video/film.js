@@ -30,13 +30,23 @@ const R = require('./render.js');
 const S = require('./sounds.js');
 
 // ---- How long each scene runs, in seconds ----------------------------------
-// As long as its beats take at the film's pace (below): about 38 seconds in
+// As long as its beats take at the film's pace (below): about 42 seconds in
 // all, an end card of 6.5 included.
-const DUR = { title:3.2, wait:8.2, share:5.9, trip:2.4, getoff:3.8, ticket:2.9, dress:4.95, end:6.5 };
+const DUR = { title:3.2, wait:10.1, share:6.6, trip:2.4, getoff:3.3, ticket:4.0, dress:5.6, end:6.5 };
 const T = {};
 let acc = 0;
 Object.keys(DUR).forEach(k => { T[k] = acc; acc += DUR[k]; });
 T.total = acc;
+
+// How the stop hands over to the ticket, of three ways put to the maintainer
+// (October 2026): the ticket printed out of the top of the phone, a rubber
+// stamp whose ink wipes to it, or the camera through the stop and a flash.
+// --handoff print|stamp|zoom, print if none.
+const HANDOFF = (() => {
+  const i = process.argv.indexOf('--handoff'), h = i >= 0 ? process.argv[i + 1] : 'print';
+  if (['print', 'stamp', 'zoom'].indexOf(h) < 0) throw new Error('--handoff is print, stamp or zoom, not ' + h);
+  return h;
+})();
 
 // ---- The pace -----------------------------------------------------------------
 // The app speaks for itself: three captions, one for each part of the story
@@ -74,6 +84,9 @@ const SOUTH = R.road(['One Ayala Terminal', 'Makati Shangri-La', 'Paseo de Roxas
   'Malagasang 1-G', 'Greengate Homes', 'SM City General Trias', 'Santiago', 'Vista Mall General Trias', 'Sunny Brooke', 'Monterey']);
 const WAIT = 'Javalera', OFF = 'SM City General Trias';
 const WAIT_KM = NORTH.km(WAIT);   // 24.7 on this road
+// The stops before it, for the way the bus still has to come on the map:
+// the card counts some of these off as it comes (LIVE, and G.trail).
+const DOTS = NORTH.names.slice(NORTH.names.indexOf(WAIT) - 9, NORTH.names.indexOf(WAIT)).map(n => ({ lat:R.stop(n).lat, lng:R.stop(n).lng }));
 
 // ---- The morning ---------------------------------------------------------------
 // The sharer's phone: a Wednesday morning inside the northbound hours, then
@@ -112,21 +125,25 @@ function buses(world){
   // Javalera the count changes at 9.25 (7 stops), 11.8, 14.4, 15.75, 18.25,
   // 19.15 (2, Malapit na!, and the buzz), 20.15, 22.25 and 22.65 km (Sakay
   // na!), measured on this road. It stays at seven while the caption is
-  // read, then comes a stop each half second. The page sees the bus only at
-  // the film's polls, on the half second, so each alarm is crossed between
-  // two of them (7.5 and 8.0s, 9.5 and 10.0s) and clear of both. It pulls
-  // in at the stop as the phone goes, and leaves the map as they board:
-  // whoever was sharing it got off there.
+  // read and the pin, the sight and the way are drawn, then comes a stop at
+  // each of the film's polls, on the half second, where it is put between
+  // two of those marks, so the card counts every stop and each alarm is
+  // crossed between two polls and clear of both. It pulls in at the stop as
+  // the phone goes, and leaves the map as they board: whoever was sharing
+  // it got off there.
   world.bus({ id:'a1', phone:'A', dir:'north', label:'1043', road:NORTH, on:[0, T.share + .2], age:5000,
-    km:R.keys([[0, 9.4], [T.wait + 2.0, 9.9], [T.wait + 4.4, 18.95], [T.wait + 4.7, 19.35], [T.wait + 6.4, 22.45],
-               [T.wait + 6.8, 22.9], [T.wait + 7.4, WAIT_KM - .05]]) });
+    km:R.keys([[0, 9.4], [T.wait + 4.3, 9.9], [T.wait + 4.8, 12.8], [T.wait + 5.3, 15.0], [T.wait + 5.8, 17.0], [T.wait + 6.3, 18.7],
+               [T.wait + 6.8, 19.5], [T.wait + 7.3, 20.8], [T.wait + 7.8, 22.4], [T.wait + 8.3, 23.1], [T.wait + 8.8, 24.2],
+               [T.wait + 9.3, WAIT_KM - .05]]) });
   world.bus({ id:'a2', phone:'A', dir:'north', label:null, road:NORTH, on:[0, 1000], age:9000,
     km:R.keys([[0, 40.5], [T.share, 47.0], [T.trip + DUR.trip, 61], [1000, 61]]) });
   world.bus({ id:'a3', phone:'A', dir:'north', label:'1027', road:NORTH, on:[0, 1000], age:7000,
     km:R.keys([[0, 55.5], [T.share, 60.5], [T.trip + DUR.trip, 66], [1000, 66]]) });
   world.bus({ id:'a4', phone:'A', dir:'south', label:'1019', road:SOUTH, on:[0, 1000], age:11000,
     km:R.keys([[0, 22.0], [T.share, 28.0], [T.trip + DUR.trip, 44], [1000, 44]]) });
-  world.bus({ id:'a5', phone:'A', dir:'north', label:null, road:NORTH, on:[0, 1000], age:14000,
+  // One more behind it, once it has gone: on the ridge it would sit on the
+  // one waited for, at the map's zoom.
+  world.bus({ id:'a5', phone:'A', dir:'north', label:null, road:NORTH, on:[T.share - .3, 1000], age:14000,
     km:R.keys([[0, 2.2], [T.share, 6.0], [T.trip + DUR.trip, 14], [1000, 14]]) });
   // Salamat on the sharer's trip: one, then three.
   world.thanks.A = R.keys([[SALAMAT[0], 0], [SALAMAT[0] + .01, 1], [SALAMAT[1], 1], [SALAMAT[1] + .01, 3]]);
@@ -142,15 +159,15 @@ function buses(world){
 const CAP = {
   near:  { at:T.wait + .25,  to:T.share, say:'Know when your bus is *near*.' },
   share: { at:T.share + .35, to:T.trip,  say:'On the bus? *Share it*.' },
-  dress: { at:T.dress + .35, to:T.end,   say:'Earn coins and *dress up your bus*.' }
+  dress: { at:T.dress + .35, to:T.end + .3, say:'Earn coins and *dress up your bus*.' }
 };
 const read = k => CAP[k].at + READ(CAP[k].say);
 const SAY = Object.keys(CAP).map(k => [CAP[k].at, CAP[k].to, CAP[k].say]);
 // Start, its ring closing in while the caption's last word is read; Stop,
-// off the screen as the phone swipes to the ticket; and the salamat (one,
-// then three in all).
-const START = read('share') + .1, STOP = T.ticket - .05;
-const SALAMAT = [START + 2.0, START + 3.0];
+// under whatever hands the trip over to the ticket (HANDOFF); and the
+// salamat (one, then three in all).
+const START = read('share') + .1, STOP = T.ticket + { print:.5, stamp:1.1, zoom:.52 }[HANDOFF];
+const SALAMAT = [START + 3.2, START + 4.1];
 
 // The sharer's GPS, from Start until Stop. 700 m past the stop when Start is
 // tapped: the card still has the stop they waited at, and within 300 m of it
@@ -173,6 +190,9 @@ const SALAMAT = [START + 2.0, START + 3.0];
 // itself the bus keeps moving, so the half hour never looks like a bus
 // standing still to the trip's own checks.
 const ARRIVE_KM = NORTH.km(OFF) - .006;
+// When the card's view has the bus standing there: the feed and a poll
+// after the GPS stops (about three quarters of a second in the film).
+const STOOD = JUMPED + 4.75;
 const GPS = R.keys([[START - .05, WAIT_KM + .7], [T.trip + .4, 26.4], [JUMPED, ARRIVE_KM - .075], [JUMPED + 2.0, ARRIVE_KM - .025],
                     [JUMPED + 2.5, ARRIVE_KM - .0141], [JUMPED + 3.0, ARRIVE_KM - .0063], [JUMPED + 3.5, ARRIVE_KM - .0016],
                     [JUMPED + 4.0, ARRIVE_KM], [1000, ARRIVE_KM]]);
@@ -180,13 +200,15 @@ const GPS = R.keys([[START - .05, WAIT_KM + .7], [T.trip + .4, 26.4], [JUMPED, A
 // once, two stops before the sharer's own, and that is in the interlude.
 const BUZZ_SCENES = [[T.wait, T.share]];
 // The phone comes up at the end of the title, goes down for the trip and
-// the end, and swipes across between the other moments: onto the bus, to
-// the ticket and to My tickets. What happens between two moments is done
-// while it is off the screen.
+// the end, and swipes across between the other moments: onto the bus and to
+// My tickets, and to the ticket unless the ticket comes off it (print), when
+// the phone drops away under the ticket instead. What happens between two
+// moments is done while it is off the screen.
 const PHONE_Y = [[T.wait - .6, 1920], [T.wait, 0], [T.trip - .1, 0], [T.trip + .5, -1920], [T.trip + .501, 1920], [T.getoff - .6, 1920],
-                 [T.getoff, 0], [T.end, 0], [T.end + .6, -1920]];
+                 [T.getoff, 0]].concat(HANDOFF === 'print' ? [[T.ticket + 1.0, 0], [T.ticket + 1.55, 1900], [T.dress - .0499, 1900], [T.dress - .0498, 0]] : [],
+                 [[T.end, 0], [T.end + .6, -1920]]);
 const whip = t => [[t - .3, 0], [t - .05, -1180], [t - .0499, 1180], [t + .25, 0]];
-const PHONE_X = [].concat(whip(T.share), whip(T.ticket), whip(T.dress));
+const PHONE_X = [].concat(whip(T.share), whip(T.dress));
 // What else the bus could wear, under the last caption: a paint and the
 // things on it, from SHOP and the trophies this bus has earned (an unearned
 // trophy cannot be worn).
@@ -201,9 +223,9 @@ const LOOKS = [
 // moments and the end card.
 const SCORE = [
   { t:.35, kind:'board' }, { t:T.wait - .6, kind:'whoosh' }, { t:T.share - .3, kind:'whoosh' },
-  { t:T.trip - .1, kind:'whoosh' }, { t:T.getoff - .6, kind:'whoosh' }, { t:T.ticket - .3, kind:'whoosh' },
-  { t:T.dress - .3, kind:'whoosh' }, { t:T.end, kind:'whoosh' }, { t:T.end + .35, kind:'outro' }
-];
+  { t:T.trip - .1, kind:'whoosh' }, { t:T.getoff - .6, kind:'whoosh' }, { t:T.dress - .3, kind:'whoosh' },
+  { t:T.end, kind:'whoosh' }, { t:T.end + .35, kind:'outro' }
+].concat(HANDOFF === 'print' ? [{ t:T.ticket + 1.0, kind:'whoosh', gain:.6 }] : HANDOFF === 'zoom' ? [{ t:T.ticket + .05, kind:'whoosh' }] : []);
 // What the page is showing that has a sound, read off the phone on screen
 // once a frame; changes() says which of them has just appeared.
 function LISTEN(){
@@ -240,6 +262,43 @@ function changes(a, b){
 // the stage shows it at 2.2 (860 / 390), so 3 / 2.2.
 const SHARP = 1.35;
 const gold = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\*([^*]+)\*/g, '<b>$1</b>');
+
+// ---- Where things are, for the motion graphics ----------------------------
+// Run in the page each frame while a graphic needs it: where the saved
+// stop's pin, the bus waited for and the stops before the pin are on the
+// map, the card's count and its flag; the sharer's own bus on the strip; the
+// stop on the road on board, and its picture; the ticket's line of parts;
+// the bus in My tickets. In the page's pixels.
+function LIVE(o){
+  const q = s => document.querySelector(s);
+  const box = el => { if (!el) return null; const b = el.getBoundingClientRect(); return b.width || b.height ? { x:b.x, y:b.y, w:b.width, h:b.height } : null; };
+  const out = {};
+  if (o.map){
+    const c = map.getContainer().getBoundingClientRect();
+    const pin = box(q('.mypin')), m = busMarkers[o.bus], b = m && m.getElement() ? box(m.getElement()) : null;
+    out.pin = pin && { x:pin.x + pin.w / 2, y:pin.y + pin.h };
+    out.bus = b && { x:b.x + b.w / 2, y:b.y + b.h / 2 };
+    out.dots = o.dots.map(ll => { const p = map.latLngToContainerPoint(ll); return { x:c.left + p.x, y:c.top + p.y }; });
+    const num = q('#myStop .ride-big .num'), s = num ? num.textContent.trim() : '';
+    out.n = /^\d+$/.test(s) ? +s : 0;
+    out.flag = box(q('#myStop .ride-flag'));
+  }
+  if (o.pill) out.pill = box(q('#onbusStrip .buspill.me'));
+  if (o.stop){ out.stop = box(q('#tripStop .sv-k[data-w="0"]')); out.art = box(q('#tripStop .ride-art')); }
+  if (o.plus) out.plus = box(q('#tktCard .tkt-parts'));
+  if (o.coach) out.coach = box(q('.alb-ride .rk'));
+  return out;
+}
+// What LIVE is asked for at v.
+function liveAt(v){
+  const o = {};
+  if (v >= T.wait - .9 && v < T.share) Object.assign(o, { map:true, bus:'a1', dots:DOTS });
+  if (v >= START && v < T.trip) o.pill = true;
+  if (v >= T.getoff - .65 && v < T.ticket + 1.2) o.stop = true;
+  if (v >= T.ticket && v < T.dress) o.plus = true;
+  if (v >= T.dress - .05 && v < T.end + .5) o.coach = true;
+  return Object.keys(o).length ? o : null;
+}
 
 // ---- The scenes: what happens when ------------------------------------------
 // Each cue is [time, what]. A tap is shown by the stage as a ring where the
@@ -292,26 +351,57 @@ function cues(A, stage, world, heard){
     if (/^(cardin|veil)$/.test(a.animationName || '')) a.finish();
   }), sel);
 
+  // A motion graphic (stage.html, G), from v on.
+  const g = (v, kind, o) => stage.event(Object.assign({ type:'g', kind, at:v }, o || {}));
+  const sound = (t, kind, gain) => heard.push({ t, kind, gain });
+
   // wait: before the phone comes up, as a rider who waits for this bus has
   // it: the stop saved (SEED_STOP), its buzz on, the map a step in, which
   // puts the bus and the pin twice as far apart and is still the whole
-  // route, and the page down to the foot of the card, so the map and the
-  // card are both on the phone. The bus comes up the map to the pin as it
-  // comes down the card's road: the stop is a mark on the map, not where
-  // anyone stands (the maintainer's point: nobody waits on the pin), so the
-  // map is how near it really is. Nothing is tapped.
+  // route, and the page down to the foot of the card. The phone comes up
+  // close on the map, filmed twice as fine (see SHARP), between the stop and
+  // the bus. Once the caption is read, a pin comes down on the stop (it is a
+  // mark on the map, not where anyone stands: nobody waits on the pin, the
+  // maintainer's point), a sight closes on the bus, and the way between is
+  // drawn, a dot for each stop it has still to pass. Then the whole phone,
+  // the map and the card, and the bus comes up the one as it comes down the
+  // other, each dot going as the card counts it off, to the pin. Nothing is
+  // tapped.
   at(0, () => A.run(() => {
     try { sessionStorage.setItem('wt-buzz', '1'); } catch (e) {}
     map.setZoom(map.getZoom() + 1, { animate:false });
     renderBuses();
   }));
-  at(T.wait - .8, () => A.run(() => {
+  at(T.wait - .9, () => A.run(() => {
     const c = document.getElementById('myStop').getBoundingClientRect(), d = document.scrollingElement;
     d.scrollTop = Math.max(0, Math.min(d.scrollHeight - innerHeight, d.scrollTop + c.bottom + 8 - innerHeight));
   }));
+  at(T.wait - .85, async v => {
+    await A.resolution(6);
+    const l = await A.run(LIVE, { map:true, bus:'a1', dots:[] });
+    if (!l || !l.pin || !l.bus) throw new Error('A: no pin or no bus on the map to close on');
+    const x = (l.pin.x + l.bus.x) / 2, y = (l.pin.y + l.bus.y) / 2;
+    await stage.event({ type:'camera', at:v, dur:.01, rect:{ x:x - 110, y:y - 60, w:220, h:120 }, width:1000, cy:1170, maxZ:2.1 });
+  });
+  const pinAt = read('near') + .05, joy = T.wait + 9.5;
+  at(pinAt, v => g(v, 'pin', { label:WAIT, joy, until:T.share - .05 }));
+  sound(pinAt + .36, 'stamp', .7);
+  at(pinAt + .75, v => g(v, 'lock', { until:T.share - .05 }));
+  sound(pinAt + .75, 'switch', .5);
+  at(pinAt + .9, v => g(v, 'trail', { until:T.share - .05 }));
+  at(pinAt + 1.55, v => cam(A, null, v, { dur:.6 }));
+  at(pinAt + 2.2, () => A.resolution(3));
+  // The card's two alarms: Malapit na! (and the buzz), Sakay na!.
+  at(T.wait + 6.8, v => g(v, 'pulse', { on:'flag', color:'#e39a1c' }));
+  at(T.wait + 8.3, v => g(v, 'pulse', { on:'flag', color:'#4f46b8' }));
+  at(joy, v => g(v, 'burst'));
+  sound(joy, 'sparkle', .8);
+
   // share: on board, off the screen for a moment: where to get off, the
-  // other tab, northbound. Then Start, and close on the strip, where the
-  // salamat arrive.
+  // other tab, northbound. Then Start; the camera goes back past the whole
+  // phone, rings go out from it and other riders' phones come up around it
+  // with the bus on their maps; and then close on the strip, where the
+  // salamat arrive (and their stars, from main()).
   at(T.share - .08, async () => {
     await A.run(name => { const s = STOPS.find(x => x.name === name); setMyStop(s.name, s.lat, s.lng); }, OFF);
     await A.scrollTo(0);
@@ -319,8 +409,12 @@ function cues(A, stage, world, heard){
     await A.tap('#pickNorth');
   });
   press(A, '#onbusStartBtn', START);
-  at(START + .7, centre(A, '#onbusStripCard', .4));
-  at(START + 1.15, v => cam(A, '#onbusStripCard', v, { width:1000, cy:1170 }));
+  at(START + .25, v => stage.event({ type:'camera', at:v, dur:.55, z:.74, cy:1010 }));
+  at(START + .3, v => g(v, 'cast', { until:START + 2.6 }));
+  [0, 1, 2, 3].forEach(i => sound(START + .3 + .25 + i * .17 + .3, 'pop', .35));
+  at(START + 2.45, centre(A, '#onbusStripCard', .4));
+  at(START + 2.5, v => cam(A, '#onbusStripCard', v, { width:1000, cy:1170 }));
+
   // trip: off the screen, the road opened on the card, as the sharer would
   // (it starts folded on the sharing tab); the stop saved again (see GPS);
   // and, once the jump is drawn, close on the card.
@@ -328,35 +422,81 @@ function cues(A, stage, world, heard){
   at(JUMPED, () => A.run(() => setMyStop(MYSTOP.name, MYSTOP.lat, MYSTOP.lng)));
   at(T.trip + 1.6, () => A.reveal('#tripStop'));
   at(T.trip + 1.65, v => cam(A, '#tripStop', v, { width:1010, cy:960, dur:.01 }));
-  // getoff: the road comes up to the stop by itself, the bus pulls in, and
-  // it stands there a moment.
-  // ticket: Stop, off the screen, and the phone comes back on the ticket.
-  at(STOP, async v => {
-    await A.run(() => stopSharing());
-    await opened('#tktModal');
-    await cam(A, '#tktCard', v, { width:1040, topAt:60, maxH:420, dur:.01 });
-  });
-  // dress: My tickets, off the screen, and the phone comes back close on
-  // the bus itself, filmed twice as fine (see SHARP). Under the caption it
-  // tries on other paints and dress, under half a second each, taken from
-  // the shop's and the trophies' own lists, put straight into what the
-  // phone remembers and drawn by My tickets itself; nothing is tapped. The
-  // end card draws it as it is left.
+  // getoff: the road comes up to the stop by itself, a marker over the stop
+  // they get off at, the bus pulls in, and a tick once it stands there.
+  at(T.getoff - .1, v => g(v, 'here', { check:STOOD, until:T.ticket + (HANDOFF === 'print' ? .5 : HANDOFF === 'zoom' ? .4 : .3) }));
+  sound(STOOD, 'pop', .55);
+
+  // ticket: from the stop to the ticket (HANDOFF), and the parts it brings
+  // flying into a purse.
+  if (HANDOFF === 'print'){
+    // Back to the whole phone; Stop while the phone's picture is held (see
+    // main()), and the ticket comes up out of its top, the phone drops away,
+    // and the ticket comes forward.
+    at(T.ticket, v => cam(A, null, v, { dur:.45 }));
+    at(STOP, async v => {
+      await A.run(() => stopSharing());
+      const img = await A.picture('#tktCard', ['.tkt-parts']);
+      await stage.print(img);
+      await g(v + .05, 'print', { until:T.dress - .05 });
+      const p = img.parts['.tkt-parts'];
+      if (p) await g(T.ticket + 2.3, 'coins', { src:'print', px:p.x, py:p.y, from:SEED_BUS.c, to:SEED_BUS.c + 25, until:T.dress - .05 });
+    });
+  } else if (HANDOFF === 'stamp'){
+    // A rubber stamp comes down on the road; its mark's ink fills the frame,
+    // Stop under it, and the ink goes back out from the middle onto the
+    // ticket.
+    at(T.ticket + .1, v => g(v, 'stamp'));
+    at(T.ticket + .32, v => stage.event({ type:'jolt', at:v, amp:22 }));
+    sound(T.ticket + .32, 'stamp', 1);
+    at(STOP, async v => {
+      await A.run(() => stopSharing());
+      await opened('#tktModal');
+      await cam(A, '#tktCard', v, { width:1040, topAt:330, maxH:420, dur:.01 });
+    });
+    at(T.ticket + 1.9, v => g(v, 'coins', { from:SEED_BUS.c, to:SEED_BUS.c + 25, until:T.dress - .05 }));
+  } else {
+    // The camera into the stop, a flash, Stop under it, and out from the
+    // ticket's picture to the whole ticket.
+    at(T.ticket + .05, v => cam(A, '#tripStop .sv-k[data-w="0"]', v, { width:1000, cy:960, maxZ:6, dur:.45 }));
+    at(T.ticket + .38, v => g(v, 'flash'));
+    at(STOP, async v => {
+      await A.run(() => stopSharing());
+      await opened('#tktModal');
+      await cam(A, '#tktCard .tktart', v, { width:1000, cy:900, maxZ:4, dur:.01 });
+    });
+    at(STOP + .08, v => cam(A, '#tktCard', v, { width:1040, topAt:330, maxH:420, dur:.75 }));
+    at(T.ticket + 1.8, v => g(v, 'coins', { from:SEED_BUS.c, to:SEED_BUS.c + 25, until:T.dress - .05 }));
+  }
+  [0, 1, 2].forEach(i => sound(T.ticket + (HANDOFF === 'print' ? 2.3 : HANDOFF === 'stamp' ? 1.9 : 1.8) + .87 + i * .16, 'coins', .55));
+
+  // dress: My tickets, off the screen, and the phone comes back on it,
+  // filmed twice as fine (see SHARP). Once the caption is read the camera
+  // goes in on the bus itself, and it tries on other paints and dress,
+  // under half a second each, each with a stroke of its paint across it:
+  // taken from the shop's and the trophies' own lists, put straight into
+  // what the phone remembers and drawn by My tickets itself; nothing is
+  // tapped. The end card draws it as it is left.
   at(T.dress - .05, async v => {
     await A.run(() => { closeTicket(); openAlbum(); });
     await opened('#albumModal');
     await A.resolution(6);
-    await cam(A, '.alb-ride .rk', v, { width:920, cy:1100, maxZ:3, dur:.01 });
+    await cam(A, '#albumModal .modal-card', v, { width:1040, topAt:470, maxH:560, dur:.01 });
   });
-  LOOKS.forEach((l, i) => at(read('dress') + i * .45, async v => {
-    await A.run(l => {
-      const b = loadBus();
-      b.paints = PAINTS.slice(1).map(p => p.k); b.own = SHOP.map(x => x.k); b.paint = l.paint;
-      b.off = busEarned(b, CHECKPOINTS).concat(b.own).filter(k => l.worn.indexOf(k) < 0);
-      saveBus(b); renderAlbum();
-    }, l);
-    heard.push({ t:v, kind:'dress' });
-  }));
+  at(read('dress'), v => cam(A, '.alb-ride .rk', v, { width:920, cy:1100, maxZ:3, dur:.8 }));
+  LOOKS.forEach((l, i) => {
+    const t = read('dress') + .6 + i * .45;
+    at(t - .14, v => g(v, 'paint', { paint:l.paint }));
+    at(t, async v => {
+      await A.run(l => {
+        const b = loadBus();
+        b.paints = PAINTS.slice(1).map(p => p.k); b.own = SHOP.map(x => x.k); b.paint = l.paint;
+        b.off = busEarned(b, CHECKPOINTS).concat(b.own).filter(k => l.worn.indexOf(k) < 0);
+        saveBus(b); renderAlbum();
+      }, l);
+      heard.push({ t:v, kind:'dress' });
+    });
+  });
   return { list: list.sort((a, b) => a.t - b.t), scrolls };
 }
 
@@ -446,8 +586,9 @@ function endQr(){
 async function rehearse(){
   const noted = [], heard = [];
   const stand = name => ({ name, open: async () => {}, resolution: async () => {}, scrollTo: async () => {}, reveal: async () => {},
-    tap: async () => ({ x:0, y:0 }), rect: async () => ({ x:0, y:0, w:1, h:1 }), run: async () => ({ x:0, y:0, w:1, h:1 }) });
-  const { list, scrolls } = cues(stand('A'), { event: async e => { noted.push(e); } }, {}, heard);
+    picture: async () => ({ png:null, w:1, h:1, parts:{} }),
+    tap: async () => ({ x:0, y:0 }), rect: async () => ({ x:0, y:0, w:1, h:1 }), run: async () => ({ x:0, y:0, w:1, h:1, pin:{ x:0, y:0 }, bus:{ x:0, y:0 } }) });
+  const { list, scrolls } = cues(stand('A'), { event: async e => { noted.push(e); }, print: async () => {} }, {}, heard);
   // As the render runs them: at the first frame at or after their time.
   for (const c of list) await c.fn(Math.ceil(c.t * R.FPS - 1e-6) / R.FPS);
   const moves = [], s = t => t.toFixed(2) + 's', e = 1e-6;
@@ -554,13 +695,20 @@ async function main(){
     }
     const which = A;
     const onScreen = (v >= T.wait - .8 && v < T.trip + .5) || (v >= T.getoff - .6 && v < T.end + .4);
-    const shot = onScreen && which.page ? await which.shot() : null;
+    // While the ticket comes off the phone, the phone's picture is held: it
+    // is the stop it got to, whatever the page is doing under it.
+    const held = HANDOFF === 'print' && v >= STOP && v < T.dress - .05;
+    const shot = onScreen && !held && which.page ? await which.shot() : null;
     if (which.page){
       const now = await which.run(LISTEN);
-      if (onScreen && which.was) heard.push(...changes(which.was, now).map(kind => ({ t:v, kind })));
+      const did = onScreen && which.was ? changes(which.was, now) : [];
+      heard.push(...did.map(kind => ({ t:v, kind })));
+      // A salamat's stars, from where the page floats it up.
+      if (did.indexOf('sparkle') >= 0) await stage.event({ type:'g', kind:'stars', at:v });
       which.was = now;
     }
-    const jpg = await stage.frame(v, shot, which.app ? clockOf(which.now) : null);
+    const want = liveAt(v), live = want ? await A.run(LIVE, want) : null;
+    const jpg = await stage.frame(v, shot, which.app ? clockOf(which.now) : null, live);
     await enc.write(jpg);
     drawn++;
     if (drawn % 30 === 0) process.stdout.write('  ' + v.toFixed(1) + 's of ' + T.total.toFixed(1) + 's (' + Math.round((Date.now() - started) / 1000) + 's)\n');

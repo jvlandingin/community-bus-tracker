@@ -715,9 +715,17 @@ watching, and the app's, for `ANDROID_APP_URL`, with Google's badge and
 trademark line, for sharing with the phone locked, so a change there is a
 render, not another cut. The sharer's phone is filmed as the app shows the
 page (Android's plugins stood in for, its status bar). **It is a promo, not
-a tutorial** (the maintainer's call, October 2026): about 38 seconds of
+a tutorial** (the maintainer's call, October 2026): about 42 seconds of
 moments, the steps between them done while the phone swipes off the
-screen, and Start the one tap shown. **Waiting, the map is on screen with
+screen, and Start the one tap shown. **Motion graphics say what the
+screens do**, drawn by the stage over and behind the phone from where the
+page has things each frame (`G` in `stage.html`, `LIVE` in `film.js`): a
+pin coming down on the stop, the bus sighted and the way to the pin drawn
+with a dot per stop, each going as the card counts it off; the bus going
+out to other riders' phones; stars for salamat; a marker and a tick at the
+stop on board; parts flying into a purse; a stroke of paint for each new
+look. How the stop hands over to the ticket is `--handoff` (print, stamp or
+zoom), three ways put to the maintainer. **Waiting, the map is on screen with
 the card**, a step in, so the bus is seen coming to the pin as well as
 counted down: nobody waits on the pin itself (the maintainer's point).
 **The trip ends with the bus pulling in**: the road comes up to the stop at

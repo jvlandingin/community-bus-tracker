@@ -230,10 +230,18 @@
   #i-m-dress .m-tile{width:210px; height:150px; border-radius:30px; background:#fbf4e4; display:flex; align-items:center; justify-content:center;
                      box-shadow:0 16px 30px -14px rgba(74,17,25,.55); opacity:0;}
   #i-m-dress .m-tile > svg{width:170px; height:auto;}
+
+  /* ---- The film's motion graphics: drawn over the phone (#v-g) and
+     behind it (#v-gback), from what the page is showing (see G below). */
+  #v-g, #v-gback{position:absolute; left:0; top:0; width:1080px; height:1920px; overflow:visible; pointer-events:none;}
+  #v-g text, #v-gback text{font-family:var(--font-ui); font-weight:700;}
 </style>
 </head>
 <body>
 <div id="v">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="v-mb" x="-30%" y="-10%" width="160%" height="120%">
+    <feGaussianBlur id="v-mbg" stdDeviation="0 0"/></filter></svg>
+  <svg id="v-gback" viewBox="0 0 1080 1920"></svg>
   <div id="v-world">
     <div id="v-phone"><div id="v-glass">
       <div id="v-bar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>community-bus-tracker.netlify.app</div>
@@ -241,6 +249,7 @@
       <img id="v-screen" alt="">
     </div></div>
   </div>
+  <svg id="v-g" viewBox="0 0 1080 1920"></svg>
   <div id="v-band"></div>
   <div id="v-cap"></div>
   <div id="v-fx"></div>
@@ -280,7 +289,10 @@ const V = (function(){
   const $ = function(id){ return document.getElementById(id); };
 
   let plan = { captions:[], phone:[], ints:[] };
-  const cams = [], taps = [], points = [], buzzes = [], marks = [], gaps = [];
+  const cams = [], taps = [], points = [], buzzes = [], marks = [], gaps = [], gfx = [], jolts = [];
+  // Where the page's things are now, measured on the phone each frame by
+  // render.js (LIVE in film.js), in the page's own pixels.
+  let live = {};
 
   function init(p){
     plan = p;
@@ -294,6 +306,8 @@ const V = (function(){
   // asked for by the script, each with the time it starts.
   function event(e){
     if (e.type === 'camera') cams.push(e);
+    else if (e.type === 'g') gfx.push(e);
+    else if (e.type === 'jolt') jolts.push(e);
     else if (e.type === 'tap') taps.push(e);
     else if (e.type === 'point') points.push(e);
     else if (e.type === 'mark') marks.push(e);
@@ -318,7 +332,8 @@ const V = (function(){
     cams.forEach(function(c){
       if (c.at > t) return;
       const dur = c.dur || .6;
-      const to = c.rect ? frameFor(c.rect, c.width || 1000, c.cy || 1080, c.topAt, c.maxZ, captioned(c.at + dur)) : { z:1, x:0, y:0 };
+      const to = c.rect ? frameFor(c.rect, c.width || 1000, c.cy || 1080, c.topAt, c.maxZ, captioned(c.at + dur))
+        : c.z ? { z:c.z, x:540 - (SX + 430) * c.z, y:(c.cy || 1000) - (TOP + 1511 / 2) * c.z } : { z:1, x:0, y:0 };
       const p = ease((t - c.at) / dur);
       cur = { z: from.z + (to.z - from.z) * p, x: from.x + (to.x - from.x) * p, y: from.y + (to.y - from.y) * p,
               moving: p < 1, close: p >= 1 && !!c.rect };
@@ -367,7 +382,8 @@ const V = (function(){
 
   // clock: what the phone's status bar says now, for a phone filmed as the
   // app; none for one filmed as a browser, which has the browser's bar.
-  function render(t, clock){
+  function render(t, clock, lv){
+    if (lv) live = lv;
     $('v-glass').classList.toggle('app', !!clock);
     if (clock) $('v-status').querySelector('.clock').textContent = clock;
     // The phone: in, out, and the camera on it.
@@ -390,7 +406,20 @@ const V = (function(){
         if (cam.close) shake += ' scale(' + (1 + .055 * a).toFixed(3) + ')';
       }
     });
-    $('v-world').style.transform = 'translate(' + (cam.x + dx).toFixed(2) + 'px,' + (cam.y + dy).toFixed(2) + 'px) scale(' + cam.z.toFixed(4) + ')';
+    // A jolt: the frame knocked, as a stamp coming down knocks it.
+    let jx = 0, jy = 0;
+    jolts.forEach(function(j){
+      const u = t - j.at;
+      if (u < 0 || u > .45) return;
+      const k = (j.amp || 16) * Math.exp(-u * 9);
+      jx += Math.sin(u * 71) * k; jy += Math.cos(u * 53) * k * .8;
+    });
+    $('v-world').style.transform = 'translate(' + (cam.x + dx + jx).toFixed(2) + 'px,' + (cam.y + dy + jy).toFixed(2) + 'px) scale(' + cam.z.toFixed(4) + ')';
+    // A swipe this fast leaves a blur along its way, as a camera's would.
+    const bx = Math.min(28, Math.abs(dx - track(plan.phoneX, t - 1 / 30, 0)) * .22);
+    const by = Math.min(28, Math.abs(dy - track(plan.phone, t - 1 / 30, 0)) * .22);
+    if (bx > .6 || by > .6){ $('v-mbg').setAttribute('stdDeviation', bx.toFixed(1) + ' ' + by.toFixed(1)); $('v-world').style.filter = 'url(#v-mb)'; }
+    else $('v-world').style.filter = '';
     $('v-phone').style.transform = shake ? shake.trim() : '';
 
     // The caption: in from below, out by fading.
@@ -469,6 +498,7 @@ const V = (function(){
       }
     });
     fx.innerHTML = html;
+    drawG(t, cam, dx + jx, dy + jy);
 
     // The interludes, each a page of its own: up from below as the phone
     // goes up and out of the top, and away up the same way.
@@ -485,6 +515,367 @@ const V = (function(){
       if (on && INT[x.id]) INT[x.id](el, t - (x.in ? x.in[1] : 0), x);
     });
     window.__vseek(t * 1000);
+  }
+
+  // ---- Motion graphics ------------------------------------------------------
+  // What the film draws over the phone (#v-g) and behind it (#v-gback) to
+  // say what is happening without words: where the stop is, which bus is
+  // coming and the stops it still has to pass, the bus going out to other
+  // riders' phones, the salamat, the stop it gets off at, the ticket coming
+  // off the phone, the parts, the new paint. Each is told when it starts (an
+  // event of type 'g', with until if it ends) and reads where the page's
+  // things are from live, so one on the map stays on the map through the
+  // camera's moves. All of it is worked out from t, like the rest.
+  const PURPLE = '#4f46b8', GOLD = '#f2b233', INK = '#4a1119', MAROON = '#7a1f2b', RED = '#c4432e';
+  const NUT = 'M12 2.4l8.3 4.8v9.6L12 21.6l-8.3-4.8V7.2zM12 8.3a3.7 3.7 0 1 0 0 7.4a3.7 3.7 0 1 0 0-7.4z';
+  const COACH = 'M5.4 4.75C3.1 3.7 1.55 5.25 1.65 8.2H2.95C2.9 6.35 3.65 5.55 4.85 6.05Z M18.6 4.75C20.9 3.7 22.45 5.25 22.35 8.2H21.05C21.1 6.35 20.35 5.55 19.15 6.05Z' +
+    'M6.4 17h3.6v3.8h-3.6zM14 17h3.6v3.8h-3.6zM7.6 2.6h8.8q3 0 3 3v10q0 3 -3 3h-8.8q-3 0 -3 -3v-10q0 -3 3 -3zM7.6 7.1h8.8q1.3 0 1.3 1.3v3q0 1.3 -1.3 1.3h-8.8q-1.3 0 -1.3 -1.3v-3q0 -1.3 1.3 -1.3z';
+  const f1 = function(v){ return (+v).toFixed(1); };
+  const f3 = function(v){ return (+v).toFixed(3); };
+  const easeIn = function(p){ p = clamp(p, 0, 1); return p * p * p; };
+  const backOut = function(p){ p = clamp(p, 0, 1); const c = 1.70158; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+  // The same scatter every render.
+  const rnd = function(i, k){ const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); };
+  // Out over the last third of a second before until.
+  const leaving = function(g, t){ return g.until === undefined ? 1 : clamp((g.until - t) / .3, 0, 1); };
+  function starPath(r){
+    let d = '';
+    for (let i = 0; i < 10; i++){ const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * .45 : r; d += (i ? 'L' : 'M') + f1(Math.cos(a) * q) + ' ' + f1(Math.sin(a) * q); }
+    return d + 'Z';
+  }
+  function sparkPath(r){
+    const q = r * .22;
+    return 'M0 ' + f1(-r) + 'Q' + f1(q) + ' ' + f1(-q) + ' ' + f1(r) + ' 0Q' + f1(q) + ' ' + f1(q) + ' 0 ' + f1(r) + 'Q' + f1(-q) + ' ' + f1(q) + ' ' + f1(-r) + ' 0Q' + f1(-q) + ' ' + f1(-q) + ' 0 ' + f1(-r) + 'Z';
+  }
+  // A map pin h tall, its tip at 0,0: the reader's stop, with somebody
+  // waiting in its head.
+  function pinShape(h){
+    const R = h * .36, c = h - R;
+    return '<path d="M0 0C' + f1(-.2 * h) + ' ' + f1(-.25 * h) + ' ' + f1(-R) + ' ' + f1(-c + .58 * R) + ' ' + f1(-R) + ' ' + f1(-c) +
+      'A' + f1(R) + ' ' + f1(R) + ' 0 1 1 ' + f1(R) + ' ' + f1(-c) + 'C' + f1(R) + ' ' + f1(-c + .58 * R) + ' ' + f1(.2 * h) + ' ' + f1(-.25 * h) + ' 0 0Z"' +
+      ' fill="' + PURPLE + '" stroke="#fff" stroke-width="' + f1(h * .06) + '" stroke-linejoin="round"/>' +
+      '<circle cy="' + f1(-c) + '" r="' + f1(R * .6) + '" fill="#fff"/>' +
+      '<circle cy="' + f1(-c - R * .2) + '" r="' + f1(R * .17) + '" fill="' + PURPLE + '"/>' +
+      '<path d="M' + f1(-R * .31) + ' ' + f1(-c + R * .36) + 'Q' + f1(-R * .31) + ' ' + f1(-c + R * .03) + ' 0 ' + f1(-c + R * .03) +
+      'Q' + f1(R * .31) + ' ' + f1(-c + R * .03) + ' ' + f1(R * .31) + ' ' + f1(-c + R * .36) + 'Z" fill="' + PURPLE + '"/>';
+  }
+  // A name on a pill, from x along, its middle at y; k its scale.
+  function chip(x, y, text, fs, k, fill){
+    const w = text.length * fs * .52 + fs * 1.4, h = fs * 1.75;
+    return '<g transform="translate(' + f1(x) + ' ' + f1(y) + ') scale(' + f3(Math.max(0, k)) + ')">' +
+      '<rect y="' + f1(-h / 2) + '" width="' + f1(w) + '" height="' + f1(h) + '" rx="' + f1(h / 2) + '" fill="' + fill + '" stroke="#fff" stroke-width="' + f1(fs * .14) + '"/>' +
+      '<text x="' + f1(w / 2) + '" y="' + f1(fs * .35) + '" text-anchor="middle" font-size="' + f1(fs) + '" fill="#fff">' + text + '</text></g>';
+  }
+  // Another rider's phone: a small map with the road on it, and the bus
+  // turning up on it v seconds after the phone does.
+  function peer(v){
+    let s = '<rect x="-74" y="-130" width="148" height="260" rx="28" fill="#1c1411"/>' +
+            '<rect x="-64" y="-114" width="128" height="228" rx="18" fill="#efe9de"/>' +
+            '<path d="M-28 114C-34 50 34 34 14 -24S-26 -84 22 -114" fill="none" stroke="#d6ccbb" stroke-width="13" stroke-linecap="round"/>' +
+            '<path d="M-28 114C-34 50 34 34 14 -24S-26 -84 22 -114" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="9 8"/>';
+    if (v > 0){
+      const w = (v % 1.1) / 1.1;
+      s += '<circle cx="14" cy="-24" r="' + f1(24 + 46 * w) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(6 * (1 - w)) + '" opacity="' + f3(1 - w) + '"/>' +
+           '<g transform="translate(14 -24) scale(' + f3(backOut(v / .35)) + ')"><circle r="25" fill="' + GOLD + '" stroke="' + MAROON + '" stroke-width="4"/>' +
+           '<g transform="translate(-13 -13) scale(1.08)" fill="' + INK + '"><path d="' + COACH + '" fill-rule="evenodd"/></g></g>';
+    }
+    return s;
+  }
+  // Page pixels, as the camera has them now.
+  function drawG(t, cam, dx, dy){
+    const S = function(p){ return { x:(SX + p.x * K) * cam.z + cam.x + dx, y:(SY + p.y * K) * cam.z + cam.y + dy }; };
+    const L = function(n){ return n * K * cam.z; };
+    let front = '', back = '';
+    // Lowest first: the way under the sight under the pin under the burst.
+    gfx.slice().sort(function(a, b){ return (LAYER[a.kind] || 0) - (LAYER[b.kind] || 0); }).forEach(function(g){
+      const u = t - g.at;
+      if (u < 0 || (g.until !== undefined && t >= g.until)) return;
+      const r = G[g.kind](g, u, t, S, L, cam, dx, dy);
+      if (typeof r === 'string') front += r;
+      else if (r){ front += r.front || ''; back += r.back || ''; }
+    });
+    $('v-g').innerHTML = front;
+    $('v-gback').innerHTML = back;
+  }
+  const LAYER = { trail:1, lock:2, pin:3, burst:4, flash:9, stamp:9 };
+  const G = {
+    // The saved stop: a pin comes down onto it from above, and rings go out
+    // from where it lands; its name beside it; a slow breath while it waits,
+    // and a jump when the bus gets to it (joy).
+    pin: function(g, u, t, S, L, cam){
+      if (!live.pin) return '';
+      const tip = S(live.pin), h = 66 + 30 * cam.z, fall = .36, k = clamp(u / fall, 0, 1), o = leaving(g, t);
+      let y = 0, sx = 1, sy = 1;
+      if (u < fall){ y = -(1 - easeIn(k)) * 820; sx = .9; sy = 1.12; }
+      else if (u < fall + .12){ const q = Math.sin(Math.PI * (u - fall) / .12); sx = 1 + .24 * q; sy = 1 - .22 * q; }
+      else if (u < fall + .5){ const q = (u - fall - .12) / .38; y = -Math.sin(Math.PI * q) * h * .3 * (1 - q * .3); }
+      if (g.joy !== undefined && t >= g.joy && t < g.joy + .7){ const q = (t - g.joy) / .7; y -= Math.sin(Math.PI * q) * h * .55 * (1 - q * .4); }
+      let s = '<g opacity="' + f3(o) + '">';
+      s += '<ellipse cx="' + f1(tip.x) + '" cy="' + f1(tip.y) + '" rx="' + f1(h * .3 * (.4 + .6 * k)) + '" ry="' + f1(h * .09 * (.4 + .6 * k)) + '" fill="#000" opacity="' + f3(.28 * k) + '"/>';
+      for (let i = 0; i < 2; i++){
+        const v = (u - fall - i * .16) / .75;
+        if (v > 0 && v < 1) s += '<circle cx="' + f1(tip.x) + '" cy="' + f1(tip.y) + '" r="' + f1(h * (.2 + 1.3 * easeOut(v))) + '" fill="none" stroke="' + PURPLE +
+          '" stroke-width="' + f1(h * .08 * (1 - v)) + '" opacity="' + f3(1 - v) + '"/>';
+      }
+      if (u > 1.4){
+        const v = ((u - 1.4) % 1.7) / 1.7;
+        s += '<circle cx="' + f1(tip.x) + '" cy="' + f1(tip.y) + '" r="' + f1(h * (.15 + .75 * v)) + '" fill="' + PURPLE + '" opacity="' + f3(.22 * (1 - v)) + '"/>';
+      }
+      s += '<g transform="translate(' + f1(tip.x) + ' ' + f1(tip.y + y) + ') scale(' + f3(sx) + ' ' + f3(sy) + ')">' + pinShape(h) + '</g>';
+      if (g.label){ const p = (u - fall - .1) / .4; if (p > 0) s += chip(tip.x + h * .44, tip.y + y - h * .64, g.label, h * .34, backOut(p), PURPLE); }
+      return s + '</g>';
+    },
+    // The bus coming: a sight closes on it and stays with it.
+    lock: function(g, u, t, S, L){
+      if (!live.bus) return '';
+      const c = S(live.bus), r0 = L(16), p = clamp(u / .34, 0, 1), o = clamp(u / .1, 0, 1) * leaving(g, t);
+      const r = r0 * (2.6 - 1.6 * backOut(p)), rot = 120 * (1 - ease(p));
+      let s = '<g opacity="' + f3(o) + '" transform="translate(' + f1(c.x) + ' ' + f1(c.y) + ') rotate(' + f1(rot) + ')">' +
+        '<circle r="' + f1(r) + '" fill="none" stroke="' + INK + '" stroke-width="' + f1(L(3.6)) + '" opacity=".5"/>' +
+        '<circle r="' + f1(r) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(L(2.1)) + '"/>';
+      for (let i = 0; i < 4; i++) s += '<path d="M' + f1(r + L(2.5)) + ' 0H' + f1(r + L(8.5)) + '" stroke="' + INK + '" stroke-width="' + f1(L(3.8)) + '" stroke-linecap="round" opacity=".5" transform="rotate(' + i * 90 + ')"/>' +
+        '<path d="M' + f1(r + L(2.5)) + ' 0H' + f1(r + L(8.5)) + '" stroke="' + GOLD + '" stroke-width="' + f1(L(2.2)) + '" stroke-linecap="round" transform="rotate(' + i * 90 + ')"/>';
+      s += '</g>';
+      if (u > .4){
+        const v = ((u - .4) % 1.1) / 1.1;
+        s += '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(r0 * (1 + 1.3 * v)) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(L(1.8) * (1 - v)) + '" opacity="' + f3((1 - v) * .85 * o) + '"/>';
+      }
+      return s;
+    },
+    // The way it still has to come: from the bus through the stops it has
+    // yet to pass, the card's count of them (live.n), to the pin. Drawn on,
+    // its dashes going the bus's way; each stop is a dot, and goes with a
+    // pop as the card counts it off.
+    trail: function(g, u, t, S, L){
+      const b = live.bus, pin = live.pin, all = live.dots || [];
+      if (!b || !pin) return '';
+      const n = Math.max(0, Math.min(all.length, live.n | 0)), o = leaving(g, t);
+      if (g.lastN === undefined) g.lastN = n;
+      if (n < g.lastN){ g.gone = g.gone || []; for (let k = g.lastN; k > n; k--) g.gone.push({ p:all[all.length - k], at:t }); }
+      g.lastN = n;
+      const ahead = all.slice(all.length - n), pts = [S(b)].concat(ahead.map(S), [S(pin)]);
+      let len = 0;
+      for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+      let s = '';
+      if (len > L(14)){
+        const d = pts.map(function(q, i){ return (i ? 'L' : 'M') + f1(q.x) + ' ' + f1(q.y); }).join(''), p = ease(clamp(u / .6, 0, 1));
+        s += '<defs><mask id="g-trail" maskUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1920">' +
+          '<path d="' + d + '" fill="none" stroke="#fff" stroke-width="' + f1(L(12)) + '" stroke-dasharray="' + f1(len * p) + ' ' + f1(len + 10) + '"/>' +
+          '<circle cx="' + f1(pts[0].x) + '" cy="' + f1(pts[0].y) + '" r="' + f1(L(15)) + '" fill="#000"/></mask></defs>' +
+          '<g mask="url(#g-trail)" opacity="' + f3(o) + '"><path d="' + d + '" fill="none" stroke="#fff" stroke-width="' + f1(L(5.4)) + '" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<path d="' + d + '" fill="none" stroke="' + MAROON + '" stroke-width="' + f1(L(2.6)) + '" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="' + f1(L(6)) + ' ' + f1(L(4.4)) +
+          '" stroke-dashoffset="' + f1(-t * L(16)) + '"/></g>';
+      }
+      ahead.forEach(function(q, i){
+        const k = backOut((u - .12 - i * .07) / .28);
+        if (k <= 0) return;
+        const c = S(q);
+        s += '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(L(4.4) * k) + '" fill="#fff" stroke="' + MAROON + '" stroke-width="' + f1(L(2.1)) + '" opacity="' + f3(o) + '"/>';
+      });
+      (g.gone || []).forEach(function(x){
+        const v = (t - x.at) / .5;
+        if (v < 0 || v >= 1) return;
+        const c = S(x.p);
+        s += '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(L(4.4 + 13 * easeOut(v))) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(L(2.4) * (1 - v)) + '" opacity="' + f3(1 - v) + '"/>' +
+             '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(L(4.4) * (1 - easeOut(v))) + '" fill="' + GOLD + '"/>';
+      });
+      return s;
+    },
+    // A flag on the card going off: outlines out from it, in its colour.
+    pulse: function(g, u, t, S, L){
+      const r = live[g.on];
+      if (!r || u > 1) return '';
+      const a = S({ x:r.x, y:r.y }), b = S({ x:r.x + r.w, y:r.y + r.h });
+      let s = '';
+      for (let i = 0; i < 2; i++){
+        const v = (u - i * .2) / .65;
+        if (v <= 0 || v >= 1) continue;
+        const e = L(2 + 14 * easeOut(v));
+        s += '<rect x="' + f1(a.x - e) + '" y="' + f1(a.y - e) + '" width="' + f1(b.x - a.x + 2 * e) + '" height="' + f1(b.y - a.y + 2 * e) + '" rx="' + f1((b.y - a.y) / 2 + e) +
+             '" fill="none" stroke="' + g.color + '" stroke-width="' + f1(L(3.2) * (1 - v)) + '" opacity="' + f3(1 - v) + '"/>';
+      }
+      return s;
+    },
+    // The bus at the stop: confetti from the pin, and a ring.
+    burst: function(g, u, t, S, L, cam){
+      if (!live.pin || u > 1.4) return '';
+      const c = S(live.pin), h = 66 + 30 * cam.z, cy = c.y - h * .64, v = clamp(u / .55, 0, 1);
+      let s = '<circle cx="' + f1(c.x) + '" cy="' + f1(cy) + '" r="' + f1(h * (.3 + 1.7 * easeOut(v))) + '" fill="none" stroke="' + GOLD + '" stroke-width="' + f1(h * .09 * (1 - v)) + '" opacity="' + f3(1 - v) + '"/>';
+      const cols = [GOLD, PURPLE, '#e4876a', '#fff', '#a3232f'];
+      for (let i = 0; i < 16; i++){
+        const a = -Math.PI / 2 + (rnd(i, 1) - .5) * 2.8, sp = h * (3.4 + 3 * rnd(i, 2));
+        const x = c.x + Math.cos(a) * sp * u, y = cy + Math.sin(a) * sp * u + 1300 * u * u * .5;
+        const o = clamp(1 - (u - .75) / .6, 0, 1);
+        s += '<rect x="-8" y="-4.5" width="16" height="9" rx="2.5" fill="' + cols[i % 5] + '" opacity="' + f3(o) + '" transform="translate(' + f1(x) + ' ' + f1(y) + ') rotate(' +
+             f1((rnd(i, 3) - .5) * 1100 * u) + ') scale(' + f3(h / 70) + ')"/>';
+      }
+      return s;
+    },
+    // Sharing: the bus going out from this phone, rings behind it, to other
+    // riders' phones around it, each with the bus turning up on its map.
+    cast: function(g, u, t, S, L, cam){
+      const c = S({ x:195, y:300 }), o = leaving(g, t);
+      let back = '';
+      for (let i = 0; i < 4; i++){
+        const v = (u - i * .3) / 1.6;
+        if (v <= 0 || v >= 1) continue;
+        back += '<circle cx="' + f1(c.x) + '" cy="' + f1(c.y) + '" r="' + f1(560 * cam.z + 760 * easeOut(v)) + '" fill="none" stroke="#fff" stroke-width="' + f1(20 * (1 - v)) +
+                '" opacity="' + f3(.65 * (1 - v) * o) + '"/>';
+      }
+      const spots = [[122, 700, -8], [958, 610, 7], [130, 1330, 6], [950, 1410, -7]];
+      let front = '';
+      spots.forEach(function(sp, i){
+        const at = .25 + i * .17, p = (u - at) / .42;
+        if (p <= 0) return;
+        const k = backOut(p) * o, bob = Math.sin((u - at) * 2.4 + i * 1.7) * 9;
+        front += '<g transform="translate(' + sp[0] + ' ' + f1(sp[1] + bob) + ') rotate(' + sp[2] + ') scale(' + f3(k) + ')">' + peer(u - at - .3) + '</g>';
+      });
+      return { front:front, back:back };
+    },
+    // Salamat: stars from the sharer's own bus on the strip.
+    stars: function(g, u, t, S){
+      const r = live.pill;
+      if (!r || u > 1.4) return '';
+      const c = S({ x:r.x + r.w / 2, y:r.y + r.h / 2 });
+      let s = '';
+      for (let i = 0; i < 7; i++){
+        const a = -Math.PI / 2 + (i - 3) * .4 + (rnd(i, 7) - .5) * .25, d = (150 + 150 * rnd(i, 8)) * easeOut(u / .9);
+        const x = c.x + Math.cos(a) * d, y = c.y + Math.sin(a) * d - 70 * u, z = (22 + 18 * rnd(i, 9)) * backOut(u / .3);
+        s += '<g transform="translate(' + f1(x) + ' ' + f1(y) + ') rotate(' + f1((rnd(i, 10) - .5) * 300 * u) + ')" opacity="' + f3(clamp(1 - (u - .8) / .5, 0, 1)) + '">' +
+             '<path d="' + starPath(z) + '" fill="' + GOLD + '" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></g>';
+      }
+      return s;
+    },
+    // On board: a marker over the stop they get off at, and a tick once the
+    // bus has stopped there (check).
+    here: function(g, u, t, S, L){
+      const r = live.stop;
+      if (!r) return '';
+      const a = S({ x:r.x, y:r.y }), b = S({ x:r.x + r.w, y:r.y + r.h }), cx = (a.x + b.x) / 2, o = clamp(u / .3, 0, 1) * leaving(g, t);
+      const done = g.check !== undefined && t >= g.check;
+      let s = '';
+      if (!done){
+        const y = a.y - 34 - Math.abs(Math.sin(u * 4.2)) * 26, k = backOut(u / .35);
+        s += '<g opacity="' + f3(o) + '" transform="translate(' + f1(cx) + ' ' + f1(y) + ') scale(' + f3(k) + ')">' +
+             '<path d="M-26 -30H26L0 0Z" fill="' + PURPLE + '" stroke="#fff" stroke-width="6" stroke-linejoin="round"/></g>';
+      } else {
+        const v = t - g.check, k = backOut(v / .35);
+        s += '<circle cx="' + f1(cx) + '" cy="' + f1(a.y - 60) + '" r="' + f1(46 + 90 * easeOut(v / .6)) + '" fill="none" stroke="' + PURPLE + '" stroke-width="' + f1(10 * clamp(1 - v / .6, 0, 1)) +
+             '" opacity="' + f3(clamp(1 - v / .6, 0, 1)) + '"/>' +
+             '<g opacity="' + f3(o) + '" transform="translate(' + f1(cx) + ' ' + f1(a.y - 60) + ') scale(' + f3(k) + ')"><circle r="46" fill="' + PURPLE + '" stroke="#fff" stroke-width="7"/>' +
+             '<path d="M-19 1l12 12l24 -25" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></g>';
+      }
+      return s;
+    },
+    // Parts: nuts out of the ticket's line for them, into a purse at the
+    // top, which counts them in (from, to).
+    coins: function(g, u, t, S, L, cam, dx){
+      const src = g.src === 'print' ? printedAt(g.px, g.py, t) : live.plus ? S({ x:live.plus.x + 14, y:live.plus.y + live.plus.h / 2 }) : null;
+      const pk = clamp(u / .3, 0, 1), o = leaving(g, t), px = 540 + dx, py = 170, n = 8;
+      let got = 0, s = '';
+      for (let i = 0; i < n; i++){
+        const at = .25 + i * .08, v = (u - at) / .62;
+        if (v >= 1){ got++; continue; }
+        if (v <= 0 || !src) continue;
+        const e = ease(v), cx = src.x + (px - src.x) * e, cy = src.y + (py - src.y) * e - Math.sin(Math.PI * v) * (260 + 60 * rnd(i, 4));
+        s += '<g transform="translate(' + f1(cx) + ' ' + f1(cy) + ') rotate(' + f1(v * 540 + i * 40) + ') scale(2.5)"><path d="' + NUT + '" transform="translate(-12 -12)" fill="#cfd5db" stroke="#5f6870" stroke-width="1.5" fill-rule="evenodd"/></g>';
+      }
+      const count = Math.round(g.from + (g.to - g.from) * got / n), bump = got && u - (.25 + (got - 1) * .08 + .62) < .18 ? .08 : 0;
+      s = '<g opacity="' + f3(o) + '" transform="translate(' + px + ' ' + py + ') scale(' + f3(backOut(pk) * (1 + bump)) + ')">' +
+          '<rect x="-150" y="-62" width="300" height="124" rx="62" fill="#fbf4e4" stroke="' + MAROON + '" stroke-width="6"/>' +
+          '<g transform="translate(-96 0) scale(3.4)"><path d="' + NUT + '" transform="translate(-12 -12)" fill="#cfd5db" stroke="#5f6870" stroke-width="1.5" fill-rule="evenodd"/></g>' +
+          '<text x="34" y="26" text-anchor="middle" font-size="76" fill="' + INK + '">' + count + '</text></g>' + s;
+      return s;
+    },
+    // A new paint: a stroke of it across the bus, and sparkles.
+    paint: function(g, u, t, S){
+      const r = live.coach;
+      if (!r || u > .9) return '';
+      const a = S({ x:r.x, y:r.y }), b = S({ x:r.x + r.w, y:r.y + r.h }), w = b.x - a.x, h = b.y - a.y;
+      const col = (typeof BUS_PAINTS !== 'undefined' && BUS_PAINTS[g.paint] || ['', '', '', MAROON])[3];
+      const p = clamp(u / .38, 0, 1), x = a.x - .6 * w + 2.2 * w * ease(p), bw = .42 * w, sk = .35 * h;
+      let s = '<defs><clipPath id="g-paint"><rect x="' + f1(a.x) + '" y="' + f1(a.y) + '" width="' + f1(w) + '" height="' + f1(h) + '" rx="26"/></clipPath></defs>';
+      if (p < 1) s += '<g clip-path="url(#g-paint)"><path d="M' + f1(x) + ' ' + f1(b.y) + 'L' + f1(x + sk) + ' ' + f1(a.y) + 'L' + f1(x + sk + bw) + ' ' + f1(a.y) + 'L' + f1(x + bw) + ' ' + f1(b.y) + 'Z" fill="' + col + '" opacity=".5"/>' +
+        '<path d="M' + f1(x + bw) + ' ' + f1(b.y) + 'L' + f1(x + sk + bw) + ' ' + f1(a.y) + '" stroke="#fff" stroke-width="14" opacity=".85"/></g>';
+      for (let i = 0; i < 6; i++){
+        const v = (u - .18 - i * .05) / .5;
+        if (v <= 0 || v >= 1) continue;
+        const sx = a.x + w * (.08 + .84 * rnd(i, 21)), sy = a.y + h * (.12 + .7 * rnd(i, 22)), z = (26 + 22 * rnd(i, 23)) * Math.sin(Math.PI * v);
+        s += '<g transform="translate(' + f1(sx) + ' ' + f1(sy) + ') rotate(' + f1(v * 90) + ')"><path d="' + sparkPath(z) + '" fill="#fff" stroke="' + GOLD + '" stroke-width="3"/></g>';
+      }
+      return s;
+    },
+    // A white flash, for a cut.
+    flash: function(g, u){
+      const o = u < .12 ? u / .12 : u < .2 ? 1 : clamp(1 - (u - .2) / .35, 0, 1);
+      return o > 0 ? '<rect width="1080" height="1920" fill="#fff" opacity="' + f3(o) + '"/>' : '';
+    },
+    // The stamp (one way from the stop to the ticket): a rubber stamp comes
+    // down on the screen and leaves its mark, the mark's ink spreads over
+    // the frame, and goes back out from the middle onto the ticket.
+    stamp: function(g, u, t, S){
+      // On the middle of the road's picture, where the page has it.
+      const art = live.art, mid = art ? S({ x:art.x + art.w / 2, y:art.y + art.h / 2 }) : { x:540, y:1000 };
+      const cx = mid.x, cy = mid.y;
+      let s = '';
+      // The mark it leaves.
+      const mark = function(k, o){
+        return '<g transform="translate(' + cx + ' ' + cy + ') rotate(-12) scale(' + f3(k) + ')" opacity="' + f3(o) + '">' +
+          '<circle r="150" fill="none" stroke="' + RED + '" stroke-width="16"/><circle r="122" fill="none" stroke="' + RED + '" stroke-width="5"/>' +
+          '<g transform="translate(-62 -70) scale(5.2)" fill="' + RED + '"><path d="' + COACH + '" fill-rule="evenodd"/></g>' +
+          '<path d="M-58 78h116" stroke="' + RED + '" stroke-width="12" stroke-linecap="round"/></g>';
+      };
+      if (u >= .22 && u < .62) s += mark(1, .92);
+      if (u >= .62 && u < 1.0) s += mark(1 + 13 * easeIn((u - .62) / .38), .92 + .08 * clamp((u - .62) / .3, 0, 1));
+      if (u >= .95 && u < 1.5){
+        const v = clamp((u - 1.05) / .45, 0, 1), r = 1400 * ease(v);
+        s += '<defs><mask id="g-ink" maskUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1920"><rect width="1080" height="1920" fill="#fff"/>' +
+             '<circle cx="540" cy="960" r="' + f1(r) + '" fill="#000"/></mask></defs><rect width="1080" height="1920" fill="' + RED + '" mask="url(#g-ink)"/>';
+      }
+      // The stamp itself: down, a moment, and away.
+      if (u < .62){
+        const y = u < .22 ? cy - 1500 * (1 - easeIn(u / .22)) : u < .32 ? cy : cy - 1500 * easeIn((u - .32) / .3);
+        const sq = u >= .22 && u < .32 ? 1 - .08 * Math.sin(Math.PI * (u - .22) / .1) : 1;
+        s += '<g transform="translate(' + cx + ' ' + f1(y) + ') rotate(-12) scale(1 ' + f3(sq) + ')">' +
+             '<ellipse cx="0" cy="12" rx="170" ry="18" fill="#000" opacity="' + f3(u < .22 ? .25 * easeIn(u / .22) : .25) + '"/>' +
+             '<rect x="-165" y="-46" width="330" height="46" rx="10" fill="' + RED + '"/>' +
+             '<rect x="-175" y="-112" width="350" height="70" rx="16" fill="#8a5a3c"/><rect x="-175" y="-112" width="350" height="18" rx="9" fill="#a06d4b"/>' +
+             '<rect x="-38" y="-250" width="76" height="142" rx="14" fill="#6b4630"/>' +
+             '<ellipse cx="0" cy="-290" rx="96" ry="66" fill="#8a5a3c"/><ellipse cx="-24" cy="-312" rx="40" ry="18" fill="#a77450" opacity=".8"/></g>';
+      }
+      return s;
+    },
+    // The print (another way from the stop to the ticket): the ticket comes
+    // up out of the top of the phone, in steps, as a printer feeds paper,
+    // the phone drops away under it, and it comes forward to fill the frame.
+    print: function(g, u, t, S, L, cam, dx){
+      if (!printed) return '';
+      const q = printedAt(undefined, undefined, t);
+      if (!q) return '';
+      const W = q.w, H = W * printed.h / printed.w;
+      const shadow = '<rect x="' + f1(-W / 2 + 14) + '" y="24" width="' + f1(W - 28) + '" height="' + f1(H - 30) + '" rx="22" fill="#4a1119" opacity=".28" filter="url(#v-soft)"/>';
+      return { back:'<defs><filter id="v-soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="22"/></filter></defs>' +
+        '<g transform="translate(' + f1(q.x + dx) + ' ' + f1(q.y) + ') rotate(' + f1(q.rot) + ') scale(' + f3(q.k) + ')">' + shadow +
+        '<image href="' + printed.url + '" x="' + f1(-W / 2) + '" y="0" width="' + f1(W) + '" height="' + f1(H) + '"/></g>' };
+    }
+  };
+  // Where the printed ticket is at t: its top middle (x, y), its turn and
+  // scale; or, given px and py from 0 to 1 across and down it, that point
+  // on it. 600 wide as it comes off the phone, the app's own tilt once it
+  // is in front, and as big as the frame lets it be.
+  function printedAt(px, py, t){
+    const g = gfx.filter(function(x){ return x.kind === 'print'; })[0];
+    if (!g || !printed) return null;
+    const u = t - g.at, W = 600, H = W * printed.h / printed.w;
+    // Up out of the top of the phone in six feeds, as a printer feeds paper.
+    const feeds = 6, feed = clamp(u / 1.15, 0, 1), step = Math.min(feeds, Math.floor(feed * feeds)), within = feed * feeds - step;
+    const rise = (step + ease(clamp(within / .65, 0, 1))) / feeds;
+    // Then forward, under the purse its parts go into (G.coins).
+    const f = clamp((u - 1.1) / .55, 0, 1), kf = Math.min(1.2, 1460 / H), y0 = 400 - rise * 980;
+    const y = y0 + (330 - y0) * ease(f), rot = -2.5 + 1.3 * ease(f), k = 1 + (kf - 1) * backOut(f);
+    if (px === undefined) return { x:540, y:y, rot:rot, k:k, w:W };
+    const lx = (px - .5) * W * k, ly = py * H * k, a = rot * Math.PI / 180;
+    return { x:540 + lx * Math.cos(a) - ly * Math.sin(a), y:y + lx * Math.sin(a) + ly * Math.cos(a) };
   }
 
   // Each interlude's own movement, as a function of its local time u.
@@ -638,7 +1029,14 @@ const V = (function(){
     }
   };
 
-  return { init:init, event:event, screen:screen, render:render, gaps:function(){ return gaps; } };
+  // The ticket as it comes off the phone (the print), a picture of the
+  // page's own, put in by render.js.
+  let printed = null;
+  function print(url, w, h){
+    printed = { url:url, w:w, h:h };
+    return new Promise(function(res){ const im = new Image(); im.onload = function(){ res(true); }; im.onerror = function(){ res(false); }; im.src = url; });
+  }
+  return { init:init, event:event, screen:screen, render:render, print:print, gaps:function(){ return gaps; } };
 })();
 </script>
 </body>

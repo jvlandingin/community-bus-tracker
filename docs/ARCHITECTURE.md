@@ -1980,15 +1980,16 @@ preview with no picture and nothing else changes.
 
 ## The showcase video
 
-`tools/render-video.sh` makes a vertical video of about 38 seconds (1080x1920, English
+`tools/render-video.sh` makes a vertical video of about 42 seconds (1080x1920, English
 captions, the interface's own sounds) for Facebook, TikTok and Reels, where the riders who have
 never heard of the tracker are. It is a promo, the moments of one sharer's
 morning one after another: the bus coming from seven stops off, on the map
 and on the stop card, until the card says Sakay na!; Start, and the bus on
 everyone's map with riders saying salamat; Bababa na! as the road comes up
-to their stop and the bus pulls in; the trip's ticket; and the bus trying on
-five paints and sets of accessories, under half a second each (the
-maintainer's ask: show how much can be changed, without the taps).
+to their stop and the bus pulls in; the trip's ticket and the parts it
+brings; and, the camera going in from My tickets to the bus itself, the bus
+trying on five paints and sets of accessories, under half a second each
+(the maintainer's ask: show how much can be changed, without the taps).
 
 **A promo, not a tutorial** (the maintainer's call, October 2026). The cut
 before it showed every step of that morning at a pace that could be
@@ -2005,6 +2006,38 @@ opened as it swipes to the bus. Start is the one tap shown, because it is
 the one thing the video asks anybody to do. The rider's morning went with
 the rest: it needs a second phone and a tap to say what the end card's
 dressed bus says anyway.
+
+**Motion graphics say what the screens do** (the maintainer's ask, October
+2026: the waiting was unclear, so much happening at once). The stage draws
+them over the phone and behind it (`G` in `stage.html`), from where the
+page has things each frame (`LIVE` in `film.js`), so one on the map stays
+on the map through the camera's moves. Waiting, the phone comes up close on
+the map, and once the caption is read a pin comes down on the stop with
+its name, a sight closes on the bus far down the map, and the way between
+is drawn, a dot for each stop the card says it still has to pass; then the
+whole phone, and each dot goes with a pop as the card counts it off, the
+card's flag sends out rings at Malapit na! and Sakay na!, and confetti
+goes up from the pin when the bus gets there. At Start the camera goes
+back past the phone, rings go out from it and four other riders' phones
+come up around it, the bus turning up on each; each salamat sends stars
+up from the sharer's bus on the strip. On board a marker bobs over the
+stop they get off at, with a tick once the bus stands there. The ticket's
+parts fly out of its line for them into a purse that counts them in. In
+My tickets each new look comes with a stroke of its paint across the bus
+and sparkles. A swipe between moments blurs the way a camera's would.
+Only the pictures move; the page under them is the app's, untouched.
+
+**From the stop to the ticket, three ways put to the maintainer** (October
+2026, who found the swipe there awkward). `--handoff` picks one: `print`,
+the camera back to the whole phone, the ticket coming up out of its top in
+feeds as a printer feeds paper while the phone drops away under it, and
+forward into the frame (the page's own ticket, pictured with what is
+around it hidden, `Phone.picture()`, while the phone's own picture is held
+on the stop); `stamp`, a rubber stamp coming down on the road with a jolt,
+its mark's ink filling the frame, and going back out from the middle onto
+the ticket; `zoom`, the camera into the stop on the road, a white flash,
+and out from the ticket's picture to the whole ticket. Stop is tapped
+under each, where nobody sees it.
 
 **Real screens, not a drawing of them.** The guide, the flyer and the
 briefing redraw the tracker by hand and go stale when it changes. The video
@@ -2141,7 +2174,7 @@ under it is timed from it, `read()`), and
 tap, a camera move, a scroll, a new look on the bus, a salamat or the phone moving
 inside a caption's reading time, a caption gone before it can be read, or a
 tap while the camera is still moving, stops the render and names both.
-About 38 seconds, with an end card of 6.5, because a feed loops the video
+About 42 seconds, with an end card of 6.5, because a feed loops the video
 back to the title the moment it ends.
 
 **Choices the app forced.** The story waits at Javalera and gets off at SM

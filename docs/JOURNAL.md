@@ -25,6 +25,17 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-21: A promo, not a tutorial
+
+Looking at the parts, the maintainer found the video showed too much: it
+should be a promo, not a tutorial that shows tapping Stop after arriving.
+It is now about 38 seconds of moments: the bus coming on the map and the
+stop card until Sakay na!, Start and the salamat, Bababa na! as the bus
+pulls in, the ticket, and the bus trying on paints and dress, then the two
+ways in. Saving the stop, the zoom, the switches, the direction, Stop, Keep
+and My tickets all happen while the phone swipes between moments, and
+Start is the one tap shown. The other rider's morning went too.
+
 ## 2026-10-21: The bus on the map while it comes
 
 The maintainer asked for the video's bus to come from further off, so it is

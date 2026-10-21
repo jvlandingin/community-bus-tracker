@@ -2,13 +2,16 @@
 // tapped and when, what the caption says, and where the made-up buses are.
 // The machinery is in render.js; run that (or tools/render-video.sh).
 //
-// One sharer's morning, then another rider's. Waiting at Javalera, the
-// stop card counts the bus down to "Sakay na!"; on board, the sharer puts
-// the bus on everyone's map, riders say salamat, the card says "Bababa
-// na!" as the bus pulls in at their stop, and Stop gives a ticket. The
-// ticket goes into My tickets, the bus gets a new paint, and "Show
-// customized bus to riders" goes on.
-// Next morning a rider by Tagaytay taps that bus and sees it as dressed.
+// A promo, not a tutorial (the maintainer's call, October 2026): the
+// moments that sell the app, one after another, and none of the steps
+// between them. One sharer's morning. Waiting at Javalera, with the stop
+// saved and its buzz on, the bus comes up the map and down the stop card's
+// road until "Sakay na!"; on board, Start puts it on everyone's map and
+// riders say salamat; the card says "Bababa na!" as the bus pulls in at
+// their stop; the trip's ticket; and the bus in other paints and dress.
+// What happens between those moments (saving the stop, the direction, Stop,
+// Keep, opening My tickets) is done while the phone is off the screen, and
+// Start is the one tap shown.
 //
 // Javalera and SM City General Trias were chosen because the card counts
 // down to them one stop at a time. Waiting at Dagatan it reads "8 stops"
@@ -27,9 +30,9 @@ const R = require('./render.js');
 const S = require('./sounds.js');
 
 // ---- How long each scene runs, in seconds ----------------------------------
-// As long as its beats take at the film's pace (below): about 70 seconds in
-// all.
-const DUR = { title:3.2, watch:4.2, wait:15.4, share:8.8, trip:2.2, getoff:6.4, ticket:5.65, collect:3.0, dress:8.5, show:2.4, rider:3.85, end:6.5 };
+// As long as its beats take at the film's pace (below): about 38 seconds in
+// all, an end card of 6.5 included.
+const DUR = { title:3.2, wait:8.2, share:5.9, trip:2.4, getoff:3.8, ticket:2.9, dress:4.95, end:6.5 };
 const T = {};
 let acc = 0;
 Object.keys(DUR).forEach(k => { T[k] = acc; acc += DUR[k]; });
@@ -39,19 +42,20 @@ T.total = acc;
 // The app speaks for itself: three captions, one for each part of the story
 // (waiting for the bus, sharing it, dressing it up), and the rest is said by
 // the app's own words on screen, Malapit na!, Sakay na!, the salamat,
-// Bababa na!, the ticket. Every beat goes the same way: the camera settles
-// on what is about to be used, a ring closes in on the button (POINT
-// seconds) so the eye is there first, the tap, and a moment on what it did.
-// Where a caption lands, nothing is tapped or moved until it can have been
-// read (READ: a moment to notice it, and a quarter of a second a word),
-// because a viewer reads the words first and looks at the phone after.
-// rehearse() stops the render if a cue breaks that.
+// Bababa na!, the ticket. The one tap shown, Start, goes as every tap did in
+// the longer cut: a ring closes in on the button (POINT seconds) so the eye
+// is there first, then the tap. Where a caption lands, nothing is tapped or
+// moved until it can have been read (READ: a moment to notice it, and a
+// quarter of a second a word), because a viewer reads the words first and
+// looks at the phone after. rehearse() stops the render if a cue breaks that.
 //
 // The first cut had a caption for every step, each tapped about half a
 // second after it appeared, and a viewer was still reading when the screen
 // changed. Holding all thirteen until read made 75 seconds of it, and
 // showing each on its own over the dimmed phone made 80; the maintainer
-// liked neither and chose three captions (October 2026).
+// liked neither and chose three captions (October 2026). The cut after that
+// showed every step of the story at a pace that could be followed, about 70
+// seconds, and read as a tutorial; the maintainer wanted a promo.
 const POINT = .35;
 const READ = say => .4 + .25 * say.replace(/\*/g, '').trim().split(/\s+/).length;
 
@@ -71,18 +75,15 @@ const SOUTH = R.road(['One Ayala Terminal', 'Makati Shangri-La', 'Paseo de Roxas
 const WAIT = 'Javalera', OFF = 'SM City General Trias';
 const WAIT_KM = NORTH.km(WAIT);   // 24.7 on this road
 
-// ---- The two days -----------------------------------------------------------
+// ---- The morning ---------------------------------------------------------------
 // The sharer's phone: a Wednesday morning inside the northbound hours, then
 // half an hour of the trip passes during its interlude, once the phone is
 // off the screen and over by JUMPED, so that the phone keeps the film's time
 // again before it comes back: the road on board goes by the phone's clock.
 const A_DAY = Date.parse('2026-10-14T06:15:00+08:00');
-const JUMP = 30 * 60000, JUMPED = T.trip + .9;
+const JUMP = 30 * 60000, JUMPED = T.trip + .55;
 const A_CLOCK = R.keys([[0, A_DAY], [T.trip + .4, A_DAY + (T.trip + .4) * 1000], [JUMPED, A_DAY + JUMPED * 1000 + JUMP],
                         [1000, A_DAY + 1000 * 1000 + JUMP]]);
-// The other rider's phone, the next morning.
-const B_DAY = Date.parse('2026-10-15T05:52:00+08:00');
-const B_CLOCK = v => B_DAY + (v - T.rider) * 1000;
 
 // What the sharer's phone remembers: nine trips shared, six tickets kept.
 // The tenth, in this film, earns the tassels (Borlas, 10 trips shared).
@@ -97,26 +98,28 @@ const SEED_TICKETS = [
   { d:'2026-10-12', dir:'n', from:'AMADEO', to:'IMUS', st:['dawn'], ty:true },
   { d:'2026-10-13', dir:'s', from:'GEN.T', to:'TGY', st:[], ty:true }
 ];
+// And the stop they wait at, saved on an earlier morning.
+const SEED_STOP = { name:WAIT, lat:R.stop(WAIT).lat, lng:R.stop(WAIT).lng };
 
 // ---- The buses --------------------------------------------------------------
 function buses(world){
   // The one the sharer waits for, from far enough off that it is not there
-  // yet: seven stops and 14.5 km when the stop is saved, a bus small at the
+  // yet: seven stops and 14.5 km as the phone comes up, a bus small at the
   // far end of the card's road and a badge well down the map from the pin,
   // and it grows as it comes, both places at once (the maintainer's ask).
   // No further: before 9.25 km the Tagaytay hook puts stops behind it on
   // the chain, and the count goes 11, 12, 13, 14 and then 8. Waiting at
   // Javalera the count changes at 9.25 (7 stops), 11.8, 14.4, 15.75, 18.25,
   // 19.15 (2, Malapit na!, and the buzz), 20.15, 22.25 and 22.65 km (Sakay
-  // na!), measured on this road. The page sees the bus only at the film's
-  // polls, on the half second, so each alarm is crossed between two of them
-  // (17.5 and 18.0s, 20.5 and 21.0s) and clear of both. It pulls in at the
-  // stop as the phone goes, and leaves the map as they board: whoever was
-  // sharing it got off there.
+  // na!), measured on this road. It stays at seven while the caption is
+  // read, then comes a stop each half second. The page sees the bus only at
+  // the film's polls, on the half second, so each alarm is crossed between
+  // two of them (7.5 and 8.0s, 9.5 and 10.0s) and clear of both. It pulls
+  // in at the stop as the phone goes, and leaves the map as they board:
+  // whoever was sharing it got off there.
   world.bus({ id:'a1', phone:'A', dir:'north', label:'1043', road:NORTH, on:[0, T.share + .2], age:5000,
-    km:R.keys([[0, 6.0], [T.wait + 3.0, 9.3], [T.wait + 6.0, 9.7], [T.wait + 7.5, 12.4], [T.wait + 8.6, 15.6],
-               [T.wait + 10.1, 18.95], [T.wait + 10.6, 19.35], [T.wait + 13.1, 22.45], [T.wait + 13.6, 22.9],
-               [T.wait + 14.6, 24.2], [T.wait + 15.2, WAIT_KM - .05]]) });
+    km:R.keys([[0, 9.4], [T.wait + 2.0, 9.9], [T.wait + 4.4, 18.95], [T.wait + 4.7, 19.35], [T.wait + 6.4, 22.45],
+               [T.wait + 6.8, 22.9], [T.wait + 7.4, WAIT_KM - .05]]) });
   world.bus({ id:'a2', phone:'A', dir:'north', label:null, road:NORTH, on:[0, 1000], age:9000,
     km:R.keys([[0, 40.5], [T.share, 47.0], [T.trip + DUR.trip, 61], [1000, 61]]) });
   world.bus({ id:'a3', phone:'A', dir:'north', label:'1027', road:NORTH, on:[0, 1000], age:7000,
@@ -125,15 +128,6 @@ function buses(world){
     km:R.keys([[0, 22.0], [T.share, 28.0], [T.trip + DUR.trip, 44], [1000, 44]]) });
   world.bus({ id:'a5', phone:'A', dir:'north', label:null, road:NORTH, on:[0, 1000], age:14000,
     km:R.keys([[0, 2.2], [T.share, 6.0], [T.trip + DUR.trip, 14], [1000, 14]]) });
-  // The next morning: the sharer's bus again, dressed, on the ridge road
-  // short of Tagaytay, so its popup draws it against Taal. Its look is set
-  // from the sharer's phone once it has one (see 'show').
-  world.dressed = world.bus({ id:'b1', phone:'B', dir:'north', label:'1043', road:NORTH, on:[0, 1000], age:4000, look:'',
-    km:R.keys([[T.rider - 1, 3.4], [T.rider + DUR.rider, 4.4]]) });
-  world.bus({ id:'b2', phone:'B', dir:'north', label:null, road:NORTH, on:[0, 1000], age:8000,
-    km:R.keys([[T.rider - 1, 27.0], [T.rider + DUR.rider, 28.5]]) });
-  world.bus({ id:'b3', phone:'B', dir:'south', label:'1019', road:SOUTH, on:[0, 1000], age:12000,
-    km:R.keys([[T.rider - 1, 18.0], [T.rider + DUR.rider, 19.5]]) });
   // Salamat on the sharer's trip: one, then three.
   world.thanks.A = R.keys([[SALAMAT[0], 0], [SALAMAT[0] + .01, 1], [SALAMAT[1], 1], [SALAMAT[1] + .01, 3]]);
 }
@@ -141,57 +135,61 @@ function buses(world){
 // One plain sentence for each part of the story, *word* drawn in gold, at
 // the top from its time until its to: waiting for the bus, from the first
 // look at the map until the bus is boarded; sharing it, until the trip;
-// dressing it up, until the other rider. The words are the maintainer's,
-// kept from the captions there were. Each lands once the camera has settled,
-// and the first tap under it is timed from it: read(k) is when caption k has
-// been read, the first moment anything may happen under it.
+// dressing it up, until the end card. The words are the maintainer's, kept
+// from the captions there were. Each lands once the camera has settled, and
+// the first tap or new look under it is timed from it: read(k) is when
+// caption k has been read, the first moment anything may happen under it.
 const CAP = {
-  near:  { at:T.watch + .25, to:T.share, say:'Know when your bus is *near*.' },
+  near:  { at:T.wait + .25,  to:T.share, say:'Know when your bus is *near*.' },
   share: { at:T.share + .35, to:T.trip,  say:'On the bus? *Share it*.' },
-  dress: { at:T.dress + 1.6, to:T.rider, say:'Earn coins and *dress up your bus*.' }
+  dress: { at:T.dress + .35, to:T.end,   say:'Earn coins and *dress up your bus*.' }
 };
 const read = k => CAP[k].at + READ(CAP[k].say);
 const SAY = Object.keys(CAP).map(k => [CAP[k].at, CAP[k].to, CAP[k].say]);
-// Start and Stop, and the salamat (one, then three in all).
-const START = read('share') + 2.4, STOP = T.ticket + .6;
-const SALAMAT = [T.share + 6.8, T.share + 8.0];
+// Start, its ring closing in while the caption's last word is read; Stop,
+// off the screen as the phone swipes to the ticket; and the salamat (one,
+// then three in all).
+const START = read('share') + .1, STOP = T.ticket - .05;
+const SALAMAT = [START + 2.0, START + 3.0];
 
 // The sharer's GPS, from Start until Stop. 700 m past the stop when Start is
 // tapped: the card still has the stop they waited at, and within 300 m of it
 // (AT_STOP_KM) it would say "Bababa na!" and spend the trip's one buzz there.
 // The trip itself goes by while the phone is off the screen, in a moment of
-// the interlude, to 120 m short of where the bus stops (ARRIVE_KM, 6 m short
-// of the stop's sign). The card says Bababa na! there, from 35.2 km. From
-// JUMPED it goes at about 110 km/h, the fastest the card's road drives
-// rather than jumps (SV_FASTEST in index.html), so the road comes on from
-// the front seat at the bus's own pace, the stop and its people coming
-// into sight on the horizon as the phone comes up, and it slows as a bus
-// pulling in does, and stands. Faster, the road's joints and dashes go by
-// too fast for the film's frames; the old time-lapse, a stop every 0.75 s,
-// was further each half second than the road drives and was drawn as a
-// jump every time. The app would ask "Getting off here?" within 100 m of a
-// stop saved while well ahead of the bus; the maintainer asked for the bus
-// to arrive without the question (October 2026), so the stop is saved again
-// off screen (at JUMPED, see the cues), inside 500 m of it, and by the
-// app's own rule a stop saved that close is not one the bus arrives at.
+// the interlude, to 75 m short of where the bus stops (ARRIVE_KM, 6 m short
+// of the stop's sign); the card says Bababa na! from 35.2 km. From JUMPED it
+// goes at 90 km/h, slower than the fastest the card's road drives rather
+// than jumps (SV_FASTEST in index.html), so the road comes on from the front
+// seat at the bus's own pace with the stop and its people in sight as the
+// phone comes up; then it slows as a bus pulling in does, in two seconds,
+// and stands. The view runs the feed and a poll behind (about a second in
+// the film), which is why the phone comes back a second after the jump and
+// not before: the jump itself is drawn as one. The app would ask "Getting
+// off here?" within 100 m of a stop saved while well ahead of the bus; the
+// maintainer asked for the bus to arrive without the question (October
+// 2026), so the stop is saved again at JUMPED, before that moment's fix and
+// after the last one well short of it, and by the app's own rule a stop
+// saved inside 500 m of the bus is not one it arrives at. During the jump
+// itself the bus keeps moving, so the half hour never looks like a bus
+// standing still to the trip's own checks.
 const ARRIVE_KM = NORTH.km(OFF) - .006;
-const GPS = R.keys([[START - .05, WAIT_KM + .7], [T.trip + .4, 26.4], [JUMPED, ARRIVE_KM - .12], [JUMPED + 2.33, ARRIVE_KM - .05],
-                    [JUMPED + 2.93, ARRIVE_KM - .032], [JUMPED + 3.53, ARRIVE_KM - .018], [JUMPED + 4.13, ARRIVE_KM - .007],
-                    [JUMPED + 4.83, ARRIVE_KM - .002], [JUMPED + 5.46, ARRIVE_KM], [1000, ARRIVE_KM]]);
+const GPS = R.keys([[START - .05, WAIT_KM + .7], [T.trip + .4, 26.4], [JUMPED, ARRIVE_KM - .075], [JUMPED + 2.0, ARRIVE_KM - .025],
+                    [JUMPED + 2.5, ARRIVE_KM - .0141], [JUMPED + 3.0, ARRIVE_KM - .0063], [JUMPED + 3.5, ARRIVE_KM - .0016],
+                    [JUMPED + 4.0, ARRIVE_KM], [1000, ARRIVE_KM]]);
 // Where a buzz belongs in the story: waiting. On board the card buzzes
 // once, two stops before the sharer's own, and that is in the interlude.
 const BUZZ_SCENES = [[T.wait, T.share]];
 // The phone comes up at the end of the title, goes down for the trip and
-// the end, and slides across between the two phones: two whips, getting on
-// the bus (the stop to get off at is set while the phone is off the screen)
-// and handing over to the other phone.
-const PHONE_Y = [[T.watch - .6, 1920], [T.watch, 0], [T.trip - .1, 0], [T.trip + .5, -1920], [T.trip + .501, 1920], [T.getoff - .6, 1920],
+// the end, and swipes across between the other moments: onto the bus, to
+// the ticket and to My tickets. What happens between two moments is done
+// while it is off the screen.
+const PHONE_Y = [[T.wait - .6, 1920], [T.wait, 0], [T.trip - .1, 0], [T.trip + .5, -1920], [T.trip + .501, 1920], [T.getoff - .6, 1920],
                  [T.getoff, 0], [T.end, 0], [T.end + .6, -1920]];
-const PHONE_X = [[T.share - .3, 0], [T.share - .05, -1180], [T.share - .0499, 1180], [T.share + .25, 0],
-                 [T.rider - .4, 0], [T.rider - .1, -1180], [T.rider - .0999, 1180], [T.rider + .25, 0]];
-// What else the bus could wear, for the few seconds after the paint is
-// bought: a paint and the things on it, from SHOP and the trophies this bus
-// has earned (an unearned trophy cannot be worn).
+const whip = t => [[t - .3, 0], [t - .05, -1180], [t - .0499, 1180], [t + .25, 0]];
+const PHONE_X = [].concat(whip(T.share), whip(T.ticket), whip(T.dress));
+// What else the bus could wear, under the last caption: a paint and the
+// things on it, from SHOP and the trophies this bus has earned (an unearned
+// trophy cannot be worn).
 const LOOKS = [
   { paint:'dagat', worn:['flames', 'goldrims', 'horns', 'sampaguita'] },
   { paint:'lila',  worn:['underglow', 'mirror', 'fringe', 'flowers'] },
@@ -199,12 +197,12 @@ const LOOKS = [
   { paint:'ginto', worn:['goldrims', 'visor', 'dice', 'horns', 'bumpers'] },
   { paint:'gubat', worn:['underglow', 'antenna', 'flowers', 'sunrise', 'fringe'] }
 ];
-// The frame's own sounds: the board lighting up, the swipes between scenes
-// and the end card.
+// The frame's own sounds: the board lighting up, the swipes between
+// moments and the end card.
 const SCORE = [
-  { t:.35, kind:'board' }, { t:T.watch - .6, kind:'whoosh' }, { t:T.share - .3, kind:'whoosh' },
-  { t:T.trip - .1, kind:'whoosh' }, { t:T.getoff - .6, kind:'whoosh' }, { t:T.rider - .4, kind:'whoosh' },
-  { t:T.end, kind:'whoosh' }, { t:T.end + .35, kind:'outro' }
+  { t:.35, kind:'board' }, { t:T.wait - .6, kind:'whoosh' }, { t:T.share - .3, kind:'whoosh' },
+  { t:T.trip - .1, kind:'whoosh' }, { t:T.getoff - .6, kind:'whoosh' }, { t:T.ticket - .3, kind:'whoosh' },
+  { t:T.dress - .3, kind:'whoosh' }, { t:T.end, kind:'whoosh' }, { t:T.end + .35, kind:'outro' }
 ];
 // What the page is showing that has a sound, read off the phone on screen
 // once a frame; changes() says which of them has just appeared.
@@ -246,31 +244,20 @@ const gold = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\*([^*
 // ---- The scenes: what happens when ------------------------------------------
 // Each cue is [time, what]. A tap is shown by the stage as a ring where the
 // finger went, after a ring closing in on the place (press).
-function cues(A, B, stage, world, browser, heard){
+function cues(A, stage, world, heard){
   const tap = async (phone, sel, at) => {
     const p = await phone.tap(sel);
     await stage.event({ type:'tap', at, x:p.x, y:p.y });
     heard.push({ t:at, kind:'tap' });
   };
   // A finger on a control at t, the ring closing in on it for POINT seconds
-  // first, so the eye is already there when the tap lands. The control is a
-  // selector, or a function the page runs to find the point.
-  const find = async (phone, target) => {
-    if (typeof target !== 'string') return phone.run(target);
-    const r = await phone.rect(target);
-    return r && { x:r.x + r.w / 2, y:r.y + r.h / 2 };
-  };
-  const press = (phone, target, t) => {
+  // first, so the eye is already there when the tap lands.
+  const press = (phone, sel, t) => {
     at(t - POINT, async v => {
-      const p = await find(phone, target);
-      if (p) await stage.event({ type:'point', at:v, dur:POINT, x:p.x, y:p.y });
+      const r = await phone.rect(sel);
+      if (r) await stage.event({ type:'point', at:v, dur:POINT, x:r.x + r.w / 2, y:r.y + r.h / 2 });
     });
-    at(t, async v => {
-      if (typeof target === 'string') return tap(phone, target, v);
-      const p = await find(phone, target);
-      if (!p) throw new Error(phone.name + ': nothing to tap');
-      return tap(phone, { x:p.x, y:p.y, w:0, h:0 }, v);
-    });
+    at(t, v => tap(phone, sel, v));
   };
   // The camera onto an element of the page, or back out to the whole phone.
   // A close-up fills the frame with the screen, but for the top under a
@@ -281,14 +268,11 @@ function cues(A, B, stage, world, browser, heard){
     if (r && o && o.maxH) r.h = Math.min(r.h, o.maxH);
     await stage.event(Object.assign({ type:'camera', at, rect:r, dur:.6 }, o || {}));
   };
-  const type = async (phone, sel, text) => {
-    await phone.run(([s, t]) => { const el = document.querySelector(s); el.value = t; el.dispatchEvent(new Event('input')); }, [sel, text]);
-  };
-  const smooth = (phone, from, to, a, b) => ({ from:a, to:b, fn: v => phone.scrollTo(from + (to - from) * easeIO((v - a) / (b - a))) });
   const list = [];
   const at = (t, fn) => list.push({ t, fn });
   const scrolls = [];
-  // The page itself, the same way.
+  // The page itself, from where it is to y over dur seconds, worked out when
+  // the cue runs.
   const glideDoc = (phone, y, dur, arg) => async v => {
     const from = await phone.run(() => document.scrollingElement.scrollTop);
     const to = await phone.run(y, arg);
@@ -301,130 +285,70 @@ function cues(A, B, stage, world, browser, heard){
     const r = document.querySelector(s).getBoundingClientRect(), d = document.scrollingElement;
     return Math.max(0, Math.min(d.scrollHeight - innerHeight, d.scrollTop + r.top + r.height / 2 - innerHeight / 2));
   }, dur, sel);
-  // A scrolling box inside the page (My tickets, the ticket), from where it
-  // is to y over dur seconds, worked out when the cue runs.
-  const glide = (phone, sel, y, dur) => async v => {
-    const from = await phone.run(s => document.querySelector(s).scrollTop, sel);
-    const to = typeof y === 'function' ? await phone.run(y, sel) : y;
-    scrolls.push({ from:v, to:v + dur, fn: w => phone.run(([s, top]) => { document.querySelector(s).scrollTop = top; },
-      [sel, from + (to - from) * easeIO((w - v) / dur)]) });
-  };
+  // A window opened while the phone is off the screen is open when it comes
+  // back: its way in is over before anybody sees it, and a camera can be
+  // put on what is in it at once.
+  const opened = sel => A.run(s => document.querySelector(s).getAnimations({ subtree:true }).forEach(a => {
+    if (/^(cardin|veil)$/.test(a.animationName || '')) a.finish();
+  }), sel);
 
-  // watch: nothing tapped; the buses move. Then the page goes down a little,
-  // to the stop card.
-  scrolls.push(smooth(A, 0, 120, T.wait - .8, T.wait - .4));
-  // wait: save the stop, switch the buzz on, and watch it count down.
-  press(A, '#myStop .mystop-btn', T.wait + .5);
-  // Close on the picker, near enough to read what is typed and what it
-  // finds; the whole name, a letter at a time, and a moment on it.
-  at(T.wait + .75, v => cam(A, '#stopModal .modal-card', v, { width:1040, topAt:330, maxH:560 }));
-  // The list shrinks to what the first letter finds and the picker, which
-  // the page keeps in the middle, moves with it: the camera follows.
-  at(T.wait + 1.65, v => cam(A, '#stopModal .modal-card', v, { width:1040, cy:1040, dur:.4 }));
-  WAIT.split('').forEach((c, i) => at(T.wait + 1.55 + i * .15, async v => {
-    await type(A, '#stopSearch', WAIT.slice(0, i + 1));
-    heard.push({ t:v, kind:'tap', gain:.35 });
+  // wait: before the phone comes up, as a rider who waits for this bus has
+  // it: the stop saved (SEED_STOP), its buzz on, the map a step in, which
+  // puts the bus and the pin twice as far apart and is still the whole
+  // route, and the page down to the foot of the card, so the map and the
+  // card are both on the phone. The bus comes up the map to the pin as it
+  // comes down the card's road: the stop is a mark on the map, not where
+  // anyone stands (the maintainer's point: nobody waits on the pin), so the
+  // map is how near it really is. Nothing is tapped.
+  at(0, () => A.run(() => {
+    try { sessionStorage.setItem('wt-buzz', '1'); } catch (e) {}
+    map.setZoom(map.getZoom() + 1, { animate:false });
+    renderBuses();
   }));
-  press(A, '#stopList button[data-name="' + WAIT + '"]', T.wait + 3.25);
-  // Picked: the camera goes to the pin as it lands on the map, rings go out
-  // from it with its name beside them, and it stays there a second before
-  // the card. No closer than SHARP: the phone is filmed at three pixels a
-  // point and the stage draws it at 2.2, so past 1.36 times the map is
-  // blown up and blurs (2.4 did). The rings and the name do the pointing.
-  // (The pin's own label, what tapping it shows, is wider than the screen
-  // when close and sits over the pin.)
-  at(T.wait + 3.4, async v => {
-    const r = await A.rect('.mypin');
-    await cam(A, '.mypin', v, { width:1000, cy:1060, maxZ:SHARP, dur:.6 });
-    if (r) await stage.event({ type:'mark', at:v + .3, x:r.x + r.w / 2, y:r.y + r.h / 2, dur:1.3, label:WAIT });
-    heard.push({ t:v + .3, kind:'stamp', gain:.8 });
-  });
-  // Then the map in a step, with its own +, as anyone looking for their own
-  // end of the route would: the bus and the pin twice as far apart, so the
-  // bus coming can be seen on the map and not only on the card. The stop is
-  // a mark on the map, not where anyone stands (the maintainer's point:
-  // nobody waits on the pin), so the map is how near it really is. One step
-  // only: it is still the whole route, so the rest of the film's map is too.
-  press(A, '#map .leaflet-control-zoom-in', T.wait + 5.1);
-  // Then the whole phone, the page down to the foot of the card, so the map
-  // and the card are both on it: the bus comes up the map to the pin as it
-  // comes down the card's road.
-  at(T.wait + 5.7, v => cam(A, null, v, { dur:.45 }));
-  at(T.wait + 5.7, glideDoc(A, () => {
+  at(T.wait - .8, () => A.run(() => {
     const c = document.getElementById('myStop').getBoundingClientRect(), d = document.scrollingElement;
-    return Math.max(0, Math.min(d.scrollHeight - innerHeight, d.scrollTop + c.bottom + 8 - innerHeight));
-  }, .45));
-  press(A, '#myStop .buzz input', T.wait + 7.0);
-  // Sakay na!, and the whip onto the bus. The phone goes off the screen
-  // close on the card, and the camera comes back out while nobody sees it.
-  at(T.share - .05, v => cam(A, null, v, { dur:.01 }));
-  // On board, off camera for a moment: where to get off.
+    d.scrollTop = Math.max(0, Math.min(d.scrollHeight - innerHeight, d.scrollTop + c.bottom + 8 - innerHeight));
+  }));
+  // share: on board, off the screen for a moment: where to get off, the
+  // other tab, northbound. Then Start, and close on the strip, where the
+  // salamat arrive.
   at(T.share - .08, async () => {
-    await A.tap('#myStop button.edit');
-    await type(A, '#stopSearch', 'SM City');
-    await A.tap('#stopList button[data-name="' + OFF + '"]');
+    await A.run(name => { const s = STOPS.find(x => x.name === name); setMyStop(s.name, s.lat, s.lng); }, OFF);
     await A.scrollTo(0);
+    await A.tap('#tabOnbus');
+    await A.tap('#pickNorth');
   });
-  // share: the other tab, northbound, Start; then close on the strip, where
-  // the salamat arrive.
-  press(A, '#tabOnbus', read('share'));
-  // Close on the sharing card: the direction and Start.
-  at(read('share') + .3, v => cam(A, '#onbusView > .card', v, { width:1000, topAt:440, maxH:560 }));
-  press(A, '#pickNorth', read('share') + 1.6);
   press(A, '#onbusStartBtn', START);
-  at(START + .8, centre(A, '#onbusStripCard', .4));
-  at(START + 1.25, v => cam(A, '#onbusStripCard', v, { width:1000, cy:1170 }));
-  // trip: off camera, the road opened on the card, as the sharer would (it
-  // starts folded on the sharing tab), and the card under the strip in the
-  // middle of the screen.
+  at(START + .7, centre(A, '#onbusStripCard', .4));
+  at(START + 1.15, v => cam(A, '#onbusStripCard', v, { width:1000, cy:1170 }));
+  // trip: off the screen, the road opened on the card, as the sharer would
+  // (it starts folded on the sharing tab); the stop saved again (see GPS);
+  // and, once the jump is drawn, close on the card.
   at(T.trip + .5, () => A.run(() => { if (!ROAD) toggleRoad(); }));
-  at(T.trip + 1.05, centre(A, '#tripStop', .3));
-  at(T.trip + 1.6, v => cam(A, '#tripStop', v - .6, { width:1010, cy:960 }));
-  // getoff: the road comes up to the stop by itself and the bus pulls in.
-  // The stop saved again, inside 500 m of it, so the app does not ask
-  // "Getting off here?" (see GPS). It stands there most of a second, and
-  // then the camera comes back out and the page goes up to Stop.
-  at(JUMPED + .05, () => A.run(() => setMyStop(MYSTOP.name, MYSTOP.lat, MYSTOP.lng)));
-  at(T.ticket - .5, v => cam(A, null, v, { dur:.45 }));
-  at(T.ticket - .5, glideDoc(A, () => 0, .4));
-  // ticket: Stop, the ticket, down it, Keep.
-  press(A, '#onbusActive .btn-stop', STOP);
-  at(STOP + .6, v => cam(A, '#tktCard', v, { width:1040, topAt:60, maxH:420 }));
-  at(T.ticket + 2.4, glide(A, '#tktModal', s => { const b = document.querySelector(s); return b.scrollHeight - b.clientHeight; }, 1.3));
-  at(T.ticket + 4.2, v => cam(A, null, v, { dur:.5 }));
-  press(A, '#tktKeep', T.ticket + 5.05);
-  // collect: My tickets, down to the tickets.
-  press(A, '#tktKeep', T.collect + .6);
-  at(T.collect + .85, v => cam(A, '#albumModal .modal-card', v, { width:1040, cy:960, dur:.5 }));
-  at(T.collect + 1.5, glide(A, '#albumModal .modal-scroll', s => {
-    const box = document.querySelector(s), list = box.querySelector('.alb-list');
-    return list.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - 60;
-  }, .9));
-  // dress: back up to the bus, then a new paint (one tap to choose, one to
-  // get it).
-  at(T.dress + .05, glide(A, '#albumModal .modal-scroll', s => {
-    const box = document.querySelector(s), p = box.querySelector('.alb-paints');
-    return Math.max(0, p.getBoundingClientRect().bottom - box.getBoundingClientRect().top + box.scrollTop - box.clientHeight + 16);
-  }, .8));
-  // Close on the bus from here to the switch, so filmed twice as fine (see
-  // SHARP), and the montage after it closer still. It settles before the
-  // caption comes, so it fills the frame, and the caption comes over its top.
-  at(T.dress + .85, () => A.resolution(6));
-  at(T.dress + .9, v => cam(A, '.alb-bus', v, { width:1000, cy:1000 }));
-  press(A, '.alb-paint[data-paint="kahel"]', read('dress'));
-  press(A, '.alb-paint[data-paint="kahel"]', read('dress') + .7);
-  // Then what else it could wear: the same bus in other paints and with
-  // other things on, half a second each, and back to the one just bought.
-  // Taken from the shop's and the trophies' own lists, put straight into
-  // what the phone remembers and drawn by My tickets itself; nothing is
-  // tapped, and the bus as bought comes back before anything else sees it.
-  let bought = null;
-  // Close on the coach itself.
-  at(read('dress') + 1.2, async v => {
-    bought = await A.run(() => localStorage.getItem('wt-bus'));
-    await cam(A, '.alb-ride .rk', v, { width:920, cy:1100, maxZ:3, dur:.5 });
+  at(JUMPED, () => A.run(() => setMyStop(MYSTOP.name, MYSTOP.lat, MYSTOP.lng)));
+  at(T.trip + 1.6, () => A.reveal('#tripStop'));
+  at(T.trip + 1.65, v => cam(A, '#tripStop', v, { width:1010, cy:960, dur:.01 }));
+  // getoff: the road comes up to the stop by itself, the bus pulls in, and
+  // it stands there a moment.
+  // ticket: Stop, off the screen, and the phone comes back on the ticket.
+  at(STOP, async v => {
+    await A.run(() => stopSharing());
+    await opened('#tktModal');
+    await cam(A, '#tktCard', v, { width:1040, topAt:60, maxH:420, dur:.01 });
   });
-  LOOKS.forEach((l, i) => at(read('dress') + 1.8 + i * .5, async v => {
+  // dress: My tickets, off the screen, and the phone comes back close on
+  // the bus itself, filmed twice as fine (see SHARP). Under the caption it
+  // tries on other paints and dress, under half a second each, taken from
+  // the shop's and the trophies' own lists, put straight into what the
+  // phone remembers and drawn by My tickets itself; nothing is tapped. The
+  // end card draws it as it is left.
+  at(T.dress - .05, async v => {
+    await A.run(() => { closeTicket(); openAlbum(); });
+    await opened('#albumModal');
+    await A.resolution(6);
+    await cam(A, '.alb-ride .rk', v, { width:920, cy:1100, maxZ:3, dur:.01 });
+  });
+  LOOKS.forEach((l, i) => at(read('dress') + i * .45, async v => {
     await A.run(l => {
       const b = loadBus();
       b.paints = PAINTS.slice(1).map(p => p.k); b.own = SHOP.map(x => x.k); b.paint = l.paint;
@@ -433,40 +357,7 @@ function cues(A, B, stage, world, browser, heard){
     }, l);
     heard.push({ t:v, kind:'dress' });
   }));
-  at(read('dress') + 1.8 + LOOKS.length * .5, async v => {
-    await A.run(r => { localStorage.setItem('wt-bus', r); renderAlbum(); }, bought);
-    heard.push({ t:v, kind:'dress' });
-  });
-  // show: switch it on, and give the next morning's bus its look.
-  at(T.show + .05, v => cam(A, '.alb-show', v, { width:1000, cy:1150, dur:.5 }));
-  at(T.show + .6, () => A.resolution(3));
-  press(A, '.alb-toggle', T.show + 1.2);
-  at(T.show + 1.3, async () => { world.dressed.look = await A.run(() => busLook(loadBus(), CHECKPOINTS)); });
-  // rider: another phone; tap the sharer's bus.
-  // The rider's phone, filmed twice as fine: its popup is seen closer than
-  // SHARP. Set while it is still off the screen, once the bus has its look.
-  at(T.rider - 1, async () => {
-    await B.open(browser, B_CLOCK, { 'wt-guide-seen':'1' }, T.rider - 1);
-    await B.resolution(6);
-  });
-  at(T.rider - .4, v => cam(A, null, v, { dur:.3 }));
-  press(B, BUS_1043, T.rider + 1.0);
-  at(T.rider + 1.3, centre(B, '.buspop .leaflet-popup-content-wrapper', .4));
-  at(T.rider + 1.75, v => cam(B, '.buspop .leaflet-popup-content-wrapper', v, { width:980, cy:1170 }));
   return { list: list.sort((a, b) => a.t - b.t), scrolls };
-}
-// The sharer's bus on the rider's map, by its number: run in the page, it
-// says where to tap, just above the middle of the badge.
-function BUS_1043(){
-  let at = null;
-  map.eachLayer(l => {
-    if (at || !l.getLatLng || !l.getPopup || !l.getPopup()) return;
-    const html = String(l.getPopup().getContent() || '');
-    if (html.indexOf('1043') < 0) return;
-    const pt = map.latLngToContainerPoint(l.getLatLng()), box = map.getContainer().getBoundingClientRect();
-    at = { x: box.left + pt.x, y: box.top + pt.y - 14 };
-  });
-  return at;
 }
 
 function easeIO(p){ p = Math.max(0, Math.min(1, p)); return p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; }
@@ -484,9 +375,8 @@ const framed = (P, t, box) => P.rideSvg(t).replace(/viewBox="[^"]*"/, 'viewBox="
 // tracker, for watching, and the Android app, for sharing with the phone
 // locked, at ANDROID_APP_URL in config.txt (the closed test's sign-up while
 // it runs, the listing once the app is public), with Google's badge. The
-// film shows both: the sharer's phone is filmed as the app shows the page
-// (render.js, Phone's app), with Android's status bar, and the other rider's
-// as a browser does. The website is Bus Tracker and the app is Fibi, as
+// sharer's phone is filmed as the app shows the page (render.js, Phone's
+// app), with Android's status bar. The website is Bus Tracker and the app is Fibi, as
 // everywhere else. Google's badge is its own PNG, unaltered, the one
 // index.html carries, with Google's line under it.
 const SITE_URL = 'https://community-bus-tracker.netlify.app';
@@ -507,7 +397,7 @@ function plan(P, worn, qr){
     ints: [
       // "Where is the bus now?", as riders ask it in the group chat and as
       // Play's feature graphic asks it.
-      { id:'title', out:[T.watch - .6, T.watch],
+      { id:'title', out:[T.wait - .6, T.wait],
         html: '<div class="v-board" style="top:330px">' + R.board(P, ['MENDEZ / TAGAYTAY', '⇄ ONE AYALA'], 'tb', 8.6) + '</div>' +
               '<div class="hook">Nasaan na ang bus?</div>' +
               '<div class="v-scene">' + P.sceneSvg('dawn', 'ts') + '</div>' },
@@ -555,9 +445,9 @@ function endQr(){
 // moving, stops the render here, with both named.
 async function rehearse(){
   const noted = [], heard = [];
-  const stand = name => ({ name, open: async () => {}, resolution: async () => {}, scrollTo: async () => {},
+  const stand = name => ({ name, open: async () => {}, resolution: async () => {}, scrollTo: async () => {}, reveal: async () => {},
     tap: async () => ({ x:0, y:0 }), rect: async () => ({ x:0, y:0, w:1, h:1 }), run: async () => ({ x:0, y:0, w:1, h:1 }) });
-  const { list, scrolls } = cues(stand('A'), stand('B'), { event: async e => { noted.push(e); } }, { dressed:{} }, null, heard);
+  const { list, scrolls } = cues(stand('A'), { event: async e => { noted.push(e); } }, {}, heard);
   // As the render runs them: at the first frame at or after their time.
   for (const c of list) await c.fn(Math.ceil(c.t * R.FPS - 1e-6) / R.FPS);
   const moves = [], s = t => t.toFixed(2) + 's', e = 1e-6;
@@ -605,11 +495,12 @@ async function main(){
   const world = new R.World();
   buses(world);
   const P = R.pictures();
-  const A = new R.Phone('A', world, { app:true }), B = new R.Phone('B', world);
+  const A = new R.Phone('A', world, { app:true });
   const stage = new R.Stage();
   const started = Date.now();
   await stage.open(browser);
-  await A.open(browser, A_CLOCK, { 'wt-guide-seen':'1', 'wt-bus':JSON.stringify(SEED_BUS), 'wt-tickets':JSON.stringify(SEED_TICKETS) }, 0);
+  await A.open(browser, A_CLOCK, { 'wt-guide-seen':'1', 'wt-bus':JSON.stringify(SEED_BUS), 'wt-tickets':JSON.stringify(SEED_TICKETS),
+    'wt-mystop':JSON.stringify(SEED_STOP) }, 0);
   // Everything those nine trips earned has been paid for already.
   const worn = await A.run(() => {
     const b = loadBus(); b.paid = busEarned(b, CHECKPOINTS); saveBus(b);
@@ -619,7 +510,7 @@ async function main(){
   // What is heard, and when: taps and buzzes as they happen, what the page
   // does as it is seen to (LISTEN), and the frame's own moments (SCORE).
   const heard = SCORE.slice();
-  const { list, scrolls } = cues(A, B, stage, world, browser, heard);
+  const { list, scrolls } = cues(A, stage, world, heard);
 
   const base = R.NAME;
   const name = base + (R.FROM > 0 || R.TO < T.total ? '-part' : '');
@@ -638,16 +529,14 @@ async function main(){
     // The sharer's GPS, from Start until Stop.
     if (v >= START - .05 && v < STOP) await A.gps(NORTH.point(GPS(v)));
     await A.step(v);
-    if (B.page) await B.step(v);
     // The page's own poll, more often than it would, so the buses glide in
     // steps of half a second rather than six; and right after the sharer's
     // phone sends a position, so its bus moves on its own screen at once.
     if (f % R.POLL_FRAMES === 0 || A.wrote){ A.wrote = false; await A.poll(); }
-    if (B.page && f % R.POLL_FRAMES === 0) await B.poll();
-    // The buzzes the story is about: the switch going on, and the two
-    // alarms. The page also buzzes as a trip starts (15 ms, too short to
-    // see or hear), which stays out. It used to buzz once more just after
-    // Stop, for the bus just left; that was the app's, and is fixed there.
+    // The buzz the story is about: Malapit na!, the one buzz the card gives a
+    // bus. The page also buzzes as a trip starts (15 ms, too short to see or
+    // hear) and once on board, both off the screen or out of the story, and
+    // they stay out.
     for (const p of await A.buzzes()){
       const ms = p.reduce((s, x) => s + x, 0);
       if (process.env.VIDEO_DEBUG) console.log('  buzz at ' + v.toFixed(2) + 's: ' + JSON.stringify(p));
@@ -663,8 +552,8 @@ async function main(){
       await stage.page.evaluate(h => { document.getElementById('endRide').innerHTML = h; },
         framed(P, { views:['towers'], sky:'day', worn:look.worn, paint:look.paint, now:0 }, END_VIEW));
     }
-    const which = v < T.rider - .1 ? A : B;
-    const onScreen = (v >= T.watch - .8 && v < T.trip + .5) || (v >= T.getoff - .5 && v < T.end + .4);
+    const which = A;
+    const onScreen = (v >= T.wait - .8 && v < T.trip + .5) || (v >= T.getoff - .6 && v < T.end + .4);
     const shot = onScreen && which.page ? await which.shot() : null;
     if (which.page){
       const now = await which.run(LISTEN);
@@ -686,7 +575,7 @@ async function main(){
   fs.unlinkSync(silent);
   // The cover: a frame worth stopping on, for a post's thumbnail.
   try {
-    const at = Math.max(R.FROM, Math.min(T.wait + 10.9, R.TO - .1)) - R.FROM;
+    const at = Math.max(R.FROM, Math.min(T.wait + 7.3, R.TO - .1)) - R.FROM;
     execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', String(at), '-i', file, '-frames:v', '1', '-q:v', '2', path.join(R.OUT, base + '-cover.jpg')]);
   } catch (e) {}
   console.log('Calls answered here, none sent to Supabase: ' + JSON.stringify(world.log));

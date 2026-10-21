@@ -158,7 +158,7 @@ function buses(world){
 // caption k has been read, the first moment anything may happen under it.
 const CAP = {
   near:  { at:T.wait + .25,  to:T.share, say:'Know when your bus is *near*.' },
-  share: { at:T.share + .35, to:T.trip,  say:'On the bus? *Share it*.' },
+  share: { at:T.share + .35, to:T.trip + .3, say:'On the bus? *Share it*.' },
   dress: { at:T.dress + .35, to:T.end + .3, say:'Earn coins and *dress up your bus*.' }
 };
 const read = k => CAP[k].at + READ(CAP[k].say);
@@ -463,7 +463,7 @@ function cues(A, stage, world, heard){
     at(STOP, async v => {
       await A.run(() => stopSharing());
       await opened('#tktModal');
-      await cam(A, '#tktCard .tktart', v, { width:1000, cy:900, maxZ:4, dur:.01 });
+      await cam(A, '#tktCard .tktart', v, { width:3000, cy:900, maxZ:4, dur:.01 });
     });
     at(STOP + .08, v => cam(A, '#tktCard', v, { width:1040, topAt:330, maxH:420, dur:.75 }));
     at(T.ticket + 1.8, v => g(v, 'coins', { from:SEED_BUS.c, to:SEED_BUS.c + 25, until:T.dress - .05 }));

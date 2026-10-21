@@ -241,7 +241,8 @@
 <div id="v">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="v-mb" x="-30%" y="-10%" width="160%" height="120%">
     <feGaussianBlur id="v-mbg" stdDeviation="0 0"/></filter></svg>
-  <svg id="v-gback" viewBox="0 0 1080 1920"></svg>
+  <svg id="v-gback" viewBox="0 0 1080 1920"><defs><filter id="v-soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="22"/></filter></defs>
+    <g id="v-gb"></g><g id="v-gp" style="display:none"></g></svg>
   <div id="v-world">
     <div id="v-phone"><div id="v-glass">
       <div id="v-bar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>community-bus-tracker.netlify.app</div>
@@ -586,6 +587,7 @@ const V = (function(){
     const S = function(p){ return { x:(SX + p.x * K) * cam.z + cam.x + dx, y:(SY + p.y * K) * cam.z + cam.y + dy }; };
     const L = function(n){ return n * K * cam.z; };
     let front = '', back = '';
+    $('v-gp').style.display = 'none';
     // Lowest first: the way under the sight under the pin under the burst.
     gfx.slice().sort(function(a, b){ return (LAYER[a.kind] || 0) - (LAYER[b.kind] || 0); }).forEach(function(g){
       const u = t - g.at;
@@ -595,7 +597,7 @@ const V = (function(){
       else if (r){ front += r.front || ''; back += r.back || ''; }
     });
     $('v-g').innerHTML = front;
-    $('v-gback').innerHTML = back;
+    $('v-gb').innerHTML = back;
   }
   const LAYER = { trail:1, lock:2, pin:3, burst:4, flash:9, stamp:9 };
   const G = {
@@ -849,14 +851,11 @@ const V = (function(){
     // up out of the top of the phone, in steps, as a printer feeds paper,
     // the phone drops away under it, and it comes forward to fill the frame.
     print: function(g, u, t, S, L, cam, dx){
-      if (!printed) return '';
-      const q = printedAt(undefined, undefined, t);
-      if (!q) return '';
-      const W = q.w, H = W * printed.h / printed.w;
-      const shadow = '<rect x="' + f1(-W / 2 + 14) + '" y="24" width="' + f1(W - 28) + '" height="' + f1(H - 30) + '" rx="22" fill="#4a1119" opacity=".28" filter="url(#v-soft)"/>';
-      return { back:'<defs><filter id="v-soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="22"/></filter></defs>' +
-        '<g transform="translate(' + f1(q.x + dx) + ' ' + f1(q.y) + ') rotate(' + f1(q.rot) + ') scale(' + f3(q.k) + ')">' + shadow +
-        '<image href="' + printed.url + '" x="' + f1(-W / 2) + '" y="0" width="' + f1(W) + '" height="' + f1(H) + '"/></g>' };
+      const q = printedAt(undefined, undefined, t), el = $('v-gp');
+      if (!q || !el.firstChild) return '';
+      el.setAttribute('transform', 'translate(' + f1(q.x + dx) + ' ' + f1(q.y) + ') rotate(' + f1(q.rot) + ') scale(' + f3(q.k) + ')');
+      el.style.display = '';
+      return '';
     }
   };
   // Where the printed ticket is at t: its top middle (x, y), its turn and
@@ -867,11 +866,11 @@ const V = (function(){
     const g = gfx.filter(function(x){ return x.kind === 'print'; })[0];
     if (!g || !printed) return null;
     const u = t - g.at, W = 600, H = W * printed.h / printed.w;
-    // Up out of the top of the phone in six feeds, as a printer feeds paper.
-    const feeds = 6, feed = clamp(u / 1.15, 0, 1), step = Math.min(feeds, Math.floor(feed * feeds)), within = feed * feeds - step;
+    // Up out of the top of the phone in five feeds, as a printer feeds paper.
+    const feeds = 5, feed = clamp(u / 1.0, 0, 1), step = Math.min(feeds, Math.floor(feed * feeds)), within = feed * feeds - step;
     const rise = (step + ease(clamp(within / .65, 0, 1))) / feeds;
     // Then forward, under the purse its parts go into (G.coins).
-    const f = clamp((u - 1.1) / .55, 0, 1), kf = Math.min(1.2, 1460 / H), y0 = 400 - rise * 980;
+    const f = clamp((u - .95) / .55, 0, 1), kf = Math.min(1.2, 1460 / H), y0 = 400 - rise * 720;
     const y = y0 + (330 - y0) * ease(f), rot = -2.5 + 1.3 * ease(f), k = 1 + (kf - 1) * backOut(f);
     if (px === undefined) return { x:540, y:y, rot:rot, k:k, w:W };
     const lx = (px - .5) * W * k, ly = py * H * k, a = rot * Math.PI / 180;
@@ -1034,7 +1033,19 @@ const V = (function(){
   let printed = null;
   function print(url, w, h){
     printed = { url:url, w:w, h:h };
-    return new Promise(function(res){ const im = new Image(); im.onload = function(){ res(true); }; im.onerror = function(){ res(false); }; im.src = url; });
+    const W = 600, H = W * h / w;
+    return new Promise(function(res){
+      const im = new Image();
+      im.onload = function(){
+        // Drawn once, at 600 wide, its top in the middle at 0,0, with a soft
+        // shadow under it: moved and turned each frame by G.print.
+        $('v-gp').innerHTML = '<rect x="' + f1(-W / 2 + 14) + '" y="24" width="' + f1(W - 28) + '" height="' + f1(H - 30) + '" rx="22" fill="#4a1119" opacity=".28" filter="url(#v-soft)"/>' +
+          '<image href="' + url + '" x="' + f1(-W / 2) + '" y="0" width="' + W + '" height="' + f1(H) + '"/>';
+        res(true);
+      };
+      im.onerror = function(){ res(false); };
+      im.src = url;
+    });
   }
   return { init:init, event:event, screen:screen, render:render, print:print, gaps:function(){ return gaps; } };
 })();

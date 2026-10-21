@@ -25,6 +25,18 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-21: An animated cut
+
+The maintainer asked whether the video was an animated motion graphic. It
+is not: it records the real app, framed by drawn interludes. So they asked
+for one that is, illustrated scenes and kinetic type and no captured
+screens. It is drawn with the app's own pictures, run frame by frame: the
+bus coming down the road to the stop until Malapit na! and Sakay na!, the
+pin over a shared bus and salamat coming up, the road from the front seat
+to the stop, the ticket and its stamp, the bus repainted and dressed, and
+the same two ways in at the end. About 42 seconds, rendered in a minute
+and a half with `--motion`.
+
 ## 2026-10-21: One video, two ways in
 
 The maintainer asked why the video needed an ending per stage of the app,

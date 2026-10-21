@@ -2025,6 +2025,24 @@ is Fibi, on the end card as everywhere else. Play's listing takes a video
 too, as a YouTube link; guides disagree on whether a portrait one suits it,
 so check Play Console's help before using this cut there.
 
+**An animated cut too** (October 2026, the maintainer's ask, `--motion`,
+`tools/video/motion.js`). Where the film records the app, this draws it:
+illustrated scenes and kinetic type, about 42 seconds, and no screens. Its
+pictures are the app's own, from the PICTURES block, which the stage now
+carries as code (`<!--APP-PICTURES-->`), so a scene draws one afresh each
+frame where something in it moves: the bus coming down the road to the
+shed, counted from four stops to Sakay na! by the card's own rule; the road
+from the front seat coming up to the stop; the bus repainted and dressed
+with `busSvg()`. The rest is the ride, the ticket's picture, the strip
+drawn the way the app draws it, and the film's end card, shared
+(`endCard()` in `film.js`). Its words are the film's captions, the poster's
+"A ticket and a salamat every trip." and the app's own, so they keep the
+same rules: no minutes, no arrival time, Bus Tracker and Fibi. The scenes
+are interludes on the same stage, so they come up from below as the film's
+do; their movements are the 'm-' interludes in `stage.html`, and what
+happens when is in `motion.js`. It films nothing, so it does not go out of
+date when a screen changes, only when a drawing or a word it uses does.
+
 **Nothing reaches the database.** Every request the page makes to Supabase
 is answered by the script (`World` in `tools/video/render.js`) with made-up
 buses, so no bus is put on anybody's real map, no watcher is counted and no

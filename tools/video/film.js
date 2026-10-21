@@ -493,24 +493,34 @@ function plan(P, worn, qr){
               '<div class="v-board">' + R.board(P, ['GEN. TRIAS'], 'tg', 13) + '</div>' +
               '<div class="v-scene">' + framed(P, { views:['church'], sky:'day', worn:worn.worn, paint:worn.paint, now:0 }, '30 4 200 80') + '</div>' +
               '<div class="v-ground" style="background:' + sky.ground + '"></div>' },
-      // The poster's two ways in, in its words.
-      { id:'end', in:[T.end, T.end + .6],
-        html: '<div class="v-board">' + R.board(P, ['MENDEZ / TAGAYTAY', '⇄ ONE AYALA'], 'te', 5.4) + '</div>' +
-              '<div class="e-name">Bus Tracker</div>' +
-              '<div class="e-lede">See where the bus is right now.</div>' +
-              '<div class="v-scene" id="endRide"></div>' +
-              '<div class="e-way e-watch' + (qr.app ? '' : ' e-only') + '"><div class="e-qr">' + qr.site + '</div><div class="e-words">' +
-                '<div class="e-kicker">Watch the bus</div><div class="e-big">Open the tracker</div>' +
-                '<div class="e-url">' + SITE_URL.replace(/^https:\/\//, '') + '</div><div class="e-note">No app, no account.</div></div></div>' +
-              (qr.app ? '<div class="e-way e-droid"><div class="e-qr">' + qr.app + '</div><div class="e-words">' +
-                '<div class="e-kicker"><img class="e-icon" src="' + R.SITE + '/mobile/store/play-icon-512.png" alt="">Fibi · Android</div>' +
-                '<div class="e-big">Share with your phone locked</div>' +
-                '<img class="e-badge" src="' + BADGE + '" alt="Get it on Google Play">' +
-                (TESTERS ? '<div class="e-note">Early access. Scan to join the testers.</div>' : '') + '</div></div>' : '') +
-              '<div class="e-fine">Community-run. Not affiliated with the bus company.' +
-                (qr.app ? '<small>Google Play and the Google Play logo are trademarks of Google LLC.</small>' : '') + '</div>' }
+      { id:'end', in:[T.end, T.end + .6], html:endCard(P, qr) }
     ]
   };
+}
+// The poster's two ways in, in its words: the end card of this film and of
+// the animated one (motion.js). Its bus on the road (#endRide) is drawn when
+// the film gets there, as the bus is by then.
+function endCard(P, qr){
+  return '<div class="v-board">' + R.board(P, ['MENDEZ / TAGAYTAY', '⇄ ONE AYALA'], 'te', 5.4) + '</div>' +
+    '<div class="e-name">Bus Tracker</div>' +
+    '<div class="e-lede">See where the bus is right now.</div>' +
+    '<div class="v-scene" id="endRide"></div>' +
+    '<div class="e-way e-watch' + (qr.app ? '' : ' e-only') + '"><div class="e-qr">' + qr.site + '</div><div class="e-words">' +
+      '<div class="e-kicker">Watch the bus</div><div class="e-big">Open the tracker</div>' +
+      '<div class="e-url">' + SITE_URL.replace(/^https:\/\//, '') + '</div><div class="e-note">No app, no account.</div></div></div>' +
+    (qr.app ? '<div class="e-way e-droid"><div class="e-qr">' + qr.app + '</div><div class="e-words">' +
+      '<div class="e-kicker"><img class="e-icon" src="' + R.SITE + '/mobile/store/play-icon-512.png" alt="">Fibi · Android</div>' +
+      '<div class="e-big">Share with your phone locked</div>' +
+      '<img class="e-badge" src="' + BADGE + '" alt="Get it on Google Play">' +
+      (TESTERS ? '<div class="e-note">Early access. Scan to join the testers.</div>' : '') + '</div></div>' : '') +
+    '<div class="e-fine">Community-run. Not affiliated with the bus company.' +
+      (qr.app ? '<small>Google Play and the Google Play logo are trademarks of Google LLC.</small>' : '') + '</div>';
+}
+// The two QR codes, drawn by the same tool as the poster's.
+function endQr(){
+  const qrOf = url => execFileSync(process.execPath, [path.join(__dirname, '..', 'make-qr.js'), url],
+    { stdio:['ignore', 'pipe', 'ignore'] }).toString();
+  return { site: qrOf(SITE_URL), app: APP_URL ? qrOf(APP_URL) : '' };
 }
 
 // ---- The rehearsal ------------------------------------------------------------
@@ -582,10 +592,7 @@ async function main(){
     const b = loadBus(); b.paid = busEarned(b, CHECKPOINTS); saveBus(b);
     return { worn: busWorn(b, CHECKPOINTS), paint: b.paint };
   });
-  const qrOf = url => execFileSync(process.execPath, [path.join(__dirname, '..', 'make-qr.js'), url],
-    { stdio:['ignore', 'pipe', 'ignore'] }).toString();
-  const qr = { site: qrOf(SITE_URL), app: APP_URL ? qrOf(APP_URL) : '' };
-  await stage.init(plan(P, worn, qr));
+  await stage.init(plan(P, worn, endQr()));
   // What is heard, and when: taps and buzzes as they happen, what the page
   // does as it is seen to (LISTEN), and the frame's own moments (SCORE).
   const heard = SCORE.slice();
@@ -673,4 +680,4 @@ async function main(){
   console.log('Wrote ' + file + ' and ' + path.basename(track) + ' (' + drawn + ' frames in ' + Math.round((Date.now() - started) / 1000) + 's)');
   await browser.close();
 }
-module.exports = { main, rehearse, plan, framed, END_VIEW, T, DUR, SAY, READ };
+module.exports = { main, rehearse, plan, framed, endCard, endQr, END_VIEW, T, DUR, SAY, READ };

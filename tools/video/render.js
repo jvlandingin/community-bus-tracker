@@ -5,6 +5,10 @@
 //
 //   sh tools/render-video.sh [output-directory]      (default: video-out/)
 //
+// With --motion it renders the animated cut instead (motion.js): drawn
+// scenes and kinetic type, no screens, on the same stage and with the same
+// end card, about 42 seconds.
+//
 // What is real and what is not. Everything on the phone's screen is
 // index.html exactly as committed, running in headless Chromium at a
 // phone's size: its map (CARTO's tiles, which is why CARTO_API_KEY is
@@ -432,7 +436,10 @@ class Stage {
     this.ctx = await browser.newContext({ viewport:{ width:1080, height:1920 }, deviceScaleFactor:1, colorScheme:'light' });
     const appCss = (fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').match(/<style[^>]*>[\s\S]*?<\/style>/g) || []).join('\n')
       .replace(/url\(assets\//g, 'url(' + SITE + '/assets/');
-    const html = fs.readFileSync(path.join(__dirname, 'stage.html'), 'utf8').replace('<!--APP-STYLES-->', appCss);
+    // And its pictures' code, for a scene that draws one anew each frame
+    // (motion.js).
+    const html = fs.readFileSync(path.join(__dirname, 'stage.html'), 'utf8').replace('<!--APP-STYLES-->', appCss)
+      .replace('<!--APP-PICTURES-->', () => '<script>' + picturesCode() + '</script>');
     this.screenBuf = null;
     await this.ctx.route(STAGE + '/**', route => {
       const u = new URL(route.request().url());
@@ -466,13 +473,16 @@ class Stage {
 // ---- The app's own pictures, for the interludes -----------------------------
 // The SIGNBOARD and PICTURES blocks of index.html, taken out by their
 // markers and run, the way tools/make-pictures.js and the tests do.
-function pictures(){
+function picturesCode(){
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const block = (a, b) => { const i = html.indexOf(a), j = html.indexOf(b); if (i < 0 || j < i) throw new Error('index.html has no ' + a); return html.slice(i, j); };
+  return block('// ---- THE SIGNBOARD (unit tested)', '// ---- END SIGNBOARD') + block('// ---- THE PICTURES (unit tested)', '// ---- END PICTURES');
+}
+function pictures(){
   const S = {};
-  new Function('S', block('// ---- THE SIGNBOARD (unit tested)', '// ---- END SIGNBOARD') +
-    block('// ---- THE PICTURES (unit tested)', '// ---- END PICTURES') +
-    'S.signboardSvg=signboardSvg;S.signLayout=signLayout;S.sceneSvg=sceneSvg;S.rideSvg=rideSvg;S.TICKET_SKIES=TICKET_SKIES;S.SCENE_TIMES=SCENE_TIMES;')(S);
+  new Function('S', picturesCode() +
+    'S.signboardSvg=signboardSvg;S.signLayout=signLayout;S.sceneSvg=sceneSvg;S.rideSvg=rideSvg;S.TICKET_SKIES=TICKET_SKIES;S.SCENE_TIMES=SCENE_TIMES;' +
+    'S.stopViewSvg=stopViewSvg;S.ticketArtSvg=ticketArtSvg;S.busSvg=busSvg;S.decorTile=decorTile;S.svCoachFront=svCoachFront;S.svPinMark=svPinMark;')(S);
   return S;
 }
 // A lit board: the dots off underneath, and the same board lit over it, for
@@ -497,4 +507,5 @@ function encoder(file){
 }
 
 module.exports = { World, Phone, Stage, road, keys, stop, pictures, board, encoder, FPS, POLL_FRAMES, FROM, TO, OUT, NAME, ROOT, SITE, KEY, CHROME, playwright };
-if (require.main === module) require('./film.js').main().catch(e => { console.error(e); process.exit(1); });
+// The film of the app (film.js), or with --motion the animated one (motion.js).
+if (require.main === module) require(ARGS.indexOf('--motion') >= 0 ? './motion.js' : './film.js').main().catch(e => { console.error(e); process.exit(1); });

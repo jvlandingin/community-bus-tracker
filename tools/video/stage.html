@@ -149,6 +149,87 @@
   #i-end .e-badge{display:block; height:96px; width:auto; margin:8px 0 0 -12px;}
   #i-end .e-fine{position:absolute; left:50px; right:50px; top:1652px; font:500 34px/1.4 var(--font-text); color:rgba(74,17,25,.85);}
   #i-end .e-fine small{display:block; margin-top:8px; font-size:24px;}
+
+  /* ---- The animated film (motion.js): drawn scenes and kinetic type -----
+     Each scene is an interlude like the ones above, its pictures the app's
+     own, drawn by its PICTURES block (put in below the page, render.js) and
+     drawn again every frame where something in them moves. */
+  .kt{position:absolute; left:30px; right:30px; text-align:center; font:800 128px/1.04 var(--font-ui); letter-spacing:-1.5px; color:#4a1119;}
+  .kt .ln{display:block; white-space:nowrap;}
+  .kt .w{display:inline-block; margin:0 .1em; transform-origin:50% 90%; opacity:0;}
+  .kt .w.hi{color:#a3232f;}
+  .m-bg{position:absolute; inset:0;}
+  /* A picture on a card, the way the app frames its own. */
+  .m-card{position:absolute; left:60px; width:960px; border-radius:44px; overflow:hidden; background:#fbf4e4;
+          box-shadow:0 34px 70px -24px rgba(74,17,25,.6), 0 0 0 6px #fbf4e4;}
+  .m-card > svg{display:block; width:100%; height:100%; max-height:none; overflow:hidden;}
+  .m-pill{position:absolute; padding:16px 34px; border-radius:999px; font:800 50px/1 var(--font-ui); letter-spacing:.06em;
+          text-transform:uppercase; box-shadow:0 12px 28px -10px rgba(0,0,0,.45); opacity:0;}
+  .m-pill.near{background:#e39a1c; color:#2b1a05;}
+  .m-pill.here{background:#4f46b8; color:#fff;}
+  .m-say{position:absolute; left:40px; right:40px; text-align:center; font:700 58px/1.2 var(--font-ui); color:#4a1119; opacity:0;}
+  .m-say b{font-size:128px; vertical-align:-18px; margin:0 12px; color:#a3232f;}
+
+  #i-m-hook .m-bg{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%);}
+  #i-m-hook .kt{top:470px; font-size:176px;}
+  #i-m-hook .m-road{position:absolute; left:0; width:1080px; top:1150px; height:770px; transform-origin:30% 100%;}
+  #i-m-hook .m-road > svg{display:block; width:100%; height:100%; max-height:none;}
+  /* The picture's sky into the background's coral, so the road comes out of it. */
+  #i-m-hook .m-road::before{content:""; position:absolute; left:0; right:0; top:0; height:300px; z-index:1;
+                            background:linear-gradient(#eea67c, rgba(238,166,124,0));}
+
+  #i-m-route .m-bg{background:#fbf4e4;}
+  #i-m-route .v-board{top:130px;}
+  #i-m-route .kt{top:420px; font-size:124px;}
+  #i-m-route .m-strip{position:absolute; left:40px; width:1000px; top:1060px; height:640px;}
+  #i-m-route .m-strip > svg{display:block; width:100%; height:100%; overflow:visible;}
+  #i-m-route .m-strip text{font:800 34px/1 var(--font-ui); letter-spacing:.05em; fill:#4a1119;}
+  #i-m-route .m-strip text.dir{font-size:26px; letter-spacing:.14em; fill:#7a1f2b; opacity:.8;}
+
+  #i-m-near .m-bg{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%);}
+  #i-m-near .kt{top:290px;}
+  #i-m-near .m-card{top:830px; height:466px;}
+  #i-m-near .m-pill{left:96px; top:864px;}
+  #i-m-near .m-say{top:1376px;}
+
+  #i-m-share .m-bg{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%);}
+  #i-m-share .kt{top:290px; font-size:140px;}
+  #i-m-share .m-card{top:920px; height:472px;}
+  #i-m-share .m-pin{position:absolute; left:540px; top:1060px; width:0; height:0; opacity:0;}
+  #i-m-share .m-pin > svg{position:absolute; left:-90px; top:-90px; width:180px; height:180px; overflow:visible;}
+  #i-m-share .m-ring{position:absolute; left:540px; top:1048px; width:120px; height:120px; margin:-60px 0 0 -60px; border-radius:50%;
+                     border:8px solid #4f46b8; opacity:0;}
+  #i-m-share .m-ty{position:absolute; padding:18px 30px; border-radius:999px; background:#fbf4e4; color:#4a1119;
+                   font:800 48px/1 var(--font-ui); box-shadow:0 14px 30px -12px rgba(74,17,25,.55); opacity:0; white-space:nowrap;}
+  #i-m-share .m-ty i{font-style:normal; color:#e39a1c; margin-right:12px;}
+  #i-m-share .m-say{top:1480px; font-size:54px;}
+
+  #i-m-ticket .m-bg{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%);}
+  #i-m-ticket .kt{top:250px; font-size:118px;}
+  #i-m-ticket .m-card{top:800px; height:466px;}
+  #i-m-ticket .m-pill{left:96px; top:834px;}
+  #i-m-ticket .m-tkt{position:absolute; left:110px; width:860px; top:740px; padding:34px 40px 40px; box-sizing:border-box;
+                     background:#fbf4e4; border-radius:26px; color:#4a1119; transform-origin:50% 100%;
+                     box-shadow:0 40px 80px -24px rgba(74,17,25,.65); text-align:left;}
+  #i-m-ticket .m-tkt::before, #i-m-ticket .m-tkt::after{content:""; position:absolute; top:360px; width:44px; height:44px; border-radius:50%; background:#eda27a;}
+  #i-m-ticket .m-tkt::before{left:-22px;} #i-m-ticket .m-tkt::after{right:-22px;}
+  #i-m-ticket .m-tkt .hd{display:flex; justify-content:space-between; font:800 34px/1 var(--font-ui); letter-spacing:.12em;}
+  #i-m-ticket .m-tkt .sub{font:500 26px/1.3 var(--font-text); color:#7a1f2b; margin-top:8px;}
+  #i-m-ticket .m-tkt .dir{font:800 30px/1 var(--font-ui); letter-spacing:.1em; margin-top:22px;}
+  #i-m-ticket .m-tkt .art{margin-top:16px; border-radius:16px; overflow:hidden; border:4px solid #4a1119;}
+  #i-m-ticket .m-tkt .art > svg{display:block; width:100%; height:auto;}
+  #i-m-ticket .m-tkt .ends{font:800 58px/1 var(--font-ui); margin-top:24px; letter-spacing:.02em;}
+  #i-m-ticket .m-tkt .ty{font:600 34px/1.2 var(--font-ui); margin-top:16px; color:#7a1f2b;}
+  #i-m-ticket .m-stamp{position:absolute; left:560px; top:1250px; padding:14px 28px; border:8px solid #c4432e; border-radius:18px;
+                       color:#c4432e; font:800 64px/1 var(--font-ui); letter-spacing:.08em; opacity:0; transform-origin:50% 50%;}
+
+  #i-m-dress .m-bg{background:linear-gradient(180deg, #e4876a 0%, #eda27a 55%, #f2b88a 100%);}
+  #i-m-dress .kt{top:270px; font-size:120px;}
+  #i-m-dress .m-card{top:840px; height:408px;}
+  #i-m-dress .m-tiles{position:absolute; left:60px; right:60px; top:1340px; display:flex; justify-content:center; gap:26px;}
+  #i-m-dress .m-tile{width:210px; height:150px; border-radius:30px; background:#fbf4e4; display:flex; align-items:center; justify-content:center;
+                     box-shadow:0 16px 30px -14px rgba(74,17,25,.55); opacity:0;}
+  #i-m-dress .m-tile > svg{width:170px; height:auto;}
 </style>
 </head>
 <body>
@@ -165,6 +246,7 @@
   <div id="v-fx"></div>
   <div id="v-ints"></div>
 </div>
+<!--APP-PICTURES-->
 <script>
 'use strict';
 // ---- Seeking the animations ------------------------------------------------
@@ -411,6 +493,36 @@ const V = (function(){
       l.style.clipPath = 'inset(0 ' + ((1 - clamp(p, 0, 1)) * 100).toFixed(2) + '% 0 0)';
     });
   };
+  // ---- The animated film's movements (motion.js) ----
+  const back = function(p){ p = clamp(p, 0, 1); const c = 1.70158; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+  // Keyframes [[u, value], ...], eased between, as motion.js reckons them.
+  const keyed = function(k, u){
+    if (u <= k[0][0]) return k[0][1];
+    for (let i = 1; i < k.length; i++) if (u <= k[i][0]){ const a = k[i - 1], b = k[i]; return a[1] + (b[1] - a[1]) * ease((u - a[0]) / (b[0] - a[0])); }
+    return k[k.length - 1][1];
+  };
+  // A picture drawn again only when it has changed.
+  const draw = function(el, html){ if (el.__h !== html){ el.__h = html; el.innerHTML = html; } };
+  // Kinetic type: each word in on its own, a beat apart, up from below with
+  // a little overshoot.
+  const kinetic = function(kt, u, at){
+    [].forEach.call(kt.querySelectorAll('.w'), function(w, i){
+      const p = (u - at - i * .09) / .5, b = back(p);
+      w.style.transform = 'translateY(' + ((1 - b) * 90).toFixed(1) + 'px) scale(' + (.75 + .25 * b).toFixed(3) + ')';
+      w.style.opacity = clamp(p * 3, 0, 1).toFixed(3);
+    });
+  };
+  // A thing popping in at `at`, to a little over its size and back.
+  const popIn = function(el, u, at){
+    const p = (u - at) / .45;
+    el.style.transform = 'scale(' + Math.max(0, back(p)).toFixed(3) + ')';
+    el.style.opacity = clamp(p * 4, 0, 1).toFixed(3);
+  };
+  // A card coming up into its place.
+  const rise = function(el, u, at){
+    el.style.transform = 'translateY(' + ((1 - easeOut((u - at) / .55)) * 160).toFixed(1) + 'px)';
+    el.style.opacity = clamp((u - at) / .25, 0, 1).toFixed(3);
+  };
   const INT = {
     title: function(el, u){
       sweep(el.querySelector('.v-board'), (u - .35) / .9);
@@ -433,6 +545,96 @@ const V = (function(){
         n.style.opacity = p.toFixed(3);
         n.style.marginTop = ((1 - p) * 30).toFixed(1) + 'px';
       });
+    },
+    // The animated film's scenes, each from its plan (x, motion.js).
+    'm-hook': function(el, u, x){
+      kinetic(el.querySelector('.kt'), u, x.kt);
+      // The question's last word swings once it has landed.
+      const ws = el.querySelectorAll('.kt .w'), q = ws[ws.length - 1], k = u - x.kt - (ws.length - 1) * .09 - .45;
+      if (k > 0 && k < 2.5) q.style.transform += ' rotate(' + (Math.sin(k * 11) * 10 * Math.exp(-k * 2)).toFixed(2) + 'deg)';
+      const road = el.querySelector('.m-road');
+      draw(road, stopViewSvg({ aboard:false, f:keyed(x.f, u), sky:x.sky, worn:[], paint:'klasiko' }).replace('xMidYMax slice', 'xMinYMax slice'));
+      road.style.transform = 'scale(' + (1 + .06 * ease(u / x.dur)).toFixed(4) + ')';
+    },
+    'm-route': function(el, u, x){
+      sweep(el.querySelector('.v-board'), (u - .15) / .8);
+      kinetic(el.querySelector('.kt'), u, x.kt);
+      // The two lines drawn in, their stations, then the buses on them,
+      // each its own way, with the ring the app's live buses breathe.
+      el.querySelectorAll('.m-rail').forEach(function(r){ r.style.strokeDashoffset = (1000 * (1 - ease((u - x.railAt) / .9))).toFixed(1); });
+      el.querySelectorAll('.m-stn').forEach(function(c, i){ c.style.opacity = clamp((u - x.railAt - .2 - i * .07) / .25, 0, 1).toFixed(3); });
+      el.querySelectorAll('.m-bus').forEach(function(g, i){
+        const b = x.buses[i], p = (u - b.at) / .45, along = clamp(b.x0 + b.v * Math.max(0, u - b.at), 0, 1);
+        const px = b.dir > 0 ? x.rail[0] + along * (x.rail[1] - x.rail[0]) : x.rail[1] - along * (x.rail[1] - x.rail[0]);
+        g.setAttribute('transform', 'translate(' + px.toFixed(1) + ' ' + b.y + ') scale(' + Math.max(0, back(p)).toFixed(3) + ')');
+        g.style.opacity = clamp(p * 4, 0, 1).toFixed(3);
+        const live = g.querySelector('.m-live'), r = (Math.max(0, u - b.at) * .8 + i * .37) % 1;
+        live.setAttribute('r', (50 + r * 56).toFixed(1));
+        live.style.opacity = (u > b.at + .3 ? (1 - r) * .6 : 0).toFixed(3);
+      });
+    },
+    'm-near': function(el, u, x){
+      kinetic(el.querySelector('.kt'), u, x.kt);
+      const card = el.querySelector('.m-card'), f = keyed(x.f, u), n = f <= 0 ? 0 : Math.ceil(f - 1e-6) - 1;
+      rise(card, u, x.cardAt);
+      draw(card, stopViewSvg({ aboard:false, f:f, sky:'day', worn:x.worn, paint:x.paint, here:n === 0 }));
+      // Two stops off, the phone buzzes: the card shakes the way the phone would.
+      const b = u - x.nearAt;
+      if (b >= 0 && b < .5){ const w = Math.sin(b * 2 * Math.PI * 22); card.style.transform += ' translateX(' + (w * 12).toFixed(1) + 'px) rotate(' + (w * 1.1).toFixed(2) + 'deg)'; }
+      const pill = el.querySelector('.m-pill'), here = u >= x.hereAt;
+      pill.className = 'm-pill ' + (here ? 'here' : 'near');
+      pill.textContent = here ? 'Sakay na!' : 'Malapit na!';
+      popIn(pill, u, here ? x.hereAt : x.nearAt);
+      const say = el.querySelector('.m-say');
+      draw(say, n === 0 ? 'Next stop is yours.' : 'about<b>' + n + '</b>' + (n === 1 ? 'stop' : 'stops') + ' before yours');
+      say.style.opacity = clamp((u - x.cardAt - .3) / .3, 0, 1).toFixed(3);
+    },
+    'm-share': function(el, u, x){
+      kinetic(el.querySelector('.kt'), u, x.kt);
+      rise(el.querySelector('.m-card'), u, x.cardAt);
+      // The bus on everyone's map: a pin over it, and rings going out.
+      const pin = el.querySelector('.m-pin');
+      popIn(pin, u, x.pinAt);
+      pin.style.transform += ' translateY(' + (Math.sin(Math.max(0, u - x.pinAt) * 3) * 8).toFixed(1) + 'px)';
+      el.querySelectorAll('.m-ring').forEach(function(r, i){
+        const k = u - x.pinAt - .2 - i * .45, p = k < 0 ? -1 : (k % 1.35) / 1.35;
+        r.style.opacity = p < 0 ? '0' : ((1 - p) * .9).toFixed(3);
+        r.style.transform = 'scale(' + (.6 + Math.max(0, p) * 2.6).toFixed(3) + ')';
+      });
+      // Salamat, from the riders: each up, and away.
+      el.querySelectorAll('.m-ty').forEach(function(b, i){
+        const at = x.tys[i], k = u - at;
+        popIn(b, u, at);
+        b.style.transform += ' translateY(' + (-Math.max(0, k) * 36).toFixed(1) + 'px)';
+        if (k > 1.9) b.style.opacity = clamp(1 - (k - 1.9) / .4, 0, 1).toFixed(3);
+      });
+      const say = el.querySelector('.m-say');
+      say.style.opacity = clamp((u - x.sayAt) / .35, 0, 1).toFixed(3);
+      say.style.transform = 'translateY(' + ((1 - easeOut((u - x.sayAt) / .35)) * 30).toFixed(1) + 'px)';
+    },
+    'm-ticket': function(el, u, x){
+      kinetic(el.querySelector('.kt'), u, x.kt);
+      const card = el.querySelector('.m-card'), km = keyed(x.km, u);
+      rise(card, u, x.cardAt);
+      draw(card, stopViewSvg({ aboard:true, f:km, km:km, stops:x.stops, place:x.place, here:true, sky:'day', worn:x.worn, paint:x.paint }));
+      popIn(el.querySelector('.m-pill'), u, x.flagAt);
+      // Stop: the ticket comes up over the road, and its stamp comes down on it.
+      const tk = el.querySelector('.m-tkt'), p = easeOut((u - x.tktAt) / .6);
+      tk.style.transform = 'translateY(' + ((1 - p) * 1400).toFixed(1) + 'px) rotate(' + (-2.5 + (1 - p) * 6).toFixed(2) + 'deg)';
+      const st = el.querySelector('.m-stamp'), q = (u - x.stampAt) / .22;
+      st.style.opacity = q < 0 ? '0' : (.92 * clamp(q, 0, 1)).toFixed(3);
+      st.style.transform = 'rotate(-14deg) scale(' + (q < 0 ? 2 : 2 - easeOut(q)).toFixed(3) + ')';
+    },
+    'm-dress': function(el, u, x){
+      kinetic(el.querySelector('.kt'), u, x.kt);
+      const card = el.querySelector('.m-card');
+      rise(card, u, x.cardAt);
+      let look = x.looks[0];
+      x.looks.forEach(function(l){ if (u >= l.at) look = l; });
+      draw(card, busSvg(look.keys, look.paint));
+      const k = u - look.at;
+      if (k >= 0 && k < .35) card.style.transform += ' scale(' + (1 + .05 * (1 - easeOut(k / .35))).toFixed(4) + ')';
+      el.querySelectorAll('.m-tile').forEach(function(tl, i){ popIn(tl, u, x.tiles[i]); });
     }
   };
 

@@ -101,6 +101,7 @@ to `video-out/`, which is not committed:
 
 ```
 CARTO_API_KEY=... sh tools/render-video.sh
+sh tools/render-video.sh video-out --motion   # the animated cut: no screens, no key
 ```
 
 ## Architecture
@@ -717,7 +718,13 @@ page (Android's plugins stood in for, its status bar), the other rider's as
 a browser does. **The trip ends as the app ends one**: the
 road comes up to the stop at the bus's pace and the app asks "Getting off
 here?", since the road on board is drawn at its real length and a
-time-lapse would make it jump.
+time-lapse would make it jump. **There is an animated cut too**
+(`tools/video/motion.js`, `--motion`, October 2026, the maintainer's ask):
+drawn scenes and kinetic type and no screens, its pictures the app's own
+drawn afresh each frame (the stage carries the PICTURES block), its words
+the film's captions, the poster's and the app's, and the film's end card.
+It films nothing, so a changed screen does not date it; a changed picture
+or word in those blocks does, and it is a minute and a half to render.
 `docs/ARCHITECTURE.md`, "The showcase video".
 
 **That now costs three files, not one.** `flyer.html` and `for-operators.html`

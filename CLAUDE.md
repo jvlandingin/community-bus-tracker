@@ -21,7 +21,7 @@ node tests/test-hours.js      # split operating hours, the en-route allowance, t
 node tests/test-guard.js      # wrong-direction detection on simulated trips
 node tests/test-strip.js      # progress strip position and wording, the town lines in the popup
 node tests/test-prompts.js    # idle, end-of-trip, your-stop and direction prompts
-node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card, where sharing stops
+node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card, where sharing stops, the search for stops and places
 node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its luck, your bus; spare parts, the shop, the look, backups
 node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the icon and the mark
 node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride, the saved stop's picture, the trip's first window
@@ -92,6 +92,16 @@ icon into `tools/app-icons.html`, from `<!-- appicon id=… -->`, and the small
 mark into every page's favicon and the Android app's status-bar and themed
 icons. `test-tokens.js`, `test-signboard.js` and `test-pictures.js` fail until
 you do.
+
+And one writes committed data, the places the stop picker searches besides
+the stops, from OpenStreetMap's regional extracts (`asia/philippines/` on
+download.openstreetmap.fr or Geofabrik), read by its own code with nothing
+installed. Run it after moving the route's stops, or now and then for newer
+places; `test-mystop.js` fails while a place is off the route:
+
+```
+node tools/make-places.js calabarzon-latest.osm.pbf metro_manila-latest.osm.pbf   # assets/places.txt
+```
 
 One more makes the showcase video: a minute of the real tracker on a phone,
 with made-up buses, for posting where riders are. It needs ffmpeg, the map
@@ -289,6 +299,23 @@ pills, its sighting glows and the parol. A sharer's screen stays on all
 trip, and any one thing moving keeps it redrawing; a dot breathing all trip
 cost more battery than the rest of the screen together
 (`docs/ARCHITECTURE.md`, "What it costs to keep moving").
+
+**The saved stop can be a place that is not a stop** (October 2026, the
+maintainer's "what if it's not listed?"). From two letters typed, the picker
+also searches about 4,300 named places along the route (chains, banks,
+schools, churches, malls, barangays, subdivisions) in `assets/places.txt`,
+which `tools/make-places.js` writes from OpenStreetMap, each labelled with the
+listed stop it is near and found by its name, then its town or that stop
+("jollibee kawit"). The file is fetched whole from the site the first time
+the picker opens and searched on the phone (`stopSearch()`), because what is
+typed there is where someone will be standing: a geocoder would be sent it,
+and would be a second third party. It is under the ODbL, credited under the
+list and in THIRD-PARTY-NOTICES.md. `test-mystop.js` section 13 fails while a
+place is more than 2 km from every stop in `config.txt`, so a fork runs the
+tool for its own region or deletes the file. **A pin dropped from the
+sharing tab** goes on the tracker's map, which comes up for it, and the
+sharer is taken back to the trip (`startPinMode()`); until October 2026 it
+armed a map that was not on the screen.
 
 **A reader can thank a sharer**, once per bus, from the bus's popup on the
 map. Deliberately narrow, and each narrowing is load-bearing: the count belongs
@@ -663,7 +690,11 @@ and re-runs `tools/render-icons.sh`. The empty map's scene is this route's own
 view, Taal from the Tagaytay ridge, in `sceneSvg()`: a fork redraws its ground
 or keeps the volcano. So is the icon's front ticket, in `make-pictures.js`. The ticket's views are by kind of place, so they follow
 `config.txt` like the marks, but the volcano one is Taal too: a fork whose
-volcano has no lake redraws that one. `how-to.html` used to be the exception —
+volcano has no lake redraws that one. The places the stop picker searches,
+`assets/places.txt`, are this route's from OpenStreetMap: a fork runs
+`tools/make-places.js` on its own region's extracts, or deletes the file, and
+until it does the page shows none of them and `test-mystop.js` fails.
+`how-to.html` used to be the exception —
 its screenshots and screen recordings showed this deployment, so a fork had to
 recapture them or delete the page. Every figure on it is now drawn in HTML and
 CSS from the same tokens as the app, and the page loads nothing over the

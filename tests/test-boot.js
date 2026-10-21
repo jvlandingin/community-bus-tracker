@@ -645,6 +645,18 @@ function run(page, include, label, configText, setup) {
   check(/Nobody is sharing/i.test(stopBar.textContent),
     'and with nothing on the map it falls back to the page\'s own wording');
 
+  // The places along the route that are not stops come whole from
+  // assets/places.txt the first time the picker opens (October 2026). This
+  // page's server is gone by now, so a file is handed over here, a few places
+  // beside the template's stops (test-mystop.js checks the shipped one), and
+  // every request the page makes from here on is written down, body and all.
+  const asked = [], passOn = ok.w.fetch;
+  const placesTxt = '# a note\nJollibee|14.4335|120.9000|Kawit\nKawit Municipal Hall|14.4317|120.8952|Kawit\nJollibee|14.2575|120.9164|General Trias\n';
+  ok.w.fetch = function(u, o){
+    asked.push(String(u) + ' ' + String((o && o.body) || ''));
+    return /places\.txt/.test(String(u)) ? Promise.resolve(new Response(placesTxt)) : passOn(u, o);
+  };
+
   // The picker rewrites its list on every keystroke, so the click handling is
   // delegated rather than inline. Two of this route's own stops are exactly
   // the ones an inline onclick would have had to survive: an ampersand and an
@@ -675,8 +687,37 @@ function run(page, include, label, configText, setup) {
   }
   search.value = 'zzzz';
   ok.w.renderStopList();
-  check(/No stop here matches/.test(ok.d.getElementById('stopList').textContent),
+  check(/Nothing here matches/.test(ok.d.getElementById('stopList').textContent),
     'a search matching nothing says so instead of going blank');
+
+  // A place that is not a stop, found on the phone. What is checked here is
+  // what only the page can show (test-mystop.js has the search itself): that
+  // the one request is the file, never anything typed, that the list says
+  // where each place is and whose data it is, and that a place picked is
+  // saved as a stop is.
+  {
+    for (let i = 0; i < 100 && !(ok.w.eval('PLACES') || []).length; i++) await new Promise(r => setTimeout(r, 20));
+    for (const q of ['j', 'jo', 'jollibee', 'jollibee kawit']) { search.value = q; ok.w.renderStopList(); }
+    const list = ok.d.getElementById('stopList');
+    const place = list.querySelector('button[data-name^="Jollibee"]');
+    const own = asked.filter(a => !/supabase\.co/.test(a));
+    check(own.length === 1 && /^assets\/places\.txt /.test(own[0]) && !asked.some(a => /jollibee|kawit/i.test(a)),
+      'opening the picker asks the site for the list of places, once, and nothing typed goes anywhere', own.join(' | '));
+    check(!!place && /^Jollibee.* near \S/.test(place.textContent) && /Other places/.test(list.textContent) &&
+          /Places © OpenStreetMap contributors/.test(list.textContent),
+      'a place that is not a stop is listed apart, with the stop it is near and whose data it is', place && place.textContent);
+    if (place){
+      place.click();
+      const saved = JSON.parse(ok.w.localStorage.getItem('wt-mystop') || '{}');
+      check(saved.name === place.getAttribute('data-name') && Math.abs(saved.lat - +place.getAttribute('data-lat')) < 1e-9 &&
+            ok.d.getElementById('stopModal').classList.contains('hidden') && stopBar.textContent.includes(saved.name),
+        'and picking it saves it as your stop, as a stop is saved', saved.name);
+    }
+    ok.w.openStopPicker();
+    check(asked.filter(a => /places\.txt/.test(a)).length === 1, 'opening the picker again asks for nothing more');
+    ok.w.closeModal('stopModal');
+    ok.w.fetch = passOn;
+  }
 
   ok.w.clearMyStop();
   check(ok.w.localStorage.getItem('wt-mystop') === null,
@@ -1539,7 +1580,31 @@ function run(page, include, label, configText, setup) {
       d.getElementById('tripStopBtn').click();
       check(isHidden('tripModal') && !isHidden('stopModal') && /Where do you get off\?/.test(d.getElementById('stopTitle').textContent),
         'its button opens the stop picker, which asks where you get off', d.getElementById('stopTitle').textContent);
-      w.closeModal('stopModal');
+      // The sharing tab has no map, so a pin is dropped on the tracker's and
+      // the sharer is taken back. Until October 2026 the button armed a map
+      // that was not on the screen, and nothing happened.
+      const dropPin = () => [...d.querySelectorAll('#stopModal .pickrow button')].find(b => /Drop a pin/.test(b.textContent)).click();
+      const pinWords = () => d.getElementById('pinMode').textContent.trim();
+      dropPin();
+      check(isHidden('stopModal') && !isHidden('trackView') && isHidden('onbusView') && !isHidden('pinMode') &&
+            /^Tap the map where you get off\./.test(pinWords()),
+        'mid-trip, Drop a pin brings up the tracker\'s map and asks where you get off', pinWords());
+      w.eval('map').fire('click', { latlng: w.L.latLng(14.3040, 120.9100) });
+      check(isHidden('pinMode') && isHidden('trackView') && !isHidden('onbusView') && w.eval('sharing') === true &&
+            JSON.parse(w.localStorage.getItem('wt-mystop') || '{}').name === 'Your pin',
+        'and once the pin is down, the stop is saved and the trip screen is back');
+      w.openStopPicker();
+      dropPin();
+      d.querySelector('#pinMode button').click();
+      check(isHidden('pinMode') && !isHidden('onbusView') && JSON.parse(w.localStorage.getItem('wt-mystop') || '{}').lat === 14.3040,
+        'Cancel goes back to the trip screen too, the stop as it was');
+      w.openStopPicker();
+      dropPin();
+      w.switchTab('share');
+      w.eval('map').fire('click', { latlng: w.L.latLng(14.2912, 120.9068) });
+      check(isHidden('pinMode') && !w.eval('pinModeOn') && JSON.parse(w.localStorage.getItem('wt-mystop') || '{}').lat === 14.3040,
+        'and leaving the map ends it, so a later tap on the map drops nothing');
+      w.clearMyStop();
       await w.stopSharing();
       check(tutorials().every(b => !b.classList.contains('hidden')), 'and both come back when it ends');
       check(/Where do you wait\?/.test((w.openStopPicker(), d.getElementById('stopTitle').textContent)),

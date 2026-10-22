@@ -22,9 +22,9 @@ node tests/test-guard.js      # wrong-direction detection on simulated trips
 node tests/test-strip.js      # progress strip position and wording, the town lines in the popup
 node tests/test-prompts.js    # idle, end-of-trip, your-stop and direction prompts
 node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card, where sharing stops, the search for stops and places
-node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its luck, your bus; spare parts, the shop, the look, backups
+node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its luck, your bus; spare parts, the shop, the look, backups; the ticket's postcard
 node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the icon and the mark
-node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride, the saved stop's picture, the trip's first window
+node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride, the saved stop's picture, the trip's first window, the ticket's postcard
 node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
 node tests/test-tour.js       # the tour: steps and words, the practice scene, the bubble's place, what a run may never do
 ```
@@ -333,7 +333,7 @@ keeps none, and the sharer's own phone now keeps theirs for their bus
 **The sharer gets a ticket at Stop** (October 2026): a picture of where they got
 on and off (the two places' marks as roadside signs, the coach between, the view
 at the destination behind it, the sky from its stamps), how long the bus was on
-the map, how many said salamat, a stamp or two. Made on the phone and sent nowhere. Fenced the same way as the count: no
+the map, how many said salamat, a stamp or two. Made on the phone and sent nowhere by the app (its sharer may send a picture of it, below). Fenced the same way as the count: no
 stamp may be about how the bus was driven (speed, trip time, comparisons — the
 driver metric again), no ticket for a trip under five minutes, under a kilometre
 along the route between its two ends (a bus that waited at the terminal with
@@ -358,6 +358,19 @@ salamat total (a flower per thanked ticket, never added up), nothing per bus,
 no streak. Keeping is a tap on one ticket and never a default; `keepTicket()`
 is the only thing that adds. `test-thanks.js` sections 15 to 17 hold all of it,
 and `docs/ARCHITECTURE.md`, "Keeping the ticket", has the reasoning.
+
+**A ticket can be sent as a picture, its postcard** (October 2026, rule 20, the
+maintainer's decision): "Send a picture" under every ticket draws it for a
+chat, Facebook or Instagram, which takes pictures and not links, and hands the
+PNG to the phone's own sheet. It is drawn by `postcardSvg()` from
+`postcardFacts()`, which takes only the six things a kept copy keeps, whichever
+ticket it is sent from, the one Stop just made included: never the times, how
+long, the bus number or the count, because a picture posted after every trip
+would be the timesheet the album refuses, made public. It carries "unofficial"
+on its face and the site's address at its foot, and its letters inside it,
+read from the page's own font files. The app sends it nowhere itself and keeps
+none of it. `test-thanks.js` section 21 and `test-pictures.js` section 11 hold
+it; `docs/ARCHITECTURE.md`, "Sending the tracker, and a ticket's postcard".
 
 **No two tickets are drawn alike, and trips decorate your bus** (October
 2026). A ticket's paper, punch, sights, weather, moon, season and, one in
@@ -426,7 +439,15 @@ dropped, which is how the wrong-direction pause never cleared its bus.
 every map already has, so the link reveals nothing and dies with the trip. It is
 `sendBusLink`/`.buslink`, never anything called share. The same popup tells one
 line about the town the bus is passing, from an optional fifth field on each
-`CHECKPOINT` in `config.txt`.
+`CHECKPOINT` in `config.txt`. **And the tracker itself** (October 2026): Send the
+tracker, at the foot of the map beside the Tutorial (`sendSiteLink`/`.sitelink`),
+sends the site's bare address through the same phone's sheet (`sendLink()`),
+`location.origin + location.pathname` and nothing after it, because a sharer's
+address bar holds the share key as `#k=`; `test-boot.js` sections 11 and 17
+fail if the key, a bus, a tour or Facebook's `fbclid` goes with it. No links to
+Facebook's or Messenger's own sharing pages: Fanboy's Social Blocking List hides
+those by where they point, and Instagram has none. The word is Send, never
+Share, which here means putting a bus on the map.
 
 **Every sighting is a glowing stretch on the strip** (October 2026): where
 the bus someone saw probably is by now, between where the slowest and the
@@ -567,7 +588,8 @@ native side has no tests and no browser twin. `test-boot.js` section 11 boots
 the page with a stand-in bridge. `mobile/README.md` has the signing rules.
 The other plugins only carry calls across too: the back button goes to
 `appBack()`, which closes what is open and otherwise puts the app in the
-background, never closing it, so a trip goes on; a backup and a bus link go to
+background, never closing it, so a trip goes on; a backup, a bus link, the
+tracker's link and a ticket's postcard go to
 the phone's share sheet through `appSendFile()` and the Share plugin, because
 a WebView has no `navigator.share` and drops downloads silently. A browser API
 that works in Chrome may do nothing in the app, so a feature that saves a

@@ -38,7 +38,7 @@ in `index.html`, under the suites, like everything else.
 | `@capacitor-community/background-geolocation` | The foreground service that keeps GPS alive with the screen off. |
 | `@capacitor/local-notifications` | Two jobs. It asks for Android 13's notification permission, without which the sharing notification is hidden. And it turns a trip question asked while the app is in the background (wrong direction, still on the bus, trip finished) into a notification, because the wrong-direction one takes the bus off the map until it is answered. |
 | `@capacitor/app` | The back button. Without it, Android 11 and older closed the app on back, which stopped a trip, and back never closed a pop-up. `appBack()` in the page closes what is open, one layer at a time, and otherwise puts the app in the background. |
-| `@capacitor/filesystem` and `@capacitor/share` | A backup, and a link to a bus, go to the phone's share sheet. A WebView has no `navigator.share`, and it drops a download without a word, so a backup "saved to your downloads" was never saved. `appSendFile()` writes the backup to the app's cache and shares the file. |
+| `@capacitor/filesystem` and `@capacitor/share` | A backup, a link to a bus, the tracker's own link (Send the tracker) and a ticket's picture (Send a picture) go to the phone's share sheet. A WebView has no `navigator.share`, and it drops a download without a word, so a backup "saved to your downloads" was never saved. `appSendFile()` writes the backup, or the picture as base64, to the app's cache and shares the file. |
 
 The manifest adds two things the plugins leave out. `VIBRATE`, or the WebView
 ignores `navigator.vibrate` and the saved stop's "buzz once" never buzzes.
@@ -187,7 +187,12 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
 
   Not collected: names, accounts, contacts, the advertising ID, a watcher's
   location, the saved stop or what is typed to find it (the places along
-  the route are searched on the phone), tickets or your bus. The share key is the route's,
+  the route are searched on the phone), tickets or your bus.
+  Not shared either: Send the tracker and Send a picture hand a link, or a
+  picture of a ticket's six kept things, to the phone's own share sheet at
+  the user's tap, for the app the user picks. Play does not count a transfer
+  the user starts and expects as sharing, and the app sends none of it
+  anywhere itself. The share key is the route's,
   not the person's: the app keeps it on the phone and sends it only to be
   checked, as a browser does. Users can delete their data: Stop removes the
   position, and everything else goes by itself.

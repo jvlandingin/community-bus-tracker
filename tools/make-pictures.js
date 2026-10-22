@@ -93,7 +93,7 @@ function renderer() {
     'S.stopViewSvg=stopViewSvg;S.STOP_VIEW_MOST=STOP_VIEW_MOST;S.STOP_GLIDE_MS=STOP_GLIDE_MS;S.STOP_RIDE_MS=STOP_RIDE_MS;' +
     'S.SV_WAIT=SV_WAIT;S.SV_ABOARD=SV_ABOARD;S.SV_SEEN=SV_SEEN;S.SV_PIN=SV_PIN;S.SV_PAST=SV_PAST;S.svKmSign=svKmSign;S.SV_FASTEST=SV_FASTEST;S.svReach=svReach;' +
     'S.SV_POLE=SV_POLE;S.SV_MARK=SV_MARK;S.SV_DASH=SV_DASH;S.SV_DASH_LONG=SV_DASH_LONG;S.SV_JOINT=SV_JOINT;S.SV_NEAR=SV_NEAR;S.svStrip=svStrip;S.svDashes=svDashes;S.svJoints=svJoints;S.svTufts=svTufts;S.SV_TUFT=SV_TUFT;S.SV_POLE_X=SV_POLE_X;S.svPole=svPole;S.svPlace=svPlace;S.svStopKm=svStopKm;S.SV_SIGN=SV_SIGN;S.svOnRoad=svOnRoad;S.svPinAt=svPinAt;' +
-    'S.tripNoteSvg=tripNoteSvg;')(S);
+    'S.tripNoteSvg=tripNoteSvg;S.postcardSvg=postcardSvg;S.pcTicketPath=pcTicketPath;S.PC_W=PC_W;S.PC_H=PC_H;S.PC_INK=PC_INK;S.PC_PAPER=PC_PAPER;S.PC_STAMP=PC_STAMP;')(S);
   return S;
 }
 

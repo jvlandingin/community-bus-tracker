@@ -25,6 +25,45 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-10-22: Send the tracker, and a ticket's postcard
+
+The maintainer: "this app would benefit from a share feature. Like share to
+messenger, fb, instagram, etc." Agreed, because nobody knowing the tracker is
+there is still its real problem, but not as a row of Facebook, Messenger and
+Instagram buttons. The phone's own share sheet already lists whichever of
+those a rider has. Instagram has no web share link at all, Messenger's needs an
+app registered with Meta, and Facebook's own button would load Facebook's
+script on every visit. And Fanboy's Social Blocking List, fetched and read for
+this, hides links to Facebook's and Messenger's sharing pages by where they
+point: the `shareBtn` lesson again, on the riders' side.
+
+Two pieces were proposed, and the maintainer took both: **Send the tracker**,
+at the foot of the map beside the Tutorial, which sends the site's bare
+address (never the share key a sharer's address bar holds), and **Send a
+picture** under every ticket, the ticket drawn as a picture for a chat,
+Facebook or Instagram, which takes pictures and not links. The second changed
+a promise, and the maintainer said yes to that too: a ticket was "sent
+nowhere", and it is now "sent only where its sharer sends it", on one
+condition, written as rule 20. The picture shows only what a kept ticket
+keeps, never the times, how long, the bus number or the count, because posted
+after every trip on a crew member's page those would be a timesheet. The
+word is "Send", never "Share", which in this app means putting your bus on the
+map.
+
+The third idea, "Send a link to your bus" on the sharing tab while a trip is
+on, since the sharer is the one who says "nasa bus na ako": the maintainer
+will compare it later.
+
+**Not yet checked, on real phones:** the picture through Chrome's sheet into
+Instagram, Facebook and Messenger on Android; Safari on an iPhone, where the
+picture may need a second tap ("Ready. Tap Send a picture again.") and its
+letters may load late; the Fibi app, where the picture goes by the Share
+plugin and the font files by native fetch (the picture falls back to the
+phone's letters if they come back wrong); and Messenger's own browser, where
+the link is copied and the picture shown to save by hand. The link preview
+card still has not been seen in a real Messenger chat either; Facebook's
+Sharing Debugger shows it, and fetches it afresh after the picture changes.
+
 ## 2026-10-21: A pin from the bus, and places that are not stops
 
 The maintainer, with two screenshots from a trip: the stop card on the

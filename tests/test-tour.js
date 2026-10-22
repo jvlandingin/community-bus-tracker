@@ -173,7 +173,7 @@ console.log('\n=== 6. a practice run sends nothing and keeps nothing ===');
 // during a run. They refuse anyway: a practice salamat reaching a stranger,
 // or the practice stop replacing the reader's own, is the one thing this
 // feature must not be able to do even by accident.
-for (const name of ['sayThanks', 'sayWrong', 'sendBusLink', 'boardBus', 'leaveBus', 'persistMyStop', 'keepTicket', 'startSharing', 'addSighting', 'toggleRoad']) {
+for (const name of ['sayThanks', 'sayWrong', 'sendBusLink', 'sendSiteLink', 'sendPostcard', 'boardBus', 'leaveBus', 'persistMyStop', 'keepTicket', 'startSharing', 'addSighting', 'toggleRoad']) {
   const body = fn(name);
   check(/^\s*if \(WALK\) return;/m.test(body.split('\n').slice(1, 3).join('\n')), `${name} refuses first thing while a run is on`);
 }

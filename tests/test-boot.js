@@ -1393,6 +1393,30 @@ function run(page, include, label, configText, setup) {
   const linkSheet = native.sheets[native.sheets.length - 1];
   check(native.sheets.length === 2 && /#b=(ab){16}$/.test(linkSheet.url) && !linkSheet.files,
     'a link to a bus opens the share sheet too');
+  // Send the tracker: the page's own address and nothing after it. This
+  // address carries the share key, as a sharer's does, a bus, and the fbclid
+  // Facebook adds to a link it opens; none of them may go along.
+  inApp.w.history.replaceState(null, '', '/index.html?fbclid=IwAR0abc#k=TESTKEY&b=' + 'ab'.repeat(16));
+  await inApp.w.sendSiteLink();
+  const siteSheet = native.sheets[native.sheets.length - 1];
+  check(native.sheets.length === 3 && siteSheet.url === inApp.w.location.origin + '/index.html' && siteSheet.title === 'Bus Tracker' &&
+        /^Nasaan na ang bus\?/.test(siteSheet.text) && !siteSheet.files,
+    'Send the tracker opens the share sheet with the bare address: no key, no bus, no fbclid', siteSheet && siteSheet.url);
+  inApp.w.history.replaceState(null, '', '/index.html');
+  // A ticket's postcard: made on the phone (by a stand-in here, because
+  // jsdom draws nothing), written to the app's cache as a picture, not as
+  // text, and handed to the sheet the way a backup is.
+  inApp.w.localStorage.setItem('wt-tickets', JSON.stringify([{ d: '2026-10-09', dir: 'n', from: 'MENDEZ', to: 'AYALA', st: ['full'], ty: true }]));
+  inApp.w.makePostcard = async () => new inApp.w.Blob([new Uint8Array([137, 80, 78, 71])], { type: 'image/png' });
+  inApp.w.showKeptTicket(0);
+  await inApp.w.sendPostcard();
+  const pic = native.files[native.files.length - 1], picSheet = native.sheets[native.sheets.length - 1];
+  check(!!pic && pic.path === 'bus-tracker-ticket-2026-10-09.png' && pic.directory === 'CACHE' && !('encoding' in pic) && pic.data === 'iVBORw==',
+    'Send a picture writes the ticket\'s postcard to the app\'s cache as a picture', pic && pic.path);
+  check(native.sheets.length === 4 && !!picSheet.files && picSheet.files[0] === 'file:///cache/bus-tracker-ticket-2026-10-09.png' && !picSheet.url,
+    'and hands that picture to the share sheet, with no link beside it');
+  inApp.w.closeTicket();
+  inApp.w.localStorage.removeItem('wt-tickets');
   inApp.w.close();
 
   // A page left mid-trip inside the app (the guide is a tap away) leaves the
@@ -1572,6 +1596,8 @@ function run(page, include, label, configText, setup) {
       await startTrip();
       check(tutorials().every(b => b.classList.contains('hidden')),
         'while a trip is on, neither does: a tour cannot run over a live share, so the button could only say so');
+      check(!d.querySelector('.tabfoot .sitelink').classList.contains('hidden'),
+        'while Send the tracker, beside the map tab\'s Tutorial, stays: nothing about it waits for the trip to end');
       check(!/green ring/i.test(d.getElementById('onbusStripCard').textContent), 'and the strip on the trip screen carries no line about its ring');
       check(!isHidden('tripModal') && /^Tap Stop when you get off/.test(d.querySelector('#tripModal .triptxt').textContent.trim()) &&
             /^Or set your stop, and sharing stops there by itself\.$/.test(stopWords()) && !isHidden('tripStopBtn') &&
@@ -2419,6 +2445,87 @@ function run(page, include, label, configText, setup) {
     check(!/[0-9]+ (riders|reports|people)/i.test(list.textContent + pop(bus).textContent),
       'no count is ever drawn for riders');
     w.close();
+  }
+
+  console.log('\n=== 17. sending: the tracker\'s link, and a ticket\'s postcard ===');
+  // Both go to the phone's own sheet and nowhere else. The link is the
+  // page's address with nothing after it, whatever the address bar holds,
+  // and a sharer's holds the share key. The postcard is a kept copy's six
+  // things drawn as a picture: test-pictures.js holds the drawing, and since
+  // jsdom draws nothing, a stand-in picture stands in for it here.
+  {
+    const w = ok.w, d = ok.d;
+    const hidden = el => !el || el.className.includes('hidden');
+    const toast = () => (d.getElementById('toast') || {}).textContent || '';
+    const foot = d.querySelector('#trackView .tabfoot .sitelink');
+    check(!!foot && foot.getAttribute('onclick') === 'sendSiteLink()' && /Send the tracker/.test(foot.textContent) && !hidden(foot),
+      'the foot of the map tab offers Send the tracker, beside the Tutorial');
+    const sheets = [];
+    const sheet = () => Object.defineProperty(w.navigator, 'share', { configurable: true, value: o => { sheets.push(o); return Promise.resolve(); } });
+    sheet();
+    Object.defineProperty(w.navigator, 'canShare', { configurable: true, value: o => !!(o && o.files) });
+    w.history.replaceState(null, '', '/index.html?fbclid=IwAR0abc#k=1234&b=' + 'cd'.repeat(16));
+    await w.sendSiteLink();
+    const bare = w.location.origin + '/index.html';
+    check(sheets.length === 1 && sheets[0].url === bare && sheets[0].title === 'Bus Tracker' && /^Nasaan na ang bus\?/.test(sheets[0].text),
+      'in a browser it opens the phone\'s sheet with the bare address: not the key, not the bus, not the fbclid', sheets[0] && sheets[0].url);
+    Object.defineProperty(w.navigator, 'share', { configurable: true, value: undefined });
+    await w.sendSiteLink();
+    check(toast() === 'Copy this link: ' + bare || toast() === 'Link copied.',
+      'without a sheet the same bare address is copied, or shown to be copied', toast());
+    w.history.replaceState(null, '', '/index.html');
+
+    // The postcard from a ticket Stop has just made: the live ticket prints
+    // the bus number, the times and the minutes, and the picture gets none
+    // of them, kept or not.
+    const entries = [];
+    let made = 0;
+    w.localStorage.removeItem('wt-tickets');
+    w.makePostcard = async e => { made++; entries.push(e); return new w.Blob([new Uint8Array([137, 80, 78, 71])], { type: 'image/png' }); };
+    sheet();
+    w.switchTab('share');
+    w.pickDir('north');
+    d.getElementById('busLabel').value = '98019';
+    const last = cps[cps.length - 1];
+    w.showTicket({ start: Date.now() - 171 * 60000, startKm: 0, others: 2, writes: 5, maxThanks: 3, polled: true },
+                 { latitude: +last[2], longitude: +last[3] });
+    const send = d.getElementById('tktSend');
+    check(!hidden(d.getElementById('tktModal')) && !hidden(send) && /Send a picture/.test(send.textContent) && /98019/.test(d.getElementById('tktCard').textContent),
+      'the ticket Stop makes offers Send a picture, under a card that names the bus');
+    await w.sendPostcard();
+    const first = sheets[sheets.length - 1];
+    check(made === 1 && !!first && !!first.files && first.files.length === 1 && first.files[0].type === 'image/png' && !first.url &&
+          /^bus-tracker-ticket-\d{4}-\d{2}-\d{2}\.png$/.test(first.files[0].name),
+      'which hands the phone\'s sheet a picture, and no link', first && first.files && first.files[0] && first.files[0].name);
+    check(Object.keys(entries[0] || {}).sort().join(',') === 'd,dir,from,st,to,ty' && !/98019|171|\d:\d\d|"3"/.test(JSON.stringify(entries[0])),
+      'drawn from the six things Keep would keep: no bus number, no times, no minutes, no count', JSON.stringify(entries[0]));
+    d.getElementById('tktKeep').click();
+    await w.sendPostcard();
+    check(made === 1 && sheets.length === 3, 'kept or not, a second tap sends the same picture without making it again');
+    w.closeTicket();
+
+    // From a kept one, in a browser that wants the sheet asked for sooner,
+    // then in one with no sheet that takes a picture.
+    w.showKeptTicket(0);
+    check(!hidden(d.getElementById('tktSend')), 'a kept ticket offers it too');
+    Object.defineProperty(w.navigator, 'share', { configurable: true, value: () => Promise.reject(Object.assign(new w.Error('late'), { name: 'NotAllowedError' })) });
+    await w.sendPostcard();
+    check(made === 2 && /^Ready\. Tap Send a picture again\.$/.test(toast()), 'a sheet that came too late after the tap asks for one more, with the picture ready', toast());
+    Object.defineProperty(w.navigator, 'canShare', { configurable: true, value: () => false });
+    await w.sendPostcard();
+    const box = d.getElementById('tktPic');
+    check(made === 2 && !hidden(box) && box.querySelector('img').getAttribute('src') === 'data:image/png;base64,iVBORw==',
+      'where no sheet takes a picture, the picture itself is shown, to be saved by hand');
+    w.closeTicket();
+    check(hidden(box) && !box.querySelector('img').getAttribute('src') && w.eval('PC_MADE') === null && w.eval('TKT_CARD') === null,
+      'and closing the ticket lets the picture go');
+    check(w.localStorage.getItem('wt-tickets') !== null && !Object.keys(w.localStorage).some(k => /pic|card|post/i.test(k)) &&
+          !Object.keys(w.sessionStorage).some(k => /pic|card|post/i.test(k)),
+      'nothing of it is kept: the one ticket in My tickets is the one Keep kept');
+    w.localStorage.removeItem('wt-tickets');
+    delete w.navigator.share;
+    delete w.navigator.canShare;
+    w.switchTab('track');
   }
 
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

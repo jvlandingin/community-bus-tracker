@@ -711,5 +711,80 @@ console.log('\n=== 10. the trip\'s first window ===');
   check(!/<animate|class="[^"]*(?:sv-rock|sv-swing)/.test(pics.join('')), 'and nothing in them moves: the window is read, not watched');
 }
 
+console.log('\n=== 11. a ticket\'s postcard ===');
+// The ticket as a picture its sharer can send (Send a picture): a document
+// of its own, turned into a PNG on the phone, so it must parse as XML on its
+// own, carry its own colours and letters, and load nothing. What it may say
+// is rule 20's, held in test-thanks.js; this holds the drawing.
+{
+  // Well formed: every tag closed in order, every attribute quoted, every
+  // ampersand an entity. A picture that does not parse draws nothing at all.
+  const xmlOk = svg => {
+    const stack = [];
+    for (const m of svg.matchAll(/<(\/?)([a-zA-Z][\w:-]*)((?:\s+[\w:-]+="[^"<]*")*)\s*(\/?)>/g)) {
+      if (m[1]) { if (stack.pop() !== m[2]) return false; } else if (!m[4]) stack.push(m[2]);
+    }
+    const bare = svg.replace(/<(\/?)([a-zA-Z][\w:-]*)((?:\s+[\w:-]+="[^"<]*")*)\s*(\/?)>/g, '');
+    return !stack.length && !/[<>]/.test(bare.replace(/<style>[^<]*<\/style>/g, '')) && !/&(?!amp;|lt;|gt;|quot;|#\d+;)/.test(svg);
+  };
+  const route = [['MENDEZ', 'crossing'], ['TGY', 'volcano'], ['AMADEO', 'coffee'], ['GEN.T', 'church'], ['IMUS', 'flag'], ['KAWIT', 'shrine'], ['PITX', 'terminal'], ['AYALA', 'towers']];
+  const look = { paper: 'pink', punch: 'diamond', road: '', weather: '', air: '', season: '', moon: -1, rare: false, meteor: false, sights: [] };
+  const flower = (html.match(/<symbol id="i-ty"[^>]*>([\s\S]*?)<\/symbol>/) || [])[1];
+  const facts = (o) => Object.assign({
+    kick: 'SALAMAT TICKET', date: 'FRI 9 OCT', dir: 'n', from: 'MENDEZ', to: 'AYALA', fromMark: 'crossing', toMark: 'towers', one: false,
+    stops: route.map(([name, mark], i) => ({ name, mark, on: i === 0 || i === 7 })),
+    stamps: [{ k: 'full', t: 'Buong ruta', s: 'MENDEZ → AYALA', c: 'red' }, { k: 'dawn', t: 'Madaling araw', s: 'before 5 AM', c: 'blue' }],
+    ty: true, greet: 'Ingat sa biyahe!', sky: 'dawn', look,
+    lines: ['Mendez / Tagaytay', '⇄ One Ayala'], flower, address: 'community-bus-tracker.netlify.app',
+    fonts: { 600: 'data:font/woff2;base64,d09GMgAB', 700: 'data:font/woff2;base64,d09GMgAC' }
+  }, o || {});
+  const pc = S.postcardSvg(facts());
+  check(/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"[^>]* viewBox="0 0 1080 1350" width="1080" height="1350"/.test(pc) && S.PC_W === 1080 && S.PC_H === 1350,
+    'a picture of its own, 1080 by 1350: the shape Facebook and Instagram show whole');
+  check(!!flower && xmlOk(pc), 'it parses as a document on its own, flower and all');
+  const words = [...pc.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map(m => m[1]);
+  const said = ['SALAMAT TICKET', 'FRI 9 OCT', 'Community bus tracker · unofficial', '▲ NORTHBOUND', 'MENDEZ → AYALA',
+    ...route.map(r => r[0]), 'BUONG RUTA', 'MENDEZ → AYALA', 'MADALING ARAW', 'BEFORE 5 AM', 'Someone said salamat', 'Ingat sa biyahe!',
+    'Nasaan na ang bus?', 'community-bus-tracker.netlify.app'];
+  check(words.join('|') === said.join('|'), 'every word on it: the ticket\'s, "unofficial" on its face, and the address at its foot', words.join(' | '));
+  check(!/\d:\d\d|\bmin\b|\bBUS\b|\briders\b|\d+ (?:said|salamat)/.test(words.join(' ')),
+    'and none of them a time, a number of minutes, a bus or a count');
+  check(pc.includes(S.ticketArtSvg({ from: 'crossing', to: 'towers', sky: 'dawn', one: false, look })),
+    'its picture is the ticket\'s own, for the same two ends under the same sky');
+  check(/id="pcb-on"/.test(pc) && /<use xlink:href="#pcb-on"/.test(pc) && !/<use href=/.test(pc), 'under the route\'s dot-matrix board, drawn the way any browser draws a picture\'s');
+  check((pc.match(/fill="#3a2a26" stroke="#f9e4e3"/g) || []).length === 2 && (pc.match(/<path d="M[\d.]+ [\d.]+L[\d.]+ [\d.]+L[\d.]+ [\d.]+L[\d.]+ [\d.]+Z" fill="#3a2a26"/g) || []).length === 2,
+    'the two ends punched, in the ticket\'s own punch, on its own paper');
+  check(/@font-face\{font-weight:600;font-family:Barlow Semi Condensed;src:url\(data:font\/woff2;base64,d09GMgAB\)/.test(pc) && /font-weight:700/.test(pc),
+    'lettered in the app\'s own two weights, carried inside it');
+  const out = S.postcardSvg(facts({ fonts: { 600: 'https://fonts.example/a.woff2', 700: 'data:font/woff2;base64,d09<x>' }, address: 'evil.example/<b>hi</b>' }));
+  check(!/@font-face/.test(out) && !/evil/.test(out) && xmlOk(out), 'a font that is not one inside it, or an address that is not a host, is left out');
+  const noNs = s => s.replace(/\sxmlns(:xlink)?="[^"]*"/g, '');
+  check(![pc, out].some(s => /https?:|url\((?!#|data:)|href="(?!#)/.test(noNs(s))), 'it loads nothing: everything it draws is inside it');
+  check(!/var\(--(?!c-)/.test(pc), 'and takes no colour from the page, whose theme it never sees');
+  const escaped = S.postcardSvg(facts({ from: 'A&B <x>', stops: [{ name: 'Q&A', mark: 'nope', on: true }] }));
+  check(xmlOk(escaped) && /A&amp;B &lt;x&gt; →/.test(escaped) && />Q&amp;A</.test(escaped), 'a name with an ampersand or a bracket in it is written as text');
+  // Its colours are the ticket's on screen, so the picture and the card
+  // are the same piece of paper.
+  const tp = (html.match(/\.tkt\{\s*--tp:(#[0-9a-f]{6})/) || [])[1];
+  const pps = Object.fromEntries([...html.matchAll(/\.pp-([a-z]+)\{--tp:(#[0-9a-f]{6});\}/g)].map(m => [m[1], m[2]]));
+  check(tp === S.PC_PAPER.cream && Object.keys(pps).length === 4 && Object.keys(pps).every(k => pps[k] === S.PC_PAPER[k]),
+    'its papers are the stylesheet\'s', JSON.stringify(Object.assign({ cream: tp }, pps)));
+  const inks = Object.fromEntries([...html.matchAll(/\.stamp\.([a-z]+)\{color:(#[0-9a-f]{6});\}/g)].map(m => [m[1], m[2]]));
+  check(['red', 'blue', 'green'].every(k => inks[k] === S.PC_STAMP[k]), 'and so are its stamps\' inks', JSON.stringify(inks));
+  check(/#e4876a/.test(pc) && /#f2b88a/.test(pc), 'on the icon\'s morning coral, like the link preview');
+  // A long route makes a tall ticket, drawn smaller rather than over the
+  // board or the address.
+  const many = S.postcardSvg(facts({ stops: Array.from({ length: 30 }, (_, i) => ({ name: 'S' + i, mark: 'church', on: i === 3 })) }));
+  const sc = +((many.match(/\) scale\(([\d.]+)\) translate\(-540 0\)/) || [])[1]);
+  const at = +((many.match(/translate\(540 ([\d.]+)\) scale/) || [])[1]);
+  check(sc > 0 && sc < 1 && at >= 236 && xmlOk(many), 'thirty stops: the ticket is drawn smaller, under the board', 'scale ' + sc);
+  check(+((pc.match(/\) scale\(([\d.]+)\) translate\(-540 0\)/) || [])[1]) === 1, 'this route\'s eight fit as they are');
+  const rare = S.postcardSvg(facts({ look: Object.assign({}, look, { rare: true }), kick: 'GINTONG TICKET' }));
+  check(/fill="url\(#pc-foil\)"/.test(rare) && /stroke="#e3b23c"/.test(rare) && !/url\(#pc-foil\)/.test(pc), 'and a gold one is foiled');
+  const bare = S.postcardSvg(facts({ stamps: [], ty: false, lines: [] }));
+  check(xmlOk(bare) && !/mask="url\(#pc-speck\)"/.test(bare) && !/Someone said salamat/.test(bare) && !/pcb-on/.test(bare),
+    'a ticket with no stamps, no flower and a route with no board still draws, with none of them');
+}
+
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');
 process.exit(fail ? 1 : 0);

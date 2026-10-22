@@ -25,7 +25,8 @@ new Function('S', src + albumSrc + 'S.thanksWords=thanksWords;S.thanksControl=th
   'S.DECOR=DECOR;S.busClean=busClean;S.busAdd=busAdd;S.busCount=busCount;S.busGoal=busGoal;S.busEarned=busEarned;S.busToured=busToured;' +
   'S.weekIndex=weekIndex;S.busStreak=busStreak;S.SHOP=SHOP;S.PAINTS=PAINTS;S.WEAR_ORDER=WEAR_ORDER;S.PARTS_TRIP=PARTS_TRIP;S.PARTS_TRIPS_A_DAY=PARTS_TRIPS_A_DAY;' +
   'S.dayIndex=dayIndex;S.busSettle=busSettle;S.busTripPay=busTripPay;S.busOwns=busOwns;S.busBuy=busBuy;S.busWear=busWear;S.busUsePaint=busUsePaint;' +
-  'S.busWorn=busWorn;S.busHasLook=busHasLook;S.busLook=busLook;S.lookRead=lookRead;S.backupMake=backupMake;S.backupRead=backupRead;S.busIsNew=busIsNew;S.decorShown=decorShown;')(S);
+  'S.busWorn=busWorn;S.busHasLook=busHasLook;S.busLook=busLook;S.lookRead=lookRead;S.backupMake=backupMake;S.backupRead=backupRead;S.busIsNew=busIsNew;S.decorShown=decorShown;' +
+  'S.postcardFacts=postcardFacts;S.tktKicker=tktKicker;')(S);
 // The drawings the luck and the bus are drawn with, from the same file.
 const P = require(path.join(ROOT, 'tools', 'make-pictures.js')).renderer();
 new Function('P', html.slice(html.indexOf('// ---- THE PICTURES (unit tested)'), html.indexOf('// ---- END PICTURES')) +
@@ -748,6 +749,65 @@ console.log('\n=== 20. spare parts: earned, capped, spent, never farmed ===');
   // The page asks before it shows, and only sends while sharing.
   check(/args\.p_look = /.test(fn('writePosition')) && /bus\.show/.test(fn('writePosition')),
     'the look goes with a position only when the sharer has said to show it');
+}
+
+console.log('\n=== 21. a ticket\'s postcard: the souvenir, sent only by hand ===');
+// Rule 20. Send a picture turns a ticket into a picture for a chat, Facebook
+// or Instagram: the one way anything of a ticket leaves the phone, and only
+// at its sharer's tap. It is drawn from the six things a kept ticket keeps,
+// whichever ticket it is sent from, so the timesheet rule 8 keeps off a crew
+// member's phone cannot be posted on their page either.
+{
+  const cps = [['MENDEZ', 'crossing'], ['TGY', 'volcano'], ['AMADEO', 'coffee'], ['GEN.T', 'church'], ['IMUS', 'flag'],
+               ['KAWIT', 'shrine'], ['PITX', 'terminal'], ['AYALA', 'towers']].map(([short, mark]) => ({ short, name: short + ' town', mark, lat: 14.2, lng: 120.9 }));
+  const six = { d: '2026-10-09', dir: 'n', from: 'MENDEZ', to: 'AYALA', st: ['full', 'dawn'], ty: true };
+  // Everything a live ticket knows, handed over with the six.
+  const f = S.postcardFacts(Object.assign({ label: '98019', mins: 171, maxThanks: 7, times: '4:40–7:31 AM', startKm: 0.4 }, six), cps);
+  const keys = Object.keys(f || {}).sort().join(',');
+  check(keys === 'date,dir,from,fromMark,greet,kick,look,one,sky,stamps,stops,to,toMark,ty', 'the drawing is handed these, and nothing else', keys);
+  const json = JSON.stringify(f);
+  check(!/98019|171|4:40|7:31|"label"|"mins"|"maxThanks"|"times"|"startKm"|14\.2|120\.9|town/.test(json),
+    'and none of what a live ticket knows besides the six: no bus number, no minutes, no clock, no count, no position', json.slice(0, 100));
+  check(f.date === 'FRI 9 OCT' && f.dir === 'n' && f.from === 'MENDEZ' && f.to === 'AYALA' && f.fromMark === 'crossing' && f.toMark === 'towers' && f.one === false,
+    'the day, the way, and the two ends with their marks');
+  check(f.stamps.map(s => s.k).join(',') === 'full,dawn' && f.stamps[0].s === 'MENDEZ → AYALA' && f.ty === true && f.sky === 'dawn' && f.greet === 'Ingat sa biyahe!',
+    'its stamps, its flower as a yes, and the sky and the goodbye they give it');
+  check(f.stops.length === 8 && f.stops.filter(s => s.on).map(s => s.name).join(',') === 'MENDEZ,AYALA' &&
+        f.stops.every(s => Object.keys(s).sort().join(',') === 'mark,name,on'),
+    'every stop on the route, by its short name and mark, the two ends punched');
+  check(JSON.stringify(f.look) === JSON.stringify(S.ticketLook(six)) && f.kick === S.tktKicker(f.look),
+    'and the ticket\'s own luck, worked out from the same six, never drawn afresh');
+  check(S.postcardFacts({ d: 'yesterday', dir: 'n', from: 'A', to: 'B', st: [] }, cps) === null && S.postcardFacts(null, cps) === null,
+    'something that is not a kept ticket makes no postcard');
+  // The page: the picture is made from the six things of the ticket on
+  // screen, and nothing stores it or sends it but the phone's own sheet.
+  const fnA = name => {
+    const a = html.indexOf('function ' + name + '(');
+    if (a < 0) return '';
+    const m = /\n(?:async )?function |\n\/\/ ----/.exec(html.slice(a + 1));
+    return html.slice(a, m ? a + 1 + m.index : html.length);
+  };
+  const cardSets = [...html.matchAll(/TKT_CARD = ([^;]+);/g)].map(m => m[1]);
+  check(cardSets.every(v => ['TKT_KEEP', 'e', 'null'].includes(v)) && cardSets.includes('TKT_KEEP') && cardSets.includes('e') &&
+        /TKT_KEEP = albumEntry\([\s\S]*?\);\s*\/\/[^\n]*\n\s*TKT_CARD = TKT_KEEP;/.test(fn('showTicket')) &&
+        /const e = loadAlbum\(\)\[i\];/.test(fn('showKeptTicket')) && /TKT_CARD = e;/.test(fn('showKeptTicket')),
+    'the ticket a postcard is made from is only ever six things: what Keep would keep, or what was kept', cardSets.join(' '));
+  const make = fnA('makePostcard'), send = fnA('sendPostcard'), show = fnA('postcardShow'), fonts = fnA('postcardFonts');
+  check(/postcardFacts\(e, CHECKPOINTS\)/.test(make) && !/TRIP|busLabel|clockText|maxThanks|shareDir|Date\.now/.test(make + send),
+    'makePostcard draws postcardFacts() of it, and reads nothing about the trip');
+  check(/const e = TKT_CARD/.test(send) && /^\s*if \(WALK\) return;/m.test(send.split('\n').slice(1, 3).join('\n')),
+    'Send a picture takes the ticket on screen, and refuses during a tour');
+  check(!/rpc\(|sendBeacon|XMLHttpRequest|localStorage|sessionStorage|fetch\(/.test(make + send + show + fnA('postcardDrop')),
+    'nothing in the making or the sending stores it, or sends it anywhere but to the phone\'s sheet');
+  check((fonts.match(/fetch\(/g) || []).length === 1 && /fetch\(want\[w\]\)/.test(fonts) && /@font-face/.test(fonts) && !/localStorage|sessionStorage/.test(fonts),
+    'the one request it makes is for the app\'s own font files, as the page\'s @font-face rules name them');
+  // The panel is the promise.
+  const panel = html.slice(html.indexOf('id="privModal"'), html.indexOf('id="dupModal"'));
+  check(/Send a picture/.test(panel) && /never the times, how long, the bus number or how many thanked you/.test(panel) &&
+        /goes only where you send it/.test(panel) && /the app keeps none of it/.test(panel),
+    'the privacy panel says what a postcard shows, what it never does, and who sends it');
+  check(/Send the tracker/.test(panel) && /not your key or PIN, not your stop, not a bus/.test(panel),
+    'and that the tracker\'s link is its address and nothing more');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');

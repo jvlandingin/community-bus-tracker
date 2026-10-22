@@ -1223,6 +1223,84 @@ towers), not this route's landmarks, and an optional sixth field on each
 have a mark and no line: leave the fifth field empty. `parseCheckpoint()`
 reads the line and is tested with four, five and six fields.
 
+## Sending the tracker, and a ticket's postcard
+
+October 2026. The maintainer asked for a way to share the app to Messenger,
+Facebook and Instagram, because the tracker's real problem is that nobody
+knows it is there. Two things came of it, and one thing was decided against.
+
+**Send the tracker**, at the foot of the map tab beside the Tutorial, hands
+the site's address to the phone's own sheet, the way "Send a link" hands a
+bus's: the Android app's Share plugin, then `navigator.share`, then the
+clipboard, through one helper (`sendLink()`) that both use. The words go with
+it, "Nasaan na ang bus? Tingnan dito:", the flyer's own headline; Facebook
+keeps only the link and drops them, Messenger and a text message keep both,
+and the link preview carries the rest. **The link is `location.origin +
+location.pathname` and nothing else** (`siteLinkFor()`), which is the one part
+that must not go wrong: a sharer's address bar holds the share key as `#k=`
+(`tryKey()` puts it there), and copying the address would post the key to a
+Facebook group, where it would let anyone put a bus on the map. It also drops
+a bus's `#b=`, a tour's `#tour`, the `fbclid` Facebook adds to every link it
+opens, and never carries the saved stop, which would be a watcher's location
+leaving the phone. It stays on screen during a trip, where the Tutorial
+hides, so it has a class of its own, `.sitelink`. Messenger's own browser on
+Android is a WebView with no sheet, so there it copies, as Send a link always
+has; most riders open the tracker from the group chat, inside that browser.
+
+**A ticket's postcard.** Instagram takes pictures, not links, so a link alone
+never reaches it. "Send a picture", under every ticket, the one Stop makes
+and every kept one, draws the ticket as a picture, 1080 by 1350 (the shape
+Facebook and Instagram show whole), and hands it to the sheet: on the icon's
+morning coral, under the route's own dot-matrix board, with "unofficial" on
+the ticket's face as it is on screen and the site's address at its foot,
+because the picture travels where the page and its disclaimers do not.
+`postcardSvg()` in the PICTURES block draws it; `makePostcard()` turns it into
+a PNG on the phone, through an image and a canvas; the app writes it to its
+cache and shares the file, a browser uses `navigator.share({ files })`, and
+where no sheet takes a file (a computer, a chat app's own browser) the picture
+is shown under the buttons to be saved by hand. A picture drawn from a data:
+URL cannot reach the page's fonts, so the two weights it is lettered in are
+read from the files the page's own `@font-face` rules name and carried inside
+it, and checked to start as a font file (in the app a fetch goes by way of
+native code); without them it is lettered in the phone's own. Safari wants
+the sheet asked for straight after the tap, and making the picture can take
+longer than that, so a refusal for that reason says "Ready. Tap Send a picture
+again." with the picture made.
+
+**What it may show is rule 20** in the album block, and it is the reason the
+postcard is not a screenshot of the ticket. The ticket Stop makes prints the
+bus number, the clock times and "on the map for 2 h 51 min"; posted after
+every trip on a crew member's page, that would be the timesheet "Keeping the
+ticket" keeps off their phone, made public. So a postcard is drawn from the
+six things a kept ticket keeps and nothing else, whichever ticket it is sent
+from: `postcardFacts()` takes the copy as `albumClean()` leaves it, and the
+route's checkpoints for the stops it punches, and `TKT_CARD`, the ticket on
+screen, is only ever what Keep would keep or what was kept. Its paper, punch,
+sights and foil are the ticket's own luck (`ticketLook()`), so the picture is
+the same card the album shows. It changed the ticket's promise from "sent
+nowhere" to "sent only where its sharer sends it", the maintainer's decision:
+the app sends it nowhere itself, keeps none of it (the picture lives while its
+ticket is open, and goes when it closes), and adds no stored key.
+
+**Decided against: a row of Facebook, Messenger and Instagram buttons.** The
+phone's sheet already lists whichever of those apps the person has. The
+platforms offer nothing better for a page: Instagram has no web share link at
+all, Messenger's web send dialog needs an app registered with Meta and does not
+run on phones, and Facebook's own button means loading Facebook's script on
+every visit, which this site's no-third-party rule forbids and which would
+tell Facebook who watches. And they would be hidden: Fanboy's Social Blocking
+List, which blocker users switch on, hides links by where they point,
+`facebook.com/sharer`, `facebook.com/dialog/send`, `fb-messenger://share` and
+`whatsapp://send` among them (checked in its October 2026 copy). That is the
+`shareBtn` failure again, on the riders' side, where nobody would report it.
+Nor anything that counts or pays for sending: the page cannot know a send
+happened, a count would be the first analytics this site kept, and spare parts
+for sending would be farmed.
+
+The word is "Send", never "Share": in this app "share" means putting your bus
+on the map, and a Share button on the map tab would read as one that sends
+your location.
+
 ## Saying a bus or a sighting is wrong
 
 October 2026. "Not a real bus?" sits at the end of the place line in a bus's
@@ -1286,8 +1364,10 @@ rules above before it was built.
 - **The salamat ticket.** Stop hands the sharer a ticket for the trip — where
   they got on and off, how long their bus was on the map, how many riders said
   salamat, and a stamp or two for the trip's shape — made on the phone from
-  what it saw and sent nowhere: it is gone when it is closed, unless the
-  sharer taps Keep (see "Keeping the ticket" below). It is the most
+  what it saw and sent nowhere by the app: it is gone when it is closed,
+  unless the sharer taps Keep (see "Keeping the ticket" below), and a picture
+  of it goes only where its sharer sends one (see "Sending the tracker, and a
+  ticket's postcard" above). It is the most
   rewarding thing this app shows anybody, which is exactly why it is fenced:
   **no stamp is about how the bus was driven** (no speed, no trip time, nothing
   that compares one run with another — those are the driver numbers
@@ -1769,12 +1849,17 @@ would unlock. What changed, and what was kept and why:
 - **And after that:** spare parts, a shop, paint, a backup, and a decorated bus on
   the live map, by the sharer's choice. See "Dressing the bus" for the
   guardrails.
+- **And then:** "the ticket is sent nowhere" became "sent only where its
+  sharer sends it": a picture of a ticket, its postcard, for a chat, Facebook
+  or Instagram, at the sharer's tap (rule 20). See "Sending the tracker, and a
+  ticket's postcard".
 - **Kept:** no location history; no watcher location leaves the device; no
   total of anything on the server; nothing about speed or a trip's length in
   any stamp, luck or decoration threshold beyond the time summed in all; no
   ETA in minutes (it needs the travel-time history the first invariant
   forbids); a decorated bus on the map only by its sharer's choice, off until
-  they make it, and only from fixed lists; no picture that moves with the
+  they make it, and only from fixed lists; no picture of a ticket that shows
+  more than a kept copy keeps; no picture that moves with the
   bus's speed, except the saved stop's on board (October 2026), which follows
   the positions of the bus its viewer is riding.
 
@@ -2299,8 +2384,18 @@ Google's badge, or have no name at all.
 The scan in `test-boot.js` section 8 asks for something broader than any one
 rule: no name that puts "app" next to banner, install, download, get, open or
 promo. In October 2026 that caught 38 of the list's 41 such names, and nothing
-on the five pages. None of these lists hides a link by where it points, so a
+on the five pages. None of these four lists hides a link by where it points, so a
 link to Google Play is safe as long as it is not named like a banner.
+
+A fifth does, which is why there are no links to Facebook or Messenger here.
+Fanboy's Social Blocking List hides a link by its address when the address is
+a social site's sharing page: `facebook.com/sharer`, `facebook.com/dialog/send`,
+`fb-messenger://share`, `whatsapp://send` and the like, among dozens of rules
+written against links in its October 2026 copy. So the tracker's own link, Send the tracker, goes
+through the phone's sheet from a script (`sendSiteLink()`, `.sitelink`), and
+so does a ticket's postcard (`sendPostcard()`, `#tktSend`, `#tktPic`), named
+like everything else for what they do. See "Sending the tracker, and a
+ticket's postcard".
 
 ## Known limitations
 
@@ -2530,7 +2625,8 @@ plugin carrying the call across:
 - *Files and the share sheet.* A WebView has no `navigator.share` and drops a
   download without a word, so "Save a backup" said "Saved" and saved nothing,
   and the bus link fell back to the clipboard. Both go to the phone's share
-  sheet now. The app has no Android backup either (`allowBackup` is off, so
+  sheet now, and so do the tracker's own link and a ticket's postcard, a
+  picture handed to the plugin as base64. The app has no Android backup either (`allowBackup` is off, so
   "on this phone only" stays true), which makes the backup file the only way a
   sharer's tickets and bus reach a new phone.
 - *Vibration* needs a permission a browser never asks about; without it the

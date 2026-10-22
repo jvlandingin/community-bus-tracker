@@ -1322,6 +1322,17 @@
   .tkt-keep .gi{width:18px; height:18px;}
   .tkt-keep.done{background:rgba(255,255,255,.14); color:#fff; box-shadow:none;}
   .tkt-keep:disabled{opacity:.8; cursor:default;}
+  /* Send a picture: the outline the buttons beside Keep wear, with its
+     arrow. While the picture is being made it waits, and says so. */
+  .tkt-send{display:inline-flex; align-items:center; gap:8px;}
+  .tkt-send .gi{width:18px; height:18px;}
+  .tkt-send:disabled{opacity:.8; cursor:default;}
+  /* Where no sheet takes a picture (a computer, a chat app's own browser):
+     the picture itself, under the buttons, to save by hand. */
+  .tkt-pic{display:flex; flex-direction:column; align-items:center; gap:10px; width:100%;}
+  .tkt-pic img{display:block; width:100%; height:auto; border-radius:var(--r-s); box-shadow:var(--sh-3);}
+  .tkt-pic a{display:inline-flex; align-items:center; text-decoration:none;}
+  .tkt-pichint{margin:0; color:#fff; font-size:var(--fs-small); font-weight:700; text-align:center;}
 
   /* ---- My tickets -------------------------------------------------------
      The album of kept tickets. The dialog is the app's, in either theme;
@@ -1866,14 +1877,18 @@
     color:var(--muted); cursor:pointer; border-radius:999px;
   }
   .walknew .x .gi{width:18px; height:18px;}
-  .walklink{
+  .walklink, .sitelink{
     display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:var(--tap);
     margin:0 0 12px; padding:10px 14px; border:1.5px dashed var(--maroon-line); border-radius:var(--r-m);
     background:transparent; color:var(--brand-ink); cursor:pointer;
     font-family:inherit; font-size:var(--fs-small); font-weight:800;
   }
-  .walklink .gi{width:18px; height:18px;}
+  .walklink .gi, .sitelink .gi{width:18px; height:18px; flex:0 0 auto;}
   #onbusView .walklink{margin:12px 0 0;}
+  /* The map tab's foot: Tutorial and Send the tracker side by side, and Send
+     alone across the row while a trip hides the Tutorial. */
+  .tabfoot{display:flex; gap:10px;}
+  .tabfoot > button{flex:1 1 0; min-width:0; padding:10px;}
 
   /* The guide has honoured this since it was written; the app never did, even
      though it slides a bus pill along a rail for a full second every time a
@@ -1934,6 +1949,7 @@
     <symbol id="i-ty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M10 9.25C8.73 1.29 15.27 1.29 14 9.25C21.17 5.58 23.2 11.8 15.23 13.05C20.94 18.74 15.65 22.59 12 15.4C8.35 22.59 3.06 18.74 8.77 13.05C.8 11.8 2.83 5.58 10 9.25Z"/><circle cx="12" cy="11.7" r="1.5" fill="currentColor" stroke="none"/></symbol>
     <symbol id="i-tkt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 6.5h15a1 1 0 0 1 1 1v2.6a1.9 1.9 0 0 0 0 3.8v2.6a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-2.6a1.9 1.9 0 0 0 0-3.8V7.5a1 1 0 0 1 1-1z"/><path d="M15 9.2v.6M15 11.7v.6M15 14.2v.6"/></symbol>
     <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 13.5a4 4 0 0 0 5.7.3l3-3a4 4 0 0 0-5.7-5.7l-1.1 1.1"/><path d="M14 10.5a4 4 0 0 0-5.7-.3l-3 3a4 4 0 0 0 5.7 5.7l1.1-1.1"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 3.5L3.6 10.4l6.6 2.9 2.9 6.6z"/><path d="M10.2 13.3l10.3-9.8"/></symbol>
     <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="12" r="3.5"/><path d="M11.5 12H21M17.5 12v3M20.5 12v2.2"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5.5v13M5.5 12h13"/></symbol>
     <symbol id="i-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5.5 12h13"/></symbol>
@@ -1962,15 +1978,16 @@
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
       <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number. On our side it never adds up across trips: <b>no running total is kept for any driver or any bus on the server.</b> The sharer's own phone adds theirs up for their bus in My tickets, and that never leaves it.</p>
       <p>And one more, also only if you tap it: <b>Not a real bus?</b>, on a bus, or <b>Wrong?</b>, on a sighting, to tell the organizer something on the map looks wrong. It is stored the same scrambled way as Salamat, so it can't be traced back to you and a second tap isn't counted twice. <b>Only the organizer sees how many</b>, not the sharer and not other riders, and it is deleted when that trip ends or the sighting expires. Nothing happens on its own: the organizer looks and decides.</p>
-      <p>“Send a link”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do.</p>
+      <p>“Send a link”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do. “Send the tracker”, at the foot of the map, does the same with this site's address and nothing else: not your key or PIN, not your stop, not a bus.</p>
 
       <h4 class="ok">If you share from the bus</h4>
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip, plus, only if you switched on “Show customized bus to riders”, a short code for how your bus is painted and dressed. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map, and if you saved the stop you get off at, sharing stops there: your phone checks its own position against your stop, and sends nothing for it. Outside the route area, the bus shows on your own phone only, never on anyone else's map.</p>
       <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop. Swiping the app away stops sharing. Its GPS comes through Google Play services, as in most Android apps. If you get it from Google Play, Google knows your account installed it, as with any app there. Play shows us only totals, never who.</p>
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and on our side it goes when the trip does. Your phone adds it to your bus in My tickets, a total only you can see.</p>
       <p>Riders can also tell the organizer your bus doesn't look like a real one. Only the organizer sees that, for this trip only, and it goes when the trip does.</p>
-      <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>it is not sent anywhere</b>. Close it and it is gone.</p>
+      <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>the app sends it nowhere</b>. Close it and it is gone.</p>
       <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Start from scratch” in My tickets deletes every copy.</p>
+      <p><b>Send a picture</b>, on a ticket, makes a picture of it for you to send to a chat, Facebook or Instagram. It shows only what a kept copy keeps, and this site's address: the day, the direction, where you got on and off, the stamps and the flower, <b>never the times, how long, the bus number or how many thanked you</b>, so a picture posted after every trip cannot time anyone's day either. Your phone makes it, and it goes only where you send it through your phone's own sheet; the app keeps none of it.</p>
 
       <div id="privSightings">
         <h4 class="ok">Sightings</h4>
@@ -2121,14 +2138,23 @@
      saw on that trip. Nothing on it is sent, and it is gone when it is closed
      unless Keep is tapped, which puts a copy of six things from it in My
      tickets (see the album block). A kept one opens here too, with Remove
-     where Keep was. -->
+     where Keep was. Send a picture makes its postcard, a picture of those
+     six things only (rule 20), and hands it to the phone's own sheet; where
+     no sheet takes a picture, the picture shows under the buttons, to save
+     by hand. -->
 <div class="modal hidden" id="tktModal" role="dialog" aria-modal="true" aria-labelledby="tktKick">
   <div class="tktwrap">
     <div class="tkt" id="tktCard"></div>
     <div class="tkt-acts">
       <button type="button" class="tkt-keep" id="tktKeep" onclick="keepTicket()"><svg class="gi" aria-hidden="true"><use href="#i-tkt"/></svg><span>Keep this ticket</span></button>
       <button type="button" class="tkt-close hidden" id="tktDrop" onclick="dropKeptTicket()">Remove</button>
+      <button type="button" class="tkt-close tkt-send" id="tktSend" onclick="sendPostcard()"><svg class="gi" aria-hidden="true"><use href="#i-send"/></svg><span>Send a picture</span></button>
       <button type="button" class="tkt-close" onclick="closeTicket()">Close</button>
+    </div>
+    <div class="tkt-pic hidden" id="tktPic">
+      <img alt="This ticket as a picture: the route, the places, the stamps, and the tracker's address.">
+      <a class="tkt-close hidden" id="tktPicSave">Save the picture</a>
+      <p class="tkt-pichint hidden" id="tktPicHint">Press and hold the picture to save it.</p>
     </div>
   </div>
 </div>
@@ -2360,8 +2386,16 @@
     </div>
 
     <!-- The tour's door on this tab, always here. The first visit is also
-         offered it once, at the foot of the screen (see the WALK block). -->
-    <button type="button" class="walklink" onclick="startWalk('watch')"><svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>Tutorial</button>
+         offered it once, at the foot of the screen (see the WALK block).
+         Beside it, Send the tracker: this site's address, to whoever the
+         reader picks in the phone's own sheet (sendSiteLink()). Its own
+         class, because the Tutorial hides while a trip is on and this does
+         not; never a name with "share" in it, for the reason in the
+         content-blocker note in docs/ARCHITECTURE.md. -->
+    <div class="tabfoot">
+      <button type="button" class="walklink" onclick="startWalk('watch')"><svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>Tutorial</button>
+      <button type="button" class="sitelink" onclick="sendSiteLink()"><svg class="gi" aria-hidden="true"><use href="#i-link"/></svg>Send the tracker</button>
+    </div>
   </div>
 
   <!-- SHARE -->
@@ -3863,6 +3897,176 @@ function tripNoteSvg(kind){
   }
   return '';
 }
+// A ticket's postcard (October 2026): the ticket as a picture its sharer
+// can send to a chat, to Facebook or to Instagram, which takes pictures and
+// not links. Drawn from what postcardFacts() in the album block hands it,
+// which is what a kept copy keeps and nothing more (rule 20): no times, no
+// minutes, no bus number, no count. On the icon's morning coral, under the
+// route's own board, with the site's address at the foot, because the
+// picture goes where the page and its disclaimers do not, and it says
+// "unofficial" on its face as the ticket does. A whole document of its own,
+// turned into a PNG on the phone, so it carries its own letters (fonts: the
+// app's two weights as data: URIs, or the phone's own without them) and its
+// own colours: the papers are the stylesheet's .pp-* and the inks .stamp's,
+// and test-pictures.js holds them to each other. It loads nothing.
+const PC_W = 1080, PC_H = 1350;
+const PC_INK = '#6d1a25';
+const PC_PAPER = { cream:'#fbf4e4', pink:'#f9e4e3', blue:'#e3eef5', green:'#e6f0de', yellow:'#fbf0c6' };
+const PC_STAMP = { red:'#b0281c', blue:'#2a3a9e', green:'#1d6a43' };
+const PC_FACES = 'Barlow Semi Condensed, Arial Narrow, Roboto Condensed, Arial, sans-serif';
+// A ticket's outline, its top and bottom edges bitten by the conductor's
+// scallops, as the stylesheet's mask bites the ticket on screen.
+function pcTicketPath(x, y, w, h, r, step){
+  const k = Math.floor(w / step), off = (w - k * step) / 2;
+  let d = 'M' + x + ' ' + y;
+  for (let i = 0; i < k; i++){
+    const cx = x + off + step * (i + .5);
+    d += 'H' + (cx - r) + 'A' + r + ' ' + r + ' 0 0 0 ' + (cx + r) + ' ' + y;
+  }
+  d += 'H' + (x + w) + 'V' + (y + h);
+  for (let i = k - 1; i >= 0; i--){
+    const cx = x + off + step * (i + .5);
+    d += 'H' + (cx + r) + 'A' + r + ' ' + r + ' 0 0 0 ' + (cx - r) + ' ' + (y + h);
+  }
+  return d + 'H' + x + 'Z';
+}
+// p: postcardFacts() of the ticket, and lines (the route board's words),
+// flower (the inside of the sprite's i-ty), address (the site's host) and
+// fonts ({ 600, 700 } as data: URIs).
+function postcardSvg(p){
+  p = p || {};
+  const look = p.look || {}, ink = PC_INK, maroon = '#5c161f';
+  const paper = hasOwn(PC_PAPER, look.paper) ? PC_PAPER[look.paper] : PC_PAPER.cream;
+  const esc = function(t){ return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+  const n = function(v){ return Math.round(v * 10) / 10; };
+  const text = function(x, y, s, size, o){
+    o = o || {};
+    return '<text x="' + n(x) + '" y="' + n(y) + '" font-size="' + n(size) + '" font-weight="' + (o.w || 600) + '"' +
+      (o.anchor ? ' text-anchor="' + o.anchor + '"' : '') + (o.ls ? ' letter-spacing="' + o.ls + '"' : '') +
+      (o.op ? ' opacity="' + o.op + '"' : '') + ' fill="' + (o.fill || ink) + '">' + esc(s) + '</text>';
+  };
+  const fonts = p.fonts || {};
+  const faces = ['600', '700'].filter(function(w){ return /^data:font\/woff2;base64,[A-Za-z0-9+/=]+$/.test(fonts[w] || ''); })
+    .map(function(w){ return '@font-face{font-weight:' + w + ';font-family:Barlow Semi Condensed;src:url(' + fonts[w] + ') format(\'woff2\')}'; }).join('');
+
+  // The route's board, on a band like the header's: the dots where every
+  // character has some, its words in amber where one does not.
+  const lines = Array.isArray(p.lines) ? p.lines.map(function(l){ return String(l).replace(/\s+/g, ' ').trim(); }).filter(Boolean) : [];
+  const lay = lines.length ? signLayout(lines, { pad:2, center:true }) : null;
+  let board = '';
+  if (lay && lay.dots.length){
+    const k = Math.min(820 / lay.cols, 112 / lay.rows), bw = lay.cols * k, bh = lay.rows * k;
+    board = '<rect x="' + n(540 - bw / 2 - 10) + '" y="' + n(122 - bh / 2 - 10) + '" width="' + n(bw + 20) + '" height="' + n(bh + 20) + '" rx="12" fill="url(#pc-dark)"/>' +
+      '<svg x="' + n(540 - bw / 2) + '" y="' + n(122 - bh / 2) + '" width="' + n(bw) + '" height="' + n(bh) + '" viewBox="0 0 ' + lay.cols + ' ' + lay.rows + '">' +
+      // xlink:href, which every browser that draws a picture reads; the
+      // page's own board can use the newer plain href.
+      signboardSvg(lines, { id:'pcb', pad:2, center:true, pitch:1 }).replace(/<use href=/g, '<use xlink:href=') + '</svg>';
+  } else if (lines.length){
+    board = '<rect x="130" y="62" width="820" height="120" rx="12" fill="url(#pc-dark)"/>' +
+      lines.slice(0, 2).map(function(l, i){ return text(540, (lines.length > 1 ? 112 : 136) + i * 46, l.toUpperCase(), 40, { w:700, anchor:'middle', ls:2, fill:'#ffb22e' }); }).join('');
+  }
+  const band = '<rect x="90" y="40" width="900" height="172" rx="28" fill="#e39a1c"/>' +
+    '<rect x="90" y="40" width="900" height="165" rx="28" fill="url(#pc-band)"/>' + board;
+
+  // The ticket, top to bottom, measured from its own top edge.
+  const tx = 110, tw = 860, ix = tx + 48, iw = tw - 96;
+  const rule = function(y){ return '<path d="M' + (ix - 6) + ' ' + y + 'H' + (ix + iw + 6) + '" stroke="rgba(109,26,37,.35)" stroke-width="3" stroke-dasharray="10 8"/>'; };
+  let y = 0, body = '';
+  body += text(ix, 64, p.kick || 'SALAMAT TICKET', 30, { w:700, ls:4.8 }) +
+    text(ix + iw, 64, p.date || '', 30, { w:600, anchor:'end', ls:1.8, op:'.75' }) +
+    text(ix, 102, 'Community bus tracker · unofficial', 26, { op:'.75' }) + rule(128) +
+    text(ix, 172, p.dir === 's' ? '▼ SOUTHBOUND' : '▲ NORTHBOUND', 28, { w:700, ls:1.7 }) +
+    text(ix + iw, 172, (p.from || '?') + ' → ' + (p.to || '?'), 28, { w:700, anchor:'end', op:'.8' });
+  const ah = iw * 84 / 300;
+  body += '<svg x="' + ix + '" y="192" width="' + iw + '" height="' + n(ah) + '" viewBox="0 0 300 84">' +
+    ticketArtSvg({ from:p.fromMark, to:p.toMark, sky:p.sky, one:!!p.one, look:p.look || null }) + '</svg>';
+  y = 192 + ah + 18;
+  // Every stop on the route, the two it was punched for punched.
+  const stops = Array.isArray(p.stops) ? p.stops : [];
+  const cols = 4, gap = 12, cw = (iw - gap * (cols - 1)) / cols, ch = 86;
+  const punch = function(cx, cy){
+    const r = 16, ring = ' fill="#3a2a26" stroke="' + paper + '" stroke-width="3.6"';
+    if (look.punch === 'square') return '<rect x="' + n(cx - r) + '" y="' + n(cy - r) + '" width="' + 2 * r + '" height="' + 2 * r + '"' + ring + '/>';
+    if (look.punch === 'tri') return '<path d="M' + n(cx) + ' ' + n(cy - r) + 'L' + n(cx + r) + ' ' + n(cy + r) + 'H' + n(cx - r) + 'Z"' + ring + '/>';
+    if (look.punch === 'diamond') return '<path d="M' + n(cx) + ' ' + n(cy - r) + 'L' + n(cx + r) + ' ' + n(cy) + 'L' + n(cx) + ' ' + n(cy + r) + 'L' + n(cx - r) + ' ' + n(cy) + 'Z"' + ring + '/>';
+    return '<circle cx="' + n(cx) + '" cy="' + n(cy) + '" r="' + r + '"' + ring + '/>';
+  };
+  stops.forEach(function(s, i){
+    const x = ix + (i % cols) * (cw + gap), top = y + Math.floor(i / cols) * (ch + gap);
+    const key = String(s.mark || '').toLowerCase(), m = hasOwn(MARKS, key) ? MARKS[key] : '';
+    body += '<rect x="' + n(x) + '" y="' + n(top) + '" width="' + n(cw) + '" height="' + ch + '" rx="12" fill="' + (s.on ? 'rgba(227,154,28,.22)' : 'none') +
+      '" stroke="' + (s.on ? ink : 'rgba(109,26,37,.4)') + '" stroke-width="2.6"/>' +
+      (m ? '<svg x="' + n(x + cw / 2 - 20) + '" y="' + n(top + 8) + '" width="40" height="40" viewBox="0 0 32 32" fill="none" stroke="' + ink + '" color="' + ink +
+        '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="' + (s.on ? '1' : '.45') + '">' + m + '</svg>' : '') +
+      text(x + cw / 2, top + (m ? 72 : 52), s.name || '', 22, { w:700, anchor:'middle', ls:1 }) +
+      (s.on ? punch(x + cw - 1, top + 1) : '');
+  });
+  if (stops.length) y += Math.ceil(stops.length / cols) * (ch + gap) - gap;
+  y += 22;
+  body += rule(y);
+  // The stamps, inked on, and the flower if anyone said salamat.
+  const stamps = (Array.isArray(p.stamps) ? p.stamps : []).slice(0, 2);
+  let mid = '';
+  if (stamps.length){
+    const size = function(s){ return Math.max(String(s.t).length * 20 + 44, String(s.s).length * 12.5 + 44); };
+    const ws = stamps.map(size), all = ws.reduce(function(a, b){ return a + b; }, 0) + (ws.length - 1) * 40;
+    let at = 540 - all / 2;
+    stamps.forEach(function(s, i){
+      const w = ws[i], h = 76, col = PC_STAMP[s.c] || PC_STAMP.red, cx = at + w / 2;
+      mid += '<g transform="translate(' + n(cx) + ' ' + (y + 70) + ') rotate(' + (i ? 5 : -8) + ')" opacity=".88" mask="url(#pc-speck)">' +
+        '<rect x="' + n(-w / 2) + '" y="' + (-h / 2) + '" width="' + n(w) + '" height="' + h + '" rx="10" fill="none" stroke="' + col + '" stroke-width="6"/>' +
+        '<rect x="' + n(-w / 2 + 7) + '" y="' + (-h / 2 + 7) + '" width="' + n(w - 14) + '" height="' + (h - 14) + '" rx="5" fill="none" stroke="' + col + '" stroke-width="2.4"/>' +
+        text(0, 2, String(s.t).toUpperCase(), 30, { w:700, anchor:'middle', ls:3.6, fill:col }) +
+        text(0, 26, String(s.s).toUpperCase(), 18, { w:700, anchor:'middle', ls:2.5, fill:col }) + '</g>';
+      at += w + 40;
+    });
+    y += 136;
+  }
+  if (p.ty){
+    const fy = y + (stamps.length ? 4 : 28);
+    mid += (p.flower ? '<svg x="' + ix + '" y="' + n(fy) + '" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#1d5e3c" color="#1d5e3c" stroke-width="1.8" stroke-linejoin="round">' + p.flower + '</svg>' : '') +
+      text(ix + (p.flower ? 58 : 0), fy + 33, 'Someone said salamat', 30, { w:700, fill:'#1d5e3c' });
+    y = fy + 54;
+  }
+  if (mid){ body += mid; y += 22; body += rule(y); }
+  body += text(ix, y + 62, p.greet || '', 46, { w:700, ls:-.5 });
+  const th = y + 102;
+
+  // Fitted between the board and the address: a route with many stops makes
+  // a tall ticket, which is drawn smaller rather than over either of them.
+  const room = 960, sc = th > room ? room / th : 1, ty = 236 + (room - th * sc) / 2;
+  const shape = pcTicketPath(tx, 0, tw, n(th), 13, 36);
+  const ticket = '<g transform="rotate(-1.2 540 ' + n(ty + th * sc / 2) + ')"><g transform="translate(540 ' + n(ty) + ') scale(' + n(sc * 1000) / 1000 + ') translate(-540 0)">' +
+    '<clipPath id="pc-clip"><path d="' + shape + '"/></clipPath>' +
+    '<path d="' + shape + '" transform="translate(0 22)" fill="' + maroon + '" opacity=".3" filter="url(#pc-blur)"/>' +
+    '<path d="' + shape + '" fill="' + paper + '"/>' +
+    '<rect x="' + tx + '" y="0" width="' + tw + '" height="14" fill="' + (look.rare ? 'url(#pc-foil)' : '#e39a1c') + '" clip-path="url(#pc-clip)"/>' +
+    (look.rare ? '<path d="' + shape + '" fill="none" stroke="#e3b23c" stroke-width="8" clip-path="url(#pc-clip)"/>' : '') +
+    body + '</g></g>';
+
+  // The address, so a picture that travels without its link still says
+  // where the buses are.
+  const host = /^[a-z0-9.-]+(:\d+)?$/i.test(String(p.address || '')) ? String(p.address) : '';
+  const foot = text(540, 1262, 'Nasaan na ang bus?', 32, { anchor:'middle', fill:maroon }) +
+    (host ? text(540, 1316, host, Math.min(48, 940 / (host.length * .5)), { w:700, anchor:'middle', fill:maroon }) : '');
+
+  return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ' + PC_W + ' ' + PC_H + '" width="' + PC_W + '" height="' + PC_H +
+    '" font-family="' + PC_FACES + '">' +
+    '<defs>' + (faces ? '<style>' + faces + '</style>' : '') +
+    '<linearGradient id="pc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e4876a"/><stop offset="1" stop-color="#f2b88a"/></linearGradient>' +
+    '<linearGradient id="pc-band" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a1f2b"/><stop offset="1" stop-color="' + maroon + '"/></linearGradient>' +
+    '<radialGradient id="pc-dark" cx=".3" cy="0" r="1.2"><stop offset="0" stop-color="#1d1513"/><stop offset=".7" stop-color="#0b0807"/></radialGradient>' +
+    '<linearGradient id="pc-foil" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b8860b"/><stop offset=".3" stop-color="#f7e08a"/>' +
+      '<stop offset=".55" stop-color="#c99a2e"/><stop offset=".75" stop-color="#fff1b8"/><stop offset="1" stop-color="#b8860b"/></linearGradient>' +
+    '<filter id="pc-blur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="18"/></filter>' +
+    // The speckle a rubber stamp leaves, as the stylesheet's mask gives
+    // the stamps on screen.
+    '<filter id="pc-noise" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".38" numOctaves="2" seed="7"/>' +
+      '<feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -4 0 0 0 3.1"/></filter>' +
+    '<mask id="pc-speck" maskUnits="userSpaceOnUse" x="-400" y="-100" width="800" height="200"><rect x="-400" y="-100" width="800" height="200" fill="#fff" filter="url(#pc-noise)"/></mask>' +
+    '</defs>' +
+    '<rect width="' + PC_W + '" height="' + PC_H + '" fill="url(#pc-sky)"/>' + band + ticket + foot + '</svg>';
+}
 // ---- END PICTURES ---------------------------------------------------------
 
 // The header's board. Drawn once: the picture scales with its box, and the
@@ -4311,8 +4515,9 @@ document.addEventListener('keydown', function(e){
 (function(){
   ['privModal','tktModal'].forEach(function(id){
     const m = document.getElementById(id);
+    // The ticket closes the way its own Close does, so its postcard goes too.
     if (m) m.addEventListener('click', function(e){
-      if (e.target === m || e.target.classList.contains('tktwrap')) closeModal(id);
+      if (e.target === m || e.target.classList.contains('tktwrap')){ if (id === 'tktModal') closeTicket(); else closeModal(id); }
     });
   });
 })();
@@ -5217,6 +5422,34 @@ function keptSince(d){
   if (!d) return '';
   const p = d.split('-').map(Number);
   return TKT_MONTHS[p[1] - 1] + ' ' + p[0];
+}
+function tktKicker(look){ return look.rare ? 'GINTONG TICKET' : 'SALAMAT TICKET'; }
+// A ticket's postcard (October 2026): the ticket as a picture its sharer
+// can send, to a chat, Facebook or Instagram (postcardSvg draws it). It
+// turned the ticket's "sent nowhere" into "sent only where its sharer sends
+// it", the maintainer's decision, and it came with one more rule:
+//
+// 20. A postcard is drawn from the six things a kept ticket keeps and
+//     nothing else, whichever ticket it is sent from, the one Stop has just
+//     made included: never the times, how long, the bus number or how many
+//     said salamat, which posted on a crew member's page would be the
+//     timesheet rule 8 keeps off their phone, made public. postcardFacts()
+//     takes the copy as albumClean() leaves it, and the route's checkpoints
+//     for the stops it punches. Sending is a tap on one ticket; the app
+//     sends nothing itself and keeps nothing of the picture.
+function postcardFacts(e, cps){
+  e = albumClean([e])[0];
+  if (!e) return null;
+  cps = cps || [];
+  const a = cpIndex(cps, e.from), b = cpIndex(cps, e.to), look = ticketLook(e);
+  const mark = function(i){ return (cps[i] && cps[i].mark) || ''; };
+  return {
+    kick:tktKicker(look), date:keptDate(e.d), dir:e.dir, from:e.from, to:e.to,
+    fromMark:mark(a), toMark:mark(b), one:a >= 0 && a === b,
+    stops:cps.map(function(c, i){ return { name:c.short || c.name || '', mark:c.mark || '', on:i === a || i === b }; }),
+    stamps:e.st.map(function(k){ return stampOf(k, k === 'full' ? e.from + ' → ' + e.to : ''); }),
+    ty:e.ty, greet:keptGreeting(e.st), sky:ticketSky(e.st), look:look
+  };
 }
 // ---- END ALBUM
 
@@ -7235,26 +7468,46 @@ function stopFollowing(){
 function busLinkFor(id){
   return location.origin + location.pathname + '#b=' + id;
 }
-// The phone's own sheet where there is one, so the link goes straight into
-// Messenger; the clipboard everywhere else. The function and the button are
+// The tracker's own address, for Send the tracker: the page, and nothing
+// that came after it. A sharer's address bar holds the share key as #k=
+// (tryKey() puts it there), and a link passed round a Facebook group must
+// never carry it; nor a bus, a tour, or the fbclid Facebook adds to every
+// link it opens.
+function siteLinkFor(){
+  return location.origin + location.pathname;
+}
+// The phone's own sheet where there is one, so a link goes straight into
+// Messenger; the clipboard everywhere else. The functions and the buttons are
 // named for what they do and never "share": filter lists hide anything that
-// looks like a share widget, and this one would fail without a word.
-async function sendBusLink(id){
-  if (WALK) return;   // a link to the practice bus would lead nowhere
-  const url = busLinkFor(id);
+// looks like a share widget, and these would fail without a word. They hide
+// links to Facebook's and Messenger's own sharing pages too, by where they
+// point, which is why there are none: the sheet lists whichever of those
+// apps the phone has.
+async function sendLink(url, title, text){
   // The app's own share sheet: a WebView has no navigator.share.
   const sheet = appPlugin('Share');
   if (sheet){
-    try{ await sheet.share({ title:'Follow my bus', text:'Nasa bus na ako. Sundan mo dito:', url:url, dialogTitle:'Follow my bus' }); return; }
+    try{ await sheet.share({ title:title, text:text, url:url, dialogTitle:title }); return; }
     catch(e){ if (/cancel/i.test(String(e && e.message))) return; }
   }
   if (navigator.share){
-    try{ await navigator.share({ title:'Follow my bus', text:'Nasa bus na ako. Sundan mo dito:', url:url }); return; }
+    try{ await navigator.share({ title:title, text:text, url:url }); return; }
     catch(e){ if (e && e.name === 'AbortError') return; }
   }
   let copied = false;
   try{ await navigator.clipboard.writeText(url); copied = true; }catch(e){}
   showToast(copied ? 'Link copied.' : 'Copy this link: ' + url);
+}
+async function sendBusLink(id){
+  if (WALK) return;   // a link to the practice bus would lead nowhere
+  await sendLink(busLinkFor(id), 'Follow my bus', 'Nasa bus na ako. Sundan mo dito:');
+}
+// Send the tracker, at the foot of the map: the site itself, for whoever
+// should know it is there. Facebook keeps only the link and drops the words;
+// Messenger and a text message keep both, and the preview card does the rest.
+async function sendSiteLink(){
+  if (WALK) return;   // nothing is sent from a practice run
+  await sendLink(siteLinkFor(), 'Bus Tracker', 'Nasaan na ang bus? Tingnan dito:');
 }
 let toastTimer = null;
 function showToast(msg){
@@ -7762,11 +8015,14 @@ function watchTripGps(onPos, onErr){
 // A file handed to the phone's share sheet from the app (Drive, Files, a
 // message to yourself): written to the app's own cache first, because the
 // sheet takes files, not text that big. Null where the app has no plugins
-// for it, which is version 1 of the app and every browser.
-async function appSendFile(name, text, title){
+// for it, which is version 1 of the app and every browser. A backup is text;
+// a ticket's postcard is a picture, handed over as base64, which is how the
+// plugin takes data given no encoding.
+async function appSendFile(name, data, title, binary){
   const files = appPlugin('Filesystem'), sheet = appPlugin('Share');
   if (!files || !sheet) return null;
-  const f = await files.writeFile({ path:name, data:text, directory:'CACHE', encoding:'utf8' });
+  const f = await files.writeFile(binary ? { path:name, data:data, directory:'CACHE' }
+                                         : { path:name, data:data, directory:'CACHE', encoding:'utf8' });
   await sheet.share({ title:title, files:[f.uri], dialogTitle:title });
   return true;
 }
@@ -8572,6 +8828,8 @@ function showTicket(trip, end, endAt, fresh, gain){
   // albumEntry() makes of this trip, and none of the times printed below.
   TKT_KEEP = albumEntry({ when:now, dir:shareDir, fromShort:tktPlace(fromIdx), toShort:tktPlace(toIdx),
                           stamps:stamps, thanked:trip.maxThanks > 0 });
+  // And the same six are all its postcard is drawn from (rule 20).
+  TKT_CARD = TKT_KEEP;
   const look = ticketLook(TKT_KEEP);
   tktPaper(look);
   document.getElementById('tktCard').innerHTML =
@@ -8689,7 +8947,6 @@ function tktArt(fromIdx, toIdx, e){
 function tktPaper(look){
   document.getElementById('tktCard').className = 'tkt pp-' + look.paper + ' pu-' + look.punch + (look.rare ? ' foil' : '');
 }
-function tktKicker(look){ return look.rare ? 'GINTONG TICKET' : 'SALAMAT TICKET'; }
 function tktGrid(fromIdx, toIdx){
   return '<div class="tkt-grid">' + CHECKPOINTS.map(function(c, i){
     return '<span' + (i === fromIdx || i === toIdx ? ' class="on"' : '') + '>' + markSvg(c.mark) +
@@ -8703,6 +8960,7 @@ function tktGrid(fromIdx, toIdx){
 // a copy holds and what the album may add up are rules 8 to 10 in the album
 // block; this is the part that touches the page and the storage.
 let TKT_KEEP = null;     // what Keep would keep, only while a ticket is on screen
+let TKT_CARD = null;     // the six things of the ticket on screen, kept or not, for its postcard
 let TKT_SHOWN = -1;      // which kept ticket is open, by its place in the list
 let TKT_SHOWN_AS = '';   // and what it was, in case another tab moved the list
 let TKT_DROP_ARMED = false, ALB_CLEAR_ARMED = false;
@@ -8729,6 +8987,10 @@ function tktMode(mode){
   drop.classList.toggle('hidden', mode !== 'kept');
   drop.textContent = 'Remove';
   TKT_DROP_ARMED = false;
+  const send = document.getElementById('tktSend');
+  send.disabled = false;
+  send.querySelector('span').textContent = 'Send a picture';
+  postcardDrop();
 }
 function keepTicket(){
   if (WALK) return;   // a practice ticket is never kept
@@ -8749,6 +9011,7 @@ function keepTicket(){
 }
 function closeTicket(){
   TKT_KEEP = null; TKT_SHOWN = -1; TKT_SHOWN_AS = '';
+  TKT_CARD = null; postcardDrop();
   closeModal('tktModal');
 }
 function stampHtml(s, cls){
@@ -8778,6 +9041,7 @@ function showKeptTicket(i){
     '<div class="tkt-greet">' + keptGreeting(e.st) + '</div>' +
     '<div class="tkt-fine">Kept on this phone only.</div>';
   TKT_KEEP = null; TKT_SHOWN = i; TKT_SHOWN_AS = JSON.stringify(e);
+  TKT_CARD = e;
   tktMode('kept');
   openModal('tktModal');
 }
@@ -8832,6 +9096,141 @@ function clearAlbum(){
   showToast('Started fresh.');
 }
 function attrText(s){ return escapeHtml(s).replace(/"/g, '&quot;'); }
+// ---- A ticket's postcard (October 2026) ---------------------------------
+// Send a picture, under a ticket: the ticket drawn as a picture
+// (postcardSvg) from the six things a kept copy keeps (postcardFacts, rule
+// 20), made into a PNG on this phone and handed to the phone's own sheet,
+// for a chat, Facebook or Instagram, which takes pictures and not links.
+// Where no sheet takes a picture, it is shown under the buttons to be saved
+// by hand. The app sends it nowhere itself and keeps none of it: the picture
+// is held while its ticket is open, and goes when the ticket closes.
+let PC_MADE = null;     // the picture for the ticket on screen: { key, blob, name, data }
+let PC_FONTS = null;    // the app's two weights, read once from its own files
+function bytesBase64(b){
+  let s = '';
+  for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function blobBase64(blob){
+  return new Promise(function(ok, no){
+    const r = new FileReader();
+    r.onload = function(){ ok(String(r.result).replace(/^data:[^,]*,/, '')); };
+    r.onerror = function(){ no(r.error); };
+    r.readAsDataURL(blob);
+  });
+}
+// The letters, as data: URIs. A picture cannot reach the page's fonts, only
+// its own, so the two weights it is lettered in are read from the files the
+// page's @font-face rules name, from this site and usually from the cache.
+// {} if they cannot be had, and the picture is lettered in the phone's own.
+async function postcardFonts(){
+  if (PC_FONTS) return PC_FONTS;
+  const want = { 600:'', 700:'' }, out = {};
+  Array.prototype.forEach.call(document.styleSheets || [], function(sheet){
+    let rules = [];
+    try{ rules = sheet.cssRules || []; }catch(e){}   // a sheet it may not read
+    Array.prototype.forEach.call(rules, function(r){
+      const t = r.cssText || '';
+      if (!/^@font-face/.test(t) || !/Barlow Semi Condensed/.test(t)) return;
+      const w = (/font-weight:\s*(\d+)/.exec(t) || [])[1], u = (/url\(\s*["']?([^"')]+)/.exec(t) || [])[1];
+      if (w && u && hasOwn(want, w)) want[w] = u;
+    });
+  });
+  for (const w of Object.keys(want)){
+    if (!want[w]) continue;
+    try{
+      const r = await fetch(want[w]);
+      const b = r.ok ? new Uint8Array(await r.arrayBuffer()) : null;
+      // Only a font file that starts as one, wOF2: in the app a fetch goes
+      // by way of native code, which is no place to trust with bytes.
+      if (b && b.length > 4 && b[0] === 0x77 && b[1] === 0x4F && b[2] === 0x46 && b[3] === 0x32)
+        out[w] = 'data:font/woff2;base64,' + bytesBase64(b);
+    }catch(e){}
+  }
+  PC_FONTS = out;
+  return out;
+}
+// The picture for one kept copy, as a PNG, or null where this browser
+// cannot draw one.
+async function makePostcard(e){
+  const facts = postcardFacts(e, CHECKPOINTS);
+  if (!facts) return null;
+  const flower = document.getElementById('i-ty');
+  const svg = postcardSvg(Object.assign(facts, {
+    lines: Array.prototype.map.call(document.querySelectorAll('header .route .ln'), function(l){ return l.textContent; }),
+    flower: flower ? flower.innerHTML : '', address: location.host, fonts: await postcardFonts() }));
+  const img = new Image();
+  await new Promise(function(ok, no){ img.onload = ok; img.onerror = no; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); });
+  // Safari can call a picture loaded a moment before its letters are.
+  if (img.decode){ try{ await img.decode(); }catch(err){} }
+  await new Promise(function(ok){ setTimeout(ok, 60); });
+  const c = document.createElement('canvas');
+  c.width = PC_W; c.height = PC_H;
+  const g = c.getContext ? c.getContext('2d') : null;
+  if (!g) return null;
+  g.drawImage(img, 0, 0, PC_W, PC_H);
+  return await new Promise(function(ok){ try{ c.toBlob(ok, 'image/png'); }catch(err){ ok(null); } });
+}
+async function sendPostcard(){
+  if (WALK) return;   // a practice ticket is never sent
+  const e = TKT_CARD, btn = document.getElementById('tktSend');
+  if (!e || btn.disabled) return;
+  const key = JSON.stringify(e);
+  if (!PC_MADE || PC_MADE.key !== key){
+    btn.disabled = true;
+    btn.querySelector('span').textContent = 'Making the picture…';
+    let blob = null;
+    try{ blob = await makePostcard(e); }catch(err){}
+    btn.disabled = false;
+    btn.querySelector('span').textContent = 'Send a picture';
+    if (TKT_CARD !== e) return;   // the ticket closed while it was being made
+    if (!blob){ showToast('This browser can’t make the picture.'); return; }
+    PC_MADE = { key:key, blob:blob, name:'bus-tracker-ticket-' + e.d + '.png', data:'' };
+  }
+  const made = PC_MADE;
+  // The app: written to its own cache and handed to the sheet, as a backup is.
+  if (appPlugin('Filesystem') && appPlugin('Share')){
+    try{ await appSendFile(made.name, await blobBase64(made.blob), 'Send a picture', true); }
+    catch(err){ if (!/cancel/i.test(String(err && err.message))) showToast('Could not send the picture.'); }
+    return;
+  }
+  let file = null;
+  try{ file = new File([made.blob], made.name, { type:'image/png' }); }catch(err){}
+  if (file && navigator.canShare && navigator.canShare({ files:[file] })){
+    try{ await navigator.share({ files:[file], title:'Bus Tracker ticket' }); return; }
+    catch(err){
+      if (err && err.name === 'AbortError') return;
+      // Safari wants the sheet asked for straight after the tap, and making
+      // the picture can take longer than that. It is ready now.
+      if (err && err.name === 'NotAllowedError'){ showToast('Ready. Tap Send a picture again.'); return; }
+    }
+  }
+  await postcardShow(made);
+}
+// No sheet that takes a picture: a computer, or a chat app's own browser.
+// The picture itself, then, with a link to save it where a mouse can, and
+// where a finger is all there is, the way a phone saves any picture.
+async function postcardShow(made){
+  if (!made.data) made.data = 'data:image/png;base64,' + await blobBase64(made.blob);
+  if (PC_MADE !== made) return;
+  const box = document.getElementById('tktPic'), save = document.getElementById('tktPicSave');
+  box.querySelector('img').src = made.data;
+  save.href = made.data;
+  save.setAttribute('download', made.name);
+  const touch = !!(window.matchMedia && window.matchMedia('(hover: none)').matches);
+  save.classList.toggle('hidden', touch);
+  document.getElementById('tktPicHint').classList.toggle('hidden', !touch);
+  box.classList.remove('hidden');
+  if (box.scrollIntoView) box.scrollIntoView({ block:'nearest' });
+}
+function postcardDrop(){
+  PC_MADE = null;
+  const box = document.getElementById('tktPic');
+  if (!box) return;
+  box.classList.add('hidden');
+  box.querySelector('img').removeAttribute('src');
+  document.getElementById('tktPicSave').removeAttribute('href');
+}
 // ---- Your bus, as a garage (October 2026) ------------------------------
 let ALB_BUY_ARMED = '';    // the shop item or paint one more tap buys
 let ALB_RIDE_T = null;     // moves My tickets' bus on from place to place

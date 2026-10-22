@@ -54,7 +54,10 @@ company's name or initials, for the same reason.
   trip — a picture of where they got on and off, with the view where they got
   off behind the bus (Taal Lake for Tagaytay, the towers for One Ayala), how
   long their bus was on the map, how many riders said salamat, a stamp or two.
-  Made on the phone, sent nowhere, and never about how the bus was driven.
+  Made on the phone, sent nowhere by the app, and never about how the bus was
+  driven. **Send a picture** makes it a picture for a chat, Facebook or
+  Instagram, showing only what a kept copy keeps: never the times, how long,
+  the bus number or the count.
 - **My tickets:** tap Keep and a copy of the ticket goes into an album on the
   sharer's own phone, which counts the places on the route their trips have
   passed and the stamps they have collected. A kept copy is a souvenir, not a
@@ -65,6 +68,11 @@ company's name or initials, for the same reason.
   link that opens the map following that bus — for whoever is fetching you.
   It carries only the bus's public ID and dies with the trip. The popup also
   has a line about the town the bus is passing.
+- **Send the tracker:** at the foot of the map, the site's address goes to the
+  phone's own share sheet (Messenger, Facebook, a text, whatever the phone
+  has), never the share key that a sharer's address bar holds. There are no
+  Facebook or Messenger buttons: content blockers hide those by where they
+  point, and Instagram has no web link to share to.
 - **An empty map says when:** with nobody sharing, the map says when the next
   trips leave, or that the bus is still asleep, or that nobody is sharing right
   now. The hours card shows the day as a band with a mark at now.

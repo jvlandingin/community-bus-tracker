@@ -1,5 +1,5 @@
-# Builds the Android app in mobile/ as a debug APK and attaches it to the run,
-# to prove a change to the shell still compiles.
+# Builds the Android app in mobile/ as a debug APK to prove a change to the
+# shell still compiles, and attaches it to the run when run by hand.
 #
 # The app is a Capacitor shell around the live site, so a change to
 # index.html reaches it on the next launch without a new build. Only a change
@@ -46,9 +46,15 @@ jobs:
           cd android
           ./gradlew --no-daemon assembleDebug
           mkdir -p ../out && cp app/build/outputs/apk/debug/app-debug.apk ../out/bus-tracker-debug.apk
+      # Kept only when the build is asked for by hand, and for a day. A push or a
+      # pull request only has to prove the shell compiles, and saving a 4.8 MB
+      # APK on each one for 14 days filled the account's 0.5 GB of Actions
+      # storage in October 2026 (24 copies at once). Run it from the Actions tab
+      # when you want the file.
       - uses: actions/upload-artifact@v4
+        if: github.event_name == 'workflow_dispatch'
         with:
           name: bus-tracker-debug-apk
           path: mobile/out/*.apk
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 1

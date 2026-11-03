@@ -649,9 +649,9 @@
         direction, the bus number if one was typed, and a random session ID.</td>
         <td>Overwritten every few seconds. Deleted on Stop, on closing the page, or
         automatically once it goes stale.</td>
-        <td>No name, no phone number, no account, nothing identifying the person. No
-        previous position is retained. If its sharer chose to, it carries a drawing
-        of their bus (below).</td>
+        <td>No name, no phone number, no account, nothing identifying the person,
+        unless its sharer accepts tips (below). No previous position is retained. If
+        its sharer chose to, it carries a drawing of their bus (below).</td>
       </tr>
       <tr>
         <td><b>Count of devices</b> currently watching the map.</td>
@@ -711,6 +711,25 @@
   rider who taps that bus sees it. It is deleted with the position. The honest cost,
   which the app states beside the switch: <strong>riders can recognise a decorated bus
   from one trip to the next</strong>. That is why it is the sharer's choice.</p>
+
+  <h3>A sharer may accept tips, through their own payment app</h3>
+  <p>A sharer can switch on <strong>Accept tips?</strong> and pick the QR code their GCash,
+  Maya or bank app makes for receiving money. Then each position they send carries that
+  code, and a rider who told the app they were on that bus, and rode it at least a
+  kilometre, is asked when they get off whether they want to tip the sharer. The rider
+  pays from their own app, straight to the sharer's account, like any QR payment.
+  <strong>The tool never handles the money and never learns whether anyone paid, how
+  much, or who</strong>: there is no amount, no total and no record of any tip. Only a real
+  Philippine payment QR with no fixed amount is accepted, and the code is deleted with
+  the position at the end of the trip.</p>
+  <p>Three things worth stating plainly. Anyone on board can share, so a
+  <strong>driver or conductor who shares can accept tips from passengers this way</strong>;
+  the app says under every code that it is not the fare and not the bus company. A payment
+  QR names its owner, partly hidden, and may hold their mobile number, so a sharer who
+  accepts tips can be identified by anyone who reads the code while their bus is live;
+  that is why it is off until they switch it on. And an organiser can ban an account
+  whose code is used to cheat riders: the ban keeps a scrambled mark of the account, never
+  the code, and it is the one thing the tool keeps beyond a trip.</p>
 
   <h3>The direction check never leaves the phone</h3>
   <p>The app warns someone who picked the wrong direction by tracking how far along the

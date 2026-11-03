@@ -958,30 +958,43 @@ function run(page, include, label, configText, setup) {
 
   // The panel is the promise and the code is only the implementation. This is
   // that rule made mechanical: every key the app writes to localStorage has to
-  // be one the panel has told the reader about. A seventh remembered thing
+  // be one the panel has told the reader about. An eighth remembered thing
   // fails here until the paragraph is rewritten in the same commit, as the
-  // fifth and sixth, your bus and the trip in progress, were.
+  // fifth, sixth and seventh, your bus, the trip in progress and the tip QR,
+  // were.
   const appSrc = fs.readFileSync(path.join(APP, 'index.html'), 'utf8');
   const keys = [...new Set([...appSrc.matchAll(/localStorage\.(?:setItem|removeItem)\(\s*'([^']+)'/g)]
     .map(m => m[1]))].sort();
-  check(keys.join(',') === 'wt-bus,wt-guide-seen,wt-key,wt-mystop,wt-theme,wt-tickets,wt-trip',
-    'the app keeps exactly the six things the privacy panel names, and the Android app\'s seventh', keys.join(',') || 'none');
+  check(keys.join(',') === 'wt-bus,wt-guide-seen,wt-key,wt-mystop,wt-qr,wt-theme,wt-tickets,wt-trip',
+    'the app keeps exactly the seven things the privacy panel names, and the Android app\'s eighth', keys.join(',') || 'none');
   // supabase-js sends a request only when something asks for its answer, so
   // an rpc() nobody awaits or .then()s never leaves the phone. The wrong-way
   // pause's clear_bus_position was one, and had never gone out.
   const bare = appSrc.split('\n').filter(l => /\brpc\(/.test(l) && !/await rpc\(|= rpc\(|return rpc\(|const rpc = |\)\.then\(/.test(l));
   check(bare.length === 0, 'every request the page makes is one something waits for, so it is really sent', bare.join(' | ').trim());
   const panel = ok.d.getElementById('privModal').textContent.replace(/\s+/g, ' ');
-  check(/Six small things are remembered on your own device/.test(panel),
-    'and the panel counts them out loud, so a seventh cannot slip in quietly');
-  check(/The Android app keeps a seventh: the key or PIN you entered to share/.test(panel) &&
+  check(/Seven small things are remembered on your own device/.test(panel),
+    'and the panel counts them out loud, so an eighth cannot slip in quietly');
+  check(/The Android app keeps an eighth: the key or PIN you entered to share/.test(panel) &&
         /deleted when it stops working/.test(panel),
-    'the seventh, the app\'s remembered key, is named too, with when it goes');
+    'the eighth, the app\'s remembered key, is named too, with when it goes');
+  // The tip QR (sql/16-tips.sql): the seventh, kept only while the switch is
+  // on, written in one place, and the panel says what it costs.
+  check([...appSrc.matchAll(/localStorage\.(?:setItem|removeItem)\(\s*'wt-qr'/g)].length === 2 &&
+        /function saveTipQr\(v\)\{[\s\S]{0,120}localStorage\.setItem\('wt-qr', v\);[\s\S]{0,60}localStorage\.removeItem\('wt-qr'\)/.test(appSrc),
+    'the tip QR is written and forgotten in one place only');
+  check(/your tip QR, while “Accept tips\?” is on/.test(panel) && /switching “Accept tips\?” off the seventh/.test(panel) &&
+        /A backup never holds the QR/.test(panel),
+    'the panel names the tip QR, how to forget it, and that a backup never carries it');
+  check(/Accept tips\?<\/b>, on the sharing tab, is off unless you switch it on/.test(appSrc) &&
+        /anyone determined can read your QR beside it/.test(panel) && /any mobile number inside it/.test(panel) &&
+        /this app never learns whether anybody tipped, or how much/.test(panel) && /this app never learns whether you did, or how much/.test(panel),
+    'and says tips are off unless switched on, what anyone can read while they are on, and that nothing about a tip is learned');
   // Only the app writes it there: a browser may be a shared one.
   const keyWrites = [...appSrc.matchAll(/localStorage\.setItem\(\s*'wt-key'[^\n]*/g)].map(m => m[0]);
   check(keyWrites.length === 1 && /if \(inApp\(\)\)\{ try\{ localStorage\.setItem\('wt-key'/.test(appSrc),
     'and only the app writes it, never a browser', keyWrites.join(' | '));
-  check(/your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it/.test(panel) &&
+  check(/your bus, if you have shared or finished a tour, the trip you are sharing, while you share it/.test(panel) &&
         /Totals, never a list: no clock times and no bus numbers/.test(panel) && /deleted the moment the trip ends/.test(panel),
     'naming your bus as totals only, never a list of times, and the trip in progress as gone when it ends');
   check(/Showing your bus to riders<\/b> is off unless you switch it on/.test(panel.replace(/<[^b\/][^>]*>/g, '')) || /Showing your bus to riders is off unless you switch it on/.test(panel),
@@ -2075,8 +2088,134 @@ function run(page, include, label, configText, setup) {
       check(!('p_look' in of('set_keyed_position').slice(-1)[0].args), 'and no look is sent for the rest of the visit');
       delete sim.reply.set_keyed_position;
       w.eval('LOOK_SENDS = true');
+
+      // Tips (sql/16-tips.sql). "Accept tips?" is a switch on the sharing
+      // tab, under Bus number before a trip and above Stop during one.
+      const QRA = '00020101021127770012com.p2pqrpay0111GXCHPHM2XXX02089996440304120000000000000514+63-90000000005204601653036085802PH5912JU*N D*** C.6005Kawit6304DBEA';
+      const QRB = '00020101021127590012com.p2pqrpay0111GXCHPHM2XXX02089996440304120000000000015204601653036085802PH5908MA*** S.6006Bacoor6304F3B3';
+      const QRAMT = '00020101021227770012com.p2pqrpay0111GXCHPHM2XXX02089996440304120000000000000514+63-9000000000520460165303608540550.005802PH5912JU*N D*** C.6005Kawit6304E50B';
+      const switches = () => [...d.querySelectorAll('.qrswitch input')];
+      const flip = (i, on) => { i.checked = on; i.dispatchEvent(new w.Event('change')); };
+      check(switches().length === 2 && [...d.querySelectorAll('.qrswitch')].every(l => l.textContent.trim() === 'Accept tips?') &&
+            !!d.querySelector('#onbusSetup .qrswitch') && !!d.querySelector('#onbusActive .qrswitch'),
+        '"Accept tips?" is on the sharing tab twice, in the maintainer\'s words: under Bus number, and above Stop');
+      check(switches().every(i => !i.checked) && w.localStorage.getItem('wt-qr') === null, 'it is off until switched on');
+      await writeNow();
+      check(!('p_qr' in of('set_keyed_position').slice(-1)[0].args), 'and while it is off no code goes with a position');
+      flip(switches()[1], true);
+      check(!isHidden('qrModal') && switches().every(i => !i.checked) && isHidden('qrGo') &&
+            d.getElementById('qrBody').textContent === 'This browser can’t read QR pictures. Use Chrome on Android, or the app.',
+        'switched on with no code, it asks for one; a browser with no QR reader of its own says where to go instead');
+      w.closeModal('qrModal');
+      // A phone with a reader: it finds the code in the picture, then in the
+      // page's own redraw of it.
+      const picked = { files: [new w.File(['x'], 'qr.png', { type: 'image/png' })] };
+      const realCanvas = w.qrCanvas;
+      const reads = [];
+      const reader = (inPicture, inRedraw) => class {
+        static async getSupportedFormats(){ return ['qr_code']; }
+        async detect(x){ reads.push(x); return [{ rawValue: x && x.redraw ? inRedraw : inPicture }]; }
+      };
+      w.createImageBitmap = async () => ({ picture: true });
+      w.qrCanvas = () => ({ redraw: true });
+      w.BarcodeDetector = reader(QRA, QRA);
+      flip(switches()[0], true);
+      check(!isHidden('qrModal') && d.getElementById('qrBody').textContent === 'Pick the QR your GCash, Maya or bank app saves.' &&
+            d.getElementById('qrGo').textContent === 'Pick your QR' && !isHidden('qrGo'),
+        'with a reader, it asks for the QR their payment app saves');
+      await w.readTipQr(picked);
+      check(reads.length === 2 && reads[0].picture && reads[1].redraw, 'the phone reads the picture, then its own redraw of the code');
+      check(d.getElementById('qrBody').textContent === 'This QR shows your mobile number to whoever scans it.' &&
+            d.getElementById('qrGo').textContent === 'Use it' && !isHidden('qrArt') && !!d.querySelector('#qrArt svg') &&
+            w.localStorage.getItem('wt-qr') === null && switches().every(i => !i.checked),
+        'a code with a mobile number in it is shown, said so, and kept only once the sharer says to');
+      d.getElementById('qrGo').click();
+      check(w.localStorage.getItem('wt-qr') === QRA && isHidden('qrModal') && switches().every(i => i.checked),
+        '"Use it" keeps it, and both switches say tips are on');
+      await writeNow();
+      check(of('set_keyed_position').slice(-1)[0].args.p_qr === QRA, 'and the next position carries the code, unchanged');
+      flip(switches()[1], false);
+      check(w.localStorage.getItem('wt-qr') === null && switches().every(i => !i.checked), 'switched off, the phone forgets it');
+      await writeNow();
+      check(!('p_qr' in of('set_keyed_position').slice(-1)[0].args), 'and the next position goes without it');
+      w.BarcodeDetector = reader(QRB, QRB);
+      await w.readTipQr(picked);
+      check(w.localStorage.getItem('wt-qr') === QRB && isHidden('qrModal'), 'a code with no number in it is kept straight away');
+      w.saveTipQr(null); w.renderQrSwitch();
+      const refused = async (inPicture, inRedraw, words, label) => {
+        w.BarcodeDetector = reader(inPicture, inRedraw);
+        await w.readTipQr(picked);
+        check(w.localStorage.getItem('wt-qr') === null && d.getElementById('qrBody').textContent === words &&
+              d.getElementById('qrGo').textContent === 'Pick your QR', label, d.getElementById('qrBody').textContent);
+      };
+      await refused('https://example.com/pay', 'https://example.com/pay', 'That’s not a payment QR. Pick another.', 'a link is refused');
+      await refused('Salamat po!', 'Salamat po!', 'That’s not a payment QR. Pick another.', 'and so are words');
+      await refused(QRAMT, QRAMT, 'That QR asks for a fixed amount. Pick one without.', 'and a code with a fixed amount, saying why');
+      await refused(QRA, QRB, 'That’s not a payment QR. Pick another.', 'and a code whose redraw does not read back as the same text');
+      w.closeModal('qrModal');
+      w.qrCanvas = realCanvas;
+      delete w.BarcodeDetector;
+      delete w.createImageBitmap;
+      // A database from before sql/16-tips.sql: refused, sent again without,
+      // and the look, which is older, still goes.
+      w.tipUse(QRA);
+      sim.reply.set_keyed_position = args => ('p_qr' in args)
+        ? { error: 'Could not find the function public.set_keyed_position(p_direction, p_key, p_label, p_lat, p_lng, p_look, p_qr, p_session, p_slug, p_speed) in the schema cache' }
+        : null;
+      const q0 = of('set_keyed_position').length;
+      w.eval('lastWrite = 0');
+      sim.watches[sim.watches.length - 1].onPos(here);
+      await waitFor(() => of('set_keyed_position').length >= q0 + 2);
+      await pause(60);
+      const qpair = of('set_keyed_position').slice(q0);
+      check(qpair.length === 2 && 'p_qr' in qpair[0].args && !('p_qr' in qpair[1].args) && 'p_look' in qpair[1].args &&
+            w.eval('QR_SENDS') === false && w.eval('LOOK_SENDS') === true && /^Sharing live/.test(status()),
+        'a database that does not know tips gets the same position again without the code, look and all, and the trip goes on', status());
+      delete sim.reply.set_keyed_position;
+      w.eval('QR_SENDS = true');
+      w.saveTipQr(null); w.renderQrSwitch();
       await w.stopSharing();
       w.closeTicket();
+
+      // The rider's side: asked when they get off a bus they rode, and only
+      // then. Nothing on the map, a chip or a popup.
+      const cpsT = CONFIG.split(/\r?\n/).filter(l => l.trim().startsWith('CHECKPOINT =')).map(l => l.split('=')[1].split('|').map(x => x.trim()));
+      const cpT = i => ({ lat: +cpsT[i][2], lng: +cpsT[i][3] });
+      const tipBus = 'ab'.repeat(16);
+      const busAt = p => w.eval('BUSES = ' + JSON.stringify([{ pub_id: tipBus, lat: p.lat, lng: p.lng, direction: 'north',
+                                                                 bus_label: '', ts: Date.now(), look: '', self: false }]));
+      sim.reply.get_bus_qr = () => ({ data: QRA });
+      const ride = async (from, to) => {
+        busAt(from);
+        w.boardBus(tipBus);
+        w.closeModal('stopModal');
+        busAt(to);
+        const n = of('get_bus_qr').length;
+        w.leaveBus();
+        await pause(80);
+        return of('get_bus_qr').length - n;
+      };
+      const kmT = i => w.eval('routeProgressKm(' + JSON.stringify(cpT(i)) + ', CHECKPOINTS, ROUTE_CHAIN)');
+      check(kmT(3) - kmT(2) >= 1, 'two checkpoints a kilometre or more apart, to ride between', (kmT(3) - kmT(2)).toFixed(2) + ' km');
+      check(await ride(cpT(2), cpT(2)) === 0 && isHidden('tyqrModal'),
+        'getting off a bus that has not gone anywhere asks nothing, and asks the server nothing');
+      check(!/tip|donation/i.test(w.busPopupHtml({ id: tipBus, lat: cpT(2).lat, lng: cpT(2).lng, direction: 'north', label: '',
+                                                    ts: Date.now(), count: 1, self: false, look: '' })),
+        'a bus\'s popup never mentions tips');
+      check(await ride(cpT(2), cpT(3)) === 1 && !isHidden('tyqrModal') && of('get_bus_qr').slice(-1)[0].args.p_bus === tipBus,
+        'after riding it a kilometre or more, "I got off" asks the server for that one bus\'s code');
+      check(d.getElementById('tyqrTitle').textContent.trim() === 'Say thanks to sharer with a tip/donation?' &&
+            d.querySelector('#tyqrModal .qrfine').textContent === 'Not the fare. Not the bus company.' &&
+            !!d.querySelector('#tyqrArt svg, #tyqrArt img') && d.getElementById('tyqrSave').textContent === 'Save the QR',
+        'and asks in the maintainer\'s words, with the QR drawn on this phone, whose it is not, and a way to save it');
+      check(w.sessionStorage.getItem('wt-aboard') === null && !Object.keys(w.localStorage).some(k => /qr|tip/i.test(k)),
+        'keeping nothing about the ride or the tip');
+      w.closeModal('tyqrModal');
+      sim.reply.get_bus_qr = () => ({ data: null });
+      check(await ride(cpT(2), cpT(3)) === 1 && isHidden('tyqrModal'), 'a bus whose sharer takes no tips asks nothing');
+      sim.reply.get_bus_qr = () => ({ data: 'https://example.com/pay' });
+      check(await ride(cpT(2), cpT(3)) === 1 && isHidden('tyqrModal'), 'nor does anything from the server that is not a QR Ph code');
+      delete sim.reply.get_bus_qr;
       // A rider's popup draws a shown bus as it was dressed, and any other plain.
       const cpRide = CONFIG.split(/\r?\n/).filter(l => l.trim().startsWith('CHECKPOINT ='))[2].split('=')[1].split('|').map(x => x.trim());
       const popOf = look => w.busPopupHtml({ id: 'cd'.repeat(16), lat: +cpRide[2], lng: +cpRide[3], direction: 'north', label: '',
@@ -2526,6 +2665,56 @@ function run(page, include, label, configText, setup) {
     delete w.navigator.share;
     delete w.navigator.canShare;
     w.switchTab('track');
+  }
+
+  console.log('\n=== 18. tips on the organizers\' page ===');
+  // sql/16-tips.sql: a bus that takes tips is marked, with Ban QR beside
+  // Stop; bans are counted, never listed, and can all be lifted.
+  {
+    const calls = [];
+    const pause = ms => new Promise(r => setTimeout(r, ms));
+    const now = new Date().toISOString();
+    const answers = {
+      admin_list_sharers: [
+        { session_id: 'sess-tips-0001', lat: 14.3, lng: 120.9, direction: 'north', bus_label: '98018', updated_at: now, keyless: false, qr: true },
+        { session_id: 'sess-tips-0002', lat: 14.31, lng: 120.91, direction: 'south', bus_label: '', updated_at: now, keyless: false, qr: false }],
+      admin_list_wrong: [], admin_qr_bans: 2, admin_ban_qr: true, admin_lift_qr_bans: 2
+    };
+    const a = await run('/admin.html', () => true, 'admin-tips', null, window => {
+      const passOn = window.fetch;
+      window.fetch = function(u, o){
+        const m = String(u).match(/\/rest\/v1\/rpc\/([a-z_]+)/);
+        if (!m) return passOn(u, o);
+        let args = {};
+        try { args = JSON.parse((o && o.body) || '{}'); } catch (e) {}
+        calls.push({ fn: m[1], args });
+        const data = m[1] in answers ? answers[m[1]] : null;
+        return Promise.resolve(new Response(JSON.stringify(data), { status: 200, headers: { 'content-type': 'application/json' } }));
+      };
+      window.confirm = () => true;
+    });
+    a.w.eval("adminKey = 'my-long-admin-key-42'");
+    await a.w.refreshSharers();
+    const rows = [...a.d.querySelectorAll('#liveList .item')];
+    const banBtn = r => r.querySelector('button[onclick^="banQr("]');
+    check(rows.length === 2 && /takes tips/.test(rows[0].textContent) && !/takes tips/.test(rows[1].textContent) &&
+          !!banBtn(rows[0]) && banBtn(rows[0]).textContent === 'Ban QR' && !banBtn(rows[1]) && rows.every(r => /Stop/.test(r.textContent)),
+      'a bus that takes tips is marked so, with Ban QR beside Stop; one that does not has neither');
+    check(!/com\.p2pqrpay|0000000000/.test(a.d.getElementById('liveList').innerHTML), 'and the page is never handed the code itself');
+    banBtn(rows[0]).click();
+    await pause(80);
+    check(calls.some(c => c.fn === 'admin_ban_qr' && c.args.p_session === 'sess-tips-0001' && c.args.p_admin === 'my-long-admin-key-42'),
+      'Ban QR bans the code on that bus, by its session, with the admin key');
+    await a.w.refreshQrBans();
+    const bans = a.d.getElementById('qrBans');
+    check(!bans.classList.contains('hidden') && a.d.getElementById('qrBansText').textContent === '2 tip QRs banned.',
+      'the page counts the bans, and never lists them');
+    bans.querySelector('button').click();
+    await pause(80);
+    check(calls.some(c => c.fn === 'admin_lift_qr_bans'), 'Lift all lifts them');
+    answers.admin_qr_bans = 0;
+    await a.w.refreshQrBans();
+    check(bans.classList.contains('hidden'), 'and with none banned, the line is not there');
   }
 
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

@@ -21,6 +21,7 @@ retry.
 | `13-bus-look.sql` | lets a sharer who chooses to show their decorated bus to riders, as a short code that dies with the trip |
 | `14-off-route-private.sql` | keeps a bus outside the route area for its own phone only, instead of refusing it, so sharing works (and can be reviewed) from anywhere |
 | `15-say-wrong.sql` | lets a rider tap "Not a real bus?" on a bus or "Wrong?" on a sighting, counted for organizers only and gone with the trip or the sighting |
+| `16-tips.sql` | lets a sharer who switches on "Accept tips?" send their payment QR code with each position, kept only if it is a real QR Ph code, handed to a rider for one bus at a time, hidden after three "Not a real bus?" taps, and gone with the trip; organizers can ban an account |
 
 If you are setting up fresh, run all of them. They are separate files because
 they were written in that order against a live deployment, and keeping the
@@ -46,6 +47,18 @@ buttons are still drawn, the call behind them fails, the page gives the button
 back instead of saying "Sent" and writes one line to the browser console
 naming this file, and the admin page shows no counts. Nothing else is
 affected. Safe to re-run.
+
+`16` can be run in either order too, after `15`, whose report table it
+reads. Until it is applied, a sharer who has switched on "Accept tips?" has
+their write refused for the argument the database does not know yet; the page
+sends the same position again without it and stops sending a code for the rest
+of the visit, so nobody is offered a tip and nothing else changes. The rider's
+call for a code fails quietly and offers nothing, and the admin page shows no
+tips column and no bans. It changes the shape of `admin_list_sharers` by one
+column, which an older admin page ignores. Re-running `13` or `14` after it
+puts back writers without `p_qr` beside the ones it made, two functions of one
+name that PostgREST cannot choose between, so every write then fails: re-run
+`16` after either. Safe to re-run.
 
 `06` is the one that can be run in either order relative to the pages: until it
 is applied the heartbeat call fails and is swallowed, and the admin page says it

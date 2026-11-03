@@ -102,8 +102,9 @@ begin
                  'there is no table of looks to outlive a trip');
   perform assert(not has_function_privilege('anon', 'public._set_look(text,text,text)', 'execute'),
                  'the helper is not callable from outside');
-  perform assert(has_function_privilege('anon', 'public.set_keyed_position(text,text,text,double precision,double precision,double precision,text,text,text)', 'execute') and
-                 has_function_privilege('anon', 'public.set_open_position(text,text,double precision,double precision,double precision,text,text,text)', 'execute') and
+  perform assert(-- with the code 16-tips.sql added: the suites check the database as it ends up
+                 has_function_privilege('anon', 'public.set_keyed_position(text,text,text,double precision,double precision,double precision,text,text,text,text)', 'execute') and
+                 has_function_privilege('anon', 'public.set_open_position(text,text,double precision,double precision,double precision,text,text,text,text)', 'execute') and
                  has_function_privilege('anon', 'public.get_positions(text,text)', 'execute'),
                  'the writers and the read are');
 end $$;

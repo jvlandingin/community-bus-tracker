@@ -173,11 +173,14 @@ console.log('\n=== 6. a practice run sends nothing and keeps nothing ===');
 // during a run. They refuse anyway: a practice salamat reaching a stranger,
 // or the practice stop replacing the reader's own, is the one thing this
 // feature must not be able to do even by accident.
-for (const name of ['sayThanks', 'sayWrong', 'sendBusLink', 'sendSiteLink', 'sendPostcard', 'boardBus', 'leaveBus', 'persistMyStop', 'keepTicket', 'startSharing', 'addSighting', 'toggleRoad']) {
+for (const name of ['sayThanks', 'sayWrong', 'sendBusLink', 'sendSiteLink', 'sendPostcard', 'boardBus', 'leaveBus', 'persistMyStop', 'keepTicket', 'startSharing', 'addSighting', 'toggleRoad',
+                    'tipSetupGo', 'readTipQr', 'tipUse', 'offerTip', 'saveTyQr']) {
   const body = fn(name);
   check(/^\s*if \(WALK\) return;/m.test(body.split('\n').slice(1, 3).join('\n')), `${name} refuses first thing while a run is on`);
 }
 check(/buzzOn\(\) && !BUZZED\[id\] && !WALK/.test(html), 'and the practice bus never buzzes the phone');
+check(/^\s*if \(WALK\)\{ renderQrSwitch\(\); return; \}/m.test(fn('qrSwitch').split('\n').slice(1, 3).join('\n')),
+  '"Accept tips?" keeps nothing during a run either: the switch only snaps back');
 check(!/\brpc\(|\bfetch\(|sendBeacon|XMLHttpRequest/.test(walkSrc + pageSrc), 'the tour\'s own code makes no request');
 check(!/sessionStorage/.test(walkSrc + pageSrc), 'and writes nothing to sessionStorage');
 const lsKeys = [...(walkSrc + pageSrc).matchAll(/localStorage\.(?:setItem|removeItem|getItem)\('([^']+)'/g)].map(m => m[1]);

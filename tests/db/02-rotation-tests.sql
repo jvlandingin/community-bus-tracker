@@ -13,15 +13,19 @@ do $$ begin raise notice '== constraints now cascade =='; end $$;
 do $$
 declare n int;
 begin
+  -- By the referencing column: 16-tips.sql added a third foreign key to
+  -- routes, qr_bans by slug, which is not about the key.
   select count(*) into n
     from pg_constraint con
     join pg_class rel on rel.oid = con.confrelid
-   where con.contype='f' and rel.relname='routes' and con.confupdtype='c';
+    join pg_attribute a on a.attrelid = con.conrelid and a.attnum = con.conkey[1]
+   where con.contype='f' and rel.relname='routes' and a.attname='route_key' and con.confupdtype='c';
   perform assert(n = 2, 'both route_key foreign keys are ON UPDATE CASCADE');
   select count(*) into n
     from pg_constraint con
     join pg_class rel on rel.oid = con.confrelid
-   where con.contype='f' and rel.relname='routes';
+    join pg_attribute a on a.attrelid = con.conrelid and a.attnum = con.conkey[1]
+   where con.contype='f' and rel.relname='routes' and a.attname='route_key';
   perform assert(n = 2, 'referential integrity was kept, not dropped');
 end $$;
 

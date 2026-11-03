@@ -22,7 +22,7 @@ node tests/test-guard.js      # wrong-direction detection on simulated trips
 node tests/test-strip.js      # progress strip position and wording, the town lines in the popup
 node tests/test-prompts.js    # idle, end-of-trip, your-stop and direction prompts
 node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card, where sharing stops, the search for stops and places
-node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its luck, your bus; spare parts, the shop, the look, backups; the ticket's postcard
+node tests/test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its luck, your bus; spare parts, the shop, the look, backups; the ticket's postcard; tips and the QR they are drawn with
 node tests/test-signboard.js  # the dot-matrix route board, the boards drawn into other pages, the icon and the mark
 node tests/test-pictures.js   # the coach, the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture and sights, your bus, the ride, the saved stop's picture, the trip's first window, the ticket's postcard
 node tests/test-tokens.js     # the design system: sizes, corners, shadows, speeds; the copied fonts and icons
@@ -46,7 +46,7 @@ each moves the seeded rows the next would expect. From `tests/`:
 ```
 createdb bustest
 psql -d bustest -f db/00-legacy-baseline.sql
-psql -d bustest -f ../sql/01-base.sql          # then 02 through 15 in order
+psql -d bustest -f ../sql/01-base.sql          # then 02 through 16 in order
 psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 ```
 
@@ -430,6 +430,28 @@ call takes no key and a threshold would let one person take a real bus off the
 map. Named `wrong*`, never `report*` or `flag*`. `db/13-say-wrong-tests.sql`
 and `test-boot.js` section 16.
 
+**A sharer can accept tips** (November 2026, `sql/16-tips.sql`, the
+maintainer's decision and words): "Accept tips?" on the sharing tab, under
+Bus number and again above Stop, keeps the QR the sharer's GCash, Maya or bank
+app saves (`wt-qr`, read by the phone's own `BarcodeDetector`, never sent as a
+picture) and sends its text with each position. A rider who tapped "I'm on
+this bus" and rode it at least a kilometre is asked at "I got off": "Say
+thanks to sharer with a tip/donation?", the code drawn again on their phone
+by `qrMatrix()` (tools/make-qr.js's encoder, held to it by `test-thanks.js`),
+and "Not the fare. Not the bus company." Never on the map, a chip or a popup,
+so a made-up bus nobody can ride earns nothing. Only a QR Ph code with no
+fixed amount is kept, by the same rule on the phone (`qrPhKey()`) and the
+server (`_qr_key`); the sharer's phone reads its own redraw back before using
+a code. Nothing about a tip is counted or kept: the app never learns whether
+anyone paid. `get_bus_qr` hands out one bus's code at a time and never
+`get_positions`; three "Not a real bus?" taps hide it for that trip (the one
+report that acts on its own, because it costs at most one trip's tips) and an
+organizer can ban an account, kept as a salted mark until lifted. The honest
+cost, in the privacy panel and `for-operators.html`: anyone determined can
+read a live bus's code, and with it a partly hidden name and any mobile
+number in it. Named `qr*`, never `tip*` or `donat*`. No login, deliberately:
+the payment account is the stronger identity. `docs/ARCHITECTURE.md`, "Tips".
+
 **A request nobody waits for is never sent.** supabase-js sends an `rpc()`
 only when something awaits it or calls `.then`; a bare call is silently
 dropped, which is how the wrong-direction pause never cleared its bus.
@@ -465,13 +487,14 @@ type and everyone can read is user-generated content on Google Play, which
 then wants posting rules, a Report button and someone answering reports;
 `test-strip.js` fails if a typing box or the sent text comes back.
 
-**The app keeps exactly six things between visits**, and the Android app a
-seventh (the share key, so a sharer is not asked for the PIN every trip after
+**The app keeps exactly seven things between visits**, and the Android app an
+eighth (the share key, so a sharer is not asked for the PIN every trip after
 Android closes the app; never in a browser, which may be shared), all on the
 device and all named in the privacy panel: whether this phone has been shown around (the
 guide or the tour), the light/dark/system theme choice, the reader's saved stop, the tickets a
-sharer chose to keep, your bus (its counts, its parts and what it wears), and
-the trip in progress while it runs. A backup is those tickets and that bus in
+sharer chose to keep, your bus (its counts, its parts and what it wears),
+the trip in progress while it runs, and a sharer's tip QR while "Accept
+tips?" is on (the one of them that leaves the phone, with each position). A backup is those tickets and that bus in
 a file the sharer holds, never another stored key. Adding one means editing that panel in the same
 commit — the panel is the promise, not the code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
 `localStorage` keys the app writes stops matching the set the panel names.
@@ -489,7 +512,7 @@ real ones through `busesNow()`; the reader's own stop, filter, tab, chosen bus
 and map view come back on the way out. A clear layer takes every tap, and every
 function that sends or stores refuses while `WALK` is set anyway, so a practice
 salamat or Start can never fire. The first-visit note is answered under the
-guide's own `wt-guide-seen` key, so the six remembered things stay six. DOM
+guide's own `wt-guide-seen` key, so the seven remembered things stay seven. DOM
 names are `walk*`, never `tour`, `tooltip` or `onboard`: filter lists hide
 onboarding libraries by those names, and a hidden bubble over a dimmed page has
 no way out. `test-tour.js` holds the steps, the words and the refusals;
@@ -647,7 +670,9 @@ most important property of the system. The wrong-direction guard tracks progress
 in the sharing phone's memory only and it dies with the tab. A rider's page keeps
 one place and one time per bus on the map, in memory, to tell a standing bus
 from a moving one (`rideStand()`): overwritten at every poll, dropped when the
-bus leaves the map, never sent or stored. Two things outlast
+bus leaves the map, never sent or stored. And one number for the bus a rider
+says they are on: how far along the route it was then (`ABOARD_KM`), in
+memory, to measure the ride before tips are offered. Two things outlast
 a trip, both on the sharer's own phone: a kept ticket, only on a tap, holding a
 date and two checkpoint names, and your bus's counts, numbers and place names
 with no list of dates (only the week of its last trip and the day of its last

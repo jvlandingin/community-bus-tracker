@@ -18,7 +18,7 @@ node test-guard.js      # wrong-direction detection on simulated trips
 node test-strip.js      # progress strip position and wording, the town lines in the popup
 node test-prompts.js    # idle, end-of-trip, your-stop and direction prompts
 node test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card, where sharing stops, the search for stops and places
-node test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its postcard
+node test-thanks.js     # saying salamat: the words, who is offered it, what it never draws; the ticket, the album, its postcard; tips and the QR they are drawn with
 node test-signboard.js  # the dot-matrix route board: its letters, the boards drawn into other pages, the mark
 node test-pictures.js   # the coach and the empty map's scenes, the marks, the checkpoint lines, the covers, the ticket's picture, the trip's first window, the ticket's postcard
 node test-tokens.js     # the design system: every size, corner, shadow and speed a token; the copied fonts and icons
@@ -93,6 +93,7 @@ psql -d bustest -f ../sql/12-share-pin.sql
 psql -d bustest -f ../sql/13-bus-look.sql
 psql -d bustest -f ../sql/14-off-route-private.sql
 psql -d bustest -f ../sql/15-say-wrong.sql
+psql -d bustest -f ../sql/16-tips.sql
 ```
 
 Then run one suite against it:
@@ -111,6 +112,7 @@ psql -d bustest -f db/10-share-pin-tests.sql   # 78 checks, a PIN and the limit 
 psql -d bustest -f db/11-bus-look-tests.sql    # 20 checks, a bus shown to riders, and only the app's own codes
 psql -d bustest -f db/12-off-route-tests.sql   # 39 checks, a bus outside the route area, seen by its own phone only
 psql -d bustest -f db/13-say-wrong-tests.sql   # 38 checks, a rider saying a bus or a sighting is wrong
+psql -d bustest -f db/14-tips-tests.sql        # 71 checks, a sharer's tip code: only a real QR Ph one, one bus at a time, hidden by reports, banned by organizers
 ```
 
 `dropdb bustest` and build it again between suites. Apply **all** the migration

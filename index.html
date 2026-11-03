@@ -681,6 +681,32 @@
   }
   .buzz input:checked{background:var(--live);}
   .buzz input:checked::after{left:19px;}
+  /* "Accept tips?" on the sharing tab: the same switch, under Bus number
+     before a trip and above Stop during one, so a sharer can always see
+     whether it is on and turn it off. Written as a label round its checkbox
+     in both places, never an id, like the buzz. */
+  .qrswitch{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin:12px 0 2px; font-size:var(--fs-small); font-weight:800; color:var(--ink); cursor:pointer;
+  }
+  .qrswitch input{
+    -webkit-appearance:none; appearance:none; flex:0 0 auto; position:relative; margin:0;
+    width:40px; height:24px; border-radius:999px; background:var(--line); cursor:pointer;
+    transition:background-color var(--dur-2) var(--ease);
+  }
+  .qrswitch input::after{
+    content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%;
+    background:#fff; box-shadow:var(--sh-2); transition:left var(--dur-2) var(--ease);
+  }
+  .qrswitch input:checked{background:var(--live);}
+  .qrswitch input:checked::after{left:19px;}
+  #onbusActive .qrswitch{margin:0 0 12px;}
+  /* The code itself, black on white whatever the theme: a scanner needs the
+     contrast, and a payment app reads it off a saved picture. */
+  .qrart{display:block; width:min(260px, 72vw); margin:6px auto 4px; padding:6px; border-radius:var(--r-s); background:#fff;}
+  .qrart img, .qrart svg{display:block; width:100%; height:auto;}
+  .qrart.small{width:120px;}
+  .qrfine{margin:4px 0 0; text-align:center; font-size:var(--fs-label); font-weight:700; color:var(--muted);}
 
   /* The picker. A list of the route's own stops, searchable, because typing
      three letters beats scrolling seventy-one names on a moving bus. */
@@ -1953,6 +1979,7 @@
     <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="12" r="3.5"/><path d="M11.5 12H21M17.5 12v3M20.5 12v2.2"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5.5v13M5.5 12h13"/></symbol>
     <symbol id="i-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5.5 12h13"/></symbol>
+    <symbol id="i-qr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.2"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.2"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.2"/><path d="M14 14h2.6v2.6M20.5 14v.1M14 20.5h.1M17.6 20.5h2.9v-2.9"/></symbol>
     <!-- The coach, front on: what every bus on the map and the strip is drawn
          as. Filled in whatever colour the svg is given, with the windscreen,
          lamps and signboard cut right through, so they show whatever is
@@ -1974,17 +2001,18 @@
       <h4 class="ok">If you're just watching the map</h4>
       <p>The app never asks for your location on its own, and you can use the whole map without ever giving it. No account, no name, no phone number. We can't see who is watching.</p>
       <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the location button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the page or the app.</p>
-      <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. Searching for a stop or a place happens on your phone as well: the list of places along the route comes whole from this site, so <b>what you type is never sent</b>. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the page or the app, and is never sent either.</p>
+      <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. Searching for a stop or a place happens on your phone as well: the list of places along the route comes whole from this site, so <b>what you type is never sent</b>. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the page or the app, and is never sent either. Nor is how far you rode it, which your phone works out to decide one thing: when you tap “I got off” after riding at least a kilometre, and that bus's sharer accepts tips, you are asked if you want to say thanks with a tip. Your phone asks our server for that one bus's QR to show you, and nothing more. If you pay it, you pay it in your own payment app, like any QR; <b>this app never learns whether you did, or how much</b>.</p>
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
       <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number. On our side it never adds up across trips: <b>no running total is kept for any driver or any bus on the server.</b> The sharer's own phone adds theirs up for their bus in My tickets, and that never leaves it.</p>
       <p>And one more, also only if you tap it: <b>Not a real bus?</b>, on a bus, or <b>Wrong?</b>, on a sighting, to tell the organizer something on the map looks wrong. It is stored the same scrambled way as Salamat, so it can't be traced back to you and a second tap isn't counted twice. <b>Only the organizer sees how many</b>, not the sharer and not other riders, and it is deleted when that trip ends or the sighting expires. Nothing happens on its own: the organizer looks and decides.</p>
       <p>“Send a link”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do. “Send the tracker”, at the foot of the map, does the same with this site's address and nothing else: not your key or PIN, not your stop, not a bus.</p>
 
       <h4 class="ok">If you share from the bus</h4>
-      <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip, plus, only if you switched on “Show customized bus to riders”, a short code for how your bus is painted and dressed. Nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map, and if you saved the stop you get off at, sharing stops there: your phone checks its own position against your stop, and sends nothing for it. Outside the route area, the bus shows on your own phone only, never on anyone else's map.</p>
+      <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip, plus, only if you switched on “Show customized bus to riders”, a short code for how your bus is painted and dressed, and only while “Accept tips?” is on, your payment QR (below). Otherwise nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map, and if you saved the stop you get off at, sharing stops there: your phone checks its own position against your stop, and sends nothing for it. Outside the route area, the bus shows on your own phone only, never on anyone else's map.</p>
       <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop. Swiping the app away stops sharing. Its GPS comes through Google Play services, as in most Android apps. If you get it from Google Play, Google knows your account installed it, as with any app there. Play shows us only totals, never who.</p>
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and on our side it goes when the trip does. Your phone adds it to your bus in My tickets, a total only you can see.</p>
       <p>Riders can also tell the organizer your bus doesn't look like a real one. Only the organizer sees that, for this trip only, and it goes when the trip does.</p>
+      <p><b>Accept tips?</b>, on the sharing tab, is off unless you switch it on and pick the QR your GCash, Maya or bank app saves. Your phone reads the picture itself and keeps only the QR's text, and only a payment QR from the Philippines with no fixed amount is taken. While it is on and you share, the QR goes with your bus's position, and a rider who rode your bus is asked when they get off if they want to tip you. The money goes from their app to your account like any QR payment; <b>this app never learns whether anybody tipped, or how much</b>, and keeps no total. <b>The honest cost:</b> while your bus is on the map, anyone determined can read your QR beside it, and with it the name your payment app shows, partly hidden, and any mobile number inside it (the app tells you when there is one). It is deleted with the trip, like the position. After three “Not a real bus?” taps on a trip, riders are not shown it, and the organizer can ban a QR used to cheat riders: the ban keeps a scrambled mark of the account, never the QR. Switching it off forgets the QR on this phone.</p>
       <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>the app sends it nowhere</b>. Close it and it is gone.</p>
       <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Start from scratch” in My tickets deletes every copy.</p>
       <p><b>Send a picture</b>, on a ticket, makes a picture of it for you to send to a chat, Facebook or Instagram. It shows only what a kept copy keeps, and this site's address: the day, the direction, where you got on and off, the stamps and the flower, <b>never the times, how long, the bus number or how many thanked you</b>, so a picture posted after every trip cannot time anyone's day either. Your phone makes it, and it goes only where you send it through your phone's own sheet; the app keeps none of it.</p>
@@ -2012,11 +2040,11 @@
 
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing. What is sent travels encrypted, over HTTPS.</p>
-      <p>Six small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, and the trip you are sharing, while you share it. All six stay in your browser or the app, are never sent anywhere, and are not linked to anything. The Android app keeps a seventh: the key or PIN you entered to share, so you need not type it every trip. It goes to our server only to check it when you share, as it does in a browser, and it is deleted when it stops working.</p>
+      <p>Seven small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, the trip you are sharing, while you share it, and your tip QR, while “Accept tips?” is on. All seven stay in your browser or the app and are not linked to anything; the first six are never sent anywhere, and the QR goes only with your bus's position, as above. The Android app keeps an eighth: the key or PIN you entered to share, so you need not type it every trip. It goes to our server only to check it when you share, as it does in a browser, and it is deleted when it stops working.</p>
       <p>Your bus is the coach your trips decorate in My tickets, and it is <b>totals and choices, never a diary</b>: how many trips you shared, how many of them were first on the map, end to end, before 5 AM or after dark, which directions, which places on the route, whether you finished each tour, your time on the map and the salamat you received in all, and how many weeks in a row you have shared, with the week of your last trip to count it from; and the spare parts it has (the app's own points, drawn as a nut: never bought with money, never sent), what they got, which paint and accessories it wears, whether you show it to riders, and, for the cap of three earning trips a day, the day of your last one. Totals, never a list: no clock times and no bus numbers, so it can say how much you have shared and the last day you did, but never a timetable of when you worked. The trip you are sharing is kept so that a page that reloads or closes mid-trip can carry on with the same bus, or still give you its ticket: when it started, roughly where it began and last was on the route, and the trip's random ID. It is deleted the moment the trip ends, or, if the page closed mid-trip, the next time the page opens.</p>
       <p><b>Showing your bus to riders</b> is off unless you switch it on, in My tickets or when the app first asks, once there is something on your bus to show. While it is on and you share, riders who tap your bus see it as you dressed it. The honest cost: they will be able to tell it is yours from one trip to the next. The code that carries it is letters from the app's own lists, never words or colours of anyone's choosing, and it is deleted with the trip, like the position.</p>
       <p><b>A backup</b>, from Your progress in My tickets, is a small file of your kept tickets and your bus, made on this phone and handed to you to keep wherever you like. The app never sends it anywhere. Restore reads one back.</p>
-      <p>Clearing your browser data, or uninstalling the app, removes them all, “Remove my stop” in the stop picker deletes the third on its own, and “Start from scratch” in My tickets the fourth and fifth.</p>
+      <p>Clearing your browser data, or uninstalling the app, removes them all, “Remove my stop” in the stop picker deletes the third on its own, “Start from scratch” in My tickets the fourth and fifth, and switching “Accept tips?” off the seventh. A backup never holds the QR.</p>
     </div>
     <div class="modal-foot">
       <button class="big btn-ghost" onclick="closeModal('privModal')">Close</button>
@@ -2070,6 +2098,40 @@
     <div class="modal-actions">
       <button class="big btn-ghost" onclick="dupCancel()">It's the same bus, don't share</button>
       <button class="big btn-primary" onclick="dupProceed()">Different bus, share anyway</button>
+    </div>
+  </div>
+</div>
+
+<!-- Accept tips? (sql/16-tips.sql). Opened by the switch on the sharing tab
+     when there is no code yet; tipSetup() writes the line and the buttons
+     for each step: pick, reading, a refusal, or the number inside the code.
+     The phone reads the picture with its own reader, and nothing leaves it
+     until the next position does. -->
+<div class="modal hidden" id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+  <div class="modal-card">
+    <h3 id="qrTitle"><svg class="gi" aria-hidden="true"><use href="#i-qr"/></svg>Accept tips?</h3>
+    <p id="qrBody"></p>
+    <div class="qrart small hidden" id="qrArt"></div>
+    <input type="file" id="qrFile" accept="image/*" class="hidden" onchange="readTipQr(this)">
+    <div class="modal-actions">
+      <button class="big btn-ghost" id="qrNo" onclick="closeModal('qrModal')">Cancel</button>
+      <button class="big btn-primary" id="qrGo" onclick="tipSetupGo()">Pick your QR</button>
+    </div>
+  </div>
+</div>
+
+<!-- The rider's side: asked once, when they get off a bus they rode, and
+     only if its sharer accepts tips (the TIPS block). The code is drawn again
+     here from its text, black on white, and the picture can be saved for a
+     payment app's "upload QR". Nothing is recorded about it either way. -->
+<div class="modal hidden" id="tyqrModal" role="dialog" aria-modal="true" aria-labelledby="tyqrTitle">
+  <div class="modal-card">
+    <h3 id="tyqrTitle"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>Say thanks to sharer with a tip/donation?</h3>
+    <div class="qrart" id="tyqrArt"></div>
+    <p class="qrfine">Not the fare. Not the bus company.</p>
+    <div class="modal-actions">
+      <button class="big btn-ghost" onclick="closeModal('tyqrModal')">Not now</button>
+      <button class="big btn-primary" id="tyqrSave" onclick="saveTyQr()">Save the QR</button>
     </div>
   </div>
 </div>
@@ -2420,6 +2482,9 @@
         </div>
         <div style="font-size:var(--fs-small); font-weight:800; margin:2px 0 6px;">Bus number <span style="font-weight:600; color:var(--muted);">(optional)</span></div>
         <input type="text" id="busLabel" maxlength="12" placeholder="e.g. 98018">
+        <!-- Tips (sql/16-tips.sql): the maintainer's words, and a switch a
+             sharer sees before every Start. Its twin sits above Stop. -->
+        <label class="qrswitch"><span>Accept tips?</span><input type="checkbox" onchange="qrSwitch(this)"></label>
         <div style="height:10px"></div>
         <!-- What is shared is in the button's own words. Who sees it and
              until when are said once the trip is on, where they matter:
@@ -2430,6 +2495,7 @@
         <button class="big btn-primary" id="onbusStartBtn" type="submit">Start sharing my location</button>
       </form>
       <div id="onbusActive" class="hidden">
+        <label class="qrswitch"><span>Accept tips?</span><input type="checkbox" onchange="qrSwitch(this)"></label>
         <button class="big btn-stop" onclick="stopSharing()">Stop sharing</button>
       </div>
 
@@ -4929,6 +4995,343 @@ function ticketGreeting(endMins){
 }
 // ---- END SALAMAT
 
+// ---- TIPS (unit tested) ---------------------------------------------------
+// A sharer may accept tips (November 2026, the maintainer's decision). With
+// "Accept tips?" on, the payment QR code their GCash, Maya or bank app saves
+// goes with each position, and a rider who rode the bus is asked "Say thanks
+// to sharer with a tip/donation?" when they get off. The money goes from the
+// rider's app to the sharer's account, as any QR payment does; nothing about
+// it passes through this app. Five rules, held by test-thanks.js:
+//
+//  1. Only a QR Ph code: the EMV layout every Philippine wallet and bank
+//     prints, its checksum right, the country PH, a person-to-person or
+//     merchant identifier, and no fixed amount. Never a link, a word or a
+//     picture of anybody's choosing. sql/16-tips.sql applies the same rule
+//     (_qr_key), so a changed page cannot put anything else on a bus.
+//  2. Only to a rider who rode it: offered at "I got off" (leaveBus), once
+//     the bus has gone TIP_KM along the route since "I'm on this bus". A
+//     made-up bus nobody can ride earns nothing, and nobody waiting at a stop
+//     is asked. Never on the map, a chip or a bus's popup.
+//  3. Drawn again on the rider's phone from the code, never a picture sent to
+//     it: qrMatrix() is tools/make-qr.js's encoder, level M, and the sharer's
+//     phone reads its own redraw back before the code is ever used.
+//  4. Nothing is counted: no amount, no total, no record of who tipped. The
+//     app never learns whether anybody did.
+//  5. The words are the maintainer's, with one line under the QR saying whose
+//     it is not.
+const TIP_KM = 1;
+const TIP_WORDS = {
+  sw: 'Accept tips?',
+  ask: 'Say thanks to sharer with a tip/donation?',
+  fine: 'Not the fare. Not the bus company.'
+};
+// The identifiers QR Ph puts in an account's field 00: person to person,
+// and merchant.
+const QRPH_IDS = ['com.p2pqrpay', 'ph.ppmi.p2m'];
+// CRC-16/CCITT-FALSE, as EMV QR codes carry it in field 63, over everything
+// up to and including "6304".
+function qrCrc(s){
+  let c = 0xFFFF;
+  for (let i = 0; i < s.length; i++){
+    c ^= (s.charCodeAt(i) & 0xFF) << 8;
+    for (let j = 0; j < 8; j++) c = (c & 0x8000) ? ((c << 1) ^ 0x1021) & 0xFFFF : (c << 1) & 0xFFFF;
+  }
+  return ('000' + c.toString(16).toUpperCase()).slice(-4);
+}
+// The fields of an EMV QR code, or of one of its templates, as [id, value]
+// pairs, or null where the text is not laid out as one.
+function qrFields(s){
+  const out = [];
+  let i = 0;
+  while (i < s.length){
+    if (!/^\d{4}$/.test(s.substr(i, 4))) return null;
+    const l = +s.substr(i + 2, 2);
+    if (l < 1 || i + 4 + l > s.length) return null;
+    out.push([s.substr(i, 2), s.substr(i + 4, l)]);
+    i += 4 + l;
+  }
+  return out;
+}
+// The account inside a QR Ph code, or null when it is not one: _qr_key in
+// sql/16-tips.sql, field for field, so the phone refuses what the server
+// would store as nothing.
+function qrPhKey(s){
+  if (typeof s !== 'string' || s.length < 30 || s.length > 512 || !/^[ -~]+$/.test(s)) return null;
+  const f = qrFields(s);
+  if (!f || f[0][0] !== '00' || f[0][1] !== '01') return null;
+  const at = f.findIndex(function(x){ return x[0] === '63'; });
+  if (at !== f.length - 1 || f[at][1].length !== 4 || f[at][1].toUpperCase() !== qrCrc(s.slice(0, -4))) return null;
+  let country = null, acct = '';
+  for (const x of f){
+    if (x[0] === '54') return null;            // a fixed amount: a tip is the rider's to choose
+    if (x[0] === '58') country = x[1];
+    if (x[0] >= '26' && x[0] <= '51'){
+      const sub = qrFields(x[1]);
+      if (!sub) return null;
+      let guid = null;
+      sub.forEach(function(y){ if (y[0] === '00') guid = y[1].toLowerCase(); });
+      if (QRPH_IDS.indexOf(guid) >= 0) acct += x[0] + ('0' + x[1].length).slice(-2) + x[1];
+    }
+  }
+  return country === 'PH' && acct ? acct : null;
+}
+function qrPhOk(s){ return qrPhKey(s) !== null; }
+// Whether a code carries a mobile number anybody who reads it can see: an
+// account's field 05, the additional data's field 02, or anything written
+// like a Philippine mobile number. The sharer is told before it is used.
+function qrHasNumber(s){
+  const f = qrFields(s) || [];
+  const mobile = function(v){ return /(?:\+?63|^0|[^0-9]0)9\d{9}(?!\d)/.test(v.replace(/[\s\-()]/g, '')); };
+  return f.some(function(x){
+    const sub = (x[0] >= '26' && x[0] <= '51') || x[0] === '62' ? (qrFields(x[1]) || []) : [];
+    return mobile(x[1]) || sub.some(function(y){
+      return mobile(y[1]) || (x[0] !== '62' && y[0] === '05') || (x[0] === '62' && y[0] === '02');
+    });
+  });
+}
+// Rule 2: how far the bus has gone, along the route, since the rider said
+// they were on it. Both are places on the chain, in km, or null.
+function tipOffered(fromKm, nowKm){
+  return Number.isFinite(fromKm) && Number.isFinite(nowKm) && Math.abs(nowKm - fromKm) >= TIP_KM;
+}
+
+// The QR code itself, drawn again from the text: byte mode, error correction
+// level M, versions 1 to 15 (up to 412 bytes). Versions 1 to 10 are
+// tools/make-qr.js's, whose codes are on the printed flyer and poster, and
+// test-thanks.js holds the two to the same modules.
+const QR_EXP = new Uint8Array(512), QR_LOG = new Uint8Array(256);
+(function(){
+  let x = 1;
+  for (let i = 0; i < 255; i++){
+    QR_EXP[i] = x; QR_LOG[x] = i;
+    x <<= 1;
+    if (x & 0x100) x ^= 0x11d;
+  }
+  for (let i = 255; i < 512; i++) QR_EXP[i] = QR_EXP[i - 255];
+})();
+function qrGfMul(a, b){ return (a === 0 || b === 0) ? 0 : QR_EXP[QR_LOG[a] + QR_LOG[b]]; }
+function qrRsEncode(data, ecLen){
+  let gen = [1];
+  for (let d = 0; d < ecLen; d++){
+    const next = new Array(gen.length + 1).fill(0);
+    for (let i = 0; i < gen.length; i++){
+      next[i] ^= gen[i];
+      next[i + 1] ^= qrGfMul(gen[i], QR_EXP[d]);
+    }
+    gen = next;
+  }
+  const res = new Array(ecLen).fill(0);
+  for (const byte of data){
+    const factor = byte ^ res[0];
+    res.shift();
+    res.push(0);
+    for (let i = 0; i < ecLen; i++) res[i] ^= qrGfMul(gen[i + 1], factor);
+  }
+  return res;
+}
+// [total codewords, ec codewords per block, group 1 blocks, group 2 blocks],
+// level M. Group 2 blocks hold one data codeword more.
+const QR_VERSIONS = {
+  1:[26,10,1,0], 2:[44,16,1,0], 3:[70,26,1,0], 4:[100,18,2,0], 5:[134,24,2,0],
+  6:[172,16,4,0], 7:[196,18,4,0], 8:[242,22,2,2], 9:[292,22,3,2], 10:[346,26,4,1],
+  11:[404,30,1,4], 12:[466,22,6,2], 13:[532,22,8,1], 14:[581,24,4,5], 15:[655,24,5,5]
+};
+const QR_ALIGN = {
+  1:[], 2:[6,18], 3:[6,22], 4:[6,26], 5:[6,30], 6:[6,34], 7:[6,22,38], 8:[6,24,42],
+  9:[6,26,46], 10:[6,28,50], 11:[6,30,54], 12:[6,32,58], 13:[6,34,62], 14:[6,26,46,66], 15:[6,26,48,70]
+};
+function qrVersionInfo(v){
+  const t = QR_VERSIONS[v], blocks = t[2] + t[3], dataTotal = t[0] - t[1] * blocks;
+  const g1Len = Math.floor(dataTotal / blocks);
+  return { total:t[0], ecPerBlock:t[1], g1:t[2], g2:t[3], blocks:blocks, dataTotal:dataTotal, g1Len:g1Len, g2Len:g1Len + 1 };
+}
+function qrCodewords(bytes, version){
+  const vi = qrVersionInfo(version), bits = [];
+  const push = function(val, len){ for (let i = len - 1; i >= 0; i--) bits.push((val >> i) & 1); };
+  push(4, 4);                                       // byte mode
+  push(bytes.length, version >= 10 ? 16 : 8);       // character count
+  bytes.forEach(function(b){ push(b, 8); });
+  push(0, Math.min(4, vi.dataTotal * 8 - bits.length));
+  while (bits.length % 8) bits.push(0);
+  const data = [];
+  for (let i = 0; i < bits.length; i += 8){
+    let byte = 0;
+    for (let j = 0; j < 8; j++) byte = (byte << 1) | bits[i + j];
+    data.push(byte);
+  }
+  for (let i = 0; data.length < vi.dataTotal; i++) data.push(i % 2 ? 0x11 : 0xEC);
+  // Split into blocks, error-correct each, then interleave both sets.
+  const dataBlocks = [], ecBlocks = [];
+  let at = 0;
+  for (let i = 0; i < vi.blocks; i++){
+    const len = i < vi.g1 ? vi.g1Len : vi.g2Len, block = data.slice(at, at + len);
+    at += len;
+    dataBlocks.push(block);
+    ecBlocks.push(qrRsEncode(block, vi.ecPerBlock));
+  }
+  const out = [];
+  for (let i = 0; i < vi.g2Len; i++) dataBlocks.forEach(function(b){ if (i < b.length) out.push(b[i]); });
+  for (let i = 0; i < vi.ecPerBlock; i++) ecBlocks.forEach(function(b){ out.push(b[i]); });
+  return out;
+}
+// The modules every code of this version has, with the data snaked in.
+function qrBuild(codewords, version){
+  const size = version * 4 + 17;
+  const m = [], reserved = [];
+  for (let r = 0; r < size; r++){ m.push(new Array(size).fill(null)); reserved.push(new Array(size).fill(false)); }
+  const setF = function(r, c, v){ m[r][c] = v; reserved[r][c] = true; };
+  const finder = function(top, left){
+    for (let r = -1; r <= 7; r++) for (let c = -1; c <= 7; c++){
+      const rr = top + r, cc = left + c;
+      if (rr < 0 || rr >= size || cc < 0 || cc >= size) continue;
+      const ring = (r >= 0 && r <= 6 && (c === 0 || c === 6)) || (c >= 0 && c <= 6 && (r === 0 || r === 6));
+      const core = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+      setF(rr, cc, (ring || core) ? 1 : 0);
+    }
+  };
+  finder(0, 0); finder(0, size - 7); finder(size - 7, 0);
+  for (let i = 8; i < size - 8; i++){ setF(6, i, i % 2 === 0 ? 1 : 0); setF(i, 6, i % 2 === 0 ? 1 : 0); }
+  const centers = QR_ALIGN[version];
+  centers.forEach(function(r){ centers.forEach(function(c){
+    if ((r === 6 && c === 6) || (r === 6 && c === size - 7) || (r === size - 7 && c === 6)) return;
+    for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++)
+      setF(r + dr, c + dc, Math.max(Math.abs(dr), Math.abs(dc)) === 1 ? 0 : 1);
+  }); });
+  setF(size - 8, 8, 1);
+  for (let i = 0; i < 9; i++){
+    if (m[8][i] === null){ m[8][i] = 0; reserved[8][i] = true; }
+    if (m[i][8] === null){ m[i][8] = 0; reserved[i][8] = true; }
+  }
+  for (let i = 0; i < 8; i++){
+    if (m[8][size - 1 - i] === null){ m[8][size - 1 - i] = 0; reserved[8][size - 1 - i] = true; }
+    if (m[size - 1 - i][8] === null){ m[size - 1 - i][8] = 0; reserved[size - 1 - i][8] = true; }
+  }
+  if (version >= 7){
+    let rem = version << 12;
+    for (let i = 0; i < 6; i++){ const shift = 17 - i; if ((rem >> shift) & 1) rem ^= 0x1F25 << (shift - 12); }
+    const bits = (version << 12) | (rem & 0xFFF);
+    for (let i = 0; i < 18; i++){
+      const bit = (bits >> i) & 1, r = Math.floor(i / 3), c = i % 3;
+      setF(size - 11 + c, r, bit);
+      setF(r, size - 11 + c, bit);
+    }
+  }
+  let bitIndex = 0, upward = true;
+  for (let right = size - 1; right > 0; right -= 2){
+    if (right === 6) right = 5;
+    for (let i = 0; i < size; i++){
+      const row = upward ? size - 1 - i : i;
+      for (let c = 0; c < 2; c++){
+        const col = right - c;
+        if (reserved[row][col]) continue;
+        const byte = codewords[bitIndex >> 3];
+        m[row][col] = byte === undefined ? 0 : (byte >> (7 - (bitIndex & 7))) & 1;
+        bitIndex++;
+      }
+    }
+    upward = !upward;
+  }
+  return { m:m, reserved:reserved, size:size };
+}
+const QR_MASKS = [
+  function(r, c){ return (r + c) % 2 === 0; },
+  function(r){ return r % 2 === 0; },
+  function(r, c){ return c % 3 === 0; },
+  function(r, c){ return (r + c) % 3 === 0; },
+  function(r, c){ return (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0; },
+  function(r, c){ return ((r * c) % 2) + ((r * c) % 3) === 0; },
+  function(r, c){ return (((r * c) % 2) + ((r * c) % 3)) % 2 === 0; },
+  function(r, c){ return (((r + c) % 2) + ((r * c) % 3)) % 2 === 0; }
+];
+function qrPenalty(m, size){
+  let score = 0;
+  for (let i = 0; i < size; i++){
+    [m[i], m.map(function(row){ return row[i]; })].forEach(function(line){
+      let run = 1;
+      for (let j = 1; j < size; j++){
+        if (line[j] === line[j - 1]) run++;
+        else { if (run >= 5) score += run - 2; run = 1; }
+      }
+      if (run >= 5) score += run - 2;
+    });
+  }
+  for (let r = 0; r < size - 1; r++) for (let c = 0; c < size - 1; c++){
+    const v = m[r][c];
+    if (v === m[r][c + 1] && v === m[r + 1][c] && v === m[r + 1][c + 1]) score += 3;
+  }
+  const A = [1,0,1,1,1,0,1,0,0,0,0], B = [0,0,0,0,1,0,1,1,1,0,1];
+  const match = function(line, at, pat){ return pat.every(function(v, k){ return line[at + k] === v; }); };
+  for (let i = 0; i < size; i++){
+    const row = m[i], col = m.map(function(r){ return r[i]; });
+    for (let j = 0; j + 11 <= size; j++){
+      if (match(row, j, A) || match(row, j, B)) score += 40;
+      if (match(col, j, A) || match(col, j, B)) score += 40;
+    }
+  }
+  let dark = 0;
+  for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) dark += m[r][c];
+  return score + Math.floor(Math.abs(dark * 100 / (size * size) - 50) / 5) * 10;
+}
+// Format information: level M's two bits, the mask, BCH(15,5), then 0x5412.
+function qrFormatBits(mask){
+  const data = mask;   // level M is 00
+  let rem = data << 10;
+  for (let i = 4; i >= 0; i--) if ((rem >> (i + 10)) & 1) rem ^= 0x537 << i;
+  return ((data << 10) | rem) ^ 0x5412;
+}
+function qrMasked(built, mask){
+  const size = built.size, fn = QR_MASKS[mask];
+  const out = built.m.map(function(row){ return row.slice(); });
+  for (let r = 0; r < size; r++) for (let c = 0; c < size; c++)
+    if (!built.reserved[r][c] && fn(r, c)) out[r][c] ^= 1;
+  const fmt = qrFormatBits(mask);
+  for (let i = 0; i < 15; i++){
+    const bit = (fmt >> i) & 1;
+    if (i < 6) out[i][8] = bit;
+    else if (i === 6) out[7][8] = bit;
+    else if (i === 7) out[8][8] = bit;
+    else if (i === 8) out[8][7] = bit;
+    else out[8][14 - i] = bit;
+    if (i < 8) out[8][size - 1 - i] = bit;
+    else out[size - 15 + i][8] = bit;
+  }
+  return out;
+}
+// { matrix, version, size } for the text, or null where it is too long.
+function qrMatrix(text){
+  const t = String(text);
+  const bytes = typeof TextEncoder === 'function' ? Array.from(new TextEncoder().encode(t))
+    : Array.from(unescape(encodeURIComponent(t)), function(ch){ return ch.charCodeAt(0); });
+  let version = 0;
+  for (let v = 1; v <= 15 && !version; v++)
+    if (bytes.length * 8 + 4 + (v >= 10 ? 16 : 8) <= qrVersionInfo(v).dataTotal * 8) version = v;
+  if (!version) return null;
+  const built = qrBuild(qrCodewords(bytes, version), version);
+  let best = null, bestScore = Infinity;
+  for (let i = 0; i < 8; i++){
+    const cand = qrMasked(built, i), s = qrPenalty(cand, built.size);
+    if (s < bestScore){ bestScore = s; best = cand; }
+  }
+  return { matrix:best, version:version, size:built.size };
+}
+// The code as an SVG, one dark run per path segment, with the four modules
+// of white around it that scanners need.
+function qrSvg(matrix, label){
+  const n = matrix.length, q = 4, box = n + q * 2, parts = [];
+  for (let y = 0; y < n; y++){
+    let x = 0;
+    while (x < n){
+      if (!matrix[y][x]){ x++; continue; }
+      const x0 = x;
+      while (x < n && matrix[y][x]) x++;
+      parts.push('M' + (x0 + q) + ' ' + (y + q) + 'h' + (x - x0) + 'v1h-' + (x - x0) + 'z');
+    }
+  }
+  return '<svg viewBox="0 0 ' + box + ' ' + box + '" role="img" aria-label="' + label + '" shape-rendering="crispEdges">' +
+    '<rect width="' + box + '" height="' + box + '" fill="#fff"/><path fill="#000" d="' + parts.join('') + '"/></svg>';
+}
+// ---- END TIPS
+
 // ---- THE TICKET ALBUM (unit tested) ---------------------------------------
 // A ticket is gone when it is closed unless the sharer taps Keep. Then a copy
 // goes into My tickets, in this browser and nowhere else. The copy is the
@@ -5455,7 +5858,7 @@ function postcardFacts(e, cps){
 
 // Which buses this tab has already thanked. sessionStorage, not local: it
 // belongs to the visit, like the map's blue dot and the watcher id, and it
-// is deliberately NOT one of the six things the privacy panel promises are
+// is deliberately NOT one of the seven things the privacy panel promises are
 // remembered between visits. Losing it costs nothing — the server drops a
 // repeat on its own, so the worst case is a button that offers itself twice.
 let THANKED = null;
@@ -6524,18 +6927,23 @@ function toggleRoad(){
 // public bus id, kept for this visit only and sent nowhere: see aboardBus().
 // Sharing takes over from it while it runs, because then the server says.
 let ABOARD = null;
+// Where that bus was along the route when the rider said so: see busKmNow().
+let ABOARD_KM = null;
 function loadAboard(){
   let v = null;
   try{ v = sessionStorage.getItem('wt-aboard'); }catch(e){}
   ABOARD = (v && /^[A-Za-z0-9\-]+$/.test(v)) ? v : null;
 }
 function setAboard(id){
+  const was = ABOARD;
   ABOARD = (id && /^[A-Za-z0-9\-]+$/.test(id)) ? id : null;
+  if (ABOARD !== was) ABOARD_KM = null;
   try{ if (ABOARD) sessionStorage.setItem('wt-aboard', ABOARD); else sessionStorage.removeItem('wt-aboard'); }catch(e){}
 }
 function boardBus(id){
   if (WALK) return;   // nobody rides the practice bus
   setAboard(id);
+  ABOARD_KM = busKmNow(ABOARD);
   if (map) map.closePopup();
   renderBuses();
   // Without a stop there is nothing to count down to, so ask for it now
@@ -6545,8 +6953,11 @@ function boardBus(id){
 }
 function leaveBus(){
   if (WALK) return;
+  const id = ABOARD, from = ABOARD_KM, now = busKmNow(id);
   setAboard(null);
   renderBuses();
+  // A rider who rode it far enough is asked, once (the TIPS block, rule 2).
+  if (id && !sharing && tipOffered(from, now)) offerTip(id);
 }
 // The card sits under the map on the tracker and, while a trip is live, on
 // the sharing tab as well, so a sharer never has to choose between watching
@@ -7592,6 +8003,9 @@ async function pollPositions() {
     b.standing = s.still;
   });
   STANDS = stands;
+  // A rider on a bus since before this page loaded: the ride is measured
+  // from here (the TIPS block, rule 2).
+  if (ABOARD && ABOARD_KM === null) ABOARD_KM = busKmNow(ABOARD);
   // Only ever set from our own row. The server sends null for every other
   // bus (sql/07-thanks.sql), so there is nothing here to put on the map even
   // by accident, and this is not carried into BUSES for the same reason.
@@ -8139,6 +8553,8 @@ let writeFailing=false;
 let writePrivate=false;
 // Cleared for the rest of the visit by a database that does not know p_look.
 let LOOK_SENDS = true;
+// And by one that does not know p_qr (sql/16-tips.sql).
+let QR_SENDS = true;
 async function writePosition(coords){
   // Nothing goes out for a trip that has ended, whatever asked.
   if (guardPaused || !sharing) return;
@@ -8162,8 +8578,21 @@ async function writePosition(coords){
   // The bus's look, only when its sharer has said to show it (rule 19).
   const bus = loadBus();
   if (LOOK_SENDS && bus.show && busHasLook(bus, CHECKPOINTS)) args.p_look = busLook(bus, CHECKPOINTS);
+  // The sharer's tip code, only while "Accept tips?" is on (the TIPS block).
+  const tipQr = QR_SENDS ? loadTipQr() : null;
+  if (tipQr) args.p_qr = tipQr;
   const writer = keyed ? 'set_keyed_position' : 'set_open_position';
   let res = await rpc(writer, args);
+  // A database from before sql/16-tips.sql refuses the argument it does not
+  // know: the same position goes again without it, and no code is sent for
+  // the rest of the visit, so nobody is offered a tip. Tried before the
+  // look, which is older, because the refusal names every argument sent.
+  if (res.error && args.p_qr && /p_qr|could not find the function|PGRST202/i.test(
+        (res.error.message || '') + ' ' + (res.error.code || '') + ' ' + (res.error.hint || ''))){
+    QR_SENDS = false;
+    delete args.p_qr;
+    res = await rpc(writer, args);
+  }
   // A database from before sql/13-bus-look.sql refuses the argument it does
   // not know: the same position goes again without it, and no look is sent
   // for the rest of the visit. The bus shows plain; the trip is unaffected.
@@ -9231,6 +9660,224 @@ function postcardDrop(){
   box.querySelector('img').removeAttribute('src');
   document.getElementById('tktPicSave').removeAttribute('href');
 }
+// ---- Tips: the sharer's QR, and the rider's offer (November 2026) --------
+// The rules are the TIPS block's. The sharer's code is kept on this phone as
+// wt-qr, the seventh remembered thing, only while "Accept tips?" is on:
+// switching it off forgets the code. It leaves the phone only with a
+// position (writePosition), onto that trip's row, and never in a backup.
+function loadTipQr(){
+  let v = null;
+  try{ v = localStorage.getItem('wt-qr'); }catch(e){}
+  return qrPhOk(v) ? v : null;
+}
+function saveTipQr(v){
+  try{
+    if (v) localStorage.setItem('wt-qr', v);
+    else localStorage.removeItem('wt-qr');
+  }catch(e){ return false; }
+  return true;
+}
+// Both switches, before a trip and during one, say the same.
+function renderQrSwitch(){
+  const on = !!loadTipQr();
+  [].slice.call(document.querySelectorAll('.qrswitch input')).forEach(function(i){ i.checked = on; });
+}
+// On, with no code yet, opens the window that picks one, and the switch
+// stays off until it has one. Off forgets the code at once, and the next
+// position goes without it.
+function qrSwitch(box){
+  if (WALK){ renderQrSwitch(); return; }   // nothing is kept during a tour
+  if (box.checked){
+    renderQrSwitch();
+    if (!loadTipQr()) tipSetup('pick');
+    return;
+  }
+  saveTipQr(null);
+  renderQrSwitch();
+  showToast('Tips off.');
+}
+// The phone's own QR reader: Chrome on Android, the Android app and Samsung
+// Internet have one. Without it no picture can be read, and nothing else is
+// loaded to read one.
+function qrReaderOk(){ return typeof window.BarcodeDetector === 'function'; }
+// A code read but not yet used, while the window asks about the number in it.
+let TIP_PENDING = null;
+function tipSetup(step, msg){
+  const body = document.getElementById('qrBody'), art = document.getElementById('qrArt');
+  const go = document.getElementById('qrGo'), no = document.getElementById('qrNo');
+  art.classList.add('hidden');
+  art.innerHTML = '';
+  go.classList.remove('hidden');
+  go.disabled = false;
+  go.setAttribute('data-step', step);
+  no.textContent = 'Cancel';
+  if (step === 'pick'){
+    TIP_PENDING = null;
+    if (qrReaderOk()){
+      body.textContent = msg || 'Pick the QR your GCash, Maya or bank app saves.';
+      go.textContent = 'Pick your QR';
+    } else {
+      body.textContent = 'This browser can’t read QR pictures. Use Chrome on Android, or the app.';
+      go.classList.add('hidden');
+      no.textContent = 'Close';
+    }
+  } else if (step === 'reading'){
+    body.textContent = 'Reading…';
+    go.disabled = true;
+  } else if (step === 'number'){
+    body.textContent = 'This QR shows your mobile number to whoever scans it.';
+    art.innerHTML = qrSvg(qrMatrix(TIP_PENDING).matrix, 'Your QR');
+    art.classList.remove('hidden');
+    go.textContent = 'Use it';
+  }
+  openModal('qrModal');
+}
+function tipSetupGo(){
+  if (WALK) return;
+  if (document.getElementById('qrGo').getAttribute('data-step') === 'number' && TIP_PENDING){
+    tipUse(TIP_PENDING);
+    return;
+  }
+  const f = document.getElementById('qrFile');
+  f.value = '';
+  f.click();
+}
+function tipUse(code){
+  if (WALK) return;
+  TIP_PENDING = null;
+  if (!saveTipQr(code)){ showToast('Couldn’t keep it on this phone.'); return; }
+  closeModal('qrModal');
+  renderQrSwitch();
+  showToast('Tips on.');
+}
+async function readTipQr(input){
+  if (WALK) return;
+  const file = input.files && input.files[0];
+  if (!file) return;
+  tipSetup('reading');
+  const r = await qrReadPicture(file);
+  if (r.code && qrHasNumber(r.code)){ TIP_PENDING = r.code; tipSetup('number'); return; }
+  if (r.code){ tipUse(r.code); return; }
+  tipSetup('pick', r.err === 'browser' ? '' : r.err === 'amount'
+    ? 'That QR asks for a fixed amount. Pick one without.'
+    : 'That’s not a payment QR. Pick another.');
+}
+// The codes in a picture, read by the phone's own reader; the first QR Ph one
+// is taken, and then the reader reads this page's own redraw of it. A code
+// that does not come back as the same text is refused rather than ever drawn
+// for a rider (rule 3).
+async function qrReadPicture(file){
+  if (!qrReaderOk()) return { err:'browser' };
+  let det = null;
+  try{
+    const formats = await window.BarcodeDetector.getSupportedFormats();
+    if (formats.indexOf('qr_code') < 0) return { err:'browser' };
+    det = new window.BarcodeDetector({ formats:['qr_code'] });
+  }catch(e){ return { err:'browser' }; }
+  let found = [];
+  try{
+    const pic = typeof createImageBitmap === 'function' ? await createImageBitmap(file) : await qrImage(file);
+    found = await det.detect(pic);
+  }catch(e){ return { err:'none' }; }
+  const texts = found.map(function(f){ return f && f.rawValue; }).filter(function(t){ return typeof t === 'string'; });
+  const code = texts.filter(qrPhOk)[0];
+  if (!code){
+    const amount = texts.some(function(t){ return (qrFields(t) || []).some(function(x){ return x[0] === '54'; }); });
+    return { err: amount ? 'amount' : 'none' };
+  }
+  const drawn = qrMatrix(code), c = drawn ? qrCanvas(drawn.matrix, 6) : null;
+  let back = [];
+  try{ if (c) back = await det.detect(c); }catch(e){}
+  if (!back.some(function(f){ return f && f.rawValue === code; })) return { err:'none' };
+  return { code:code };
+}
+function qrImage(file){
+  return new Promise(function(ok, no){
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function(){ URL.revokeObjectURL(url); ok(img); };
+    img.onerror = function(e){ URL.revokeObjectURL(url); no(e); };
+    img.src = url;
+  });
+}
+// The code on a canvas, black on white with four modules of white round it,
+// `scale` pixels to a module. Null where this browser cannot draw.
+function qrCanvas(matrix, scale){
+  const n = matrix.length, q = 4, px = (n + q * 2) * scale;
+  const c = document.createElement('canvas');
+  let g = null;
+  try{ g = c.getContext ? c.getContext('2d') : null; }catch(e){}
+  if (!g) return null;
+  c.width = px; c.height = px;
+  g.fillStyle = '#fff';
+  g.fillRect(0, 0, px, px);
+  g.fillStyle = '#000';
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++)
+    if (matrix[y][x]) g.fillRect((x + q) * scale, (y + q) * scale, scale, scale);
+  return c;
+}
+
+// Where the bus a rider is on was along the route, in km on the chain, when
+// they said so: in memory for this visit, never sent or stored. Rule 2
+// measures the ride from it. A page that reloads mid-ride measures from its
+// first sight of the bus (pollPositions).
+function busKmNow(id){
+  const b = id ? BUSES.find(function(x){ return x.pub_id === id; }) : null;
+  if (!b || !Number.isFinite(b.lat) || !Number.isFinite(b.lng)) return null;
+  const km = routeProgressKm({ lat:b.lat, lng:b.lng }, CHECKPOINTS, ROUTE_CHAIN);
+  return Number.isFinite(km) ? km : null;
+}
+// The rider's side, from leaveBus(): asked once, only if that bus's sharer
+// takes tips, which this read is the only way to learn. Nothing is sent
+// about what the rider does next.
+let TYQR = null;
+async function offerTip(id){
+  if (WALK) return;
+  if (sharing) return;
+  const res = await rpc('get_bus_qr', { p_slug:CFG.ROUTE_SLUG, p_bus:id });
+  if (res.error || !qrPhOk(res.data)) return;
+  const drawn = qrMatrix(res.data);
+  if (!drawn) return;
+  TYQR = drawn;
+  const c = qrCanvas(drawn.matrix, 10);
+  let url = null;
+  try{ url = c ? c.toDataURL('image/png') : null; }catch(e){}
+  document.getElementById('tyqrArt').innerHTML = url
+    ? '<img src="' + url + '" alt="QR code to tip the sharer">'
+    : qrSvg(drawn.matrix, 'QR code to tip the sharer');
+  openModal('tyqrModal');
+}
+// A payment app pays a QR from the gallery ("upload QR"), not from its own
+// screen: in the app, the phone's sheet; on an iPhone, the sheet, which has
+// Save Image; elsewhere, a download. Pressing and holding the picture works
+// in a browser too.
+async function saveTyQr(){
+  if (WALK) return;
+  if (!TYQR) return;
+  const c = qrCanvas(TYQR.matrix, 10);
+  const blob = c ? await new Promise(function(ok){ try{ c.toBlob(ok, 'image/png'); }catch(e){ ok(null); } }) : null;
+  if (!blob){ showToast('Press and hold the QR to save it.'); return; }
+  const name = 'bus-tracker-tip-qr.png';
+  if (appPlugin('Filesystem') && appPlugin('Share')){
+    try{ await appSendFile(name, await blobBase64(blob), 'Save the QR', true); }
+    catch(err){ if (!/cancel/i.test(String(err && err.message))) showToast('Couldn’t save the QR.'); }
+    return;
+  }
+  let file = null;
+  try{ file = new File([blob], name, { type:'image/png' }); }catch(e){}
+  const ios = /iP(hone|ad|od)/.test(navigator.userAgent || '') || (/Mac/.test(navigator.platform || '') && navigator.maxTouchPoints > 1);
+  if (ios && file && navigator.canShare && navigator.canShare({ files:[file] })){
+    try{ await navigator.share({ files:[file] }); return; }
+    catch(err){ if (err && err.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.setAttribute('download', name);
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
+  showToast('Saved. Upload it in your payment app.');
+}
 // ---- Your bus, as a garage (October 2026) ------------------------------
 let ALB_BUY_ARMED = '';    // the shop item or paint one more tap buys
 let ALB_RIDE_T = null;     // moves My tickets' bus on from place to place
@@ -10211,7 +10858,7 @@ function start(){
   readFollowLink();
   if (!mapReady){
     initMap(); buildTicks(); buildSightingPlaces(); renderHours();
-    renderSourceLink(); renderContactLine(); renderAppLine(); mapReady=true;
+    renderSourceLink(); renderContactLine(); renderAppLine(); renderQrSwitch(); mapReady=true;
     if (!privacyFromLink()) walkFromLink();
     // After a tour asked for in the link has had its chance to start.
     setTimeout(recoverTrip, 600);

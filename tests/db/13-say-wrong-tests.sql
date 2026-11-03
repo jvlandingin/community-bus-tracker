@@ -97,10 +97,13 @@ begin
     $q$ select * from public.admin_list_wrong('wonderful-mendez-ayala','bad-admin-key-00') $q$,
     'invalid admin key', 'the list needs the admin key');
 
-  -- not the sharer, and not anyone reading the map
+  -- not the sharer, and not anyone reading the map. get_bus_qr
+  -- (16-tips.sql) counts them only to stop handing out a bus's tip code
+  -- after three, and answers with the code or nothing, never a count:
+  -- 14-tips-tests.sql holds that.
   perform assert((select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace
                   where n.nspname='public' and p.prokind = 'f'
-                    and p.proname not in ('admin_list_wrong', 'say_wrong', 't_bus', 't_sig')
+                    and p.proname not in ('admin_list_wrong', 'say_wrong', 't_bus', 't_sig', 'get_bus_qr')
                     and (pg_get_functiondef(p.oid) like '%wrong_bus_now%'
                          or pg_get_functiondef(p.oid) like '%wrong_sighting_now%')) = 0,
                  'nothing but the organizers'' list reads the reports');

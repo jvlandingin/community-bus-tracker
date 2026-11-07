@@ -240,7 +240,7 @@ Three details make it work:
   in the guide and admin headers would be two more things to look at for no
   more control.
 
-The preference is the second of the seven things this app keeps between
+The preference is the second of the eight things this app keeps between
 visits, after the
 guide-seen dot. Both are named in the privacy panel — the panel used to claim
 nothing was kept once you close the page, which the guide dot had already made
@@ -278,7 +278,8 @@ deleted. Full reasoning in `docs/DATABASE.md`.
 **The watching count is present tense only.** July 2026 added the one thing in
 the system that observes watchers at all: the tracker page beats every 60
 seconds with a random per-tab id, and the admin page can see how many devices
-have the map open right now. It was checked against the rule above and built to
+have the map open right now. (Since November 2026 the person sharing a bus sees it
+too, during their trip: "Telling a sharer how many have the map open".) It was checked against the rule above and built to
 stay on the right side of it — rows are deleted three minutes after the last
 beat, so there is no daily total, no peak, no yesterday, and nothing to
 subpoena. **A watching count is a live gauge, not a log.** Turning it into a
@@ -1323,7 +1324,7 @@ What it may not become, and why it is shaped the way it is:
   so there is no list of reported sharers to keep, ask for or hand to the bus
   company. `docs/DATABASE.md`, "Saying something is wrong".
 - **Remembered for the tab only** (`wt-wrong`, sessionStorage), so the button
-  stops asking and the seven things kept between visits stay seven. A tap that
+  stops asking and the eight things kept between visits stay eight. A tap that
   did not land gives the button back, as salamat does.
 - **Where it sits.** The popup was already the map's height on a phone, and a
   line of its own at the foot pushed "Send a link" out of the map, so it
@@ -1826,8 +1827,8 @@ cleaned and refuses anything that is not a backup (or is over 400,000
 characters), then replaces what is on the phone, with a second tap if there
 is anything to lose. "Start from scratch" (once "Remove all") deletes the
 tickets and the bus, also on a second tap. The app never sends a backup
-anywhere, it writes only the two keys it already had, so the seven remembered
-things stay seven, and the privacy panel says what a backup is.
+anywhere, it writes only the two keys it already had, so the eight remembered
+things stay eight, and the privacy panel says what a backup is.
 
 ## Tips: a sharer's QR, for riders who rode their bus
 
@@ -1920,6 +1921,73 @@ on. And anyone on board can share, so a driver or conductor can accept tips
 from passengers this way, which the briefing for the bus company says
 plainly.
 
+## Telling a sharer how many have the map open
+
+November 2026, the maintainer's choice from a list of ways to make the app
+worth using: "Show sharers they're helping". Sharers are the tool's real
+shortage, and the question a sharer cannot answer from the sharing tab is
+whether anybody is looking. The answer already existed: the watching count
+("The watching count is present tense only", above), which only the admin
+page could see. Now the sharing tab says it under the strip during a trip:
+"12 people have the map open" (`watchingWords()`, `renderSeenLine()`).
+
+- *The same gauge, a second reader.* `get_positions` returns it on the
+  caller's own row, beside `thanks`, unlocked by the real session id only
+  that phone holds (`sql/17-watching-for-sharers.sql`). Nothing new is
+  counted or kept, and riders never see it: a number beside a bus would rank
+  the buses, the reason the salamat count is the sharer's alone.
+- *Others only.* The page takes its own tab off while its own beat is
+  recent, so "1 person" is never the sharer looking at their own map.
+- *Never a zero*, as salamat: nobody looking yet looks like nothing.
+- *Only while riders can see the bus.* Outside the route area nobody can,
+  so a sharer there is told nothing rather than a count of people who
+  cannot see them.
+- Past the count's ceiling (`_watching_cap()`, 1000) it says "1000+".
+
+## Low data
+
+November 2026, from the same list. Riders here pay for data by the
+megabyte, and the map's background tiles are most of what a visit costs.
+"Low data", at the foot of the map beside the Tutorial and Send the tracker,
+asks for no tiles at all: the route's own marks, the stops and the buses stay,
+on the page's paper, which reads as a line diagram of the route because the
+map was already drawn that way ("The map"). The position feed runs at the
+slow feed's 18 seconds instead of 6 (`slowFeed()`, so the saved stop's
+picture glides over the slower feed too) and the sightings once a minute.
+A sharer's own positions go as often as ever: low data is for reading the
+map, never for what a bus sends. A line under the map says the tiles are off,
+because a phone whose browser asked to save data starts that way.
+
+The choice is remembered on the phone as `wt-lowdata`, the eighth remembered
+thing, because a data saver that has to be found again on every visit saves
+nothing. Until one is made it follows the browser's own data saver
+(`navigator.connection.saveData`) where the browser says. The privacy panel
+names it, and `test-boot.js` section 19 holds the rest.
+
+## Doesn't look like a bus
+
+November 2026, from the same list, and more needed since tips gave a reason
+to put up a bus that isn't one. The admin page says beside a live bus,
+in red with the reports, "doesn't look like a bus: far from the route" or
+"not moving", and lists those buses after the reported ones and before the
+rest. It is worked out on that page from the positions it already shows,
+kept in its memory only, never sent and never stored, and it does nothing
+by itself: Stop is still the organizer's to press.
+
+- *Far from the route* is more than 2 km from the line the route's stops
+  trace in route order (`oddRouteLine()`): the same 2 km
+  `assets/places.txt` is held to. The straight line between checkpoints would
+  not do, because stops sit up to 3.3 km off it where the road hooks round
+  the Tagaytay ridge; every point along the stops comes within 1 km of the
+  traced line (`test-guard.js`).
+- *Not moving* is half an hour of reports within 150 m of one place, by the
+  bus's own report times, away from both ends, where buses stand to leave
+  (`oddStill()`, the rider page's `rideStand()` in shape). In words and never
+  minutes, because a bus standing still is a driver's break as easily as a
+  phone in a house, and this tool does not time breaks. It is measured from
+  when the page first saw the bus, so a page just opened needs that half
+  hour before it can say so. `for-operators.html` says it exists.
+
 ## Rules revisited, October 2026
 
 The maintainer asked which rules could be changed and what changing them
@@ -1946,7 +2014,9 @@ would unlock. What changed, and what was kept and why:
   ticket's postcard".
 - **And in November 2026:** "nothing about who you are" in a position now
   has one exception a sharer chooses: their payment QR, while "Accept tips?"
-  is on; and the remembered things are seven. See "Tips".
+  is on (see "Tips"); the watching count, once the organizer's alone, is also
+  shown to the person sharing a bus; and the remembered things are eight,
+  with the tip QR and Low data.
 - **Kept:** no location history; no watcher location leaves the device; no
   total of anything on the server; nothing about speed or a trip's length in
   any stamp, luck or decoration threshold beyond the time summed in all; no
@@ -2010,7 +2080,7 @@ the map on arrival would stand between a rider at a roadside and the answer.
 So a first visit gets a small "New here?" note at the foot of the screen, where
 it covers nothing the page was opened for, and answering it either way is kept
 under the guide dot's key: both mean "this phone has been shown around", and the
-privacy panel's seven things stay seven. After that the tour is a quiet button at
+privacy panel's eight things stay eight. After that the tour is a quiet button at
 the foot of each tab and two buttons at the top of the guide.
 
 **Named `walk*`.** The content-blocker lesson again (see "Content blockers"):
@@ -2512,6 +2582,10 @@ the page becomes visible again, but it cannot survive backgrounding. On
 Android the answer is now the app in `mobile/` (see "The Android app" above).
 On an iPhone it is still a mounted phone on a charger, and long term a
 dedicated GPS tracker device.
+
+**"Not moving" needs the admin page open for half an hour.** The page
+measures it from when it first saw a bus, in its own memory, rather than
+the server keeping when a bus stopped ("Doesn't look like a bus").
 
 **An iPhone browser cannot read a QR picture.** "Accept tips?" needs the
 phone's own QR reader (`BarcodeDetector`), which Safari and Firefox do not

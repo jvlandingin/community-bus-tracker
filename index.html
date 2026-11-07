@@ -1240,6 +1240,7 @@
   .trip-on #onbusStrip .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), 0 0 18px 4px rgba(61,220,151,.45);}
   .trip-on #onbusStrip .tick.near span{color:#ffd27a;}
   .trip-on .tyline{color:#ffd27a;}
+  .seenline{margin-top:8px; text-align:center; font-size:var(--fs-label); font-weight:700; color:var(--muted);}
 
   /* ---- The salamat ticket ---------------------------------------------
      What a sharer gets for tapping Stop: a thank-you shaped like the punched
@@ -1903,18 +1904,22 @@
     color:var(--muted); cursor:pointer; border-radius:999px;
   }
   .walknew .x .gi{width:18px; height:18px;}
-  .walklink, .sitelink{
+  .walklink, .sitelink, .datalink{
     display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:var(--tap);
     margin:0 0 12px; padding:10px 14px; border:1.5px dashed var(--maroon-line); border-radius:var(--r-m);
     background:transparent; color:var(--brand-ink); cursor:pointer;
     font-family:inherit; font-size:var(--fs-small); font-weight:800;
   }
-  .walklink .gi, .sitelink .gi{width:18px; height:18px; flex:0 0 auto;}
+  .walklink .gi, .sitelink .gi, .datalink .gi{width:18px; height:18px; flex:0 0 auto;}
+  .datalink.on{border-style:solid; background:var(--maroon-soft);}
   #onbusView .walklink{margin:12px 0 0;}
   /* The map tab's foot: Tutorial and Send the tracker side by side, and Send
      alone across the row while a trip hides the Tutorial. */
-  .tabfoot{display:flex; gap:10px;}
+  .tabfoot{display:flex; flex-wrap:wrap; gap:0 10px;}
   .tabfoot > button{flex:1 1 0; min-width:0; padding:10px;}
+  .tabfoot > .datalink{flex-basis:100%;}
+  /* Low data: the map's own marks on the page's paper, and no tiles. */
+  #map.lowdata{background:var(--paper);}
 
   /* The guide has honoured this since it was written; the app never did, even
      though it slides a bus pill along a rail for a full second every time a
@@ -1979,6 +1984,7 @@
     <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="12" r="3.5"/><path d="M11.5 12H21M17.5 12v3M20.5 12v2.2"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5.5v13M5.5 12h13"/></symbol>
     <symbol id="i-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5.5 12h13"/></symbol>
+    <symbol id="i-data" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5.5 19v-3.5M10 19v-7M14.5 19V8.5M19 19V5"/></symbol>
     <symbol id="i-qr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.2"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.2"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.2"/><path d="M14 14h2.6v2.6M20.5 14v.1M14 20.5h.1M17.6 20.5h2.9v-2.9"/></symbol>
     <!-- The coach, front on: what every bus on the map and the strip is drawn
          as. Filled in whatever colour the svg is given, with the windscreen,
@@ -2002,7 +2008,7 @@
       <p>The app never asks for your location on its own, and you can use the whole map without ever giving it. No account, no name, no phone number. We can't see who is watching.</p>
       <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the location button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the page or the app.</p>
       <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. Searching for a stop or a place happens on your phone as well: the list of places along the route comes whole from this site, so <b>what you type is never sent</b>. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the page or the app, and is never sent either. Nor is how far you rode it, which your phone works out to decide one thing: when you tap “I got off” after riding at least a kilometre, and that bus's sharer accepts tips, you are asked if you want to say thanks with a tip. Your phone asks our server for that one bus's QR to show you, and nothing more. If you pay it, you pay it in your own payment app, like any QR; <b>this app never learns whether you did, or how much</b>.</p>
-      <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
+      <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer, and anyone sharing a bus, can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
       <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number. On our side it never adds up across trips: <b>no running total is kept for any driver or any bus on the server.</b> The sharer's own phone adds theirs up for their bus in My tickets, and that never leaves it.</p>
       <p>And one more, also only if you tap it: <b>Not a real bus?</b>, on a bus, or <b>Wrong?</b>, on a sighting, to tell the organizer something on the map looks wrong. It is stored the same scrambled way as Salamat, so it can't be traced back to you and a second tap isn't counted twice. <b>Only the organizer sees how many</b>, not the sharer and not other riders, and it is deleted when that trip ends or the sighting expires. Nothing happens on its own: the organizer looks and decides.</p>
       <p>“Send a link”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do. “Send the tracker”, at the foot of the map, does the same with this site's address and nothing else: not your key or PIN, not your stop, not a bus.</p>
@@ -2011,6 +2017,7 @@
       <p>What's sent: the bus's position, its direction, the bus number if you typed one, and a random ID made fresh for each trip, plus, only if you switched on “Show customized bus to riders”, a short code for how your bus is painted and dressed, and only while “Accept tips?” is on, your payment QR (below). Otherwise nothing about who you are. Each update <b>overwrites</b> the previous one, so <b>no history of the trip exists anywhere</b>. Not even we can see where a bus has been, only where it is now. When you tap Stop (or close the page), the bus disappears from everyone's map, and if you saved the stop you get off at, sharing stops there: your phone checks its own position against your stop, and sends nothing for it. Outside the route area, the bus shows on your own phone only, never on anyone else's map.</p>
       <p>In the Android app, sharing keeps going with the screen locked or another app open, and <b>a notification stays up for as long as it does</b>, so it can never run without you knowing. The app sends exactly what this page sends and keeps no more: the latest position, in memory, until you stop. Swiping the app away stops sharing. Its GPS comes through Google Play services, as in most Android apps. If you get it from Google Play, Google knows your account installed it, as with any app there. Play shows us only totals, never who.</p>
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and on our side it goes when the trip does. Your phone adds it to your bus in My tickets, a total only you can see.</p>
+      <p>While you share, the sharing tab says how many people have the map open right now: the same single number the organizer sees, counted as above, and gone when your trip ends.</p>
       <p>Riders can also tell the organizer your bus doesn't look like a real one. Only the organizer sees that, for this trip only, and it goes when the trip does.</p>
       <p><b>Accept tips?</b>, on the sharing tab, is off unless you switch it on and pick the QR your GCash, Maya or bank app saves. Your phone reads the picture itself and keeps only the QR's text, and only a payment QR from the Philippines with no fixed amount is taken. While it is on and you share, the QR goes with your bus's position, and a rider who rode your bus is asked when they get off if they want to tip you. The money goes from their app to your account like any QR payment; <b>this app never learns whether anybody tipped, or how much</b>, and keeps no total. <b>The honest cost:</b> while your bus is on the map, anyone determined can read your QR beside it, and with it the name your payment app shows, partly hidden, and any mobile number inside it (the app tells you when there is one). It is deleted with the trip, like the position. After three “Not a real bus?” taps on a trip, riders are not shown it, and the organizer can ban a QR used to cheat riders: the ban keeps a scrambled mark of the account, never the QR. Switching it off forgets the QR on this phone.</p>
       <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>the app sends it nowhere</b>. Close it and it is gone.</p>
@@ -2040,11 +2047,12 @@
 
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing. What is sent travels encrypted, over HTTPS.</p>
-      <p>Seven small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, the trip you are sharing, while you share it, and your tip QR, while “Accept tips?” is on. All seven stay in your browser or the app and are not linked to anything; the first six are never sent anywhere, and the QR goes only with your bus's position, as above. The Android app keeps an eighth: the key or PIN you entered to share, so you need not type it every trip. It goes to our server only to check it when you share, as it does in a browser, and it is deleted when it stops working.</p>
+      <p>Eight small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, the trip you are sharing, while you share it, your tip QR, while “Accept tips?” is on, and whether you turned Low data on or off. All eight stay in your browser or the app and are not linked to anything; the QR goes only with your bus's position, as above, and the rest are never sent anywhere. The Android app keeps a ninth: the key or PIN you entered to share, so you need not type it every trip. It goes to our server only to check it when you share, as it does in a browser, and it is deleted when it stops working.</p>
       <p>Your bus is the coach your trips decorate in My tickets, and it is <b>totals and choices, never a diary</b>: how many trips you shared, how many of them were first on the map, end to end, before 5 AM or after dark, which directions, which places on the route, whether you finished each tour, your time on the map and the salamat you received in all, and how many weeks in a row you have shared, with the week of your last trip to count it from; and the spare parts it has (the app's own points, drawn as a nut: never bought with money, never sent), what they got, which paint and accessories it wears, whether you show it to riders, and, for the cap of three earning trips a day, the day of your last one. Totals, never a list: no clock times and no bus numbers, so it can say how much you have shared and the last day you did, but never a timetable of when you worked. The trip you are sharing is kept so that a page that reloads or closes mid-trip can carry on with the same bus, or still give you its ticket: when it started, roughly where it began and last was on the route, and the trip's random ID. It is deleted the moment the trip ends, or, if the page closed mid-trip, the next time the page opens.</p>
       <p><b>Showing your bus to riders</b> is off unless you switch it on, in My tickets or when the app first asks, once there is something on your bus to show. While it is on and you share, riders who tap your bus see it as you dressed it. The honest cost: they will be able to tell it is yours from one trip to the next. The code that carries it is letters from the app's own lists, never words or colours of anyone's choosing, and it is deleted with the trip, like the position.</p>
       <p><b>A backup</b>, from Your progress in My tickets, is a small file of your kept tickets and your bus, made on this phone and handed to you to keep wherever you like. The app never sends it anywhere. Restore reads one back.</p>
       <p>Clearing your browser data, or uninstalling the app, removes them all, “Remove my stop” in the stop picker deletes the third on its own, “Start from scratch” in My tickets the fourth and fifth, and switching “Accept tips?” off the seventh. A backup never holds the QR.</p>
+      <p><b>Low data</b>, at the foot of the map, is a choice this phone remembers and sends nowhere: the map without its background pictures, and the buses checked less often. Until you choose, it follows your browser's data saver where the browser says.</p>
     </div>
     <div class="modal-foot">
       <button class="big btn-ghost" onclick="closeModal('privModal')">Close</button>
@@ -2314,6 +2322,7 @@
         <div class="followchip hidden" id="followChip"><span class="dot"></span><span class="txt" id="followText"></span><button type="button" onclick="stopFollowing()">Stop</button></div>
       </div>
       <div class="hint hidden" id="myLocNote"></div>
+      <div class="hint hidden" id="lowDataNote">Low data: map tiles off.</div>
 
       <!-- Rewritten by renderMyStop() on every poll. Nothing here is sent
            anywhere: the stop lives in this browser and the distance is
@@ -2457,6 +2466,8 @@
     <div class="tabfoot">
       <button type="button" class="walklink" onclick="startWalk('watch')"><svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>Tutorial</button>
       <button type="button" class="sitelink" onclick="sendSiteLink()"><svg class="gi" aria-hidden="true"><use href="#i-link"/></svg>Send the tracker</button>
+      <!-- Low data (November 2026): applyLowData() keeps it pressed or not. -->
+      <button type="button" class="datalink" id="lowDataBtn" onclick="toggleLowData()" aria-pressed="false"><svg class="gi" aria-hidden="true"><use href="#i-data"/></svg>Low data</button>
     </div>
   </div>
 
@@ -2532,6 +2543,9 @@
            thanksWords(). aria-live so it is announced when it arrives
            rather than only found by someone who goes looking. -->
       <div class="tyline hidden" id="tyLine" aria-live="polite"></div>
+      <!-- How many people have the map open, from the sharer's own row
+           (sql/17-watching-for-sharers.sql). Never a zero. -->
+      <div class="seenline hidden" id="seenLine"></div>
     </div>
 
     <!-- The saved-stop card again, while a trip is live: the same card the
@@ -4743,10 +4757,12 @@ function initMap() {
   warnIfNoBasemapKey();
   baseLayer = L.tileLayer(basemapUrl('nolabels'), {
     subdomains:'abcd', maxZoom:19, attribution:'© OpenStreetMap © CARTO'
-  }).addTo(map);
+  });
   labelLayer = L.tileLayer(basemapUrl('only_labels'), {
     subdomains:'abcd', maxZoom:19, pane:'labels'
-  }).addTo(map);
+  });
+  // Not a single tile is asked for in low data (applyLowData()).
+  applyLowData();
   // Someone flipping their phone to dark mode mid-trip should not be left
   // with the other theme's tiles until they reload.
   if (DARK_MQ && DARK_MQ.addEventListener){
@@ -4988,6 +5004,18 @@ function tripStamps(t){
 const TICKET_MIN_KM = 1;
 function ticketWorthShowing(t){
   return !!t && t.writes > 0 && t.mins >= 5 && !(Number.isFinite(t.km) && t.km < TICKET_MIN_KM);
+}
+// How many people have the map open, said to a sharer under the strip
+// during a trip (sql/17-watching-for-sharers.sql, November 2026): the live
+// count from 06-watching-count.sql on their own row, less their own tab.
+// Rule 1 again: a zero is never drawn, so nobody looking yet looks like
+// nothing. WATCH_CAP is _watching_cap(), where the server stops counting.
+const WATCH_CAP = 1000;
+function watchingWords(n, capped){
+  if (capped) return WATCH_CAP + '+ people have the map open';
+  const k = Number.isFinite(n) ? Math.floor(n) : 0;
+  if (k <= 0) return '';
+  return k === 1 ? '1 person has the map open' : k + ' people have the map open';
 }
 // Ingat pauwi, take care going home, for a trip that ends in the evening.
 function ticketGreeting(endMins){
@@ -5858,7 +5886,7 @@ function postcardFacts(e, cps){
 
 // Which buses this tab has already thanked. sessionStorage, not local: it
 // belongs to the visit, like the map's blue dot and the watcher id, and it
-// is deliberately NOT one of the seven things the privacy panel promises are
+// is deliberately NOT one of the eight things the privacy panel promises are
 // remembered between visits. Losing it costs nothing — the server drops a
 // repeat on its own, so the worst case is a button that offers itself twice.
 let THANKED = null;
@@ -5909,6 +5937,21 @@ function renderMyThanks(){
   // page loaded is not somebody tapping now.
   if (words && MY_THANKS > TY_SHOWN && TRIP && TRIP.polled) floatThanks();
   TY_SHOWN = words ? MY_THANKS : 0;
+  renderSeenLine();
+}
+// How many people have the map open, under the strip while this phone
+// shares a bus on the riders' map: the server's count on our own row, less
+// this tab when its own beat landed recently (the window is three minutes,
+// the beat every one), so "1 person" is never only the sharer.
+let MY_WATCHING = null, BEAT_OK_AT = 0;
+function renderSeenLine(){
+  const row = document.getElementById('seenLine');
+  if (!row) return;
+  const raw = (sharing && !writePrivate && Number.isFinite(MY_WATCHING)) ? MY_WATCHING : 0;
+  const self = (raw > 0 && Date.now() - BEAT_OK_AT < 170000) ? 1 : 0;
+  const words = watchingWords(raw - self, raw >= WATCH_CAP);
+  row.classList.toggle('hidden', !words);
+  row.textContent = words;
 }
 function floatThanks(){
   if (reducedMotion()) return;
@@ -7940,9 +7983,49 @@ function showToast(msg){
 //    of the saving. Callers pass their own last-fetch time so each feed is
 //    throttled against itself.
 const SLOW_FEED_MS = 18000;
+// ---- Low data (November 2026) --------------------------------------------
+// For riders on prepaid data. The map's background tiles are most of what a
+// visit costs, so in low data none are asked for: the route's own marks, the
+// stops and the buses stay on the page's paper. The position feed runs at
+// the slow feed's 18 seconds instead of 6, and the sightings once a minute.
+// Sharing is untouched: a sharer's position goes as often as ever. The
+// choice is remembered on this phone as wt-lowdata, the eighth remembered
+// thing; until one is made it follows the browser's data saver, where the
+// browser says.
+const LOW_SIGHTINGS_MS = 60000;
+function lowData(){
+  let v = null;
+  try{ v = localStorage.getItem('wt-lowdata'); }catch(e){}
+  if (v === '1') return true;
+  if (v === '0') return false;
+  return !!(navigator.connection && navigator.connection.saveData);
+}
+function toggleLowData(){
+  if (WALK) return;
+  const on = !lowData();
+  try{ localStorage.setItem('wt-lowdata', on ? '1' : '0'); }catch(e){}
+  applyLowData();
+  showToast(on ? 'Low data on. Map tiles off.' : 'Low data off.');
+}
+function applyLowData(){
+  const on = lowData();
+  const btn = document.getElementById('lowDataBtn');
+  if (btn){ btn.setAttribute('aria-pressed', on ? 'true' : 'false'); btn.classList.toggle('on', on); }
+  const note = document.getElementById('lowDataNote');
+  if (note) note.classList.toggle('hidden', !on);
+  const box = document.getElementById('map');
+  if (box) box.classList.toggle('lowdata', on);
+  if (!map) return;
+  [baseLayer, labelLayer].forEach(function(l){
+    if (!l) return;
+    if (on && map.hasLayer(l)) map.removeLayer(l);
+    else if (!on && !map.hasLayer(l)) l.addTo(map);
+  });
+}
 // Whether this page is on the slower feed, which the stop card's picture
 // on board glides over too.
 function slowFeed(){
+  if (lowData()) return true;
   return !!sharing && !document.getElementById('onbusView').classList.contains('hidden');
 }
 function shouldPoll(lastAt){
@@ -8015,6 +8098,9 @@ async function pollPositions() {
   // trip nobody has thanked yet, and is worth saying once.
   if (mine && !('thanks' in mine)) thanksTrouble('get_positions returned no thanks column');
   MY_THANKS = mine ? (mine.thanks|0) : 0;
+  // A database before sql/17-watching-for-sharers.sql sends no count, and
+  // the line simply stays away.
+  MY_WATCHING = mine && Number.isFinite(mine.watching) ? mine.watching : null;
   if (TRIP && sharing && MY_THANKS > TRIP.maxThanks){ TRIP.maxThanks = MY_THANKS; saveTrip(); }
   // markers are one per clustered bus rather than per sharing session, which
   // is why renderBuses owns them: it is the one place that clusters.
@@ -8165,6 +8251,8 @@ function sightError(msg){
 let lastSightingsAt = 0;
 async function pollSightings() {
   if (!sightingsOn() || !shouldPoll(lastSightingsAt)) return;
+  // Low data: the board once a minute, not every 15 seconds.
+  if (lowData() && Date.now() - lastSightingsAt < LOW_SIGHTINGS_MS) return;
   lastSightingsAt = Date.now();
   const res = await rpc('get_sightings', { p_slug: CFG.ROUTE_SLUG });
   if (res.error) return;
@@ -8234,7 +8322,8 @@ async function addSighting() {
 // ============================================================
 // Watching heartbeat
 // ============================================================
-// Answers exactly one question for the organiser, on the admin page:
+// Answers exactly one question, for the organiser on the admin page and,
+// since sql/17-watching-for-sharers.sql, for a sharer on the sharing tab:
 // how many devices have the map open right now. It sends a random id
 // this tab invented for itself and nothing else — no location, no
 // history, no link to the sharing session id or to anything that
@@ -8256,11 +8345,15 @@ function getWatcherId(){
   }
   return watcherId;
 }
-// Never surfaces anything. A count nobody on this page can see is not
-// worth one word of error in front of someone reading a map.
+// Never surfaces anything. A count is not worth one word of error in front
+// of someone reading a map.
 async function markWatching(){
   if (document.hidden) return;
-  try{ await rpc('mark_watching', { p_slug:CFG.ROUTE_SLUG, p_watcher:getWatcherId() }); }
+  try{
+    const res = await rpc('mark_watching', { p_slug:CFG.ROUTE_SLUG, p_watcher:getWatcherId() });
+    // So a sharer's count can leave this tab out (renderSeenLine()).
+    if (res && !res.error) BEAT_OK_AT = Date.now();
+  }
   catch(e){}
 }
 
@@ -10674,6 +10767,7 @@ function setShareUI(state,msg){
     // The number belonged to that trip. Leaving it on screen after Stop
     // would be the one thing this feature must never do: outlive the trip.
     MY_THANKS = 0;
+    MY_WATCHING = null;
     endTripHello();
     renderBuses();
     // Nor does the trip's first window: it is about a trip that is over.

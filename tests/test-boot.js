@@ -958,26 +958,28 @@ function run(page, include, label, configText, setup) {
 
   // The panel is the promise and the code is only the implementation. This is
   // that rule made mechanical: every key the app writes to localStorage has to
-  // be one the panel has told the reader about. An eighth remembered thing
+  // be one the panel has told the reader about. A ninth remembered thing
   // fails here until the paragraph is rewritten in the same commit, as the
-  // fifth, sixth and seventh, your bus, the trip in progress and the tip QR,
-  // were.
+  // fifth to the eighth, your bus, the trip in progress, the tip QR and Low
+  // data, were.
   const appSrc = fs.readFileSync(path.join(APP, 'index.html'), 'utf8');
   const keys = [...new Set([...appSrc.matchAll(/localStorage\.(?:setItem|removeItem)\(\s*'([^']+)'/g)]
     .map(m => m[1]))].sort();
-  check(keys.join(',') === 'wt-bus,wt-guide-seen,wt-key,wt-mystop,wt-qr,wt-theme,wt-tickets,wt-trip',
-    'the app keeps exactly the seven things the privacy panel names, and the Android app\'s eighth', keys.join(',') || 'none');
+  check(keys.join(',') === 'wt-bus,wt-guide-seen,wt-key,wt-lowdata,wt-mystop,wt-qr,wt-theme,wt-tickets,wt-trip',
+    'the app keeps exactly the eight things the privacy panel names, and the Android app\'s ninth', keys.join(',') || 'none');
   // supabase-js sends a request only when something asks for its answer, so
   // an rpc() nobody awaits or .then()s never leaves the phone. The wrong-way
   // pause's clear_bus_position was one, and had never gone out.
   const bare = appSrc.split('\n').filter(l => /\brpc\(/.test(l) && !/await rpc\(|= rpc\(|return rpc\(|const rpc = |\)\.then\(/.test(l));
   check(bare.length === 0, 'every request the page makes is one something waits for, so it is really sent', bare.join(' | ').trim());
   const panel = ok.d.getElementById('privModal').textContent.replace(/\s+/g, ' ');
-  check(/Seven small things are remembered on your own device/.test(panel),
-    'and the panel counts them out loud, so an eighth cannot slip in quietly');
-  check(/The Android app keeps an eighth: the key or PIN you entered to share/.test(panel) &&
+  check(/Eight small things are remembered on your own device/.test(panel),
+    'and the panel counts them out loud, so a ninth cannot slip in quietly');
+  check(/The Android app keeps a ninth: the key or PIN you entered to share/.test(panel) &&
         /deleted when it stops working/.test(panel),
-    'the eighth, the app\'s remembered key, is named too, with when it goes');
+    'the ninth, the app\'s remembered key, is named too, with when it goes');
+  check(/whether you turned Low data on or off/.test(panel) && /Low data<\/b>, at the foot of the map, is a choice this phone remembers and sends nowhere/.test(appSrc),
+    'and Low data, as a choice remembered on the phone and sent nowhere');
   // The tip QR (sql/16-tips.sql): the seventh, kept only while the switch is
   // on, written in one place, and the panel says what it costs.
   check([...appSrc.matchAll(/localStorage\.(?:setItem|removeItem)\(\s*'wt-qr'/g)].length === 2 &&
@@ -2174,7 +2176,35 @@ function run(page, include, label, configText, setup) {
       delete sim.reply.set_keyed_position;
       w.eval('QR_SENDS = true');
       w.saveTipQr(null); w.renderQrSwitch();
+
+      // How many people have the map open (sql/17-watching-for-sharers.sql):
+      // on this phone's own row, less its own tab, never a zero.
+      const ownRow = watching => ({ data: [{ pub_id: 'ee'.repeat(16), is_self: true, thanks: 0,
+        lat: here.coords.latitude, lng: here.coords.longitude, direction: 'north', bus_label: null,
+        updated_at: new Date().toISOString(), look: null, watching }] });
+      const seenAfter = async watching => {
+        sim.reply.get_positions = () => ownRow(watching);
+        w.eval('lastPositionsAt = 0');
+        await w.pollPositions();
+        await pause(30);
+        const el = d.getElementById('seenLine');
+        return el.classList.contains('hidden') ? '' : el.textContent;
+      };
+      w.eval('BEAT_OK_AT = Date.now()');
+      const four = await seenAfter(5);
+      check(four === '4 people have the map open', 'a sharer is told how many others have the map open, less their own tab', four);
+      check(await seenAfter(1) === '', 'their own tab alone is nobody, and nothing is drawn');
+      w.eval('BEAT_OK_AT = 0');
+      check(await seenAfter(1) === '1 person has the map open', 'with no recent beat of its own, every tab counted is somebody else');
+      check(await seenAfter(null) === '', 'a database without the count draws nothing');
+      w.eval('writePrivate = true');
+      check(await seenAfter(9) === '', 'nor while the bus is outside the route area, where nobody can see it');
+      w.eval('writePrivate = false');
+      check(await seenAfter(1200) === '1000+ people have the map open', 'past the count\'s ceiling it says so');
+      sim.reply.get_positions = () => ({ data: [] });
       await w.stopSharing();
+      check(d.getElementById('seenLine').classList.contains('hidden') && w.eval('MY_WATCHING') === null,
+        'and the count goes when the trip does');
       w.closeTicket();
 
       // The rider's side: asked when they get off a bus they rode, and only
@@ -2715,6 +2745,70 @@ function run(page, include, label, configText, setup) {
     answers.admin_qr_bans = 0;
     await a.w.refreshQrBans();
     check(bans.classList.contains('hidden'), 'and with none banned, the line is not there');
+
+    // Doesn't look like a bus: far from the route, or not moving away from
+    // both ends, worked out on this page and kept in its memory only.
+    const cpsA = CONFIG.split(/\r?\n/).filter(l => l.trim().startsWith('STOP =')).map(l => l.split('=')[1].split('|').map(x => x.trim()));
+    const stopA = { lat: +cpsA[30][1], lng: +cpsA[30][2] };
+    const at = mins => new Date(Date.parse('2026-11-07T05:00:00Z') + mins * 60000).toISOString();
+    const listAt = mins => [
+      { session_id: 'sess-odd-0001', lat: stopA.lat, lng: stopA.lng + 0.06, direction: 'north', bus_label: '', updated_at: at(mins), keyless: false, qr: false },
+      { session_id: 'sess-odd-0002', lat: stopA.lat, lng: stopA.lng, direction: 'north', bus_label: '98020', updated_at: at(mins), keyless: false, qr: false },
+      { session_id: 'sess-odd-0003', lat: stopA.lat + 0.01, lng: stopA.lng, direction: 'south', bus_label: '98021', updated_at: at(mins), keyless: false, qr: false }];
+    answers.admin_list_sharers = listAt(0);
+    await a.w.refreshSharers();
+    const said = () => [...a.d.querySelectorAll('#liveList .item')].map(r => r.textContent.replace(/\s+/g, ' '));
+    let rowsNow = said();
+    check(/doesn't look like a bus: far from the route/.test(rowsNow[0]) && !/doesn't look like a bus/.test(rowsNow[1] + rowsNow[2]),
+      'a bus far from the route is said not to look like a bus, and listed first', rowsNow[0].slice(0, 80));
+    answers.admin_list_sharers = listAt(31);
+    answers.admin_list_sharers[2].lat = stopA.lat + 0.02;      // the third one moved on
+    await a.w.refreshSharers();
+    rowsNow = said();
+    check(/far from the route, not moving/.test(rowsNow[0]) && /98020.*doesn't look like a bus: not moving/.test(rowsNow[1]) &&
+          !/doesn't look like a bus/.test(rowsNow[2]),
+      'half an hour later, the two that never moved are not moving, and the one that did is not flagged');
+    check(!/\bmin\b|minutes/.test(rowsNow.join(' ').replace(/updated .*? ago/g, '')),
+      'said in words, never in minutes');
+    check(a.w.localStorage.length === 0 && !calls.some(c => /odd|still/.test(c.fn)), 'and nothing about it is stored or sent');
+  }
+
+  console.log('\n=== 19. low data ===');
+  // The map without its background tiles, a slower feed, remembered on the
+  // phone as wt-lowdata, and the privacy panel saying so (section 10).
+  {
+    const w = ok.w, d = ok.d;
+    const btn = d.getElementById('lowDataBtn');
+    const tiles = () => w.eval('map.hasLayer(baseLayer) || map.hasLayer(labelLayer)');
+    w.localStorage.removeItem('wt-lowdata');
+    w.applyLowData();
+    check(!!btn && btn.textContent.trim() === 'Low data' && btn.getAttribute('aria-pressed') === 'false' &&
+          !!d.querySelector('#trackView .tabfoot #lowDataBtn') && tiles() && d.getElementById('lowDataNote').classList.contains('hidden'),
+      'a "Low data" button at the foot of the map, off until chosen, with the map\'s tiles on');
+    btn.click();
+    check(w.localStorage.getItem('wt-lowdata') === '1' && btn.getAttribute('aria-pressed') === 'true' && !tiles() &&
+          !d.getElementById('lowDataNote').classList.contains('hidden') && d.getElementById('map').classList.contains('lowdata'),
+      'on, it takes the tiles off the map, says so under it, and is remembered on the phone');
+    check(w.eval('slowFeed()') === true && w.eval('SLOW_FEED_MS') === 18000 && w.eval('LOW_SIGHTINGS_MS') === 60000,
+      'and the buses are checked every 18 seconds, the sightings every minute');
+    const stopMarks = d.querySelectorAll('#map .stopmk').length, cpMarks = d.querySelectorAll('#map .cpmk').length;
+    check(stopMarks > 0 && cpMarks > 0, 'the route\'s own marks stay on the map', stopMarks + ' stops, ' + cpMarks + ' checkpoints');
+    btn.click();
+    check(w.localStorage.getItem('wt-lowdata') === '0' && btn.getAttribute('aria-pressed') === 'false' && tiles() &&
+          w.eval('slowFeed()') === false,
+      'off again, the tiles come back and the feed is the usual one');
+    w.localStorage.removeItem('wt-lowdata');
+    Object.defineProperty(w.navigator, 'connection', { value: { saveData: true }, configurable: true });
+    check(w.eval('lowData()') === true, 'with nothing chosen, a browser that asks to save data gets low data');
+    w.localStorage.setItem('wt-lowdata', '0');
+    check(w.eval('lowData()') === false, 'and a choice made on the phone wins over it');
+    delete w.navigator.connection;
+    w.localStorage.removeItem('wt-lowdata');
+    w.applyLowData();
+    check(!/lowData\(\)/.test(fs.readFileSync(path.join(APP, 'index.html'), 'utf8').slice(
+            fs.readFileSync(path.join(APP, 'index.html'), 'utf8').indexOf('async function writePosition'),
+            fs.readFileSync(path.join(APP, 'index.html'), 'utf8').indexOf('// ---- Trip guards'))),
+      'and a sharer\'s position goes as often as ever: writePosition never asks');
   }
 
   console.log(fail ? `\n${fail} FAILED` : '\nALL PASS');

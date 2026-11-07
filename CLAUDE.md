@@ -18,7 +18,7 @@ The ten dependency-free JavaScript suites, run from the repository root:
 
 ```
 node tests/test-hours.js      # split operating hours, the en-route allowance, the hours card, the parol season
-node tests/test-guard.js      # wrong-direction detection on simulated trips
+node tests/test-guard.js      # wrong-direction detection on simulated trips; the admin page's "doesn't look like a bus"
 node tests/test-strip.js      # progress strip position and wording, the town lines in the popup
 node tests/test-prompts.js    # idle, end-of-trip, your-stop and direction prompts
 node tests/test-mystop.js     # the saved stop: which bus is coming, how far, how many stops, the card, where sharing stops, the search for stops and places
@@ -46,7 +46,7 @@ each moves the seeded rows the next would expect. From `tests/`:
 ```
 createdb bustest
 psql -d bustest -f db/00-legacy-baseline.sql
-psql -d bustest -f ../sql/01-base.sql          # then 02 through 16 in order
+psql -d bustest -f ../sql/01-base.sql          # then 02 through 17 in order
 psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 ```
 
@@ -452,6 +452,27 @@ read a live bus's code, and with it a partly hidden name and any mobile
 number in it. Named `qr*`, never `tip*` or `donat*`. No login, deliberately:
 the payment account is the stronger identity. `docs/ARCHITECTURE.md`, "Tips".
 
+**A sharer sees how many people have the map open** (November 2026,
+`sql/17-watching-for-sharers.sql`): "12 people have the map open" under the
+strip during a trip, the watching count the admin page already had, returned
+on the sharer's own row of `get_positions` beside `thanks` and unlocked the
+same way. Less their own tab, never a zero, never for riders, and nothing for
+a bus outside the route area that nobody can see. `watchingWords()`.
+
+**Low data** (November 2026): a button at the foot of the map. No basemap
+tiles (the route's own marks stay, on the page's paper), the position feed at
+the slow feed's 18 s (`slowFeed()`) and the sightings once a minute. A
+sharer's own writes are never slowed. Remembered as `wt-lowdata`; until
+chosen it follows the browser's `saveData`. `test-boot.js` section 19.
+
+**The admin page says when a bus doesn't look like one** (November 2026):
+"far from the route", more than 2 km from the line the stops trace in route
+order, or "not moving", half an hour within 150 m of one place away from both
+ends, in words and never minutes, because standing still is a driver's break
+as easily as a fake. Worked out on that page from what it already shows and
+kept in its memory only; it does nothing by itself. The DOESN'T LOOK LIKE A
+BUS block in `admin.html`, tested by `test-guard.js`.
+
 **A request nobody waits for is never sent.** supabase-js sends an `rpc()`
 only when something awaits it or calls `.then`; a bare call is silently
 dropped, which is how the wrong-direction pause never cleared its bus.
@@ -487,14 +508,15 @@ type and everyone can read is user-generated content on Google Play, which
 then wants posting rules, a Report button and someone answering reports;
 `test-strip.js` fails if a typing box or the sent text comes back.
 
-**The app keeps exactly seven things between visits**, and the Android app an
-eighth (the share key, so a sharer is not asked for the PIN every trip after
+**The app keeps exactly eight things between visits**, and the Android app a
+ninth (the share key, so a sharer is not asked for the PIN every trip after
 Android closes the app; never in a browser, which may be shared), all on the
 device and all named in the privacy panel: whether this phone has been shown around (the
 guide or the tour), the light/dark/system theme choice, the reader's saved stop, the tickets a
 sharer chose to keep, your bus (its counts, its parts and what it wears),
-the trip in progress while it runs, and a sharer's tip QR while "Accept
-tips?" is on (the one of them that leaves the phone, with each position). A backup is those tickets and that bus in
+the trip in progress while it runs, a sharer's tip QR while "Accept
+tips?" is on (the one of them that leaves the phone, with each position),
+and whether Low data is on. A backup is those tickets and that bus in
 a file the sharer holds, never another stored key. Adding one means editing that panel in the same
 commit — the panel is the promise, not the code. `test-boot.js` section 10 makes that mechanical: it fails if the set of
 `localStorage` keys the app writes stops matching the set the panel names.
@@ -512,7 +534,7 @@ real ones through `busesNow()`; the reader's own stop, filter, tab, chosen bus
 and map view come back on the way out. A clear layer takes every tap, and every
 function that sends or stores refuses while `WALK` is set anyway, so a practice
 salamat or Start can never fire. The first-visit note is answered under the
-guide's own `wt-guide-seen` key, so the seven remembered things stay seven. DOM
+guide's own `wt-guide-seen` key, so the eight remembered things stay eight. DOM
 names are `walk*`, never `tour`, `tooltip` or `onboard`: filter lists hide
 onboarding libraries by those names, and a hidden bubble over a dimmed page has
 no way out. `test-tour.js` holds the steps, the words and the refusals;
@@ -723,7 +745,8 @@ before it actually was.
 
 **Tests extract the shipped code.** Nine of the JavaScript suites pull functions
 out of `index.html` by comment markers and run them, so a passing test cannot
-drift from the app; the tenth, `test-tokens.js`, reads the shipped styles. Keep the markers intact when editing those regions.
+drift from the app (`test-guard.js` cuts one block out of `admin.html` the same
+way); the tenth, `test-tokens.js`, reads the shipped styles. Keep the markers intact when editing those regions.
 
 ## Route-specific content
 

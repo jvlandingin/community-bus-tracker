@@ -25,6 +25,24 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-11-07: Three from the list of ideas
+
+Asked for ideas to make the tracker something people want to use, the
+maintainer picked three to build at once. **Sharers see how many people have
+the map open** while they share, the watching count the admin page already
+had, because the question a sharer cannot answer is whether anyone is
+looking. **Low data**, at the foot of the map, for riders on prepaid load: no
+map tiles, buses checked every 18 seconds. And on the admin page, **"doesn't
+look like a bus"**: far from the route, or not moving for half an hour away
+from both ends, which matters more now that tips give a reason to fake a bus.
+Said in words, never minutes, because a bus standing still is a driver's
+break as easily as a phone in a house.
+
+`sql/17-watching-for-sharers.sql` has to be run in Supabase for the first:
+until it is, sharers simply see no count.
+
+---
+
 ## 2026-11-03: Tips for sharers
 
 The maintainer asked whether sharers could accept payments or donations, or

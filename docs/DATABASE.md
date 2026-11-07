@@ -216,7 +216,7 @@ deletes every `keyless` bus in the same transaction: see "Open sharing" below.
 | function | notes |
 |---|---|
 | `get_settings(p_slug)` | returns `{settings, notice}`. Notice is null when unset or expired. |
-| `get_positions(p_slug, p_self)` | filters stale rows, deletes nothing. Returns `pub_id`, **not** the session id, see below, and no speed. `p_self` is optional: pass your own session id and your own row comes back with `is_self` set, which is how the duplicate-sharer warning skips itself. It also carries `thanks` on that row and `null` on every other, see "Saying salamat". An `off_route` row comes back only as the caller's own, see "Outside the route area". |
+| `get_positions(p_slug, p_self)` | filters stale rows, deletes nothing. Returns `pub_id`, **not** the session id, see below, and no speed. `p_self` is optional: pass your own session id and your own row comes back with `is_self` set, which is how the duplicate-sharer warning skips itself. It also carries `thanks` on that row and `null` on every other, see "Saying salamat", and since `17-watching-for-sharers.sql` `watching`, how many devices have the map open, on that row only and only while it is on the riders' map, see "The watching count". An `off_route` row comes back only as the caller's own, see "Outside the route area". |
 | `get_sightings(p_slug)` | newest 8 within the expiry window |
 | `add_sighting(p_slug, p_body)` | 1 to 140 chars; refuses a 6th post inside 60 seconds route-wide |
 | `clear_bus_position(p_slug, p_session)` | takes the real session id, which only the sharer's own phone holds; keeps working across a rotation and from sendBeacon |
@@ -446,6 +446,16 @@ it is visible. `watcher_id` is a random string the tab invents for itself, kept
 in `sessionStorage`, gone when the tab closes; it is not the sharing session id
 and is not linked to it. `admin_watching_count(slug, admin)` returns
 `(watching, capped)` — a total and a flag, never the ids behind it.
+
+Since `17-watching-for-sharers.sql` (November 2026) the person sharing a bus
+sees the same number during their trip: `get_positions` returns it as
+`watching` on the caller's own row, beside `thanks` and unlocked the same way,
+by `p_self`, the real session id only that phone holds. Only while that bus is
+on the riders' map: a bus kept for its own phone outside the route area is
+seen by nobody, so it is told nothing. Nothing new is kept: it is the same
+count of the same rows, read at the moment of asking. The page takes its own
+tab off when its own beat landed recently and never draws a zero, and
+`15-watching-for-sharers-tests.sql` holds who may never see it.
 
 Design constraints, all of which are the point rather than details:
 

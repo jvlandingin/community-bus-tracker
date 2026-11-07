@@ -17,7 +17,7 @@ const src = html.slice(html.indexOf('// ---- SAYING SALAMAT (unit tested)'),
 const albumSrc = html.slice(html.indexOf('// ---- THE TICKET ALBUM (unit tested)'),
                             html.indexOf('// ---- END ALBUM'));
 const S = {};
-new Function('S', src + albumSrc + 'S.thanksWords=thanksWords;S.thanksControl=thanksControl;' +
+new Function('S', src + albumSrc + 'S.thanksWords=thanksWords;S.thanksControl=thanksControl;S.watchingWords=watchingWords;S.WATCH_CAP=WATCH_CAP;' +
   'S.ticketStamps=ticketStamps;S.ticketWorthShowing=ticketWorthShowing;S.TICKET_MIN_KM=TICKET_MIN_KM;S.ticketGreeting=ticketGreeting;' +
   'S.STAMPS=STAMPS;S.albumEntry=albumEntry;S.albumClean=albumClean;S.albumPlaces=albumPlaces;S.albumStats=albumStats;' +
   'S.ticketSky=ticketSky;S.keptGreeting=keptGreeting;S.keptDate=keptDate;S.keptSince=keptSince;' +
@@ -1023,6 +1023,32 @@ console.log('\n=== 22. tips: only a QR Ph code, only to a rider who rode it, not
   check(/^<svg viewBox="0 0 (\d+) \1"/.test(svg) && +/viewBox="0 0 (\d+)/.exec(svg)[1] === T.qrMatrix(Q.A).size + 8 &&
         /<rect width="\d+" height="\d+" fill="#fff"\/>/.test(svg) && /fill="#000"/.test(svg),
     'drawn black on white, with the four modules of white round it that scanners need');
+}
+
+
+console.log('\n=== 23. a sharer is told how many have the map open, never a zero ===');
+// sql/17-watching-for-sharers.sql. The live count from the watching heartbeat,
+// on the sharer's own row, less their own tab, under the strip during a trip.
+check(S.watchingWords(0) === '' && S.watchingWords(-2) === '' && S.watchingWords(null) === '' && S.watchingWords(NaN) === '',
+  'nobody else looking draws nothing, never a zero');
+check(S.watchingWords(1) === '1 person has the map open' && S.watchingWords(12) === '12 people have the map open' &&
+      S.watchingWords(2.7) === '2 people have the map open',
+  'one is a person, more are people');
+check(S.WATCH_CAP === 1000 && S.watchingWords(5, true) === '1000+ people have the map open',
+  'past the count\'s ceiling it says so, rather than a number that is wrong');
+{
+  const mig = fs.readFileSync(path.join(ROOT, 'sql', '06-watching-count.sql'), 'utf8');
+  check(new RegExp('_watching_cap\\(\\)\\s*returns integer language sql immutable as \\$\\$ select ' + S.WATCH_CAP + ';').test(mig),
+    'and the page\'s ceiling is the server\'s');
+  const fnB = name => { const a = html.indexOf('function ' + name + '('); const m = /\n(?:async )?function |\n\/\/ ----/.exec(html.slice(a + 1)); return a < 0 ? '' : html.slice(a, m ? a + 1 + m.index : html.length); };
+  const seen = fnB('renderSeenLine');
+  check(/sharing && !writePrivate && Number\.isFinite\(MY_WATCHING\)/.test(seen) && /Date\.now\(\) - BEAT_OK_AT < 170000/.test(seen) &&
+        /watchingWords\(raw - self, raw >= WATCH_CAP\)/.test(seen),
+    'drawn only while this phone shares a bus riders can see, less its own tab when its beat is recent');
+  check(/MY_WATCHING = mine && Number\.isFinite\(mine\.watching\) \? mine\.watching : null;/.test(html) &&
+        /MY_THANKS = 0;\s*MY_WATCHING = null;/.test(html),
+    'read from this phone\'s own row only, and forgotten when the trip ends');
+  check(!/watching/.test(fnB('busPopupHtml') + fnB('renderStrip')), 'and never drawn for riders, on a popup or the strip');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');

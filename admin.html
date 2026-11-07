@@ -352,7 +352,7 @@
     <div class="hint" style="margin-top:8px;">Everyone currently sharing a bus position. Stopping one removes the bus and blocks that phone from sharing for 6 hours, and their app tells them an organizer stopped it.</div>
     <div class="hint" style="margin-top:6px;">Riders can tap <b>Not a real bus?</b> on a bus. How many did shows in red beside it, and the bus moves to the top. Nothing happens on its own: look, then Stop it or leave it. Only you see the number, and it goes when the trip ends.</div>
     <div class="hint" style="margin-top:6px;"><b>Doesn't look like a bus</b> shows in red beside a bus <b>far from the route</b>, or <b>not moving</b> for half an hour away from either end, as seen since this page opened. Worth a look, not proof: nothing happens on its own, and nothing about it is kept.</div>
-    <div class="hint" style="margin-top:6px;">A bus marked <b>takes tips</b> carries its sharer's payment QR, shown to riders who rode it when they get off. After three <b>Not a real bus?</b> taps riders are not shown it, for that trip. <b>Ban QR</b> stops that account being shown on any trip, for anyone, until you lift it below; the bus stays on the map.</div>
+    <div class="hint" style="margin-top:6px;">A bus marked <b>takes tips</b> carries its sharer's payment QR or GCash/Maya number, shown to riders who rode it when they get off. After three <b>Not a real bus?</b> taps riders are not shown it, for that trip. <b>Ban tips</b> stops that account or number being shown on any trip, for anyone, until you lift it below; the bus stays on the map.</div>
     <div class="hint warn hidden" id="keyAlert" style="margin-top:8px;"></div>
     <div id="liveList" style="margin-top:6px;"></div>
     <div class="hint warn" style="margin-top:10px;">Honest limit: someone determined can open the tracker in a new tab to get a new session and share again. Changing the share key below is the only real expulsion, and it affects everyone with the key. A bus marked <b>no key</b> was started while open sharing was on; turning open sharing off removes all of those at once.</div>
@@ -362,7 +362,7 @@
     <span class="badge">STOPPED SHARERS</span>
     <div class="hint" style="margin-top:8px;">Blocked from sharing until the time shown. Tap Allow again if you stopped someone by mistake.</div>
     <div id="blockedList" style="margin-top:6px;"></div>
-    <!-- Banned tip QRs (sql/16-tips.sql): a count and a way back, never a
+    <!-- Banned tip accounts (sql/16-tips.sql): a count and a way back, never a
          list, because a ban is a scrambled mark nobody can read. Hidden
          until there is one, and on a database without the migration. -->
     <div class="item hidden" id="qrBans" style="margin-top:6px;"><div id="qrBansText"></div>
@@ -973,14 +973,15 @@ async function refreshSharers(){
       '<div class="meta">'+at+
       ' · updated '+timeAgo(Date.parse(b.updated_at))+' ago · session '+esc(b.session_id.slice(0,8))+'...</div></div>'+
       '<span class="row">'+
-      (b.qr === true ? '<button class="small btn-ghost" onclick="banQr(\''+esc(b.session_id)+'\')">Ban QR</button>' : '')+
+      (b.qr === true ? '<button class="small btn-ghost" onclick="banQr(\''+esc(b.session_id)+'\')">Ban tips</button>' : '')+
       '<button class="small btn-danger" onclick="kick(\''+esc(b.session_id)+'\')">Stop</button></span></div>';
   }).join('') : '<div class="hint">Nobody is sharing right now.</div>';
 }
-// Bans the account in a bus's tip QR, on every trip, and takes it off every
-// live bus that carries it. The bus itself stays: Stop is the other button.
+// Bans the account in a bus's tip QR, or its number, on every trip, and takes
+// it off every live bus that carries it. The bus itself stays: Stop is the
+// other button.
 async function banQr(session){
-  if (!confirm('Ban this QR? Riders will not be shown it on any trip until you lift the ban. The bus stays on the map.')) return;
+  if (!confirm('Ban this account from tips? Riders will not be shown it on any trip until you lift the ban. The bus stays on the map.')) return;
   const res = await rpc('admin_ban_qr', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_session:session });
   if (res.error){ alert(friendly(res.error)); return; }
   refreshSharers(); refreshQrBans();
@@ -990,10 +991,10 @@ async function refreshQrBans(){
   const box = document.getElementById('qrBans');
   const n = res.error ? 0 : (res.data|0);
   box.classList.toggle('hidden', n === 0);
-  document.getElementById('qrBansText').textContent = n + (n === 1 ? ' tip QR banned.' : ' tip QRs banned.');
+  document.getElementById('qrBansText').textContent = n + (n === 1 ? ' tip account banned.' : ' tip accounts banned.');
 }
 async function liftQrBans(){
-  if (!confirm('Lift every tip QR ban? Those accounts can be shown to riders again.')) return;
+  if (!confirm('Lift every tips ban? Those accounts can be shown to riders again.')) return;
   const res = await rpc('admin_lift_qr_bans', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
   if (res.error){ alert(friendly(res.error)); return; }
   refreshQrBans();

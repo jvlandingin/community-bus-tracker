@@ -190,7 +190,10 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
     a rider who rode that bus when they get off, deleted when the trip ends.
     *Personal info, name and phone number*, optional, go with it: a payment
     QR carries its owner's name, partly hidden, and may carry their mobile
-    number, which the app tells the sharer before using it. Picked by the
+    number, which the app tells the sharer before using it. Since
+    `sql/18-tip-number.sql` a sharer may instead pick GCash or Maya and type
+    their mobile number, shown in full to a rider who rode the bus; the
+    app says so beside the box before it keeps it. Never free text. Picked by the
     sharer, so a transfer they start and expect, not sharing in Play's terms.
     The picture itself is read on the phone and never sent. A ban an
     organizer makes keeps a salted hash of the account, never the code.

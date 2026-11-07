@@ -1890,8 +1890,24 @@ Decided, each for a reason:
 - *The phone's own reader, and no other.* `BarcodeDetector`, which Chrome on
   Android, the Android app's WebView and Samsung Internet have. A vendored
   reader (jsQR, Apache-2.0) would have covered iPhones too, at 250 KB of
-  third-party code; this does without one, and an iPhone browser says it
-  cannot read QR pictures and points to Chrome on Android or the app.
+  third-party code; this does without one, and an iPhone browser asks for a
+  number instead (below).
+- *Or a number, never free text* (`sql/18-tip-number.sql`, November 2026).
+  The maintainer asked whether a sharer could just put their GCash and
+  number "via text", then their own text. Free text was refused for the
+  reason sightings stopped being typed: words one person types and others
+  read are what Google Play wants rules, reporting and moderation for, and
+  the easiest scam to write ("official fare, send here", a link to a fake
+  wallet). What was built covers the ask without it: GCash or Maya picked
+  from a list, and a mobile number typed into a phone-number box, kept as
+  `gcash:09171234567` (`tipNumberFrom()`, `tipNumber()`), the one shape the
+  server accepts beside a QR Ph code. The rider sees the wallet and the
+  number, drawn from those two checked parts, with Copy number. The cost is
+  the full number in front of every rider offered it, and anyone determined:
+  the maintainer accepted it ("WhatsApp already shows everyone's phone
+  number"), on condition of the line beside the box, "Riders who ride your
+  bus will see this number." A number is one account in either wallet, so a
+  ban holds in both. Nothing checks that it is the sharer's.
 - *Nothing is counted.* No amount, no total, no record of who tipped whom:
   the app never learns whether anybody paid. So tips cannot rank sharers,
   cannot become the driver metric `for-operators.html` promises does not
@@ -2587,10 +2603,11 @@ dedicated GPS tracker device.
 measures it from when it first saw a bus, in its own memory, rather than
 the server keeping when a bus stopped ("Doesn't look like a bus").
 
-**An iPhone browser cannot read a QR picture.** "Accept tips?" needs the
-phone's own QR reader (`BarcodeDetector`), which Safari and Firefox do not
-offer, so a sharer there is told to use Chrome on Android or the app. A
-vendored reader would fix it, at the cost of third-party code ("Tips").
+**An iPhone browser cannot read a QR picture.** "Accept tips?" reads a QR
+with the phone's own reader (`BarcodeDetector`), which Safari and Firefox do
+not offer, so a sharer there can give a GCash or Maya number instead. A
+vendored reader would let them use a QR too, at the cost of third-party code
+("Tips").
 
 **Nothing detects a wrong vehicle going the right way.** A car, a jeepney, or
 another company's bus on the same corridor is indistinguishable from a Wonderful

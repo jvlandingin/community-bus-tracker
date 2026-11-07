@@ -51,7 +51,9 @@ design.** Unique on `(route_slug, session_id)`.
 
 `qr` (since `16-tips.sql`) is NULL unless the sharer has switched on "Accept
 tips?". Then it is the text of their payment QR code, exactly as their payment
-app printed it, and only if `_qr_key` finds a QR Ph account in it (see "Tips");
+app printed it, and only if `_qr_key` finds a QR Ph account in it, or since
+`18-tip-number.sql` a wallet and a number in one shape, `gcash:09171234567` or
+`maya:09171234567` (see "Tips");
 anything else is stored as NULL rather than refused, as a bad look is, and the
 check constraint `bus_positions_qr_shape` refuses any other shape outright.
 Every write sets it, so switching tips off takes the code off from the next
@@ -647,6 +649,19 @@ no amount, no total and no record of who paid. Decided, each for a reason:
   blockers match, as `say_wrong` is not `report_*`.
 
 `14-tips-tests.sql` holds all of it.
+
+**Or a number** (`sql/18-tip-number.sql`, November 2026). For a sharer whose
+browser cannot read a QR picture, or who would rather: GCash or Maya, picked
+on the page, and a Philippine mobile number, written by the page in one shape,
+`gcash:09171234567`. `_qr_key` takes that shape and no other (no spaces, no
++63, no words after it), and makes the account `num:` and the number, the
+same in either wallet, so a ban on a number holds in both; the column's check
+allows it. Nothing else changed: the number rides on the trip's row, goes
+with it, is handed out by `get_bus_qr` for one bus at a time and hidden by
+three "Not a real bus?" taps. Never free text: the page builds what a rider
+sees from the two checked parts. The cost, stated where the number is typed
+and in the privacy panel: every rider offered it sees the full number.
+`16-tip-number-tests.sql` holds it.
 
 ## Setting up a fresh route
 

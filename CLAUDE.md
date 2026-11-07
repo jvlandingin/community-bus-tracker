@@ -46,7 +46,7 @@ each moves the seeded rows the next would expect. From `tests/`:
 ```
 createdb bustest
 psql -d bustest -f db/00-legacy-baseline.sql
-psql -d bustest -f ../sql/01-base.sql          # then 02 through 17 in order
+psql -d bustest -f ../sql/01-base.sql          # then 02 through 18 in order
 psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 ```
 
@@ -442,7 +442,11 @@ and "Not the fare. Not the bus company." Never on the map, a chip or a popup,
 so a made-up bus nobody can ride earns nothing. Only a QR Ph code with no
 fixed amount is kept, by the same rule on the phone (`qrPhKey()`) and the
 server (`_qr_key`); the sharer's phone reads its own redraw back before using
-a code. Nothing about a tip is counted or kept: the app never learns whether
+a code. **Or a number** (`sql/18-tip-number.sql`): GCash or Maya picked, a
+mobile number typed, kept as `gcash:09171234567` and shown to the rider in
+full with Copy number, after "Riders who ride your bus will see this
+number." beside the box; how an iPhone shares tips. **Never free text**
+(the maintainer asked; refused for the reason sightings are not typed). Nothing about a tip is counted or kept: the app never learns whether
 anyone paid. `get_bus_qr` hands out one bus's code at a time and never
 `get_positions`; three "Not a real bus?" taps hide it for that trip (the one
 report that acts on its own, because it costs at most one trip's tips) and an

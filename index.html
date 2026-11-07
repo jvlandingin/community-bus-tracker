@@ -707,6 +707,18 @@
   .qrart img, .qrart svg{display:block; width:100%; height:auto;}
   .qrart.small{width:120px;}
   .qrfine{margin:4px 0 0; text-align:center; font-size:var(--fs-label); font-weight:700; color:var(--muted);}
+  /* The number, typed under a wallet picked from two: never free text. */
+  .qrnum{margin:4px 0 2px;}
+  .qrwallets{display:flex; gap:8px; margin-bottom:8px;}
+  .qrw{flex:1 1 0; min-height:var(--tap); border-radius:var(--r-m); border:1.5px solid var(--line); background:var(--surface);
+    color:var(--ink); font-family:inherit; font-size:var(--fs-small); font-weight:800; cursor:pointer;}
+  .qrw.on{border-color:var(--gold); background:var(--gold-soft);}
+  #qrNumInput{width:100%; min-height:var(--tap); padding:10px 12px; border-radius:var(--r-m); border:1.5px solid var(--line);
+    background:var(--paper); color:var(--ink); font-family:inherit; font-size:var(--fs-title); font-weight:700; letter-spacing:.04em; text-align:center;}
+  /* And on the rider's side, the number large enough to read off and copy. */
+  .qrart.num{background:var(--paper); border:1px solid var(--line); padding:14px 10px; text-align:center;}
+  .tynum .w{display:block; font-size:var(--fs-label); font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;}
+  .tynum b{display:block; margin-top:2px; font-size:var(--fs-headline); letter-spacing:.04em; color:var(--ink); user-select:all; -webkit-user-select:all;}
 
   /* The picker. A list of the route's own stops, searchable, because typing
      three letters beats scrolling seventy-one names on a moving bus. */
@@ -2007,7 +2019,7 @@
       <h4 class="ok">If you're just watching the map</h4>
       <p>The app never asks for your location on its own, and you can use the whole map without ever giving it. No account, no name, no phone number. We can't see who is watching.</p>
       <p>Two things can use your location if <b>you</b> ask them to, and neither one sends it anywhere: the location button on the map, which draws a dot where you are, and “Use my current location” in the stop picker, which finds the nearest stop to you. Both work entirely inside your phone. <b>Your location is never transmitted, never stored on our side, and no other visitor can see it.</b> The dot switches itself off when you close the page or the app.</p>
-      <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. Searching for a stop or a place happens on your phone as well: the list of places along the route comes whole from this site, so <b>what you type is never sent</b>. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the page or the app, and is never sent either. Nor is how far you rode it, which your phone works out to decide one thing: when you tap “I got off” after riding at least a kilometre, and that bus's sharer accepts tips, you are asked if you want to say thanks with a tip. Your phone asks our server for that one bus's QR to show you, and nothing more. If you pay it, you pay it in your own payment app, like any QR; <b>this app never learns whether you did, or how much</b>.</p>
+      <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. Searching for a stop or a place happens on your phone as well: the list of places along the route comes whole from this site, so <b>what you type is never sent</b>. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the page or the app, and is never sent either. Nor is how far you rode it, which your phone works out to decide one thing: when you tap “I got off” after riding at least a kilometre, and that bus's sharer accepts tips, you are asked if you want to say thanks with a tip. Your phone asks our server for that one bus's QR or number to show you, and nothing more. If you pay it, you pay it in your own payment app, like any QR; <b>this app never learns whether you did, or how much</b>.</p>
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer, and anyone sharing a bus, can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
       <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number. On our side it never adds up across trips: <b>no running total is kept for any driver or any bus on the server.</b> The sharer's own phone adds theirs up for their bus in My tickets, and that never leaves it.</p>
       <p>And one more, also only if you tap it: <b>Not a real bus?</b>, on a bus, or <b>Wrong?</b>, on a sighting, to tell the organizer something on the map looks wrong. It is stored the same scrambled way as Salamat, so it can't be traced back to you and a second tap isn't counted twice. <b>Only the organizer sees how many</b>, not the sharer and not other riders, and it is deleted when that trip ends or the sighting expires. Nothing happens on its own: the organizer looks and decides.</p>
@@ -2019,7 +2031,7 @@
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and on our side it goes when the trip does. Your phone adds it to your bus in My tickets, a total only you can see.</p>
       <p>While you share, the sharing tab says how many people have the map open right now: the same single number the organizer sees, counted as above, and gone when your trip ends.</p>
       <p>Riders can also tell the organizer your bus doesn't look like a real one. Only the organizer sees that, for this trip only, and it goes when the trip does.</p>
-      <p><b>Accept tips?</b>, on the sharing tab, is off unless you switch it on and pick the QR your GCash, Maya or bank app saves. Your phone reads the picture itself and keeps only the QR's text, and only a payment QR from the Philippines with no fixed amount is taken. While it is on and you share, the QR goes with your bus's position, and a rider who rode your bus is asked when they get off if they want to tip you. The money goes from their app to your account like any QR payment; <b>this app never learns whether anybody tipped, or how much</b>, and keeps no total. <b>The honest cost:</b> while your bus is on the map, anyone determined can read your QR beside it, and with it the name your payment app shows, partly hidden, and any mobile number inside it (the app tells you when there is one). It is deleted with the trip, like the position. After three “Not a real bus?” taps on a trip, riders are not shown it, and the organizer can ban a QR used to cheat riders: the ban keeps a scrambled mark of the account, never the QR. Switching it off forgets the QR on this phone.</p>
+      <p><b>Accept tips?</b>, on the sharing tab, is off unless you switch it on and pick the QR your GCash, Maya or bank app saves, or pick GCash or Maya and type your mobile number. Your phone reads a picture itself and keeps only the QR's text, and only a payment QR from the Philippines with no fixed amount, or a Philippine mobile number, is taken: never words of your own. While it is on and you share, the QR goes with your bus's position, and a rider who rode your bus is asked when they get off if they want to tip you. The money goes from their app to your account like any QR payment; <b>this app never learns whether anybody tipped, or how much</b>, and keeps no total. <b>The honest cost:</b> while your bus is on the map, anyone determined can read your QR beside it, and with it the name your payment app shows, partly hidden, and any mobile number inside it (the app tells you when there is one). <b>If you give your number instead, every rider offered it sees your full number</b>, and the app says so before it keeps it. It is deleted with the trip, like the position. After three “Not a real bus?” taps on a trip, riders are not shown it, and the organizer can ban a QR used to cheat riders: the ban keeps a scrambled mark of the account, never the QR or the number. Switching it off forgets the QR or number on this phone.</p>
       <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>the app sends it nowhere</b>. Close it and it is gone.</p>
       <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Start from scratch” in My tickets deletes every copy.</p>
       <p><b>Send a picture</b>, on a ticket, makes a picture of it for you to send to a chat, Facebook or Instagram. It shows only what a kept copy keeps, and this site's address: the day, the direction, where you got on and off, the stamps and the flower, <b>never the times, how long, the bus number or how many thanked you</b>, so a picture posted after every trip cannot time anyone's day either. Your phone makes it, and it goes only where you send it through your phone's own sheet; the app keeps none of it.</p>
@@ -2047,11 +2059,11 @@
 
       <h4>Why you can trust this</h4>
       <p>This is a free community tool with no ads, nothing to sell, and no analytics beyond the single live count above — no profiles, no cookies, no third-party trackers. There is no business model that needs your data. There is simply nothing collected worth stealing. What is sent travels encrypted, over HTTPS.</p>
-      <p>Eight small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, the trip you are sharing, while you share it, your tip QR, while “Accept tips?” is on, and whether you turned Low data on or off. All eight stay in your browser or the app and are not linked to anything; the QR goes only with your bus's position, as above, and the rest are never sent anywhere. The Android app keeps a ninth: the key or PIN you entered to share, so you need not type it every trip. It goes to our server only to check it when you share, as it does in a browser, and it is deleted when it stops working.</p>
+      <p>Eight small things are remembered on your own device, and nowhere else: whether this phone has been shown around yet, by the guide or the tour (so the dot on the guide button and the “New here?” note stop showing), your light or dark theme choice, the stop you saved, if you saved one, the tickets you chose to keep, if you kept any, your bus, if you have shared or finished a tour, the trip you are sharing, while you share it, your tip QR or number, while “Accept tips?” is on, and whether you turned Low data on or off. All eight stay in your browser or the app and are not linked to anything; the QR goes only with your bus's position, as above, and the rest are never sent anywhere. The Android app keeps a ninth: the key or PIN you entered to share, so you need not type it every trip. It goes to our server only to check it when you share, as it does in a browser, and it is deleted when it stops working.</p>
       <p>Your bus is the coach your trips decorate in My tickets, and it is <b>totals and choices, never a diary</b>: how many trips you shared, how many of them were first on the map, end to end, before 5 AM or after dark, which directions, which places on the route, whether you finished each tour, your time on the map and the salamat you received in all, and how many weeks in a row you have shared, with the week of your last trip to count it from; and the spare parts it has (the app's own points, drawn as a nut: never bought with money, never sent), what they got, which paint and accessories it wears, whether you show it to riders, and, for the cap of three earning trips a day, the day of your last one. Totals, never a list: no clock times and no bus numbers, so it can say how much you have shared and the last day you did, but never a timetable of when you worked. The trip you are sharing is kept so that a page that reloads or closes mid-trip can carry on with the same bus, or still give you its ticket: when it started, roughly where it began and last was on the route, and the trip's random ID. It is deleted the moment the trip ends, or, if the page closed mid-trip, the next time the page opens.</p>
       <p><b>Showing your bus to riders</b> is off unless you switch it on, in My tickets or when the app first asks, once there is something on your bus to show. While it is on and you share, riders who tap your bus see it as you dressed it. The honest cost: they will be able to tell it is yours from one trip to the next. The code that carries it is letters from the app's own lists, never words or colours of anyone's choosing, and it is deleted with the trip, like the position.</p>
       <p><b>A backup</b>, from Your progress in My tickets, is a small file of your kept tickets and your bus, made on this phone and handed to you to keep wherever you like. The app never sends it anywhere. Restore reads one back.</p>
-      <p>Clearing your browser data, or uninstalling the app, removes them all, “Remove my stop” in the stop picker deletes the third on its own, “Start from scratch” in My tickets the fourth and fifth, and switching “Accept tips?” off the seventh. A backup never holds the QR.</p>
+      <p>Clearing your browser data, or uninstalling the app, removes them all, “Remove my stop” in the stop picker deletes the third on its own, “Start from scratch” in My tickets the fourth and fifth, and switching “Accept tips?” off the seventh. A backup never holds the QR or the number.</p>
       <p><b>Low data</b>, at the foot of the map, is a choice this phone remembers and sends nowhere: the map without its background pictures, and the buses checked less often. Until you choose, it follows your browser's data saver where the browser says.</p>
     </div>
     <div class="modal-foot">
@@ -2121,8 +2133,19 @@
     <p id="qrBody"></p>
     <div class="qrart small hidden" id="qrArt"></div>
     <input type="file" id="qrFile" accept="image/*" class="hidden" onchange="readTipQr(this)">
+    <!-- Or a number (sql/18-tip-number.sql): the wallet picked, the number
+         typed and checked, never a word of anyone's own. -->
+    <div class="qrnum hidden" id="qrNum">
+      <div class="qrwallets" role="group" aria-label="Wallet">
+        <button type="button" class="qrw on" data-w="gcash" aria-pressed="true" onclick="tipWallet('gcash')">GCash</button>
+        <button type="button" class="qrw" data-w="maya" aria-pressed="false" onclick="tipWallet('maya')">Maya</button>
+      </div>
+      <input type="tel" id="qrNumInput" inputmode="tel" autocomplete="tel" maxlength="18" placeholder="0917 123 4567" aria-label="Mobile number">
+      <p class="qrfine">Riders who ride your bus will see this number.</p>
+    </div>
     <div class="modal-actions">
       <button class="big btn-ghost" id="qrNo" onclick="closeModal('qrModal')">Cancel</button>
+      <button class="big btn-ghost hidden" id="qrAlt" onclick="tipSetup('type')">Type a number</button>
       <button class="big btn-primary" id="qrGo" onclick="tipSetupGo()">Pick your QR</button>
     </div>
   </div>
@@ -5033,9 +5056,12 @@ function ticketGreeting(endMins){
 //
 //  1. Only a QR Ph code: the EMV layout every Philippine wallet and bank
 //     prints, its checksum right, the country PH, a person-to-person or
-//     merchant identifier, and no fixed amount. Never a link, a word or a
-//     picture of anybody's choosing. sql/16-tips.sql applies the same rule
-//     (_qr_key), so a changed page cannot put anything else on a bus.
+//     merchant identifier, and no fixed amount. Or, since
+//     sql/18-tip-number.sql, a wallet picked from a list and a Philippine
+//     mobile number, in one shape only ('gcash:09171234567'). Never a link,
+//     a word or a picture of anybody's choosing: no free text, ever.
+//     sql/16-tips.sql and 18 apply the same rule (_qr_key), so a changed
+//     page cannot put anything else on a bus.
 //  2. Only to a rider who rode it: offered at "I got off" (leaveBus), once
 //     the bus has gone TIP_KM along the route since "I'm on this bus". A
 //     made-up bus nobody can ride earns nothing, and nobody waiting at a stop
@@ -5051,8 +5077,32 @@ const TIP_KM = 1;
 const TIP_WORDS = {
   sw: 'Accept tips?',
   ask: 'Say thanks to sharer with a tip/donation?',
-  fine: 'Not the fare. Not the bus company.'
+  fine: 'Not the fare. Not the bus company.',
+  warn: 'Riders who ride your bus will see this number.'
 };
+// The wallets a number can be given for, picked, never typed.
+const TIP_WALLETS = { gcash:'GCash', maya:'Maya' };
+// What a sharer typed, as a Philippine mobile number (09 and nine digits),
+// whether they wrote it with spaces, dashes, +63 or no leading 0; or null.
+function tipNumberFrom(typed){
+  const d = String(typed == null ? '' : typed).replace(/[\s\-().]/g, '');
+  const m = /^(?:\+?63|0)?(9\d{9})$/.exec(d);
+  return m ? '0' + m[1] : null;
+}
+// A stored or sent number, 'gcash:09171234567', as { wallet, number }, or null.
+function tipNumber(v){
+  const m = /^(gcash|maya):(09\d{9})$/.exec(typeof v === 'string' ? v : '');
+  return m ? { wallet:m[1], number:m[2] } : null;
+}
+// 0917 123 4567, as people write it.
+function tipNumberWords(n){ return n.slice(0, 4) + ' ' + n.slice(4, 7) + ' ' + n.slice(7); }
+// The account a code or a number pays, as _qr_key in sql/18-tip-number.sql
+// works it out: a number is the same account in either wallet.
+function tipKey(v){
+  const n = tipNumber(v);
+  return n ? 'num:' + n.number : qrPhKey(v);
+}
+function tipOk(v){ return tipKey(v) !== null; }
 // The identifiers QR Ph puts in an account's field 00: person to person,
 // and merchant.
 const QRPH_IDS = ['com.p2pqrpay', 'ph.ppmi.p2m'];
@@ -9754,14 +9804,14 @@ function postcardDrop(){
   document.getElementById('tktPicSave').removeAttribute('href');
 }
 // ---- Tips: the sharer's QR, and the rider's offer (November 2026) --------
-// The rules are the TIPS block's. The sharer's code is kept on this phone as
-// wt-qr, the seventh remembered thing, only while "Accept tips?" is on:
-// switching it off forgets the code. It leaves the phone only with a
+// The rules are the TIPS block's. The sharer's code, or their wallet and
+// number, is kept on this phone as wt-qr, the seventh remembered thing, only
+// while "Accept tips?" is on: switching it off forgets it. It leaves the phone only with a
 // position (writePosition), onto that trip's row, and never in a backup.
 function loadTipQr(){
   let v = null;
   try{ v = localStorage.getItem('wt-qr'); }catch(e){}
-  return qrPhOk(v) ? v : null;
+  return tipOk(v) ? v : null;
 }
 function saveTipQr(v){
   try{
@@ -9795,45 +9845,69 @@ function qrSwitch(box){
 function qrReaderOk(){ return typeof window.BarcodeDetector === 'function'; }
 // A code read but not yet used, while the window asks about the number in it.
 let TIP_PENDING = null;
+// The window's steps: pick a QR picture or type a number, reading the
+// picture, the number inside a picked QR ('hasnum'), and typing a number
+// ('type'). A browser with no QR reader goes straight to typing.
 function tipSetup(step, msg){
+  if (step === 'pick' && !qrReaderOk()) step = 'type';
   const body = document.getElementById('qrBody'), art = document.getElementById('qrArt');
   const go = document.getElementById('qrGo'), no = document.getElementById('qrNo');
+  const alt = document.getElementById('qrAlt'), num = document.getElementById('qrNum');
   art.classList.add('hidden');
   art.innerHTML = '';
+  alt.classList.add('hidden');
+  num.classList.add('hidden');
   go.classList.remove('hidden');
   go.disabled = false;
   go.setAttribute('data-step', step);
   no.textContent = 'Cancel';
   if (step === 'pick'){
     TIP_PENDING = null;
-    if (qrReaderOk()){
-      body.textContent = msg || 'Pick the QR your GCash, Maya or bank app saves.';
-      go.textContent = 'Pick your QR';
-    } else {
-      body.textContent = 'This browser can’t read QR pictures. Use Chrome on Android, or the app.';
-      go.classList.add('hidden');
-      no.textContent = 'Close';
-    }
+    body.textContent = msg || 'Pick the QR your GCash, Maya or bank app saves.';
+    go.textContent = 'Pick your QR';
+    alt.classList.remove('hidden');
+  } else if (step === 'type'){
+    TIP_PENDING = null;
+    body.textContent = msg || 'Your GCash or Maya number.';
+    num.classList.remove('hidden');
+    go.textContent = 'Use it';
   } else if (step === 'reading'){
     body.textContent = 'Reading…';
     go.disabled = true;
-  } else if (step === 'number'){
+  } else if (step === 'hasnum'){
     body.textContent = 'This QR shows your mobile number to whoever scans it.';
     art.innerHTML = qrSvg(qrMatrix(TIP_PENDING).matrix, 'Your QR');
     art.classList.remove('hidden');
     go.textContent = 'Use it';
   }
   openModal('qrModal');
+  if (step === 'type'){ const box = document.getElementById('qrNumInput'); if (box.focus) box.focus(); }
 }
 function tipSetupGo(){
   if (WALK) return;
-  if (document.getElementById('qrGo').getAttribute('data-step') === 'number' && TIP_PENDING){
-    tipUse(TIP_PENDING);
-    return;
-  }
+  const step = document.getElementById('qrGo').getAttribute('data-step');
+  if (step === 'hasnum' && TIP_PENDING){ tipUse(TIP_PENDING); return; }
+  if (step === 'type'){ tipNumberGo(); return; }
   const f = document.getElementById('qrFile');
   f.value = '';
   f.click();
+}
+// The wallet a typed number is for, picked from TIP_WALLETS.
+let TIP_WALLET = 'gcash';
+function tipWallet(w){
+  if (!TIP_WALLETS[w]) return;
+  TIP_WALLET = w;
+  [].slice.call(document.querySelectorAll('#qrNum .qrw')).forEach(function(b){
+    const on = b.getAttribute('data-w') === w;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+function tipNumberGo(){
+  if (WALK) return;
+  const n = tipNumberFrom(document.getElementById('qrNumInput').value);
+  if (!n){ tipSetup('type', 'That’s not a mobile number.'); return; }
+  tipUse(TIP_WALLET + ':' + n);
 }
 function tipUse(code){
   if (WALK) return;
@@ -9849,7 +9923,7 @@ async function readTipQr(input){
   if (!file) return;
   tipSetup('reading');
   const r = await qrReadPicture(file);
-  if (r.code && qrHasNumber(r.code)){ TIP_PENDING = r.code; tipSetup('number'); return; }
+  if (r.code && qrHasNumber(r.code)){ TIP_PENDING = r.code; tipSetup('hasnum'); return; }
   if (r.code){ tipUse(r.code); return; }
   tipSetup('pick', r.err === 'browser' ? '' : r.err === 'amount'
     ? 'That QR asks for a fixed amount. Pick one without.'
@@ -9927,17 +10001,53 @@ async function offerTip(id){
   if (WALK) return;
   if (sharing) return;
   const res = await rpc('get_bus_qr', { p_slug:CFG.ROUTE_SLUG, p_bus:id });
-  if (res.error || !qrPhOk(res.data)) return;
+  if (res.error || !tipOk(res.data)) return;
+  const art = document.getElementById('tyqrArt'), save = document.getElementById('tyqrSave');
+  const num = tipNumber(res.data);
+  if (num){
+    // A wallet and a number (sql/18-tip-number.sql), built from the two
+    // checked parts, never from the text that came.
+    TYQR = num;
+    art.classList.add('num');
+    art.innerHTML = '<span class="tynum"><span class="w">' + TIP_WALLETS[num.wallet] + '</span><b>' +
+      tipNumberWords(num.number) + '</b></span>';
+    save.textContent = 'Copy number';
+    openModal('tyqrModal');
+    return;
+  }
   const drawn = qrMatrix(res.data);
   if (!drawn) return;
   TYQR = drawn;
   const c = qrCanvas(drawn.matrix, 10);
   let url = null;
   try{ url = c ? c.toDataURL('image/png') : null; }catch(e){}
-  document.getElementById('tyqrArt').innerHTML = url
+  art.classList.remove('num');
+  art.innerHTML = url
     ? '<img src="' + url + '" alt="QR code to tip the sharer">'
     : qrSvg(drawn.matrix, 'QR code to tip the sharer');
+  save.textContent = 'Save the QR';
   openModal('tyqrModal');
+}
+// A number goes to the clipboard, for the wallet's Send Money. Where the
+// clipboard is out of reach, the number is on screen to copy by hand.
+async function copyTipNumber(n){
+  let done = false;
+  try{
+    if (navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(n.number); done = true; }
+  }catch(e){}
+  if (!done){
+    try{
+      const t = document.createElement('textarea');
+      t.value = n.number;
+      t.setAttribute('readonly', '');
+      t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t);
+      t.select();
+      done = !!(document.execCommand && document.execCommand('copy'));
+      t.remove();
+    }catch(e){}
+  }
+  showToast(done ? 'Copied. Paste it in ' + TIP_WALLETS[n.wallet] + '.' : 'Press and hold the number to copy it.');
 }
 // A payment app pays a QR from the gallery ("upload QR"), not from its own
 // screen: in the app, the phone's sheet; on an iPhone, the sheet, which has
@@ -9946,6 +10056,7 @@ async function offerTip(id){
 async function saveTyQr(){
   if (WALK) return;
   if (!TYQR) return;
+  if (TYQR.number){ await copyTipNumber(TYQR); return; }
   const c = qrCanvas(TYQR.matrix, 10);
   const blob = c ? await new Promise(function(ok){ try{ c.toBlob(ok, 'image/png'); }catch(e){ ok(null); } }) : null;
   if (!blob){ showToast('Press and hold the QR to save it.'); return; }

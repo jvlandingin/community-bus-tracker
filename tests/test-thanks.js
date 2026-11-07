@@ -823,7 +823,8 @@ console.log('\n=== 22. tips: only a QR Ph code, only to a rider who rode it, not
   const tipsSrc = html.slice(html.indexOf('// ---- TIPS (unit tested)'), html.indexOf('// ---- END TIPS'));
   const T = {};
   new Function('T', tipsSrc + 'T.qrPhKey=qrPhKey;T.qrPhOk=qrPhOk;T.qrCrc=qrCrc;T.qrHasNumber=qrHasNumber;T.tipOffered=tipOffered;' +
-    'T.TIP_KM=TIP_KM;T.TIP_WORDS=TIP_WORDS;T.QRPH_IDS=QRPH_IDS;T.qrMatrix=qrMatrix;T.qrSvg=qrSvg;T.QR_VERSIONS=QR_VERSIONS;')(T);
+    'T.TIP_KM=TIP_KM;T.TIP_WORDS=TIP_WORDS;T.QRPH_IDS=QRPH_IDS;T.qrMatrix=qrMatrix;T.qrSvg=qrSvg;T.QR_VERSIONS=QR_VERSIONS;' +
+    'T.TIP_WALLETS=TIP_WALLETS;T.tipNumberFrom=tipNumberFrom;T.tipNumber=tipNumber;T.tipNumberWords=tipNumberWords;T.tipKey=tipKey;T.tipOk=tipOk;')(T);
   // The same made-up codes as tests/db/14-tips-tests.sql, read from it, so
   // the page and the server are held to one list.
   const dbTest = fs.readFileSync(path.join(ROOT, 'tests', 'db', '14-tips-tests.sql'), 'utf8');
@@ -880,11 +881,14 @@ console.log('\n=== 22. tips: only a QR Ph code, only to a rider who rode it, not
   const mapCode = fnA('renderBuses') + fnA('busPopupHtml') + fnA('renderStrip') + fnA('aboardControl');
   check(!/qrPh|qrMatrix|get_bus_qr|TIP_WORDS|offerTip|tyqr/.test(mapCode), 'nothing on the map, the chips, the strip or a popup is about tips');
   const offer = fnA('offerTip'), save = fnA('saveTyQr');
+  const copy = fnA('copyTipNumber');
   check((offer.match(/rpc\(/g) || []).length === 1 && /rpc\('get_bus_qr', \{ p_slug:CFG\.ROUTE_SLUG, p_bus:id \}\)/.test(offer) &&
-        /qrPhOk\(res\.data\)/.test(offer) && !/rpc\(|fetch\(|sendBeacon/.test(save),
-    'the rider\'s phone asks for that one bus\'s code, checks it is QR Ph, and sends nothing else, whatever they do next');
-  check(!/localStorage|sessionStorage/.test(offer + save + fnA('qrCanvas')),
+        /tipOk\(res\.data\)/.test(offer) && !/rpc\(|fetch\(|sendBeacon/.test(save + copy),
+    'the rider\'s phone asks for that one bus\'s code, checks it is a QR Ph code or a number, and sends nothing else, whatever they do next');
+  check(!/localStorage|sessionStorage/.test(offer + save + copy + fnA('qrCanvas')),
     'and keeps nothing about it: no amount, no tap, no record of whom they thanked');
+  check(/TIP_WALLETS\[num\.wallet\] \+ '<\/span><b>' \+\s*tipNumberWords\(num\.number\)/.test(offer) && !/res\.data \+|\+ res\.data/.test(offer),
+    'a number is drawn from its two checked parts, never from the text that came');
   // The sharer's picture never leaves the phone: read by the phone's own
   // reader, with nothing loaded to read it.
   const reading = fnA('readTipQr') + fnA('qrReadPicture') + fnA('qrImage') + fnA('tipSetup') + fnA('tipSetupGo') + fnA('tipUse');
@@ -894,12 +898,43 @@ console.log('\n=== 22. tips: only a QR Ph code, only to a rider who rode it, not
     'and a code is used only once the phone has read this page\'s redraw of it back as the same text');
   const write = fnA('writePosition');
   check(/const tipQr = QR_SENDS \? loadTipQr\(\) : null;\s*if \(tipQr\) args\.p_qr = tipQr;/.test(write) &&
-        /function loadTipQr\(\)\{[\s\S]*return qrPhOk\(v\) \? v : null;/.test(html),
-    'a position carries the code only while "Accept tips?" is on, and only a QR Ph one');
+        /function loadTipQr\(\)\{[\s\S]*return tipOk\(v\) \? v : null;/.test(html),
+    'a position carries the code only while "Accept tips?" is on, and only a QR Ph code or a number');
   check(!/wt-qr/.test(fnA('backupMake') + fnA('backupRead')), 'a backup never holds it');
   check(/get_bus_qr/.test(mig) && !/function public\.\w*(tip|donat)\w*\(/i.test(mig) &&
         ![...html.matchAll(/rpc\(\s*'([a-z_]+)'/g)].some(m => /tip|donat/.test(m[1])),
     'and no request path says tip or donate, which content blockers could match');
+
+  // A wallet and a number (sql/18-tip-number.sql): picked and checked, never
+  // free text, in one shape the server accepts and nothing else.
+  check(Object.keys(T.TIP_WALLETS).join(',') === 'gcash,maya' && T.TIP_WALLETS.gcash === 'GCash' && T.TIP_WALLETS.maya === 'Maya',
+    'a number is for GCash or Maya, picked from a list');
+  const typed = { '0917 123 4567': '09171234567', '+63 917-123-4567': '09171234567', '639171234567': '09171234567',
+                  '9171234567': '09171234567', '(0917) 123.4567': '09171234567' };
+  const misread = Object.keys(typed).filter(k => T.tipNumberFrom(k) !== typed[k]);
+  check(misread.length === 0, 'however a mobile number is written, it is kept as 09 and nine digits', misread.join(' | ') || Object.keys(typed).length + ' ways');
+  const notNumbers = ['0817 123 4567', '0917 123 456', '0917 123 45678', 'call me', '0917 123 4567 salamat', 'https://x.example/0917', '', null];
+  check(notNumbers.every(x => T.tipNumberFrom(x) === null), 'and nothing else is a number: a landline, a digit short or over, words, a link');
+  check(T.tipNumber('gcash:09171234567').number === '09171234567' && T.tipNumber('maya:09171234567').wallet === 'maya' &&
+        ['gcash:0917 123 4567', 'GCash:09171234567', 'paypal:09171234567', '09171234567', 'gcash:09171234567 hi', 'gcash:09171234567\nhi']
+          .every(x => T.tipNumber(x) === null && !T.tipOk(x)),
+    'what is stored and sent has one shape, wallet:number, and nothing else passes');
+  check(T.tipKey('gcash:09171234567') === T.tipKey('maya:09171234567') && T.tipKey(Q.A) === T.qrPhKey(Q.A) && T.tipOk(Q.A),
+    'a number is one account in either wallet, and a QR is what it was');
+  check(T.tipNumberWords('09171234567') === '0917 123 4567', 'and it is shown as people write it');
+  {
+    const m18 = fs.readFileSync(path.join(ROOT, 'sql', '18-tip-number.sql'), 'utf8');
+    const body = sql => { const a = sql.indexOf('create or replace function public._qr_key(p text)'); return sql.slice(a, sql.indexOf('$$;', a)); };
+    const k16 = body(mig).split('\n').map(l => l.trim()).filter(Boolean), k18 = body(m18);
+    check(/'\^\(gcash\|maya\):09\[0-9\]\{9\}\$'/.test(m18) && /\/\^\(gcash\|maya\):\(09\\d\{9\}\)\$\//.test(tipsSrc) &&
+          k16.every(l => k18.includes(l)),
+      'the server takes the same one shape, and its rule for a QR is 16-tips.sql\'s unchanged');
+  }
+  check(html.includes('<p class="qrfine">' + T.TIP_WORDS.warn + '</p>') && T.TIP_WORDS.warn === 'Riders who ride your bus will see this number.',
+    'and the sharer is told, beside the box, that riders will see it');
+  check(!/<textarea|contenteditable/.test(html.slice(html.indexOf('id="qrModal"'), html.indexOf('id="tyqrModal"'))) &&
+        /<input type="tel" id="qrNumInput"/.test(html),
+    'the only thing a sharer types is a number, in a phone number box');
 
   // Drawn again on the rider's phone. Versions 1 to 10 are tools/make-qr.js's,
   // whose codes are printed on the flyer and the poster: held to the same modules.

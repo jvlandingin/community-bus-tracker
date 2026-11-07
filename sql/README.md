@@ -23,6 +23,7 @@ retry.
 | `15-say-wrong.sql` | lets a rider tap "Not a real bus?" on a bus or "Wrong?" on a sighting, counted for organizers only and gone with the trip or the sighting |
 | `16-tips.sql` | lets a sharer who switches on "Accept tips?" send their payment QR code with each position, kept only if it is a real QR Ph code, handed to a rider for one bus at a time, hidden after three "Not a real bus?" taps, and gone with the trip; organizers can ban an account |
 | `17-watching-for-sharers.sql` | lets a sharer see how many people have the map open, on their own row of `get_positions` only and only while their bus is on the riders' map |
+| `18-tip-number.sql` | lets "Accept tips?" take a GCash or Maya number as well as a QR, in one checked shape and never free text, shown in full to a rider who rode the bus |
 
 If you are setting up fresh, run all of them. They are separate files because
 they were written in that order against a live deployment, and keeping the
@@ -66,6 +67,12 @@ name that PostgREST cannot choose between, so every write then fails: re-run
 applied a sharer is simply not shown the count. Re-running `13` or `14` after
 it puts back a `get_positions` without the count: re-run `17` after either.
 Safe to re-run.
+
+`18` can be run in either order too, after `16`, whose rule for what is kept
+it replaces. Until it is applied, a number a page sends is stored as nothing,
+as anything else that is not a QR Ph code is, and nobody is offered it.
+Re-running `16` after it puts back the rule without numbers: re-run `18`
+after it. Safe to re-run.
 
 `06` is the one that can be run in either order relative to the pages: until it
 is applied the heartbeat call fails and is swallowed, and the admin page says it

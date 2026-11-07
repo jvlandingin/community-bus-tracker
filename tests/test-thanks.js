@@ -17,7 +17,7 @@ const src = html.slice(html.indexOf('// ---- SAYING SALAMAT (unit tested)'),
 const albumSrc = html.slice(html.indexOf('// ---- THE TICKET ALBUM (unit tested)'),
                             html.indexOf('// ---- END ALBUM'));
 const S = {};
-new Function('S', src + albumSrc + 'S.thanksWords=thanksWords;S.thanksControl=thanksControl;' +
+new Function('S', src + albumSrc + 'S.thanksWords=thanksWords;S.thanksControl=thanksControl;S.watchingWords=watchingWords;S.WATCH_CAP=WATCH_CAP;' +
   'S.ticketStamps=ticketStamps;S.ticketWorthShowing=ticketWorthShowing;S.TICKET_MIN_KM=TICKET_MIN_KM;S.ticketGreeting=ticketGreeting;' +
   'S.STAMPS=STAMPS;S.albumEntry=albumEntry;S.albumClean=albumClean;S.albumPlaces=albumPlaces;S.albumStats=albumStats;' +
   'S.ticketSky=ticketSky;S.keptGreeting=keptGreeting;S.keptDate=keptDate;S.keptSince=keptSince;' +
@@ -808,6 +808,247 @@ console.log('\n=== 21. a ticket\'s postcard: the souvenir, sent only by hand ===
     'the privacy panel says what a postcard shows, what it never does, and who sends it');
   check(/Send the tracker/.test(panel) && /not your key or PIN, not your stop, not a bus/.test(panel),
     'and that the tracker\'s link is its address and nothing more');
+}
+
+
+console.log('\n=== 22. tips: only a QR Ph code, only to a rider who rode it, nothing counted ===');
+// sql/16-tips.sql and the TIPS block. A sharer who switches on "Accept tips?"
+// sends the QR their payment app saves; a rider who rode the bus is offered
+// it when they get off. What is held here: the code can only ever be a QR Ph
+// account, by the same rule the server applies; the offer is made only after
+// a ride and only from "I got off"; the code is drawn again on the rider's
+// phone, correctly at every size it can be; and nothing about a tip is ever
+// sent, kept or added up.
+{
+  const tipsSrc = html.slice(html.indexOf('// ---- TIPS (unit tested)'), html.indexOf('// ---- END TIPS'));
+  const T = {};
+  new Function('T', tipsSrc + 'T.qrPhKey=qrPhKey;T.qrPhOk=qrPhOk;T.qrCrc=qrCrc;T.qrHasNumber=qrHasNumber;T.tipOffered=tipOffered;' +
+    'T.TIP_KM=TIP_KM;T.TIP_WORDS=TIP_WORDS;T.QRPH_IDS=QRPH_IDS;T.qrMatrix=qrMatrix;T.qrSvg=qrSvg;T.QR_VERSIONS=QR_VERSIONS;')(T);
+  // The same made-up codes as tests/db/14-tips-tests.sql, read from it, so
+  // the page and the server are held to one list.
+  const dbTest = fs.readFileSync(path.join(ROOT, 'tests', 'db', '14-tips-tests.sql'), 'utf8');
+  const Q = {};
+  for (const m of dbTest.matchAll(/when '([A-Z0-9]+)'\s+then '([^']+)'/g)) Q[m[1]] = m[2];
+  check(['A', 'A2', 'B', 'M', 'AMT', 'SG', 'NOG'].every(k => typeof Q[k] === 'string'), 'the database suite\'s sample codes, read from it');
+  check(T.qrCrc('123456789') === '29B1' && T.qrCrc(Q.A.slice(0, -4)) === 'DBEA',
+    'the checksum is CRC-16/CCITT-FALSE, by its check value and on a whole code');
+  check(T.qrPhOk(Q.A) && T.qrPhOk(Q.A2) && T.qrPhOk(Q.B) && T.qrPhOk(Q.M), 'person-to-person and merchant QR Ph codes are taken');
+  check(T.qrPhKey(Q.A) === T.qrPhKey(Q.A2) && T.qrPhKey(Q.A) !== T.qrPhKey(Q.B),
+    'the account is the same whatever the city or name around it, and two accounts differ');
+  const wrongSum = Q.A.slice(0, -4) + (Q.A.slice(-4) === 'DBEB' ? 'DBEC' : 'DBEB');
+  const refusedCodes = { 'a fixed amount': Q.AMT, 'another country': Q.SG, 'no QR Ph identifier': Q.NOG, 'a wrong checksum': wrongSum,
+    'anything after the checksum': Q.A + '0102XX', 'fields mangled': Q.A.toLowerCase(), 'half a code': Q.A.slice(0, 40),
+    'a link': 'https://example.com/pay?to=me', 'words': 'Salamat po sa inyo lahat', 'nothing': '', 'markup': '000201<b>x</b>',
+    'anything longer than any code': '000201' + '9'.repeat(600) };
+  const taken = Object.keys(refusedCodes).filter(k => T.qrPhOk(refusedCodes[k]));
+  check(taken.length === 0 && !T.qrPhOk(null) && !T.qrPhOk(undefined) && !T.qrPhOk(42),
+    'and nothing else: ' + Object.keys(refusedCodes).join(', '), taken.join(', ') || 'all refused');
+  // One rule in two places: the page refuses what the server would store as
+  // nothing, so they must name the same schemes, limits and refusals.
+  const mig = fs.readFileSync(path.join(ROOT, 'sql', '16-tips.sql'), 'utf8');
+  const sqlIds = ((/guid in \(([^)]*)\)/.exec(mig) || [])[1] || '').match(/'[^']+'/g) || [];
+  check(sqlIds.map(x => x.slice(1, -1)).join(',') === T.QRPH_IDS.join(','), 'the page and sql/16-tips.sql accept the same schemes', sqlIds.join(' '));
+  check(/n < 30 or n > 512/.test(mig) && /s\.length < 30 \|\| s\.length > 512/.test(tipsSrc) &&
+        /if t = '54' then return null/.test(mig) && /x\[0\] === '54'\) return null/.test(tipsSrc) &&
+        /country is distinct from 'PH'/.test(mig) && /country === 'PH'/.test(tipsSrc) &&
+        /'\^\[ -~\]\+\$'/.test(mig) && /\/\^\[ -~\]\+\$\//.test(tipsSrc),
+    'and the same length, characters, country and no fixed amount');
+  check(T.qrHasNumber(Q.A) && !T.qrHasNumber(Q.B) && !T.qrHasNumber(Q.M),
+    'a code with a mobile number in it is told apart from one without');
+  check(T.TIP_KM === 1 && !T.tipOffered(0, 0.99) && T.tipOffered(0, 1) && T.tipOffered(7.5, 4) &&
+        !T.tipOffered(null, 3) && !T.tipOffered(3, null) && !T.tipOffered(NaN, 9) && !T.tipOffered(undefined, undefined),
+    'a rider is asked only after the bus has gone a kilometre along the route since they got on, either way');
+  check(T.TIP_WORDS.sw === 'Accept tips?' && T.TIP_WORDS.ask === 'Say thanks to sharer with a tip/donation?' &&
+        T.TIP_WORDS.fine === 'Not the fare. Not the bus company.',
+    'the words are the maintainer\'s');
+  check((html.match(/<label class="qrswitch"><span>Accept tips\?<\/span><input type="checkbox" onchange="qrSwitch\(this\)"><\/label>/g) || []).length === 2 &&
+        html.includes('</svg>' + T.TIP_WORDS.ask + '</h3>') && html.includes('<p class="qrfine">' + T.TIP_WORDS.fine + '</p>'),
+    'and they are the ones on the page: the switch twice, the question and the line under the QR');
+
+  // Only from "I got off", only after a ride, never on the map.
+  const fnA = name => {
+    const a = html.indexOf('function ' + name + '(');
+    if (a < 0) return '';
+    const m = /\n(?:async )?function |\n\/\/ ----/.exec(html.slice(a + 1));
+    return html.slice(a, m ? a + 1 + m.index : html.length);
+  };
+  const calls = [...html.matchAll(/[^\w]offerTip\(/g)].length;
+  check(calls === 2 && /if \(id && !sharing && tipOffered\(from, now\)\) offerTip\(id\);/.test(fnA('leaveBus')),
+    'the offer is made in one place, "I got off", for a rider who is not sharing and has ridden far enough');
+  check(/ABOARD_KM = busKmNow\(ABOARD\);/.test(fnA('boardBus')) && !/localStorage|sessionStorage/.test(fnA('busKmNow') + fnA('leaveBus')),
+    'measured from where the bus was when they got on, in memory only');
+  const mapCode = fnA('renderBuses') + fnA('busPopupHtml') + fnA('renderStrip') + fnA('aboardControl');
+  check(!/qrPh|qrMatrix|get_bus_qr|TIP_WORDS|offerTip|tyqr/.test(mapCode), 'nothing on the map, the chips, the strip or a popup is about tips');
+  const offer = fnA('offerTip'), save = fnA('saveTyQr');
+  check((offer.match(/rpc\(/g) || []).length === 1 && /rpc\('get_bus_qr', \{ p_slug:CFG\.ROUTE_SLUG, p_bus:id \}\)/.test(offer) &&
+        /qrPhOk\(res\.data\)/.test(offer) && !/rpc\(|fetch\(|sendBeacon/.test(save),
+    'the rider\'s phone asks for that one bus\'s code, checks it is QR Ph, and sends nothing else, whatever they do next');
+  check(!/localStorage|sessionStorage/.test(offer + save + fnA('qrCanvas')),
+    'and keeps nothing about it: no amount, no tap, no record of whom they thanked');
+  // The sharer's picture never leaves the phone: read by the phone's own
+  // reader, with nothing loaded to read it.
+  const reading = fnA('readTipQr') + fnA('qrReadPicture') + fnA('qrImage') + fnA('tipSetup') + fnA('tipSetupGo') + fnA('tipUse');
+  check(!/rpc\(|fetch\(|sendBeacon|XMLHttpRequest|<script|createElement\('script'\)/.test(reading) && /BarcodeDetector/.test(reading),
+    'the sharer\'s QR picture is read by the phone\'s own reader, and neither it nor any reader is sent or fetched');
+  check(/qrReadPicture[\s\S]*back\.some\(function\(f\)\{ return f && f\.rawValue === code; \}\)/.test(fnA('qrReadPicture')),
+    'and a code is used only once the phone has read this page\'s redraw of it back as the same text');
+  const write = fnA('writePosition');
+  check(/const tipQr = QR_SENDS \? loadTipQr\(\) : null;\s*if \(tipQr\) args\.p_qr = tipQr;/.test(write) &&
+        /function loadTipQr\(\)\{[\s\S]*return qrPhOk\(v\) \? v : null;/.test(html),
+    'a position carries the code only while "Accept tips?" is on, and only a QR Ph one');
+  check(!/wt-qr/.test(fnA('backupMake') + fnA('backupRead')), 'a backup never holds it');
+  check(/get_bus_qr/.test(mig) && !/function public\.\w*(tip|donat)\w*\(/i.test(mig) &&
+        ![...html.matchAll(/rpc\(\s*'([a-z_]+)'/g)].some(m => /tip|donat/.test(m[1])),
+    'and no request path says tip or donate, which content blockers could match');
+
+  // Drawn again on the rider's phone. Versions 1 to 10 are tools/make-qr.js's,
+  // whose codes are printed on the flyer and the poster: held to the same modules.
+  const cp = require('child_process');
+  const toolMatrix = url => {
+    const out = cp.execFileSync(process.execPath, [path.join(ROOT, 'tools', 'make-qr.js'), url], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    const n = +/viewBox="0 0 (\d+)/.exec(out)[1] - 4, d = /d="([^"]+)"/.exec(out)[1];
+    const g = Array.from({ length: n }, () => new Array(n).fill(0));
+    for (const [, xs, ys, ws] of d.matchAll(/M(\d+) (\d+)h(\d+)v1h-\d+z/g)) for (let i = 0; i < +ws; i++) g[+ys - 2][+xs - 2 + i] = 1;
+    return g;
+  };
+  const urls = ['https://community-bus-tracker.netlify.app', 'https://community-bus-tracker.netlify.app/testers.html',
+                'https://example.com/' + 'a'.repeat(150), 'x'.repeat(213)];
+  const differ = urls.filter(u => { const a = T.qrMatrix(u).matrix, b = toolMatrix(u); return a.length !== b.length || a.some((r, y) => r.some((v, x) => v !== b[y][x])); });
+  check(differ.length === 0, 'up to version 10 the page draws exactly what tools/make-qr.js draws', differ.length ? 'differ: ' + differ.join(' ') : urls.length + ' codes, module for module');
+  // Every version, read back by a decoder written here from the standard,
+  // apart from the page's: the geometry, the format and version words from
+  // its tables, Reed-Solomon checked by its syndromes, and the text itself.
+  const EXP = [], LOG = [];
+  for (let i = 0, x = 1; i < 255; i++){ EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 256) x ^= 0x11d; }
+  const mul = (a, b) => (a && b) ? EXP[(LOG[a] + LOG[b]) % 255] : 0;
+  const FORMAT_M = ['101010000010010', '101000100100101', '101111001111100', '101101101001011',
+                    '100010111111001', '100000011001110', '100111110010111', '100101010100000'];
+  const VERSION_WORD = { 7: '000111110010010100', 8: '001000010110111100', 9: '001001101010011001', 10: '001010010011010011',
+    11: '001011101111110110', 12: '001100011101100010', 13: '001101100001000111', 14: '001110011000001101', 15: '001111100100101000' };
+  const CAPACITY_M = [0, 14, 26, 42, 62, 84, 106, 122, 152, 180, 213, 251, 287, 331, 362, 412];
+  const REMAINDER = v => v === 1 ? 0 : v <= 6 ? 7 : v <= 13 ? 0 : 3;
+  const alignAt = v => {
+    if (v === 1) return [];
+    const n = Math.floor(v / 7) + 2, last = 4 * v + 10, step = Math.ceil((last - 6) / (n - 1) / 2) * 2;
+    const out = [6];
+    for (let i = n - 2; i >= 0; i--) out.splice(1, 0, last - i * step);
+    return out.slice(0, 1).concat(out.slice(1).sort((a, b) => a - b).slice(-(n - 1)));
+  };
+  const MASKS = [(r, c) => (r + c) % 2 === 0, r => r % 2 === 0, (r, c) => c % 3 === 0, (r, c) => (r + c) % 3 === 0,
+    (r, c) => (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0, (r, c) => (r * c) % 2 + (r * c) % 3 === 0,
+    (r, c) => ((r * c) % 2 + (r * c) % 3) % 2 === 0, (r, c) => ((r + c) % 2 + (r * c) % 3) % 2 === 0];
+  const decode = (M, v) => {
+    const n = M.length;
+    if (n !== 4 * v + 17) return 'size';
+    const fn = Array.from({ length: n }, () => new Array(n).fill(false));
+    const mark = (r, c) => { if (r >= 0 && c >= 0 && r < n && c < n) fn[r][c] = true; };
+    for (const [r0, c0] of [[0, 0], [0, n - 7], [n - 7, 0]]) for (let r = -1; r < 8; r++) for (let c = -1; c < 8; c++) mark(r0 + r, c0 + c);
+    for (let i = 0; i < n; i++){ mark(6, i); mark(i, 6); }
+    const al = alignAt(v);
+    for (const r of al) for (const c of al){
+      if ((r === 6 && c === 6) || (r === 6 && c === n - 7) || (r === n - 7 && c === 6)) continue;
+      for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++){
+        if ((Math.max(Math.abs(dr), Math.abs(dc)) === 1) === !!M[r + dr][c + dc]) return 'alignment';
+        mark(r + dr, c + dc);
+      }
+    }
+    for (let i = 0; i < 9; i++){ mark(8, i); mark(i, 8); }
+    for (let i = 0; i < 8; i++){ mark(8, n - 1 - i); mark(n - 1 - i, 8); }
+    if (!M[n - 8][8]) return 'dark module';
+    let word = '';
+    if (v >= 7){
+      let bl = 0, tr = 0;
+      for (let i = 0; i < 18; i++){
+        const r = Math.floor(i / 3), c = i % 3;
+        bl |= M[n - 11 + c][r] << i; tr |= M[r][n - 11 + c] << i;
+        mark(n - 11 + c, r); mark(r, n - 11 + c);
+      }
+      word = bl.toString(2).padStart(18, '0');
+      if (word !== VERSION_WORD[v] || tr !== bl) return 'version word ' + word;
+    }
+    let f1 = 0, f2 = 0;
+    for (let i = 0; i < 15; i++){
+      f1 |= (i < 6 ? M[i][8] : i === 6 ? M[7][8] : i === 7 ? M[8][8] : i === 8 ? M[8][7] : M[8][14 - i]) << i;
+      f2 |= (i < 8 ? M[8][n - 1 - i] : M[n - 15 + i][8]) << i;
+    }
+    const mask = FORMAT_M.indexOf(f1.toString(2).padStart(15, '0'));
+    if (mask < 0 || f1 !== f2) return 'format word';
+    let free = 0;
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (!fn[r][c]) free++;
+    const [total, ec, g1, g2] = T.QR_VERSIONS[v];
+    if (Math.floor(free / 8) !== total || free % 8 !== REMAINDER(v)) return 'codeword count ' + free;
+    const bits = [];
+    let up = true;
+    for (let right = n - 1; right > 0; right -= 2){
+      if (right === 6) right = 5;
+      for (let i = 0; i < n; i++){
+        const r = up ? n - 1 - i : i;
+        for (const c of [right, right - 1]) if (!fn[r][c]) bits.push(M[r][c] ^ (MASKS[mask](r, c) ? 1 : 0));
+      }
+      up = !up;
+    }
+    const words = [];
+    for (let i = 0; i + 8 <= bits.length; i += 8) words.push(bits.slice(i, i + 8).reduce((a, b) => a * 2 + b, 0));
+    const blocks = g1 + g2, dataLen = Math.floor((total - ec * blocks) / blocks);
+    const lens = Array.from({ length: blocks }, (_, b) => dataLen + (b < g1 ? 0 : 1));
+    const parts = lens.map(() => []);
+    let k = 0;
+    for (let i = 0; i < dataLen + 1; i++) for (let b = 0; b < blocks; b++) if (i < lens[b]) parts[b].push(words[k++]);
+    for (let i = 0; i < ec; i++) for (let b = 0; b < blocks; b++) parts[b].push(words[k++]);
+    for (const p of parts) for (let i = 0; i < ec; i++){
+      let syn = 0;
+      for (const w of p) syn = mul(syn, EXP[i]) ^ w;
+      if (syn) return 'error correction';
+    }
+    const data = [].concat(...parts.map((p, b) => p.slice(0, lens[b])));
+    const dbits = [].concat(...data.map(w => w.toString(2).padStart(8, '0').split('').map(Number)));
+    const take = len => dbits.splice(0, len).reduce((a, b) => a * 2 + b, 0);
+    if (take(4) !== 4) return 'mode';
+    const count = take(v >= 10 ? 16 : 8);
+    return String.fromCharCode(...Array.from({ length: count }, () => take(8)));
+  };
+  const bad = [];
+  for (let v = 1; v <= 15; v++){
+    const text = (Q.A + Q.B + Q.M + 'https://community-bus-tracker.netlify.app/').repeat(4).slice(0, CAPACITY_M[v]);
+    const q = T.qrMatrix(text);
+    const got = q ? decode(q.matrix, q.version) : 'nothing drawn';
+    if (!q || q.version !== v || got !== text) bad.push(v + ': ' + (q ? 'v' + q.version + ' ' : '') + (got === text ? '' : String(got).slice(0, 30)));
+    const over = T.qrMatrix(text + 'x');
+    if (v < 15 && (!over || over.version !== v + 1)) bad.push(v + ': one byte more is not version ' + (v + 1));
+  }
+  check(bad.length === 0, 'every version from 1 to 15 reads back as its text, at exactly the capacity the standard gives level M',
+    bad.join('; ') || '15 versions, ' + CAPACITY_M.slice(1).join('/') + ' bytes');
+  check(T.qrMatrix('y'.repeat(413)) === null, 'and a text too long for version 15 draws nothing rather than a broken code');
+  const svg = T.qrSvg(T.qrMatrix(Q.A).matrix, 'QR code to tip the sharer');
+  check(/^<svg viewBox="0 0 (\d+) \1"/.test(svg) && +/viewBox="0 0 (\d+)/.exec(svg)[1] === T.qrMatrix(Q.A).size + 8 &&
+        /<rect width="\d+" height="\d+" fill="#fff"\/>/.test(svg) && /fill="#000"/.test(svg),
+    'drawn black on white, with the four modules of white round it that scanners need');
+}
+
+
+console.log('\n=== 23. a sharer is told how many have the map open, never a zero ===');
+// sql/17-watching-for-sharers.sql. The live count from the watching heartbeat,
+// on the sharer's own row, less their own tab, under the strip during a trip.
+check(S.watchingWords(0) === '' && S.watchingWords(-2) === '' && S.watchingWords(null) === '' && S.watchingWords(NaN) === '',
+  'nobody else looking draws nothing, never a zero');
+check(S.watchingWords(1) === '1 person has the map open' && S.watchingWords(12) === '12 people have the map open' &&
+      S.watchingWords(2.7) === '2 people have the map open',
+  'one is a person, more are people');
+check(S.WATCH_CAP === 1000 && S.watchingWords(5, true) === '1000+ people have the map open',
+  'past the count\'s ceiling it says so, rather than a number that is wrong');
+{
+  const mig = fs.readFileSync(path.join(ROOT, 'sql', '06-watching-count.sql'), 'utf8');
+  check(new RegExp('_watching_cap\\(\\)\\s*returns integer language sql immutable as \\$\\$ select ' + S.WATCH_CAP + ';').test(mig),
+    'and the page\'s ceiling is the server\'s');
+  const fnB = name => { const a = html.indexOf('function ' + name + '('); const m = /\n(?:async )?function |\n\/\/ ----/.exec(html.slice(a + 1)); return a < 0 ? '' : html.slice(a, m ? a + 1 + m.index : html.length); };
+  const seen = fnB('renderSeenLine');
+  check(/sharing && !writePrivate && Number\.isFinite\(MY_WATCHING\)/.test(seen) && /Date\.now\(\) - BEAT_OK_AT < 170000/.test(seen) &&
+        /watchingWords\(raw - self, raw >= WATCH_CAP\)/.test(seen),
+    'drawn only while this phone shares a bus riders can see, less its own tab when its beat is recent');
+  check(/MY_WATCHING = mine && Number\.isFinite\(mine\.watching\) \? mine\.watching : null;/.test(html) &&
+        /MY_THANKS = 0;\s*MY_WATCHING = null;/.test(html),
+    'read from this phone\'s own row only, and forgotten when the trip ends');
+  check(!/watching/.test(fnB('busPopupHtml') + fnB('renderStrip')), 'and never drawn for riders, on a popup or the strip');
 }
 
 console.log(fail ? `\n${fail} FAILED` : '\nall passed');

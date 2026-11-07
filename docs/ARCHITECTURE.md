@@ -240,7 +240,7 @@ Three details make it work:
   in the guide and admin headers would be two more things to look at for no
   more control.
 
-The preference is the second of the six things this app keeps between
+The preference is the second of the eight things this app keeps between
 visits, after the
 guide-seen dot. Both are named in the privacy panel — the panel used to claim
 nothing was kept once you close the page, which the guide dot had already made
@@ -278,7 +278,8 @@ deleted. Full reasoning in `docs/DATABASE.md`.
 **The watching count is present tense only.** July 2026 added the one thing in
 the system that observes watchers at all: the tracker page beats every 60
 seconds with a random per-tab id, and the admin page can see how many devices
-have the map open right now. It was checked against the rule above and built to
+have the map open right now. (Since November 2026 the person sharing a bus sees it
+too, during their trip: "Telling a sharer how many have the map open".) It was checked against the rule above and built to
 stay on the right side of it — rows are deleted three minutes after the last
 beat, so there is no daily total, no peak, no yesterday, and nothing to
 subpoena. **A watching count is a live gauge, not a log.** Turning it into a
@@ -1323,7 +1324,7 @@ What it may not become, and why it is shaped the way it is:
   so there is no list of reported sharers to keep, ask for or hand to the bus
   company. `docs/DATABASE.md`, "Saying something is wrong".
 - **Remembered for the tab only** (`wt-wrong`, sessionStorage), so the button
-  stops asking and the six things kept between visits stay six. A tap that
+  stops asking and the eight things kept between visits stay eight. A tap that
   did not land gives the button back, as salamat does.
 - **Where it sits.** The popup was already the map's height on a phone, and a
   line of its own at the foot pushed "Send a link" out of the map, so it
@@ -1826,8 +1827,166 @@ cleaned and refuses anything that is not a backup (or is over 400,000
 characters), then replaces what is on the phone, with a second tap if there
 is anything to lose. "Start from scratch" (once "Remove all") deletes the
 tickets and the bus, also on a second tap. The app never sends a backup
-anywhere, it writes only the two keys it already had, so the six remembered
-things stay six, and the privacy panel says what a backup is.
+anywhere, it writes only the two keys it already had, so the eight remembered
+things stay eight, and the privacy panel says what a backup is.
+
+## Tips: a sharer's QR, for riders who rode their bus
+
+November 2026, the maintainer's decision, after a conversation that is worth
+keeping. The question was whether sharers could accept payments or
+donations, or at least show a GCash QR. Taking money through the app was
+ruled out: it needs a payment provider, a merchant account in someone's
+name, paying each sharer out (so knowing who every sharer is, which the app
+deliberately does not), and passing other people's money along starts to
+look like a payment service the BSP regulates. A QR on every bus on the map
+was argued against: it puts a name on a live, public map, a QR beside a bus
+reads as "pay your fare here", anyone with the key (or anyone at all, with
+open sharing) could put up a "bus" with their own QR, and money is a far
+stronger reason than spare parts to put a bus on the map that isn't one.
+The maintainer's own answer to those, "just pay after the trip, once it's
+confirmed the bus is the sharer's", became the design: the app makes that
+check rather than asking riders to.
+
+**What it is.** "Accept tips?", a switch on the sharing tab under Bus number
+and again above Stop during a trip, so every sharer sees it before every
+Start and can always see whether it is on. Switched on with no code, it asks
+for the QR the sharer's GCash, Maya or bank app saves; the phone reads the
+picture itself and keeps the code's text as `wt-qr`, the seventh remembered
+thing, until it is switched off. While it is on, each position carries the
+code (`sql/16-tips.sql`, `p_qr`). A rider who tapped "I'm on this bus" and
+rode it at least `TIP_KM`, a kilometre along the route, is asked when they tap
+"I got off": "Say thanks to sharer with a tip/donation?", the code drawn
+again on their phone, "Not the fare. Not the bus company." under it, and Save
+the QR, because a payment app pays a QR from the gallery. The words are the
+maintainer's. The TIPS block in `index.html` holds the rules and
+`test-thanks.js` section 22 tests them; `test-boot.js` drives both sides.
+
+Decided, each for a reason:
+
+- *Only after the ride, only to someone who rode it.* A made-up bus that
+  nobody can ride earns nothing, which removes the reason to fake one; a
+  rider waiting at a stop is never asked to pay for a bus that may not come;
+  and the conductor has collected the fare by then, so the code cannot pass
+  for it. The ride is measured on the rider's phone, from where the bus was
+  on the chain when they said they were on it (`ABOARD_KM`, in memory), the
+  same chain the ticket's kilometre uses. Fewer riders see it than would
+  see a QR on every bus, which is the trade. Nothing about tips is on the
+  map, a chip, the strip or a popup.
+- *Only a QR Ph code.* The EMV layout every Philippine wallet and bank
+  prints, checksum right, country PH, a person-to-person or merchant scheme,
+  no fixed amount: never a link, a word or a picture of anybody's choosing,
+  checked on the phone (`qrPhKey()`) and again by the server (`_qr_key`).
+  The code is kept exactly as printed. Changing a payment code (to strip a
+  mobile number from it, say) could break where the money goes, and a tip
+  that silently fails is worse than none.
+- *Drawn again from the text, and read back first.* The rider's phone draws
+  the code itself (`qrMatrix()`, tools/make-qr.js's encoder extended to
+  version 15) rather than being sent a picture, so nothing a sharer uploads
+  is ever shown to anybody. Before a code is used, the sharer's phone reads
+  its own redraw with its own reader, and refuses a code that does not come
+  back as the same text, so a mistake in the drawing can never reach a
+  rider. `test-thanks.js` also reads every version back with a decoder
+  written from the standard.
+- *The phone's own reader, and no other.* `BarcodeDetector`, which Chrome on
+  Android, the Android app's WebView and Samsung Internet have. A vendored
+  reader (jsQR, Apache-2.0) would have covered iPhones too, at 250 KB of
+  third-party code; this does without one, and an iPhone browser says it
+  cannot read QR pictures and points to Chrome on Android or the app.
+- *Nothing is counted.* No amount, no total, no record of who tipped whom:
+  the app never learns whether anybody paid. So tips cannot rank sharers,
+  cannot become the driver metric `for-operators.html` promises does not
+  exist, and add nothing to "Collecting". They are not spare parts, which
+  stay plainly not money.
+- *No login.* Google sign-in was considered, to make reports and bans stick.
+  For tips the payment account is already the stronger identity: getting
+  round a ban on it takes another registered SIM, where a Google account is
+  free to make again, and sign-in would have cost a native plugin (Google
+  refuses its sign-in page in a WebView), an accounts table, account
+  deletion and a record of every sharer, the thing this design avoids.
+- *Reports hide the code, on their own.* Three "Not a real bus?" taps stop
+  the code being handed out for the rest of that trip. Reports otherwise
+  never act by themselves (see "Saying a bus or a sighting is wrong"),
+  because one person with a few tabs could take a real bus off the map;
+  here all they can cost a real sharer is one trip's tips, and the bus stays.
+- *Organizers can ban an account* from the admin page: a salted mark of it,
+  never the code, kept until lifted, the one thing tips leave beyond a trip.
+
+**The honest cost**, in the privacy panel and `for-operators.html`. Reads
+need no key, so while a bus that takes tips is live anyone determined can
+read its code with `get_bus_qr`, by the public id every map has: the name a
+payment app shows, partly hidden, and any mobile number printed in the code
+(a QR Ph account can carry one; the app tells the sharer when theirs does),
+beside the bus's position. That is why it is off until a sharer switches it
+on. And anyone on board can share, so a driver or conductor can accept tips
+from passengers this way, which the briefing for the bus company says
+plainly.
+
+## Telling a sharer how many have the map open
+
+November 2026, the maintainer's choice from a list of ways to make the app
+worth using: "Show sharers they're helping". Sharers are the tool's real
+shortage, and the question a sharer cannot answer from the sharing tab is
+whether anybody is looking. The answer already existed: the watching count
+("The watching count is present tense only", above), which only the admin
+page could see. Now the sharing tab says it under the strip during a trip:
+"12 people have the map open" (`watchingWords()`, `renderSeenLine()`).
+
+- *The same gauge, a second reader.* `get_positions` returns it on the
+  caller's own row, beside `thanks`, unlocked by the real session id only
+  that phone holds (`sql/17-watching-for-sharers.sql`). Nothing new is
+  counted or kept, and riders never see it: a number beside a bus would rank
+  the buses, the reason the salamat count is the sharer's alone.
+- *Others only.* The page takes its own tab off while its own beat is
+  recent, so "1 person" is never the sharer looking at their own map.
+- *Never a zero*, as salamat: nobody looking yet looks like nothing.
+- *Only while riders can see the bus.* Outside the route area nobody can,
+  so a sharer there is told nothing rather than a count of people who
+  cannot see them.
+- Past the count's ceiling (`_watching_cap()`, 1000) it says "1000+".
+
+## Low data
+
+November 2026, from the same list. Riders here pay for data by the
+megabyte, and the map's background tiles are most of what a visit costs.
+"Low data", at the foot of the map beside the Tutorial and Send the tracker,
+asks for no tiles at all: the route's own marks, the stops and the buses stay,
+on the page's paper, which reads as a line diagram of the route because the
+map was already drawn that way ("The map"). The position feed runs at the
+slow feed's 18 seconds instead of 6 (`slowFeed()`, so the saved stop's
+picture glides over the slower feed too) and the sightings once a minute.
+A sharer's own positions go as often as ever: low data is for reading the
+map, never for what a bus sends. A line under the map says the tiles are off,
+because a phone whose browser asked to save data starts that way.
+
+The choice is remembered on the phone as `wt-lowdata`, the eighth remembered
+thing, because a data saver that has to be found again on every visit saves
+nothing. Until one is made it follows the browser's own data saver
+(`navigator.connection.saveData`) where the browser says. The privacy panel
+names it, and `test-boot.js` section 19 holds the rest.
+
+## Doesn't look like a bus
+
+November 2026, from the same list, and more needed since tips gave a reason
+to put up a bus that isn't one. The admin page says beside a live bus,
+in red with the reports, "doesn't look like a bus: far from the route" or
+"not moving", and lists those buses after the reported ones and before the
+rest. It is worked out on that page from the positions it already shows,
+kept in its memory only, never sent and never stored, and it does nothing
+by itself: Stop is still the organizer's to press.
+
+- *Far from the route* is more than 2 km from the line the route's stops
+  trace in route order (`oddRouteLine()`): the same 2 km
+  `assets/places.txt` is held to. The straight line between checkpoints would
+  not do, because stops sit up to 3.3 km off it where the road hooks round
+  the Tagaytay ridge; every point along the stops comes within 1 km of the
+  traced line (`test-guard.js`).
+- *Not moving* is half an hour of reports within 150 m of one place, by the
+  bus's own report times, away from both ends, where buses stand to leave
+  (`oddStill()`, the rider page's `rideStand()` in shape). In words and never
+  minutes, because a bus standing still is a driver's break as easily as a
+  phone in a house, and this tool does not time breaks. It is measured from
+  when the page first saw the bus, so a page just opened needs that half
+  hour before it can say so. `for-operators.html` says it exists.
 
 ## Rules revisited, October 2026
 
@@ -1853,6 +2012,11 @@ would unlock. What changed, and what was kept and why:
   sharer sends it": a picture of a ticket, its postcard, for a chat, Facebook
   or Instagram, at the sharer's tap (rule 20). See "Sending the tracker, and a
   ticket's postcard".
+- **And in November 2026:** "nothing about who you are" in a position now
+  has one exception a sharer chooses: their payment QR, while "Accept tips?"
+  is on (see "Tips"); the watching count, once the organizer's alone, is also
+  shown to the person sharing a bus; and the remembered things are eight,
+  with the tip QR and Low data.
 - **Kept:** no location history; no watcher location leaves the device; no
   total of anything on the server; nothing about speed or a trip's length in
   any stamp, luck or decoration threshold beyond the time summed in all; no
@@ -1916,7 +2080,7 @@ the map on arrival would stand between a rider at a roadside and the answer.
 So a first visit gets a small "New here?" note at the foot of the screen, where
 it covers nothing the page was opened for, and answering it either way is kept
 under the guide dot's key: both mean "this phone has been shown around", and the
-privacy panel's six things stay six. After that the tour is a quiet button at
+privacy panel's eight things stay eight. After that the tour is a quiet button at
 the foot of each tab and two buttons at the top of the guide.
 
 **Named `walk*`.** The content-blocker lesson again (see "Content blockers"):
@@ -2397,6 +2561,13 @@ so does a ticket's postcard (`sendPostcard()`, `#tktSend`, `#tktPic`), named
 like everything else for what they do. See "Sending the tracker, and a
 ticket's postcard".
 
+Tips (November 2026) were named the same way, after a look at the lists:
+several hide donation buttons by exact name (`.homeDonateCta`,
+`#donate-social`), and many hide tooltips and cookie "tips". So nothing is
+called tip or donate: the switch is `.qrswitch`, the windows `#qrModal` and
+`#tyqrModal`, the picture `.qrart`, and the requests `get_bus_qr` and
+`admin_ban_qr`.
+
 ## Known limitations
 
 **Screen must stay on while sharing in a browser.** A browser gives a page no
@@ -2411,6 +2582,15 @@ the page becomes visible again, but it cannot survive backgrounding. On
 Android the answer is now the app in `mobile/` (see "The Android app" above).
 On an iPhone it is still a mounted phone on a charger, and long term a
 dedicated GPS tracker device.
+
+**"Not moving" needs the admin page open for half an hour.** The page
+measures it from when it first saw a bus, in its own memory, rather than
+the server keeping when a bus stopped ("Doesn't look like a bus").
+
+**An iPhone browser cannot read a QR picture.** "Accept tips?" needs the
+phone's own QR reader (`BarcodeDetector`), which Safari and Firefox do not
+offer, so a sharer there is told to use Chrome on Android or the app. A
+vendored reader would fix it, at the cost of third-party code ("Tips").
 
 **Nothing detects a wrong vehicle going the right way.** A car, a jeepney, or
 another company's bus on the same corridor is indistinguishable from a Wonderful

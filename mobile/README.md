@@ -38,7 +38,7 @@ in `index.html`, under the suites, like everything else.
 | `@capacitor-community/background-geolocation` | The foreground service that keeps GPS alive with the screen off. |
 | `@capacitor/local-notifications` | Two jobs. It asks for Android 13's notification permission, without which the sharing notification is hidden. And it turns a trip question asked while the app is in the background (wrong direction, still on the bus, trip finished) into a notification, because the wrong-direction one takes the bus off the map until it is answered. |
 | `@capacitor/app` | The back button. Without it, Android 11 and older closed the app on back, which stopped a trip, and back never closed a pop-up. `appBack()` in the page closes what is open, one layer at a time, and otherwise puts the app in the background. |
-| `@capacitor/filesystem` and `@capacitor/share` | A backup, a link to a bus, the tracker's own link (Send the tracker) and a ticket's picture (Send a picture) go to the phone's share sheet. A WebView has no `navigator.share`, and it drops a download without a word, so a backup "saved to your downloads" was never saved. `appSendFile()` writes the backup, or the picture as base64, to the app's cache and shares the file. |
+| `@capacitor/filesystem` and `@capacitor/share` | A backup, a link to a bus, the tracker's own link (Send the tracker), a ticket's picture (Send a picture) and a tip QR a rider saves (Save the QR) go to the phone's share sheet. A WebView has no `navigator.share`, and it drops a download without a word, so a backup "saved to your downloads" was never saved. `appSendFile()` writes the backup, or the picture as base64, to the app's cache and shares the file. |
 
 The manifest adds two things the plugins leave out. `VIBRATE`, or the WebView
 ignores `navigator.vibrate` and the saved stop's "buzz once" never buzzes.
@@ -184,8 +184,19 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
   - *Device or other IDs*: a random ID made fresh for each trip, and one made
     fresh by each open page for the live count of watchers, deleted three
     minutes after the page closes.
+  - *Financial info, user payment info* (since `sql/16-tips.sql`, optional):
+    the text of a sharer's payment QR, only while they have switched on
+    "Accept tips?", sent with each position for the app's function, shown to
+    a rider who rode that bus when they get off, deleted when the trip ends.
+    *Personal info, name and phone number*, optional, go with it: a payment
+    QR carries its owner's name, partly hidden, and may carry their mobile
+    number, which the app tells the sharer before using it. Picked by the
+    sharer, so a transfer they start and expect, not sharing in Play's terms.
+    The picture itself is read on the phone and never sent. A ban an
+    organizer makes keeps a salted hash of the account, never the code.
 
-  Not collected: names, accounts, contacts, the advertising ID, a watcher's
+  Not collected: names, accounts (beyond what a sharer's own payment QR
+  carries, above), contacts, the advertising ID, a watcher's
   location, the saved stop or what is typed to find it (the places along
   the route are searched on the phone), tickets or your bus.
   Not shared either: Send the tracker and Send a picture hand a link, or a
@@ -196,6 +207,11 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
   not the person's: the app keeps it on the phone and sends it only to be
   checked, as a browser does. Users can delete their data: Stop removes the
   position, and everything else goes by itself.
+- **Payments:** none in the app. Tips go from a rider's own payment app to
+  a sharer's account by QR, peer to peer: all of each tip goes to the sharer
+  and it unlocks nothing, which Play's Payments policy counts as a
+  peer-to-peer payment that does not use Play's billing. The app never
+  learns whether anyone paid, or how much, and takes no cut.
 - **Content rating:** no violence, no gambling, no ads. Users share their
   location with everyone (while sharing) and can post sightings, which are
   picked from lists, so there is no free text to moderate. The questionnaire's

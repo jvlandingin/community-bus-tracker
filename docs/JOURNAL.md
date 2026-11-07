@@ -25,6 +25,52 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-11-07: Three from the list of ideas
+
+Asked for ideas to make the tracker something people want to use, the
+maintainer picked three to build at once. **Sharers see how many people have
+the map open** while they share, the watching count the admin page already
+had, because the question a sharer cannot answer is whether anyone is
+looking. **Low data**, at the foot of the map, for riders on prepaid load: no
+map tiles, buses checked every 18 seconds. And on the admin page, **"doesn't
+look like a bus"**: far from the route, or not moving for half an hour away
+from both ends, which matters more now that tips give a reason to fake a bus.
+Said in words, never minutes, because a bus standing still is a driver's
+break as easily as a phone in a house.
+
+`sql/17-watching-for-sharers.sql` has to be run in Supabase for the first:
+until it is, sharers simply see no count.
+
+---
+
+## 2026-11-03: Tips for sharers
+
+The maintainer asked whether sharers could accept payments or donations, or
+at least show a GCash QR. Payments through the app were ruled out (a merchant
+account, paying sharers out, the BSP). A QR on every bus on the map was argued
+against: a name on a live public map, a QR beside a bus reads as the fare, and
+money is a reason to put up a bus that isn't one. The maintainer's answer,
+"just pay after the trip, or once it's confirmed the bus is the sharer's",
+became the design: the app offers the QR only to a rider who said they were on
+that bus and rode it at least a kilometre, when they tap "I got off". A Google
+login, proposed so reports could stick, was left for later: for tips the
+payment account is already the stronger identity.
+
+The words are the maintainer's: "Accept tips?" for the sharer's switch, on the
+sharing tab where every sharer sees it before Start, and "Say thanks to sharer
+with a tip/donation?" for the rider. Found while building it: a QR Ph code can
+carry its owner's full mobile number, not only a partly hidden name, so the
+app tells a sharer when theirs does before using it. `sql/16-tips.sql`,
+`docs/ARCHITECTURE.md`, "Tips".
+
+**Not yet checked, on real phones:** reading a real GCash, Maya and bank QR
+picture with Chrome on Android and in the Fibi app; a rider paying the
+redrawn code through GCash's "Upload QR" after Save the QR, in Chrome, in
+Safari on an iPhone and in the app. And `sql/16-tips.sql` has to be run in
+Supabase: until it is, nobody is offered a tip and nothing else changes.
+
+---
+
 ## 2026-10-22: Send the tracker, and a ticket's postcard
 
 The maintainer: "this app would benefit from a share feature. Like share to

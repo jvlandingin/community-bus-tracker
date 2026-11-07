@@ -626,6 +626,24 @@
   .tripdemo .strip .track.sb .stn{border-color:#b23a4b;}
   .tripdemo .strip .buspill.me{box-shadow:0 0 0 2px var(--surface), 0 0 0 4.5px var(--live), 0 0 18px 4px rgba(61,220,151,.45);}
   .tripdemo .demo-ty{color:#ffd27a;}
+  .demo-seen{margin-top:8px; text-align:center; font-size:11px; font-weight:700; color:var(--muted);}
+
+  /* ---- Tips -------------------------------------------------------- */
+  /* "Accept tips?" as the sharing tab draws it (.qrswitch in index.html),
+     and the window a rider who rode the bus gets when they get off. */
+  .demo-switch{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; font-size:12px; font-weight:800;}
+  .demo-switch i{flex:0 0 auto; position:relative; width:32px; height:19px; border-radius:999px; background:var(--line);}
+  .demo-switch i::after{content:''; position:absolute; top:2.5px; left:2.5px; width:14px; height:14px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25);}
+  .demo-switch.on i{background:var(--live);}
+  .demo-switch.on i::after{left:15.5px;}
+  .tripdemo .demo-switch{margin:10px 0 0;}
+  .tyqrdemo{padding:14px; border-radius:14px; background:var(--surface); border:1.5px solid var(--line); text-align:center;}
+  .tyqrdemo > b{display:flex; align-items:center; justify-content:center; gap:6px; font-size:14px; line-height:1.3;}
+  .tyqrdemo > b .gi{width:18px; height:18px; color:var(--brand-ink);}
+  .tyqrdemo .qr{display:block; width:136px; margin:10px auto 6px; padding:5px; border-radius:8px; background:#fff;}
+  .tyqrdemo .qr svg{display:block; width:100%; height:auto;}
+  .tyqrdemo small{display:block; font-size:11px; font-weight:700; color:var(--muted);}
+  .tyqrdemo .fakebtn{margin-top:10px;}
 
   /* ---- Your bus ----------------------------------------------------- */
   /* busSvg() from index.html, drawn into this page by tools/make-pictures.js
@@ -974,6 +992,7 @@
     <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3M12 14.6v2"/></symbol>
     <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s-6.5-6-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.3"/></symbol>
     <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 13.5a4 4 0 0 0 5.7.3l3-3a4 4 0 0 0-5.7-5.7l-1.1 1.1"/><path d="M14 10.5a4 4 0 0 0-5.7-.3l-3 3a4 4 0 0 0 5.7 5.7l1.1-1.1"/></symbol>
+<symbol id="i-data" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5.5 19v-3.5M10 19v-7M14.5 19V8.5M19 19V5"/></symbol>
     <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 3.5L3.6 10.4l6.6 2.9 2.9 6.6z"/><path d="M10.2 13.3l10.3-9.8"/></symbol>
     <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.2M12 19v2.2M2.8 12h2.2M19 12h2.2M5.5 5.5l1.6 1.6M16.9 16.9l1.6 1.6M5.5 18.5l1.6-1.6M16.9 7.1l1.6-1.6"/></symbol>
   </defs>
@@ -1121,6 +1140,7 @@
       <li><span class="num">4</span><span>Show one direction only</span></li>
       <li><span class="num">5</span><span>How fresh the position is</span></li>
     </ol>
+    <div class="note"><svg class="gi" aria-hidden="true"><use href="#i-data"/></svg><div><b>On prepaid data? Tap Low data.</b><span>It is at the foot of the map: no map background, and buses checked less often. The strip, your stop and the buses still show.</span></div></div>
   </div>
 
   <!-- ================= THE STRIP ================= -->
@@ -1238,6 +1258,7 @@
         <li><b>Only the organizer sees “Not a real bus?”,</b> as a number beside the bus, gone when the trip ends. Nothing happens on its own: one person tapping many times cannot take a real bus off the map. It carries nothing about you.</li>
         <li><b>The picture moves</b> while the bus is on its way and stands still when it is waiting or has gone quiet; behind it is the town the bus is passing, with a line about that town below.</li>
         <li><b>A plain bus, usually.</b> A sharer who has dressed their bus may choose to show it, and then this is the bus as they dressed it.</li>
+        <li><b>Tips.</b> If its sharer accepts them, <b>I got off</b> may ask if you want to tip them, once you’ve ridden a kilometre or more. You pay in your own payment app, and this app never learns if you did.</li>
       </ul>
     </details>
   </div>
@@ -1322,6 +1343,7 @@
           <div><div class="arw">▼</div><div class="nm">Southbound</div><div class="to">to Mendez / Tagaytay</div></div>
         </div>
         <div class="demo-field filled">98019</div>
+        <div class="demo-switch"><span>Accept tips?</span><i></i></div>
         <div class="fakebtn primary" style="margin-top:10px">Start sharing my location</div>
       </div>
       <figcaption>Direction picked (it turns gold), the number in, ready to start.</figcaption>
@@ -1339,6 +1361,7 @@
             <span class="txt">Sharing live: ▲ northbound</span>
           </span>
         </div>
+        <div class="demo-switch"><span>Accept tips?</span><i></i></div>
         <div class="fakebtn stop" style="margin-top:11px">Stop sharing</div>
       </div>
       <!-- The second card is the app's, not an illustration of one: while a
@@ -1367,6 +1390,9 @@
         <!-- Drawn here because the app draws it, but only once somebody has
              tapped: a trip with none shows no row at all, never a zero. -->
         <div class="demo-ty"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>3 riders said salamat</div>
+        <!-- watchingWords() in index.html, for 12 other tabs with the map
+             open (sql/17-watching-for-sharers.sql). Never a zero. -->
+        <div class="demo-seen">12 people have the map open</div>
       </div>
       <!-- And the saved stop, which the sharing tab carries too while a trip
            is live, following this phone's own bus. The bus is at Gen. Trias,
@@ -1385,7 +1411,7 @@
         <div class="ride-sub">Next stop <b>Monterey</b></div>
       </div>
       </div>
-      <figcaption>While you share, the tab goes dark. Your bus has the <b>green ring</b>. Tap <b>Show the road</b> to see it from the bus. A salamat from a rider shows here, only to you.</figcaption>
+      <figcaption>While you share, the tab goes dark. Your bus has the <b>green ring</b>. Tap <b>Show the road</b> to see it from the bus. A salamat from a rider shows here, only to you, and how many people have the map open.</figcaption>
     </figure>
 
     <h3 class="sub">Stop when you get off</h3>
@@ -1491,6 +1517,33 @@
         <li><b>Paint comes from a short list</b> and the shop has no words in it, so no bus can carry anyone's message.</li>
         <li><b>Show customized bus to riders</b> is off until you switch it on, in My tickets or when your first decoration arrives. Then a rider who taps your bus sees it as you dressed it, and can tell it is yours from one trip to the next.</li>
         <li><b>Save a backup</b> to keep your tickets and your bus in a small file only you hold, and <b>Restore</b> it on a new phone. <b>Start from scratch</b> removes both from this one.</li>
+      </ul>
+    </details>
+    <h3 class="sub">Accept tips</h3>
+    <p>Switch on <b>Accept tips?</b> and pick the QR your GCash, Maya or bank
+      app saves. Riders who rode your bus can tip you when they get off.</p>
+    <!-- The rider's window, as offerTip() in index.html opens it for someone
+         who tapped I got off after riding a kilometre or more on a bus that
+         takes tips. The code here is an example drawn by tools/make-qr.js:
+         it reads "Example only. Not a payment QR." -->
+    <figure>
+      <div class="tyqrdemo" aria-hidden="true">
+        <b><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>Say thanks to sharer with a tip/donation?</b>
+        <span class="qr"><svg viewBox="0 0 33 33" aria-hidden="true" focusable="false" shape-rendering="crispEdges"><rect width="33" height="33" fill="#fff"/><path fill="#000" d="M2 2h7v1h-7zM10 2h1v1h-1zM15 2h3v1h-3zM24 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM10 3h3v1h-3zM14 3h4v1h-4zM20 3h2v1h-2zM24 3h1v1h-1zM30 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM10 4h1v1h-1zM15 4h2v1h-2zM21 4h1v1h-1zM24 4h1v1h-1zM26 4h3v1h-3zM30 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM11 5h4v1h-4zM16 5h2v1h-2zM19 5h1v1h-1zM22 5h1v1h-1zM24 5h1v1h-1zM26 5h3v1h-3zM30 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM10 6h2v1h-2zM13 6h1v1h-1zM15 6h1v1h-1zM17 6h1v1h-1zM20 6h2v1h-2zM24 6h1v1h-1zM26 6h3v1h-3zM30 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM13 7h1v1h-1zM15 7h2v1h-2zM19 7h1v1h-1zM24 7h1v1h-1zM30 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h7v1h-7zM11 9h1v1h-1zM13 9h1v1h-1zM16 9h1v1h-1zM21 9h2v1h-2zM2 10h1v1h-1zM5 10h6v1h-6zM14 10h6v1h-6zM21 10h3v1h-3zM26 10h1v1h-1zM28 10h3v1h-3zM2 11h2v1h-2zM5 11h3v1h-3zM10 11h2v1h-2zM16 11h1v1h-1zM20 11h2v1h-2zM26 11h2v1h-2zM4 12h1v1h-1zM6 12h1v1h-1zM8 12h2v1h-2zM11 12h4v1h-4zM16 12h1v1h-1zM19 12h1v1h-1zM22 12h1v1h-1zM24 12h1v1h-1zM26 12h3v1h-3zM3 13h1v1h-1zM5 13h1v1h-1zM9 13h3v1h-3zM16 13h2v1h-2zM19 13h1v1h-1zM25 13h1v1h-1zM27 13h1v1h-1zM29 13h2v1h-2zM2 14h2v1h-2zM5 14h1v1h-1zM7 14h2v1h-2zM10 14h2v1h-2zM15 14h2v1h-2zM21 14h4v1h-4zM29 14h2v1h-2zM5 15h1v1h-1zM9 15h2v1h-2zM13 15h1v1h-1zM19 15h2v1h-2zM22 15h1v1h-1zM24 15h5v1h-5zM30 15h1v1h-1zM2 16h7v1h-7zM11 16h3v1h-3zM16 16h2v1h-2zM19 16h1v1h-1zM21 16h4v1h-4zM26 16h2v1h-2zM30 16h1v1h-1zM2 17h1v1h-1zM4 17h1v1h-1zM6 17h2v1h-2zM9 17h1v1h-1zM11 17h2v1h-2zM14 17h3v1h-3zM18 17h1v1h-1zM20 17h1v1h-1zM22 17h1v1h-1zM24 17h2v1h-2zM27 17h2v1h-2zM30 17h1v1h-1zM2 18h1v1h-1zM8 18h1v1h-1zM14 18h1v1h-1zM17 18h1v1h-1zM22 18h1v1h-1zM25 18h1v1h-1zM29 18h2v1h-2zM2 19h1v1h-1zM4 19h3v1h-3zM10 19h1v1h-1zM13 19h1v1h-1zM19 19h1v1h-1zM21 19h2v1h-2zM24 19h1v1h-1zM26 19h4v1h-4zM2 20h2v1h-2zM5 20h8v1h-8zM15 20h2v1h-2zM18 20h2v1h-2zM21 20h2v1h-2zM25 20h1v1h-1zM27 20h2v1h-2zM30 20h1v1h-1zM2 21h5v1h-5zM10 21h1v1h-1zM12 21h4v1h-4zM17 21h2v1h-2zM20 21h3v1h-3zM24 21h2v1h-2zM28 21h2v1h-2zM2 22h2v1h-2zM5 22h2v1h-2zM8 22h1v1h-1zM10 22h2v1h-2zM13 22h3v1h-3zM18 22h11v1h-11zM30 22h1v1h-1zM10 23h1v1h-1zM12 23h1v1h-1zM15 23h1v1h-1zM18 23h1v1h-1zM20 23h1v1h-1zM22 23h1v1h-1zM26 23h3v1h-3zM30 23h1v1h-1zM2 24h7v1h-7zM10 24h1v1h-1zM12 24h1v1h-1zM15 24h1v1h-1zM17 24h1v1h-1zM19 24h4v1h-4zM24 24h1v1h-1zM26 24h3v1h-3zM2 25h1v1h-1zM8 25h1v1h-1zM10 25h2v1h-2zM15 25h1v1h-1zM17 25h1v1h-1zM19 25h2v1h-2zM22 25h1v1h-1zM26 25h1v1h-1zM29 25h1v1h-1zM2 26h1v1h-1zM4 26h3v1h-3zM8 26h1v1h-1zM10 26h1v1h-1zM12 26h2v1h-2zM15 26h1v1h-1zM18 26h2v1h-2zM21 26h7v1h-7zM2 27h1v1h-1zM4 27h3v1h-3zM8 27h1v1h-1zM10 27h2v1h-2zM14 27h1v1h-1zM16 27h2v1h-2zM21 27h3v1h-3zM27 27h3v1h-3zM2 28h1v1h-1zM4 28h3v1h-3zM8 28h1v1h-1zM12 28h1v1h-1zM14 28h1v1h-1zM17 28h2v1h-2zM20 28h1v1h-1zM23 28h1v1h-1zM25 28h3v1h-3zM29 28h2v1h-2zM2 29h1v1h-1zM8 29h1v1h-1zM11 29h1v1h-1zM14 29h1v1h-1zM17 29h2v1h-2zM21 29h1v1h-1zM23 29h1v1h-1zM25 29h1v1h-1zM27 29h2v1h-2zM30 29h1v1h-1zM2 30h7v1h-7zM10 30h1v1h-1zM13 30h1v1h-1zM16 30h4v1h-4zM21 30h2v1h-2zM24 30h1v1h-1z"/></svg></span>
+        <small>Not the fare. Not the bus company.</small>
+        <div class="fakebtn primary">Save the QR</div>
+      </div>
+      <figcaption>What a rider who rode your bus sees when they get off. <b>The app never learns if they paid.</b></figcaption>
+    </figure>
+    <details class="more">
+      <summary>More about tips<svg class="gi" aria-hidden="true"><use href="#i-chev"/></svg></summary>
+      <ul>
+        <li><b>Off until you switch it on.</b> Switch it off and your phone forgets the QR.</li>
+        <li><b>Only a payment QR from the Philippines,</b> with no fixed amount: never a link or a picture of anything else. Your phone reads the picture itself; Chrome on Android and the app can, an iPhone browser can’t.</li>
+        <li><b>Riders are asked only after riding your bus</b> a kilometre or more, when they tap <b>I got off</b>. Nobody waiting at a stop is asked.</li>
+        <li><b>Anyone determined can read your QR</b> while your bus is on the map: the name your payment app shows, partly hidden, and any mobile number in it. The app tells you if there is one.</li>
+        <li><b>The money goes straight to you.</b> The app never sees it, and keeps no amount, no total and no list of who tipped.</li>
+        <li><b>Three “Not a real bus?” taps</b> hide your QR for that trip, and the organizer can ban a QR used to cheat riders.</li>
       </ul>
     </details>
     <a class="trybtn wide" href="index.html#tour=share"><b><svg class="gi" aria-hidden="true"><use href="#i-play"/></svg>Try sharing</b><span>On the real screen, with nothing shared</span></a>

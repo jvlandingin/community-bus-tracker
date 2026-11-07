@@ -46,8 +46,17 @@ One row per sharing session, upserted in place. **No history table exists, by
 design.** Unique on `(route_slug, session_id)`.
 
 `route_key`, `route_slug`, `session_id`, `lat`, `lng`, `speed`, `direction`,
-`bus_label`, `keyless`, `updated_at`, `look`, `off_route`. `lat`, `lng` and
+`bus_label`, `keyless`, `updated_at`, `look`, `off_route`, `qr`. `lat`, `lng` and
 `direction` refuse NULL.
+
+`qr` (since `16-tips.sql`) is NULL unless the sharer has switched on "Accept
+tips?". Then it is the text of their payment QR code, exactly as their payment
+app printed it, and only if `_qr_key` finds a QR Ph account in it (see "Tips");
+anything else is stored as NULL rather than refused, as a bad look is, and the
+check constraint `bus_positions_qr_shape` refuses any other shape outright.
+Every write sets it, so switching tips off takes the code off from the next
+write; it goes with the row when the trip ends. `get_positions` never returns
+it: `get_bus_qr` hands it out for one bus at a time.
 
 `off_route` (since `14-off-route-private.sql`, default false) is true while the
 row's position is outside the route area. Such a row is returned by
@@ -101,6 +110,14 @@ sighting, that is live **right now** (since `15-say-wrong.sql`).
 `sightings (sid)`. Both **ON DELETE CASCADE**. See "Saying something is
 wrong" below.
 
+### qr_bans
+One row per payment account an organizer has banned from being shown to
+riders (since `16-tips.sql`): `route_slug`, `mark`, `created_at`, and nothing
+else. `mark` is a salted hash of the account inside a tip QR, never the code.
+Foreign-keyed to `routes (slug)` with **ON UPDATE CASCADE** and **ON DELETE
+CASCADE**. The one table here whose rows outlive a trip, until an organizer
+lifts them. See "Tips" below.
+
 ### watching_now
 One row per tab with the tracker page open, upserted in place. `route_slug`,
 `watcher_id`, `last_seen`, and nothing else. Rows are deleted three minutes
@@ -110,7 +127,8 @@ after the last beat, so the table only ever describes the present. See
 ### Foreign keys, and a warning
 
 `bus_positions.route_key` and `sightings.route_key` reference `routes(key)`
-**ON UPDATE CASCADE**. The cascade is not optional: without it, every share key
+**ON UPDATE CASCADE**. (`qr_bans` references `routes(slug)`, not the key, so
+it neither needs the cascade below nor counts among these two.) The cascade is not optional: without it, every share key
 rotation fails with a foreign key violation, because child rows still point at
 the old key. `route_slug` is the real linkage now; `route_key` is carried for
 continuity only.
@@ -198,14 +216,15 @@ deletes every `keyless` bus in the same transaction: see "Open sharing" below.
 | function | notes |
 |---|---|
 | `get_settings(p_slug)` | returns `{settings, notice}`. Notice is null when unset or expired. |
-| `get_positions(p_slug, p_self)` | filters stale rows, deletes nothing. Returns `pub_id`, **not** the session id, see below, and no speed. `p_self` is optional: pass your own session id and your own row comes back with `is_self` set, which is how the duplicate-sharer warning skips itself. It also carries `thanks` on that row and `null` on every other, see "Saying salamat". An `off_route` row comes back only as the caller's own, see "Outside the route area". |
+| `get_positions(p_slug, p_self)` | filters stale rows, deletes nothing. Returns `pub_id`, **not** the session id, see below, and no speed. `p_self` is optional: pass your own session id and your own row comes back with `is_self` set, which is how the duplicate-sharer warning skips itself. It also carries `thanks` on that row and `null` on every other, see "Saying salamat", and since `17-watching-for-sharers.sql` `watching`, how many devices have the map open, on that row only and only while it is on the riders' map, see "The watching count". An `off_route` row comes back only as the caller's own, see "Outside the route area". |
 | `get_sightings(p_slug)` | newest 8 within the expiry window |
 | `add_sighting(p_slug, p_body)` | 1 to 140 chars; refuses a 6th post inside 60 seconds route-wide |
 | `clear_bus_position(p_slug, p_session)` | takes the real session id, which only the sharer's own phone holds; keeps working across a rotation and from sendBeacon |
 | `mark_watching(p_slug, p_watcher)` | the watching heartbeat, see below. Returns nothing and tells the caller nothing. |
 | `say_thanks(p_slug, p_pub, p_watcher)` | one rider thanking one live bus, see "Saying salamat". Returns nothing and tells the caller nothing. |
 | `say_wrong(p_slug, p_kind, p_target, p_watcher)` | one rider saying a live bus (`bus`, by `pub_id`) or a sighting on the board (`sighting`, by `sid`) is wrong, see "Saying something is wrong". Returns nothing and tells the caller nothing. |
-| `set_open_position(p_slug, p_session, p_lat, p_lng, p_speed, p_direction, p_label, p_look)` | a bus with no share key, **only while `open_sharing` is on**; refused with `open sharing is off` otherwise, checked on every write so switching it off stops a trip already under way. Every check `set_bus_position` makes, by the same code. Returns null when the bus is on the map and `private` when it was kept for its own phone, outside the route area. See "Open sharing". |
+| `get_bus_qr(p_slug, p_bus)` | one live bus's tip QR, by `pub_id`, or null: for a bus that takes no tips, has gone, is outside the route area, has three "Not a real bus?" taps this trip, or carries a banned account. A read: writes nothing. See "Tips". |
+| `set_open_position(p_slug, p_session, p_lat, p_lng, p_speed, p_direction, p_label, p_look, p_qr)` | a bus with no share key, **only while `open_sharing` is on**; refused with `open sharing is off` otherwise, checked on every write so switching it off stops a trip already under way. Every check `set_bus_position` makes, by the same code. Returns null when the bus is on the map and `private` when it was kept for its own phone, outside the route area. See "Open sharing". |
 | `ping()` | keep-alive target for the uptime monitor |
 
 ### Why `get_positions` does not return the session id
@@ -240,7 +259,7 @@ did was invalidate a sentence in this file about a different function.
 | function | notes |
 |---|---|
 | `check_share_key(p_slug, p_key)` | the gate. Returns `ok`, `invalid key` or `too many tries`; counts a wrong PIN. |
-| `set_keyed_position(p_slug, p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label, p_look)` | the trip, as the page sends it. Returns null when the position went in, `private` when it went in for its own phone only (outside the route area), or `invalid key` / `too many tries`; every other refusal raises, as below. |
+| `set_keyed_position(p_slug, p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label, p_look, p_qr)` | the trip, as the page sends it. Returns null when the position went in, `private` when it went in for its own phone only (outside the route area), or `invalid key` / `too many tries`; every other refusal raises, as below. |
 | `route_exists(p_key)` | true only for the **current** key, and never for a PIN. Kept for pages already on phones. |
 | `set_bus_position(p_key, p_session, p_lat, p_lng, p_speed, p_direction, p_label)` | the same checks, by the key alone; refuses any PIN-shaped key, and still refuses a position outside the route area, since it has no way to say `private`. Kept for pages already on phones. |
 
@@ -284,8 +303,10 @@ on the old key gets `invalid key`.
 `admin_key_status`, `admin_resume_key`, `admin_check`, `admin_set_settings`, `admin_set_notice(p_text, p_minutes)`,
 `admin_rotate_share_key`, `admin_kick`, `admin_delete_sighting`,
 `admin_change_key`, `admin_list_sharers`, `admin_list_blocked`,
-`admin_unblock`, `admin_watching_count`, `admin_list_wrong`. All take `(p_slug, p_admin, ...)` and
-raise `invalid admin key` on failure.
+`admin_unblock`, `admin_watching_count`, `admin_list_wrong`, `admin_ban_qr(p_session)`,
+`admin_qr_bans`, `admin_lift_qr_bans`. All take `(p_slug, p_admin, ...)` and
+raise `invalid admin key` on failure. Since `16-tips.sql` `admin_list_sharers`
+also says whether each bus takes tips, as a yes or no, never the code.
 
 `admin_list_sharers` is the only way to get real session ids back out of the
 database, and the admin page needs it because `admin_kick` and `admin_unblock`
@@ -426,6 +447,16 @@ in `sessionStorage`, gone when the tab closes; it is not the sharing session id
 and is not linked to it. `admin_watching_count(slug, admin)` returns
 `(watching, capped)` — a total and a flag, never the ids behind it.
 
+Since `17-watching-for-sharers.sql` (November 2026) the person sharing a bus
+sees the same number during their trip: `get_positions` returns it as
+`watching` on the caller's own row, beside `thanks` and unlocked the same way,
+by `p_self`, the real session id only that phone holds. Only while that bus is
+on the riders' map: a bus kept for its own phone outside the route area is
+seen by nobody, so it is told nothing. Nothing new is kept: it is the same
+count of the same rows, read at the moment of asking. The page takes its own
+tab off when its own beat landed recently and never draws a zero, and
+`15-watching-for-sharers-tests.sql` holds who may never see it.
+
 Design constraints, all of which are the point rather than details:
 
 - **The window is 3 minutes**, in `_watching_window()`, against a 60 second
@@ -562,6 +593,60 @@ It is built the way salamat is, and for the same reasons:
   `mark_watching` and `say_thanks` are named as they are.
 
 `13-say-wrong-tests.sql` holds all of it.
+
+## Tips
+
+`sql/16-tips.sql`, November 2026, the maintainer's decision. A sharer may
+switch on "Accept tips?" and pick the QR code their GCash, Maya or bank app
+saves for receiving money; each position then carries its text as `p_qr`. A
+rider who told a bus's popup "I'm on this bus", rode it at least a kilometre
+along the route and taps "I got off" is asked "Say thanks to sharer with a
+tip/donation?", and their page asks `get_bus_qr` for that one bus's code and
+draws it again. The money goes from the rider's own payment app to the
+sharer's account; nothing about it passes through the database, so there is
+no amount, no total and no record of who paid. Decided, each for a reason:
+
+- **Only a QR Ph code.** `_qr_key` walks the EMV fields: the first is `00`
+  `01`, the checksum in `63` is CRC-16/CCITT-FALSE over everything before it
+  and nothing follows it, the country in `58` is `PH`, there is no fixed
+  amount (`54`: a tip is the rider's to choose), and at least one merchant
+  account field (`26` to `51`) names QR Ph's person-to-person
+  (`com.p2pqrpay`) or merchant (`ph.ppmi.p2m`) scheme in its own field `00`.
+  Printable ASCII only, 30 to 512 characters. So a code can never be a link,
+  a word or anything but an account to pay. The page applies the same rule
+  (`qrPhKey()`), and `test-thanks.js` holds the two to one list of samples,
+  the ones `14-tips-tests.sql` uses.
+- **On the trip's row, gone with it.** Like `look`: overwritten by every
+  write, deleted by Stop, an organizer's Stop and the stale sweep, which none
+  of them has to know about.
+- **One bus at a time, never in `get_positions`.** So no page holds every
+  bus's code, and a rider's page asks only at the moment it offers one. That
+  does not make it secret: reads need no key, so anyone determined can call
+  `get_bus_qr` with the public ids every map has and read every live code,
+  and with it the name a payment app shows, partly hidden, and any mobile
+  number printed in the code, beside a live position. That is the honest
+  cost, stated in the privacy panel and `for-operators.html`, and the reason
+  it is off until a sharer switches it on.
+- **Three "Not a real bus?" taps hide it** (`_qr_hide_at()`), for the rest of
+  that trip. The one place a report acts on its own, because all it can cost
+  a real sharer is one trip's tips: the bus stays on the map, which is what
+  "Saying something is wrong" keeps reports from touching.
+- **An organizer can ban an account.** `admin_ban_qr` keeps
+  `_qr_mark(pub_salt, account)` in `qr_bans` (route, mark, date, nothing
+  else) and clears every live row carrying that account; `_set_qr` stores a
+  banned account as NULL from then on, and `get_bus_qr` checks again.
+  The account is the merchant account fields written out whole, so a code
+  that differs only in its name, city or checksum is the same account, and
+  getting round a ban takes another payment account, which takes another
+  registered SIM. `admin_qr_bans` counts them and `admin_lift_qr_bans`
+  lifts them all: a ban cannot be told from another, so there is no list.
+  It is the one thing in this migration that outlives a trip, and a list an
+  organizer chose to make of scrambled accounts, not of people. Foreign-keyed
+  to `routes (slug)`, so renaming a route carries its bans.
+- **Named `qr`**, never `tip` or `donate`: the request path is what content
+  blockers match, as `say_wrong` is not `report_*`.
+
+`14-tips-tests.sql` holds all of it.
 
 ## Setting up a fresh route
 

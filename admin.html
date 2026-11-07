@@ -351,6 +351,8 @@
     <span class="badge">LIVE SHARERS</span>
     <div class="hint" style="margin-top:8px;">Everyone currently sharing a bus position. Stopping one removes the bus and blocks that phone from sharing for 6 hours, and their app tells them an organizer stopped it.</div>
     <div class="hint" style="margin-top:6px;">Riders can tap <b>Not a real bus?</b> on a bus. How many did shows in red beside it, and the bus moves to the top. Nothing happens on its own: look, then Stop it or leave it. Only you see the number, and it goes when the trip ends.</div>
+    <div class="hint" style="margin-top:6px;"><b>Doesn't look like a bus</b> shows in red beside a bus <b>far from the route</b>, or <b>not moving</b> for half an hour away from either end, as seen since this page opened. Worth a look, not proof: nothing happens on its own, and nothing about it is kept.</div>
+    <div class="hint" style="margin-top:6px;">A bus marked <b>takes tips</b> carries its sharer's payment QR, shown to riders who rode it when they get off. After three <b>Not a real bus?</b> taps riders are not shown it, for that trip. <b>Ban QR</b> stops that account being shown on any trip, for anyone, until you lift it below; the bus stays on the map.</div>
     <div class="hint warn hidden" id="keyAlert" style="margin-top:8px;"></div>
     <div id="liveList" style="margin-top:6px;"></div>
     <div class="hint warn" style="margin-top:10px;">Honest limit: someone determined can open the tracker in a new tab to get a new session and share again. Changing the share key below is the only real expulsion, and it affects everyone with the key. A bus marked <b>no key</b> was started while open sharing was on; turning open sharing off removes all of those at once.</div>
@@ -360,6 +362,11 @@
     <span class="badge">STOPPED SHARERS</span>
     <div class="hint" style="margin-top:8px;">Blocked from sharing until the time shown. Tap Allow again if you stopped someone by mistake.</div>
     <div id="blockedList" style="margin-top:6px;"></div>
+    <!-- Banned tip QRs (sql/16-tips.sql): a count and a way back, never a
+         list, because a ban is a scrambled mark nobody can read. Hidden
+         until there is one, and on a database without the migration. -->
+    <div class="item hidden" id="qrBans" style="margin-top:6px;"><div id="qrBansText"></div>
+      <button class="small btn-ghost" onclick="liftQrBans()">Lift all</button></div>
   </div>
 
   <div class="card">
@@ -494,6 +501,9 @@
 // ============================================================
 let CFG = { SUPABASE_URL:'', SUPABASE_ANON_KEY:'', ROUTE_SLUG:'' };
 let sb=null, adminKey=null, timers=[];
+// The route's checkpoints, in order, and its stops, for "doesn't look like
+// a bus" below: positions only, as the tracker reads them.
+let ROUTE_CPS = [], ROUTE_STOPS = [];
 
 async function loadConfig(){
   const res = await fetch('config.txt?_=' + Date.now());
@@ -506,6 +516,9 @@ async function loadConfig(){
     if (eq===-1) return;
     const key = line.slice(0,eq).trim(), val = line.slice(eq+1).trim();
     if (key in CFG) CFG[key]=val;
+    const p = val.split('|').map(function(x){ return x.trim(); });
+    if (key === 'CHECKPOINT' && p.length >= 4) ROUTE_CPS.push({ lat:parseFloat(p[2]), lng:parseFloat(p[3]) });
+    if (key === 'STOP' && p.length >= 3) ROUTE_STOPS.push({ lat:parseFloat(p[1]), lng:parseFloat(p[2]) });
   });
   // same placeholder check as the tracker, so an unedited config.txt says
   // so here too instead of failing later with a raw Supabase error
@@ -588,12 +601,13 @@ function enter(){
   document.getElementById('loginGate').classList.add('hidden');
   document.getElementById('main').classList.remove('hidden');
   document.getElementById('slugLine').textContent = 'ROUTE: ' + CFG.ROUTE_SLUG.toUpperCase();
-  refreshSettings(); refreshSharers(); refreshSightings(); refreshBlocked(); refreshWatching();
+  refreshSettings(); refreshSharers(); refreshSightings(); refreshBlocked(); refreshWatching(); refreshQrBans();
   refreshKeyStatus(); syncKeyKind();
   timers.push(setInterval(refreshSharers, 6000));
   timers.push(setInterval(refreshKeyStatus, 30000));
   timers.push(setInterval(refreshSightings, 15000));
   timers.push(setInterval(refreshBlocked, 30000));
+  timers.push(setInterval(refreshQrBans, 30000));
   // slower than the rest on purpose: the number moves on a 3 minute
   // window, so polling it faster only adds requests
   timers.push(setInterval(refreshWatching, 30000));
@@ -806,6 +820,91 @@ async function refreshWatching(){
       : '');
 }
 
+// ---- DOESN'T LOOK LIKE A BUS (unit tested) ---------------------------------
+// November 2026. Two things this page can say about a live bus, worked out
+// here from what it already shows and kept in this page's memory only:
+// never sent, never stored, gone when the page closes. Like "Not a real
+// bus?", neither is proof and neither does anything by itself: it is a
+// reason to look, and Stop is still the organizer's to press.
+//
+//  - Far from the route: more than ODD_FAR_KM from the line the route's
+//    stops trace, in route order (the same 2 km assets/places.txt is held
+//    to). The straight line between checkpoints is not enough: stops sit up
+//    to 3.3 km off it where the road hooks round the Tagaytay ridge.
+//  - Not moving: every report within ODD_STILL_M of one place for
+//    ODD_STILL_MIN, by the bus's own report times, away from both ends of
+//    the route, where buses wait to leave. In words, never minutes: a bus
+//    standing still is a driver's break as easily as a phone in a house,
+//    and this tool does not time breaks (for-operators.html). It is
+//    measured from the moment this page first saw the bus, so a page just
+//    opened needs that long before it can say so.
+const ODD_FAR_KM = 2;
+const ODD_STILL_M = 150;
+const ODD_STILL_MIN = 30;
+const ODD_END_KM = 1.5;
+function oddKm(a, b){
+  const r = Math.PI / 180, dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r;
+  const h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return 2 * 6371 * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+// How far p is from the segment ab, in km, and where along it (0 to 1).
+function oddSeg(p, a, b){
+  const r = Math.PI / 180, k = Math.cos((a.lat + b.lat) / 2 * r) * 6371 * r, m = 6371 * r;
+  const ax = a.lng * k, ay = a.lat * m, dx = b.lng * k - ax, dy = b.lat * m - ay;
+  const px = p.lng * k, py = p.lat * m, len = dx * dx + dy * dy;
+  const t = len ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len)) : 0;
+  return { km: Math.hypot(px - (ax + t * dx), py - (ay + t * dy)), t: t };
+}
+function oddOk(p){ return !!p && Number.isFinite(p.lat) && Number.isFinite(p.lng); }
+// The checkpoints and the stops as one line in route order: each placed by
+// where it falls along the chain of checkpoints, since config.txt's stops
+// are not in route order.
+function oddRouteLine(cps, stops){
+  const c = cps.filter(oddOk);
+  if (c.length < 2) return c.concat(stops.filter(oddOk));
+  const cum = [0];
+  for (let i = 1; i < c.length; i++) cum.push(cum[i - 1] + oddKm(c[i - 1], c[i]));
+  const along = function(p){
+    let best = Infinity, at = 0;
+    for (let i = 0; i + 1 < c.length; i++){
+      const s = oddSeg(p, c[i], c[i + 1]);
+      if (s.km < best){ best = s.km; at = cum[i] + s.t * (cum[i + 1] - cum[i]); }
+    }
+    return at;
+  };
+  return c.map(function(p, i){ return { lat:p.lat, lng:p.lng, km:cum[i] }; })
+    .concat(stops.filter(oddOk).map(function(p){ return { lat:p.lat, lng:p.lng, km:along(p) }; }))
+    .sort(function(a, b){ return a.km - b.km; });
+}
+function oddKmFromLine(p, line){
+  if (!line.length) return Infinity;
+  if (line.length === 1) return oddKm(p, line[0]);
+  let best = Infinity;
+  for (let i = 0; i + 1 < line.length; i++) best = Math.min(best, oddSeg(p, line[i], line[i + 1]).km);
+  return best;
+}
+// Where a bus has stood since this page first saw it there: the place and
+// the report time it was first seen within ODD_STILL_M of it. Rebuilt from
+// each list, so a bus that leaves the list leaves nothing behind.
+function oddStill(prev, row){
+  const at = Date.parse(row.updated_at);
+  if (!oddOk(row) || !Number.isFinite(at)) return null;
+  if (prev && oddKm(prev, row) * 1000 <= ODD_STILL_M) return { lat:prev.lat, lng:prev.lng, since:Math.min(prev.since, at) };
+  return { lat:row.lat, lng:row.lng, since:at };
+}
+// What to say beside a bus, if anything: a list of short words.
+function oddWords(row, line, ends, still){
+  const out = [];
+  if (!oddOk(row)) return out;
+  if (line.length > 1 && oddKmFromLine(row, line) > ODD_FAR_KM) out.push('far from the route');
+  const at = Date.parse(row.updated_at);
+  const atEnd = ends.some(function(e){ return oddOk(e) && oddKm(e, row) <= ODD_END_KM; });
+  if (still && !atEnd && at - still.since >= ODD_STILL_MIN * 60000) out.push('not moving');
+  return out;
+}
+// ---- END DOESN'T LOOK LIKE A BUS
+
 // ============================================================
 // Live sharers
 // ============================================================
@@ -831,14 +930,27 @@ function saidWrong(n, what){
 
 // admin_list_sharers, not get_positions: only the admin function returns
 // real session ids, and Stop needs one. See sql/04-session-id-privacy.sql.
+// The line the route's stops trace, made once, and where each live bus has
+// stood since this page first saw it there (oddStill()), in memory only.
+let ODD_LINE = null, STILL = {};
 async function refreshSharers(){
   const res = await rpc('admin_list_sharers', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
   if (res.error) return;
   await refreshWrong();
   const list=document.getElementById('liveList');
-  // The buses riders say are not real come first, the most-said at the top.
+  if (!ODD_LINE) ODD_LINE = oddRouteLine(ROUTE_CPS, ROUTE_STOPS);
+  const ends = ROUTE_CPS.length ? [ROUTE_CPS[0], ROUTE_CPS[ROUTE_CPS.length - 1]] : [];
+  const still = {}, odd = {};
+  (res.data||[]).forEach(function(b){
+    still[b.session_id] = oddStill(STILL[b.session_id], b);
+    odd[b.session_id] = oddWords(b, ODD_LINE, ends, still[b.session_id]);
+  });
+  STILL = still;
+  // The buses riders say are not real come first, the most-said at the top,
+  // then the ones that do not look like a bus.
   const data=(res.data||[]).slice().sort(function(a, b){
-    return (WRONG.bus[b.session_id]||0) - (WRONG.bus[a.session_id]||0);
+    return ((WRONG.bus[b.session_id]||0) - (WRONG.bus[a.session_id]||0)) ||
+           (odd[b.session_id].length - odd[a.session_id].length);
   });
   // A row with no position or direction got past the database until
   // sql/08-position-checks.sql, and it is exactly the row an organiser needs
@@ -854,11 +966,37 @@ async function refreshSharers(){
       // Started without the key, while open sharing was on. Missing on a
       // database without sql/11-open-sharing.sql, which reads as keyed.
       (b.keyless === true ? ' · <b>no key</b>' : '')+
+      // Carries a tip QR (sql/16-tips.sql): a yes or no, never the code.
+      (b.qr === true ? ' · <b>takes tips</b>' : '')+
       saidWrong(WRONG.bus[b.session_id]||0, 'not a real bus')+
+      (odd[b.session_id].length ? ' · <span class="said">doesn\'t look like a bus: ' + odd[b.session_id].join(', ') + '</span>' : '')+
       '<div class="meta">'+at+
       ' · updated '+timeAgo(Date.parse(b.updated_at))+' ago · session '+esc(b.session_id.slice(0,8))+'...</div></div>'+
-      '<button class="small btn-danger" onclick="kick(\''+esc(b.session_id)+'\')">Stop</button></div>';
+      '<span class="row">'+
+      (b.qr === true ? '<button class="small btn-ghost" onclick="banQr(\''+esc(b.session_id)+'\')">Ban QR</button>' : '')+
+      '<button class="small btn-danger" onclick="kick(\''+esc(b.session_id)+'\')">Stop</button></span></div>';
   }).join('') : '<div class="hint">Nobody is sharing right now.</div>';
+}
+// Bans the account in a bus's tip QR, on every trip, and takes it off every
+// live bus that carries it. The bus itself stays: Stop is the other button.
+async function banQr(session){
+  if (!confirm('Ban this QR? Riders will not be shown it on any trip until you lift the ban. The bus stays on the map.')) return;
+  const res = await rpc('admin_ban_qr', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey, p_session:session });
+  if (res.error){ alert(friendly(res.error)); return; }
+  refreshSharers(); refreshQrBans();
+}
+async function refreshQrBans(){
+  const res = await rpc('admin_qr_bans', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
+  const box = document.getElementById('qrBans');
+  const n = res.error ? 0 : (res.data|0);
+  box.classList.toggle('hidden', n === 0);
+  document.getElementById('qrBansText').textContent = n + (n === 1 ? ' tip QR banned.' : ' tip QRs banned.');
+}
+async function liftQrBans(){
+  if (!confirm('Lift every tip QR ban? Those accounts can be shown to riders again.')) return;
+  const res = await rpc('admin_lift_qr_bans', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
+  if (res.error){ alert(friendly(res.error)); return; }
+  refreshQrBans();
 }
 async function kick(session){
   if (!confirm('Stop this sharer? The bus leaves the map and that phone cannot share again for 6 hours. You can undo it below.')) return;

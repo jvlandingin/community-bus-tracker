@@ -2254,6 +2254,8 @@ function run(page, include, label, configText, setup) {
             d.querySelector('#tyqrModal .qrfine').textContent === 'Not the fare. Not the bus company.' &&
             !!d.querySelector('#tyqrArt svg, #tyqrArt img') && d.getElementById('tyqrSave').textContent === 'Save the QR',
         'and asks in the maintainer\'s words, with the QR drawn on this phone, whose it is not, and a way to save it');
+      check((d.querySelector('#tyqrWrongBox .wrongbtn') || {}).textContent === 'Report this QR',
+        'and anyone shown it can report it (sql/19-tip-reports.sql)');
       check(w.sessionStorage.getItem('wt-aboard') === null && !Object.keys(w.localStorage).some(k => /qr|tip/i.test(k)),
         'keeping nothing about the ride or the tip');
       w.closeModal('tyqrModal');
@@ -2274,6 +2276,20 @@ function run(page, include, label, configText, setup) {
       check(copied === '09171234567' && /Copied\. Paste it in Maya\./.test((d.getElementById('toast') || {}).textContent || ''),
         'Copy number puts the number on the clipboard for the wallet');
       delete w.navigator.clipboard;
+      // Reporting it: the path "Not a real bus?" takes, with kind 'tip'.
+      const tipWrong = () => d.querySelector('#tyqrWrongBox .wrongbtn');
+      check(!!tipWrong() && tipWrong().textContent === 'Report this number', 'anyone shown a number can report it');
+      const nWrong = of('say_wrong').length;
+      tipWrong().click();
+      await waitFor(() => of('say_wrong').length > nWrong);
+      await pause(30);
+      const wrongSent = of('say_wrong').slice(-1)[0];
+      check(wrongSent.args.p_kind === 'tip' && wrongSent.args.p_target === tipBus &&
+            /^[A-Za-z0-9-]{8,64}$/.test(wrongSent.args.p_watcher) && !tipWrong() &&
+            (d.querySelector('#tyqrWrongBox .wrongdone') || {}).textContent === 'Sent',
+        'a report goes to the organizers as say_wrong of kind tip, for that bus alone, and says Sent');
+      check(w.sessionStorage.getItem('wt-wrong').includes('t:' + tipBus) && !Object.keys(w.localStorage).some(k => /wrong/.test(k)),
+        'remembered for the tab only, so it is not asked twice');
       w.closeModal('tyqrModal');
       sim.reply.get_bus_qr = () => ({ data: 'gcash:09171234567 send here' });
       check(await ride(cpT(2), cpT(3)) === 1 && isHidden('tyqrModal'), 'and text that is more than a wallet and a number is never shown');
@@ -2756,8 +2772,12 @@ function run(page, include, label, configText, setup) {
       window.confirm = () => true;
     });
     a.w.eval("adminKey = 'my-long-admin-key-42'");
+    answers.admin_list_wrong = [{ kind: 'tip', session_id: 'sess-tips-0001', sid: null, reports: 2 }];
     await a.w.refreshSharers();
     const rows = [...a.d.querySelectorAll('#liveList .item')];
+    check(/2 riders say its tip number or QR is wrong/.test(rows[0].textContent),
+      'riders\' reports about a bus\'s tips are counted beside Ban tips (sql/19-tip-reports.sql)');
+    answers.admin_list_wrong = [];
     const banBtn = r => r.querySelector('button[onclick^="banQr("]');
     check(rows.length === 2 && /takes tips/.test(rows[0].textContent) && !/takes tips/.test(rows[1].textContent) &&
           !!banBtn(rows[0]) && banBtn(rows[0]).textContent === 'Ban tips' && !banBtn(rows[1]) && rows.every(r => /Stop/.test(r.textContent)),

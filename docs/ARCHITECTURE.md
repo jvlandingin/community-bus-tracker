@@ -1310,7 +1310,9 @@ organizers, and the count shows in red beside the Stop and Delete buttons on
 the admin page, with the most-reported bus at the top of the list. Two reasons
 it exists: a made-up bus leaves somebody at the roadside waiting for nothing,
 and Google Play expects an app whose content comes from its users to let them
-report it. Every bus on this map is a user's.
+report it. Every bus on this map is a user's. (Since November 2026 a third
+kind, `tip`: "Report this number" or "Report this QR" under a sharer's tip in
+the rider's window, counted beside Ban tips. "Tips" has it.)
 
 What it may not become, and why it is shaped the way it is:
 
@@ -1920,7 +1922,12 @@ Decided, each for a reason:
   refuses its sign-in page in a WebView), an accounts table, account
   deletion and a record of every sharer, the thing this design avoids.
 - *Reports hide the code, on their own.* Three "Not a real bus?" taps stop
-  the code being handed out for the rest of that trip. Reports otherwise
+  the code being handed out for the rest of that trip, and so do three taps
+  on "Report this number" or "Report this QR", under it in the rider's
+  window (`sql/19-tip-reports.sql`, November 2026, the maintainer's "admin
+  or anyone should be able to report"): `say_wrong` with a third kind,
+  `tip`, counted beside Ban tips on the admin page, a child of the trip's
+  row like the rest. Reports otherwise
   never act by themselves (see "Saying a bus or a sighting is wrong"),
   because one person with a few tabs could take a real bus off the map;
   here all they can cost a real sharer is one trip's tips, and the bus stays.

@@ -709,6 +709,8 @@
   .qrfine{margin:4px 0 0; text-align:center; font-size:var(--fs-label); font-weight:700; color:var(--muted);}
   /* The number, typed under a wallet picked from two: never free text. */
   .qrnum{margin:4px 0 2px;}
+  .tyqrwrong{display:flex; justify-content:center; min-height:var(--tap); align-items:center;}
+  .tyqrwrong .wrongbtn, .tyqrwrong .wrongdone{margin:0 auto; padding:6px 10px;}
   .qrwallets{display:flex; gap:8px; margin-bottom:8px;}
   .qrw{flex:1 1 0; min-height:var(--tap); border-radius:var(--r-m); border:1.5px solid var(--line); background:var(--surface);
     color:var(--ink); font-family:inherit; font-size:var(--fs-small); font-weight:800; cursor:pointer;}
@@ -2022,7 +2024,7 @@
       <p>If you save a stop, the stop is kept on your device and the distance to the bus is worked out there too — the page already knows where the buses are, so nothing extra is asked of the server and nothing about you is sent to it. Searching for a stop or a place happens on your phone as well: the list of places along the route comes whole from this site, so <b>what you type is never sent</b>. If you tell a bus's popup “I'm on this bus”, the card follows that bus to your stop instead; which bus you picked is kept only until you close the page or the app, and is never sent either. Nor is how far you rode it, which your phone works out to decide one thing: when you tap “I got off” after riding at least a kilometre, and that bus's sharer accepts tips, you are asked if you want to say thanks with a tip. Your phone asks our server for that one bus's QR or number to show you, and nothing more. If you pay it, you pay it in your own payment app, like any QR; <b>this app never learns whether you did, or how much</b>.</p>
       <p>One thing is counted automatically, and it is worth saying plainly: while this page is open it sends a random ID every minute, so the organizer, and anyone sharing a bus, can see <b>how many</b> devices have the map open right now — a single number, nothing more. The ID is made up fresh by this tab, it isn't linked to you, your phone or anything else you do here, and it is <b>deleted three minutes after you close the page</b>. There is no way to go from that number back to a person, and no record of it is kept afterwards.</p>
       <p>One more thing can leave your device, and only if you tap it: <b>Salamat</b>, on a bus, to thank whoever is carrying the phone. What's stored is a scrambled value that can't be traced back to you, can't be matched against anything else here, and exists only so a second tap on the same bus isn't counted twice — not your ID, not your location, not which bus you're on. <b>It is deleted the moment that trip ends.</b> Only the person sharing that bus can see the number. On our side it never adds up across trips: <b>no running total is kept for any driver or any bus on the server.</b> The sharer's own phone adds theirs up for their bus in My tickets, and that never leaves it.</p>
-      <p>And one more, also only if you tap it: <b>Not a real bus?</b>, on a bus, or <b>Wrong?</b>, on a sighting, to tell the organizer something on the map looks wrong. It is stored the same scrambled way as Salamat, so it can't be traced back to you and a second tap isn't counted twice. <b>Only the organizer sees how many</b>, not the sharer and not other riders, and it is deleted when that trip ends or the sighting expires. Nothing happens on its own: the organizer looks and decides.</p>
+      <p>And one more, also only if you tap it: <b>Not a real bus?</b>, on a bus, <b>Wrong?</b>, on a sighting, or <b>Report</b>, on a sharer's tip number or QR, to tell the organizer something looks wrong. It is stored the same scrambled way as Salamat, so it can't be traced back to you and a second tap isn't counted twice. <b>Only the organizer sees how many</b>, not the sharer and not other riders, and it is deleted when that trip ends or the sighting expires. Nothing happens on its own: the organizer looks and decides.</p>
       <p>“Send a link”, in a bus's popup, opens your phone's own sending sheet (or copies the link, where there isn't one) so you can pass it to someone. All the link carries is the bus's public ID, which every visitor's map already has, and it stops working when that trip ends. Nothing about you is in it, and the app sends it nowhere; you do. “Send the tracker”, at the foot of the map, does the same with this site's address and nothing else: not your key or PIN, not your stop, not a bus.</p>
 
       <h4 class="ok">If you share from the bus</h4>
@@ -2031,7 +2033,7 @@
       <p>If riders tap Salamat on your bus, you'll see how many did — <b>for this trip only, and only you</b>. It isn't shown to other riders, it isn't shown to the bus company, and on our side it goes when the trip does. Your phone adds it to your bus in My tickets, a total only you can see.</p>
       <p>While you share, the sharing tab says how many people have the map open right now: the same single number the organizer sees, counted as above, and gone when your trip ends.</p>
       <p>Riders can also tell the organizer your bus doesn't look like a real one. Only the organizer sees that, for this trip only, and it goes when the trip does.</p>
-      <p><b>Accept tips?</b>, on the sharing tab, is off unless you switch it on and pick the QR your GCash, Maya or bank app saves, or pick GCash or Maya and type your mobile number. Your phone reads a picture itself and keeps only the QR's text, and only a payment QR from the Philippines with no fixed amount, or a Philippine mobile number, is taken: never words of your own. While it is on and you share, the QR goes with your bus's position, and a rider who rode your bus is asked when they get off if they want to tip you. The money goes from their app to your account like any QR payment; <b>this app never learns whether anybody tipped, or how much</b>, and keeps no total. <b>The honest cost:</b> while your bus is on the map, anyone determined can read your QR beside it, and with it the name your payment app shows, partly hidden, and any mobile number inside it (the app tells you when there is one). <b>If you give your number instead, every rider offered it sees your full number</b>, and the app says so before it keeps it. It is deleted with the trip, like the position. After three “Not a real bus?” taps on a trip, riders are not shown it, and the organizer can ban a QR used to cheat riders: the ban keeps a scrambled mark of the account, never the QR or the number. Switching it off forgets the QR or number on this phone.</p>
+      <p><b>Accept tips?</b>, on the sharing tab, is off unless you switch it on and pick the QR your GCash, Maya or bank app saves, or pick GCash or Maya and type your mobile number. Your phone reads a picture itself and keeps only the QR's text, and only a payment QR from the Philippines with no fixed amount, or a Philippine mobile number, is taken: never words of your own. While it is on and you share, the QR goes with your bus's position, and a rider who rode your bus is asked when they get off if they want to tip you. The money goes from their app to your account like any QR payment; <b>this app never learns whether anybody tipped, or how much</b>, and keeps no total. <b>The honest cost:</b> while your bus is on the map, anyone determined can read your QR beside it, and with it the name your payment app shows, partly hidden, and any mobile number inside it (the app tells you when there is one). <b>If you give your number instead, every rider offered it sees your full number</b>, and the app says so before it keeps it. It is deleted with the trip, like the position. Riders shown it can report it to the organizer. After three reports, or three “Not a real bus?” taps, on a trip, riders are not shown it, and the organizer can ban a QR or number used to cheat riders: the ban keeps a scrambled mark of the account, never the QR or the number. Switching it off forgets the QR or number on this phone.</p>
       <p>When you tap Stop, or the trip ends any other way, you get a ticket for the trip: where you got on and off, how long your bus was on the map, and how many riders said salamat. Your phone makes it from what it saw on the way, and <b>the app sends it nowhere</b>. Close it and it is gone.</p>
       <p>Unless you tap <b>Keep</b>: then a copy goes into My tickets, <b>on this phone only</b>. The copy keeps the day, the direction, where you got on and off, the stamps, and a flower if anyone said salamat. It leaves out the times, how long the trip took, the bus number and how many riders thanked you, so a pile of kept tickets cannot time a trip or rank anyone. Nothing is ever kept unless you tap Keep on that ticket, and “Start from scratch” in My tickets deletes every copy.</p>
       <p><b>Send a picture</b>, on a ticket, makes a picture of it for you to send to a chat, Facebook or Instagram. It shows only what a kept copy keeps, and this site's address: the day, the direction, where you got on and off, the stamps and the flower, <b>never the times, how long, the bus number or how many thanked you</b>, so a picture posted after every trip cannot time anyone's day either. Your phone makes it, and it goes only where you send it through your phone's own sheet; the app keeps none of it.</p>
@@ -2160,6 +2162,9 @@
     <h3 id="tyqrTitle"><svg class="gi" aria-hidden="true"><use href="#i-ty"/></svg>Say thanks to sharer with a tip/donation?</h3>
     <div class="qrart" id="tyqrArt"></div>
     <p class="qrfine">Not the fare. Not the bus company.</p>
+    <!-- Anyone shown it can report it (sql/19-tip-reports.sql), through
+         sayWrong('tip'), like "Not a real bus?": renderTipWrong(). -->
+    <div class="tyqrwrong" id="tyqrWrongBox"></div>
     <div class="modal-actions">
       <button class="big btn-ghost" onclick="closeModal('tyqrModal')">Not now</button>
       <button class="big btn-primary" id="tyqrSave" onclick="saveTyQr()">Save the QR</button>
@@ -6212,7 +6217,7 @@ function wrongSet(){
 function saveWronged(){
   try{ sessionStorage.setItem('wt-wrong', JSON.stringify(Object.keys(wrongSet()).slice(-200))); }catch(e){}
 }
-function wrongKey(kind, id){ return (kind === 'bus' ? 'b:' : 's:') + id; }
+function wrongKey(kind, id){ return (kind === 'bus' ? 'b:' : kind === 'tip' ? 't:' : 's:') + id; }
 // Never on the bus this phone is sharing, never on the practice bus, and
 // only for an id that is safe to put in a handler.
 function wrongControl(b, linkable){
@@ -6240,7 +6245,10 @@ function wrongTrouble(err){
     console.warn('[tracker] "Not a real bus?" is not reaching the database: ' + msg +
       (/does not exist|schema cache|PGRST202|404/i.test(msg)
         ? '\nThe database has not had sql/15-say-wrong.sql applied. Run it in the ' +
-          'Supabase SQL editor, then reload this page.' : ''));
+          'Supabase SQL editor, then reload this page.'
+        : /invalid kind/i.test(msg)
+        ? '\nThe database has not had sql/19-tip-reports.sql applied, so a tip cannot ' +
+          'be reported yet. Run it in the Supabase SQL editor.' : ''));
   }catch(e){}
 }
 async function sayWrong(kind, id){
@@ -6254,7 +6262,11 @@ async function sayWrong(kind, id){
     ids = (cl && cl.members) || [id];
   }
   const t = wrongSet();
-  const redraw = function(){ if (kind === 'bus') renderBuses(); else drawSightingBoard(); };
+  const redraw = function(){
+    if (kind === 'bus') renderBuses();
+    else if (kind === 'tip') renderTipWrong();
+    else drawSightingBoard();
+  };
   ids.forEach(function(m){ t[wrongKey(kind, m)] = 1; });
   saveWronged();
   redraw();
@@ -9995,13 +10007,26 @@ function busKmNow(id){
 }
 // The rider's side, from leaveBus(): asked once, only if that bus's sharer
 // takes tips, which this read is the only way to learn. Nothing is sent
-// about what the rider does next.
-let TYQR = null;
+// about what the rider does next, unless they report it.
+let TYQR = null, TYQR_BUS = null;
+// "Report this number" or "Report this QR", under it: sayWrong('tip'), the
+// path "Not a real bus?" takes, counted for organizers beside Ban tips.
+function renderTipWrong(){
+  const box = document.getElementById('tyqrWrongBox');
+  if (!box) return;
+  const id = TYQR_BUS;
+  if (!id || !/^[0-9a-f]{32}$/.test(id)){ box.innerHTML = ''; return; }
+  box.innerHTML = wrongSet()[wrongKey('tip', id)]
+    ? '<span class="wrongdone">Sent</span>'
+    : '<button type="button" class="wrongbtn" onclick="sayWrong(\'tip\',\'' + id + '\')">' +
+      (TYQR && TYQR.number ? 'Report this number' : 'Report this QR') + '</button>';
+}
 async function offerTip(id){
   if (WALK) return;
   if (sharing) return;
   const res = await rpc('get_bus_qr', { p_slug:CFG.ROUTE_SLUG, p_bus:id });
   if (res.error || !tipOk(res.data)) return;
+  TYQR_BUS = id;
   const art = document.getElementById('tyqrArt'), save = document.getElementById('tyqrSave');
   const num = tipNumber(res.data);
   if (num){
@@ -10012,6 +10037,7 @@ async function offerTip(id){
     art.innerHTML = '<span class="tynum"><span class="w">' + TIP_WALLETS[num.wallet] + '</span><b>' +
       tipNumberWords(num.number) + '</b></span>';
     save.textContent = 'Copy number';
+    renderTipWrong();
     openModal('tyqrModal');
     return;
   }
@@ -10026,6 +10052,7 @@ async function offerTip(id){
     ? '<img src="' + url + '" alt="QR code to tip the sharer">'
     : qrSvg(drawn.matrix, 'QR code to tip the sharer');
   save.textContent = 'Save the QR';
+  renderTipWrong();
   openModal('tyqrModal');
 }
 // A number goes to the clipboard, for the wallet's Send Money. Where the

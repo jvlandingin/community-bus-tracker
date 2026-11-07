@@ -24,6 +24,7 @@ retry.
 | `16-tips.sql` | lets a sharer who switches on "Accept tips?" send their payment QR code with each position, kept only if it is a real QR Ph code, handed to a rider for one bus at a time, hidden after three "Not a real bus?" taps, and gone with the trip; organizers can ban an account |
 | `17-watching-for-sharers.sql` | lets a sharer see how many people have the map open, on their own row of `get_positions` only and only while their bus is on the riders' map |
 | `18-tip-number.sql` | lets "Accept tips?" take a GCash or Maya number as well as a QR, in one checked shape and never free text, shown in full to a rider who rode the bus |
+| `19-tip-reports.sql` | lets anyone shown a sharer's tip QR or number report it, counted for organizers beside Ban tips; three reports hide it for that trip |
 
 If you are setting up fresh, run all of them. They are separate files because
 they were written in that order against a live deployment, and keeping the
@@ -73,6 +74,12 @@ it replaces. Until it is applied, a number a page sends is stored as nothing,
 as anything else that is not a QR Ph code is, and nobody is offered it.
 Re-running `16` after it puts back the rule without numbers: re-run `18`
 after it. Safe to re-run.
+
+`19` can be run in either order too, after `18`. Until it is applied a tip
+report is refused with `invalid kind`, the page gives the link back and says
+so in the console, and nothing else changes. Re-running `15` or `16` after it
+puts back a `say_wrong` without the kind, or a `get_bus_qr` that ignores tip
+reports: re-run `19` after either. Safe to re-run.
 
 `06` is the one that can be run in either order relative to the pages: until it
 is applied the heartbeat call fails and is swallowed, and the admin page says it

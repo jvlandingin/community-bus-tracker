@@ -25,6 +25,17 @@ community and in the database, nowhere else. Refer to "the current share key".
 
 ---
 
+## 2026-11-07: Anyone can report a tip
+
+The maintainer: "admin or anyone should be able to report". Organizers could
+already ban a tip account; riders could only say a bus was not real. Now the
+window that shows a sharer's QR or number has "Report this number" or "Report
+this QR" under it, counted for organizers beside Ban tips, and three reports
+hide it for the rest of that trip, as three "Not a real bus?" taps do.
+`sql/19-tip-reports.sql` has to be run in Supabase.
+
+---
+
 ## 2026-11-07: Tips by number, never by free text
 
 The maintainer asked whether a sharer could give their GCash and number "via

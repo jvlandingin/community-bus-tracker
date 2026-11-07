@@ -96,6 +96,7 @@ psql -d bustest -f ../sql/15-say-wrong.sql
 psql -d bustest -f ../sql/16-tips.sql
 psql -d bustest -f ../sql/17-watching-for-sharers.sql
 psql -d bustest -f ../sql/18-tip-number.sql
+psql -d bustest -f ../sql/19-tip-reports.sql
 ```
 
 Then run one suite against it:
@@ -117,6 +118,7 @@ psql -d bustest -f db/13-say-wrong-tests.sql   # 38 checks, a rider saying a bus
 psql -d bustest -f db/14-tips-tests.sql        # 71 checks, a sharer's tip code: only a real QR Ph one, one bus at a time, hidden by reports, banned by organizers
 psql -d bustest -f db/15-watching-for-sharers-tests.sql # 15 checks, a sharer told how many have the map open, and nobody else
 psql -d bustest -f db/16-tip-number-tests.sql  # 24 checks, a GCash or Maya number for tips: one shape only, never free text, banned in both wallets
+psql -d bustest -f db/17-tip-reports-tests.sql # 20 checks, anyone shown a tip reporting it: counted for organizers, three hide it, gone with the trip
 ```
 
 `dropdb bustest` and build it again between suites. Apply **all** the migration

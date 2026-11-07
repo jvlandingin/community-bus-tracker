@@ -352,7 +352,7 @@
     <div class="hint" style="margin-top:8px;">Everyone currently sharing a bus position. Stopping one removes the bus and blocks that phone from sharing for 6 hours, and their app tells them an organizer stopped it.</div>
     <div class="hint" style="margin-top:6px;">Riders can tap <b>Not a real bus?</b> on a bus. How many did shows in red beside it, and the bus moves to the top. Nothing happens on its own: look, then Stop it or leave it. Only you see the number, and it goes when the trip ends.</div>
     <div class="hint" style="margin-top:6px;"><b>Doesn't look like a bus</b> shows in red beside a bus <b>far from the route</b>, or <b>not moving</b> for half an hour away from either end, as seen since this page opened. Worth a look, not proof: nothing happens on its own, and nothing about it is kept.</div>
-    <div class="hint" style="margin-top:6px;">A bus marked <b>takes tips</b> carries its sharer's payment QR or GCash/Maya number, shown to riders who rode it when they get off. After three <b>Not a real bus?</b> taps riders are not shown it, for that trip. <b>Ban tips</b> stops that account or number being shown on any trip, for anyone, until you lift it below; the bus stays on the map.</div>
+    <div class="hint" style="margin-top:6px;">A bus marked <b>takes tips</b> carries its sharer's payment QR or GCash/Maya number, shown to riders who rode it when they get off. Riders shown it can tap <b>Report</b>; how many did shows in red beside it. After three reports, or three <b>Not a real bus?</b> taps, riders are not shown it, for that trip. <b>Ban tips</b> stops that account or number being shown on any trip, for anyone, until you lift it below; the bus stays on the map.</div>
     <div class="hint warn hidden" id="keyAlert" style="margin-top:8px;"></div>
     <div id="liveList" style="margin-top:6px;"></div>
     <div class="hint warn" style="margin-top:10px;">Honest limit: someone determined can open the tracker in a new tab to get a new session and share again. Changing the share key below is the only real expulsion, and it affects everyone with the key. A bus marked <b>no key</b> was started while open sharing was on; turning open sharing off removes all of those at once.</div>
@@ -913,13 +913,15 @@ function oddWords(row, line, ends, still){
 // of its own, so a count is never older than the row it sits beside. Against
 // a database without the migration the call fails and the lists draw as they
 // always did.
-let WRONG = { bus:{}, sighting:{} };
+let WRONG = { bus:{}, sighting:{}, tip:{} };
 async function refreshWrong(){
   const res = await rpc('admin_list_wrong', { p_slug:CFG.ROUTE_SLUG, p_admin:adminKey });
   if (res.error) return;
-  const next = { bus:{}, sighting:{} };
+  const next = { bus:{}, sighting:{}, tip:{} };
   (res.data||[]).forEach(function(r){
     if (r.kind === 'bus' && r.session_id) next.bus[r.session_id] = r.reports|0;
+    // Reports about a bus's tip code or number (sql/19-tip-reports.sql).
+    else if (r.kind === 'tip' && r.session_id) next.tip[r.session_id] = r.reports|0;
     else if (r.kind === 'sighting' && r.sid != null) next.sighting[r.sid] = r.reports|0;
   });
   WRONG = next;
@@ -949,7 +951,8 @@ async function refreshSharers(){
   // The buses riders say are not real come first, the most-said at the top,
   // then the ones that do not look like a bus.
   const data=(res.data||[]).slice().sort(function(a, b){
-    return ((WRONG.bus[b.session_id]||0) - (WRONG.bus[a.session_id]||0)) ||
+    return (((WRONG.bus[b.session_id]||0) + (WRONG.tip[b.session_id]||0)) -
+            ((WRONG.bus[a.session_id]||0) + (WRONG.tip[a.session_id]||0))) ||
            (odd[b.session_id].length - odd[a.session_id].length);
   });
   // A row with no position or direction got past the database until
@@ -968,6 +971,7 @@ async function refreshSharers(){
       (b.keyless === true ? ' · <b>no key</b>' : '')+
       // Carries a tip QR (sql/16-tips.sql): a yes or no, never the code.
       (b.qr === true ? ' · <b>takes tips</b>' : '')+
+      saidWrong(WRONG.tip[b.session_id]||0, 'its tip number or QR is wrong')+
       saidWrong(WRONG.bus[b.session_id]||0, 'not a real bus')+
       (odd[b.session_id].length ? ' · <span class="said">doesn\'t look like a bus: ' + odd[b.session_id].join(', ') + '</span>' : '')+
       '<div class="meta">'+at+

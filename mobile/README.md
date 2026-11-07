@@ -179,8 +179,8 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
     after a couple of hours.
   - *App activity, app interactions*: a salamat tap, stored scrambled so it
     counts once per bus, deleted when that trip ends; and a "Not a real
-    bus?" or "Wrong?" tap, stored the same way, seen only by the organizer,
-    deleted when that trip ends or that sighting expires.
+    bus?", "Wrong?" or tip "Report" tap, stored the same way, seen only by
+    the organizer, deleted when that trip ends or that sighting expires.
   - *Device or other IDs*: a random ID made fresh for each trip, and one made
     fresh by each open page for the live count of watchers, deleted three
     minutes after the page closes.
@@ -222,7 +222,8 @@ bundle explorer offers a signed universal APK carrying Play's own signature.
   main content, yes (every bus on the map is a user's); nudity and graphic
   violence, no; can block, yes (an organizer's Stop keeps that phone off for 6
   hours, and Delete removes a sighting); **can report, yes**, since
-  `sql/15-say-wrong.sql`: "Not a real bus?" in a bus's popup and "Wrong?" on
+  `sql/15-say-wrong.sql`: "Not a real bus?" in a bus's popup, "Report" on a
+  sharer's tip number or QR (`sql/19-tip-reports.sql`), and "Wrong?" on
   each sighting, counted beside Stop and Delete on the admin page; chat
   moderation, no (there is no chat); limited to invited friends, no (anyone
   with the link sees the map); online content, yes (the app loads the live

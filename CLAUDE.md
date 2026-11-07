@@ -46,7 +46,7 @@ each moves the seeded rows the next would expect. From `tests/`:
 ```
 createdb bustest
 psql -d bustest -f db/00-legacy-baseline.sql
-psql -d bustest -f ../sql/01-base.sql          # then 02 through 18 in order
+psql -d bustest -f ../sql/01-base.sql          # then 02 through 19 in order
 psql -d bustest -f db/01-core-tests.sql        # one suite only, then rebuild
 ```
 
@@ -421,7 +421,8 @@ tickets and the bus. `docs/ARCHITECTURE.md`, "Dressing the bus".
 
 **A rider can say a bus or a sighting is wrong** (October 2026,
 `sql/15-say-wrong.sql`): "Not a real bus?" on the place line of a bus's popup,
-"Wrong?" on each sighting. It is what Play's content rating means by
+"Wrong?" on each sighting, and since `sql/19-tip-reports.sql` "Report this
+number" or "Report this QR" under a sharer's tip. It is what Play's content rating means by
 reporting, and it is fenced like salamat: a child of the bus row or the
 sighting row by cascade, so it dies with them; a scrambled mark, never the
 watcher id; a count for organizers only, beside Stop and Delete on the admin
@@ -448,7 +449,9 @@ full with Copy number, after "Riders who ride your bus will see this
 number." beside the box; how an iPhone shares tips. **Never free text**
 (the maintainer asked; refused for the reason sightings are not typed). Nothing about a tip is counted or kept: the app never learns whether
 anyone paid. `get_bus_qr` hands out one bus's code at a time and never
-`get_positions`; three "Not a real bus?" taps hide it for that trip (the one
+`get_positions`; anyone shown it can tap "Report this number" or "Report this
+QR" (`sql/19-tip-reports.sql`, `say_wrong` kind `tip`, counted beside Ban tips);
+three reports or three "Not a real bus?" taps hide it for that trip (the one
 report that acts on its own, because it costs at most one trip's tips) and an
 organizer can ban an account, kept as a salted mark until lifted. The honest
 cost, in the privacy panel and `for-operators.html`: anyone determined can

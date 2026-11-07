@@ -212,7 +212,7 @@ begin
     'invalid sighting', 'a malformed sighting id is refused');
   perform assert_err(
     $q$ select public.say_wrong('wonderful-mendez-ayala','driver',repeat('a',32),'watch-eeee-5555') $q$,
-    'invalid kind', 'only a bus or a sighting can be reported');
+    'invalid kind', 'only a bus, a sighting or a bus''s tips can be reported');
   perform assert_err(
     $q$ select public.say_wrong('wonderful-mendez-ayala','bus',repeat('a',32),'no') $q$,
     'invalid watcher', 'a malformed watcher id is refused');

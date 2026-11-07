@@ -1310,7 +1310,9 @@ organizers, and the count shows in red beside the Stop and Delete buttons on
 the admin page, with the most-reported bus at the top of the list. Two reasons
 it exists: a made-up bus leaves somebody at the roadside waiting for nothing,
 and Google Play expects an app whose content comes from its users to let them
-report it. Every bus on this map is a user's.
+report it. Every bus on this map is a user's. (Since November 2026 a third
+kind, `tip`: "Report this number" or "Report this QR" under a sharer's tip in
+the rider's window, counted beside Ban tips. "Tips" has it.)
 
 What it may not become, and why it is shaped the way it is:
 
@@ -1890,8 +1892,24 @@ Decided, each for a reason:
 - *The phone's own reader, and no other.* `BarcodeDetector`, which Chrome on
   Android, the Android app's WebView and Samsung Internet have. A vendored
   reader (jsQR, Apache-2.0) would have covered iPhones too, at 250 KB of
-  third-party code; this does without one, and an iPhone browser says it
-  cannot read QR pictures and points to Chrome on Android or the app.
+  third-party code; this does without one, and an iPhone browser asks for a
+  number instead (below).
+- *Or a number, never free text* (`sql/18-tip-number.sql`, November 2026).
+  The maintainer asked whether a sharer could just put their GCash and
+  number "via text", then their own text. Free text was refused for the
+  reason sightings stopped being typed: words one person types and others
+  read are what Google Play wants rules, reporting and moderation for, and
+  the easiest scam to write ("official fare, send here", a link to a fake
+  wallet). What was built covers the ask without it: GCash or Maya picked
+  from a list, and a mobile number typed into a phone-number box, kept as
+  `gcash:09171234567` (`tipNumberFrom()`, `tipNumber()`), the one shape the
+  server accepts beside a QR Ph code. The rider sees the wallet and the
+  number, drawn from those two checked parts, with Copy number. The cost is
+  the full number in front of every rider offered it, and anyone determined:
+  the maintainer accepted it ("WhatsApp already shows everyone's phone
+  number"), on condition of the line beside the box, "Riders who ride your
+  bus will see this number." A number is one account in either wallet, so a
+  ban holds in both. Nothing checks that it is the sharer's.
 - *Nothing is counted.* No amount, no total, no record of who tipped whom:
   the app never learns whether anybody paid. So tips cannot rank sharers,
   cannot become the driver metric `for-operators.html` promises does not
@@ -1904,7 +1922,12 @@ Decided, each for a reason:
   refuses its sign-in page in a WebView), an accounts table, account
   deletion and a record of every sharer, the thing this design avoids.
 - *Reports hide the code, on their own.* Three "Not a real bus?" taps stop
-  the code being handed out for the rest of that trip. Reports otherwise
+  the code being handed out for the rest of that trip, and so do three taps
+  on "Report this number" or "Report this QR", under it in the rider's
+  window (`sql/19-tip-reports.sql`, November 2026, the maintainer's "admin
+  or anyone should be able to report"): `say_wrong` with a third kind,
+  `tip`, counted beside Ban tips on the admin page, a child of the trip's
+  row like the rest. Reports otherwise
   never act by themselves (see "Saying a bus or a sighting is wrong"),
   because one person with a few tabs could take a real bus off the map;
   here all they can cost a real sharer is one trip's tips, and the bus stays.
@@ -2587,10 +2610,11 @@ dedicated GPS tracker device.
 measures it from when it first saw a bus, in its own memory, rather than
 the server keeping when a bus stopped ("Doesn't look like a bus").
 
-**An iPhone browser cannot read a QR picture.** "Accept tips?" needs the
-phone's own QR reader (`BarcodeDetector`), which Safari and Firefox do not
-offer, so a sharer there is told to use Chrome on Android or the app. A
-vendored reader would fix it, at the cost of third-party code ("Tips").
+**An iPhone browser cannot read a QR picture.** "Accept tips?" reads a QR
+with the phone's own reader (`BarcodeDetector`), which Safari and Firefox do
+not offer, so a sharer there can give a GCash or Maya number instead. A
+vendored reader would let them use a QR too, at the cost of third-party code
+("Tips").
 
 **Nothing detects a wrong vehicle going the right way.** A car, a jeepney, or
 another company's bus on the same corridor is indistinguishable from a Wonderful

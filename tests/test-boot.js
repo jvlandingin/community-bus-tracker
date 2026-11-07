@@ -985,8 +985,8 @@ function run(page, include, label, configText, setup) {
   check([...appSrc.matchAll(/localStorage\.(?:setItem|removeItem)\(\s*'wt-qr'/g)].length === 2 &&
         /function saveTipQr\(v\)\{[\s\S]{0,120}localStorage\.setItem\('wt-qr', v\);[\s\S]{0,60}localStorage\.removeItem\('wt-qr'\)/.test(appSrc),
     'the tip QR is written and forgotten in one place only');
-  check(/your tip QR, while “Accept tips\?” is on/.test(panel) && /switching “Accept tips\?” off the seventh/.test(panel) &&
-        /A backup never holds the QR/.test(panel),
+  check(/your tip QR or number, while “Accept tips\?” is on/.test(panel) && /switching “Accept tips\?” off the seventh/.test(panel) &&
+        /A backup never holds the QR or the number/.test(panel) && /every rider offered it sees your full number/.test(panel),
     'the panel names the tip QR, how to forget it, and that a backup never carries it');
   check(/Accept tips\?<\/b>, on the sharing tab, is off unless you switch it on/.test(appSrc) &&
         /anyone determined can read your QR beside it/.test(panel) && /any mobile number inside it/.test(panel) &&
@@ -2105,10 +2105,25 @@ function run(page, include, label, configText, setup) {
       await writeNow();
       check(!('p_qr' in of('set_keyed_position').slice(-1)[0].args), 'and while it is off no code goes with a position');
       flip(switches()[1], true);
-      check(!isHidden('qrModal') && switches().every(i => !i.checked) && isHidden('qrGo') &&
-            d.getElementById('qrBody').textContent === 'This browser can’t read QR pictures. Use Chrome on Android, or the app.',
-        'switched on with no code, it asks for one; a browser with no QR reader of its own says where to go instead');
-      w.closeModal('qrModal');
+      check(!isHidden('qrModal') && switches().every(i => !i.checked) && !isHidden('qrNum') && isHidden('qrAlt') &&
+            d.getElementById('qrBody').textContent === 'Your GCash or Maya number.' && d.getElementById('qrGo').textContent === 'Use it' &&
+            /Riders who ride your bus will see this number\./.test(d.getElementById('qrNum').textContent),
+        'switched on with no code, a browser with no QR reader of its own asks for a GCash or Maya number, saying riders will see it');
+      // A number (sql/18-tip-number.sql): picked wallet, checked number, never free text.
+      d.getElementById('qrNumInput').value = 'call me maybe';
+      d.getElementById('qrGo').click();
+      check(d.getElementById('qrBody').textContent === 'That’s not a mobile number.' && w.localStorage.getItem('wt-qr') === null,
+        'words are not a number, and nothing is kept');
+      d.querySelector('#qrNum .qrw[data-w="maya"]').click();
+      d.getElementById('qrNumInput').value = '+63 917-123-4567';
+      d.getElementById('qrGo').click();
+      check(w.localStorage.getItem('wt-qr') === 'maya:09171234567' && isHidden('qrModal') && switches().every(i => i.checked),
+        'a number however written is kept as wallet:number, and tips are on');
+      await writeNow();
+      check(of('set_keyed_position').slice(-1)[0].args.p_qr === 'maya:09171234567', 'and the next position carries it');
+      flip(switches()[1], false);
+      d.querySelector('#qrNum .qrw[data-w="gcash"]').click();
+      check(w.localStorage.getItem('wt-qr') === null, 'off forgets the number too');
       // A phone with a reader: it finds the code in the picture, then in the
       // page's own redraw of it.
       const picked = { files: [new w.File(['x'], 'qr.png', { type: 'image/png' })] };
@@ -2123,8 +2138,9 @@ function run(page, include, label, configText, setup) {
       w.BarcodeDetector = reader(QRA, QRA);
       flip(switches()[0], true);
       check(!isHidden('qrModal') && d.getElementById('qrBody').textContent === 'Pick the QR your GCash, Maya or bank app saves.' &&
-            d.getElementById('qrGo').textContent === 'Pick your QR' && !isHidden('qrGo'),
-        'with a reader, it asks for the QR their payment app saves');
+            d.getElementById('qrGo').textContent === 'Pick your QR' && !isHidden('qrGo') &&
+            !isHidden('qrAlt') && d.getElementById('qrAlt').textContent === 'Type a number' && isHidden('qrNum'),
+        'with a reader, it asks for the QR their payment app saves, or a number instead');
       await w.readTipQr(picked);
       check(reads.length === 2 && reads[0].picture && reads[1].redraw, 'the phone reads the picture, then its own redraw of the code');
       check(d.getElementById('qrBody').textContent === 'This QR shows your mobile number to whoever scans it.' &&
@@ -2238,6 +2254,8 @@ function run(page, include, label, configText, setup) {
             d.querySelector('#tyqrModal .qrfine').textContent === 'Not the fare. Not the bus company.' &&
             !!d.querySelector('#tyqrArt svg, #tyqrArt img') && d.getElementById('tyqrSave').textContent === 'Save the QR',
         'and asks in the maintainer\'s words, with the QR drawn on this phone, whose it is not, and a way to save it');
+      check((d.querySelector('#tyqrWrongBox .wrongbtn') || {}).textContent === 'Report this QR',
+        'and anyone shown it can report it (sql/19-tip-reports.sql)');
       check(w.sessionStorage.getItem('wt-aboard') === null && !Object.keys(w.localStorage).some(k => /qr|tip/i.test(k)),
         'keeping nothing about the ride or the tip');
       w.closeModal('tyqrModal');
@@ -2245,6 +2263,36 @@ function run(page, include, label, configText, setup) {
       check(await ride(cpT(2), cpT(3)) === 1 && isHidden('tyqrModal'), 'a bus whose sharer takes no tips asks nothing');
       sim.reply.get_bus_qr = () => ({ data: 'https://example.com/pay' });
       check(await ride(cpT(2), cpT(3)) === 1 && isHidden('tyqrModal'), 'nor does anything from the server that is not a QR Ph code');
+      // A number instead of a code: shown large, with Copy number.
+      sim.reply.get_bus_qr = () => ({ data: 'maya:09171234567' });
+      check(await ride(cpT(2), cpT(3)) === 1 && !isHidden('tyqrModal') &&
+            d.querySelector('#tyqrArt .tynum .w').textContent === 'Maya' && d.querySelector('#tyqrArt .tynum b').textContent === '0917 123 4567' &&
+            !d.querySelector('#tyqrArt svg, #tyqrArt img') && d.getElementById('tyqrSave').textContent === 'Copy number',
+        'a sharer\'s number is shown to a rider who rode the bus, with its wallet and a way to copy it');
+      let copied = null;
+      Object.defineProperty(w.navigator, 'clipboard', { value: { writeText: async t => { copied = t; } }, configurable: true });
+      d.getElementById('tyqrSave').click();
+      await pause(30);
+      check(copied === '09171234567' && /Copied\. Paste it in Maya\./.test((d.getElementById('toast') || {}).textContent || ''),
+        'Copy number puts the number on the clipboard for the wallet');
+      delete w.navigator.clipboard;
+      // Reporting it: the path "Not a real bus?" takes, with kind 'tip'.
+      const tipWrong = () => d.querySelector('#tyqrWrongBox .wrongbtn');
+      check(!!tipWrong() && tipWrong().textContent === 'Report this number', 'anyone shown a number can report it');
+      const nWrong = of('say_wrong').length;
+      tipWrong().click();
+      await waitFor(() => of('say_wrong').length > nWrong);
+      await pause(30);
+      const wrongSent = of('say_wrong').slice(-1)[0];
+      check(wrongSent.args.p_kind === 'tip' && wrongSent.args.p_target === tipBus &&
+            /^[A-Za-z0-9-]{8,64}$/.test(wrongSent.args.p_watcher) && !tipWrong() &&
+            (d.querySelector('#tyqrWrongBox .wrongdone') || {}).textContent === 'Sent',
+        'a report goes to the organizers as say_wrong of kind tip, for that bus alone, and says Sent');
+      check(w.sessionStorage.getItem('wt-wrong').includes('t:' + tipBus) && !Object.keys(w.localStorage).some(k => /wrong/.test(k)),
+        'remembered for the tab only, so it is not asked twice');
+      w.closeModal('tyqrModal');
+      sim.reply.get_bus_qr = () => ({ data: 'gcash:09171234567 send here' });
+      check(await ride(cpT(2), cpT(3)) === 1 && isHidden('tyqrModal'), 'and text that is more than a wallet and a number is never shown');
       delete sim.reply.get_bus_qr;
       // A rider's popup draws a shown bus as it was dressed, and any other plain.
       const cpRide = CONFIG.split(/\r?\n/).filter(l => l.trim().startsWith('CHECKPOINT ='))[2].split('=')[1].split('|').map(x => x.trim());
@@ -2724,20 +2772,24 @@ function run(page, include, label, configText, setup) {
       window.confirm = () => true;
     });
     a.w.eval("adminKey = 'my-long-admin-key-42'");
+    answers.admin_list_wrong = [{ kind: 'tip', session_id: 'sess-tips-0001', sid: null, reports: 2 }];
     await a.w.refreshSharers();
     const rows = [...a.d.querySelectorAll('#liveList .item')];
+    check(/2 riders say its tip number or QR is wrong/.test(rows[0].textContent),
+      'riders\' reports about a bus\'s tips are counted beside Ban tips (sql/19-tip-reports.sql)');
+    answers.admin_list_wrong = [];
     const banBtn = r => r.querySelector('button[onclick^="banQr("]');
     check(rows.length === 2 && /takes tips/.test(rows[0].textContent) && !/takes tips/.test(rows[1].textContent) &&
-          !!banBtn(rows[0]) && banBtn(rows[0]).textContent === 'Ban QR' && !banBtn(rows[1]) && rows.every(r => /Stop/.test(r.textContent)),
-      'a bus that takes tips is marked so, with Ban QR beside Stop; one that does not has neither');
+          !!banBtn(rows[0]) && banBtn(rows[0]).textContent === 'Ban tips' && !banBtn(rows[1]) && rows.every(r => /Stop/.test(r.textContent)),
+      'a bus that takes tips is marked so, with Ban tips beside Stop; one that does not has neither');
     check(!/com\.p2pqrpay|0000000000/.test(a.d.getElementById('liveList').innerHTML), 'and the page is never handed the code itself');
     banBtn(rows[0]).click();
     await pause(80);
     check(calls.some(c => c.fn === 'admin_ban_qr' && c.args.p_session === 'sess-tips-0001' && c.args.p_admin === 'my-long-admin-key-42'),
-      'Ban QR bans the code on that bus, by its session, with the admin key');
+      'Ban tips bans the account on that bus, by its session, with the admin key');
     await a.w.refreshQrBans();
     const bans = a.d.getElementById('qrBans');
-    check(!bans.classList.contains('hidden') && a.d.getElementById('qrBansText').textContent === '2 tip QRs banned.',
+    check(!bans.classList.contains('hidden') && a.d.getElementById('qrBansText').textContent === '2 tip accounts banned.',
       'the page counts the bans, and never lists them');
     bans.querySelector('button').click();
     await pause(80);
